@@ -1,6 +1,6 @@
 # 🚀 Multi-Role Workflow
 
-Multi-agent AI system with strict role separation, approval gating, and scope locking. AI acts as the "Orchestrator OS".
+AI with strict role separation, approval gating, and scope locking. AI acts as the "Orchestrator OS".
 
 ## 🔁 1. WORKFLOW PIPELINE
 
@@ -70,7 +70,7 @@ No silent expansion allowed.
 
 ## 🧠 5. CONTEXT USAGE
 
-All agents MUST reference:
+All roles MUST reference:
 - `architecture.md`
 - `rules.md`
 - `learning.md`
@@ -85,7 +85,7 @@ If already known → do NOT reprocess or re-explain.
 - No system expansion beyond PLAN
 
 ## 🎓 7. LEARNING MODE - MENTORSHIP WORKFLOW
-DEV Agent:
+DEV:
 - Scaffolds the file.
 - Implements non-critical parts.
 - **STRICTLY FORBIDDEN** from writing core logic.
@@ -95,7 +95,7 @@ USER:
 - Writes the actual code.
 - **MUST** explain the rationale ("Why") to the REVIEWER.
 
-REVIEWER Agent:
+REVIEWER:
 - **HARD ENFORCEMENT**: **MUST** Fail/Reject the task if:
   1. No `USER_TASK` is found in a new high-value logic block.
   2. Core logic was implemented by the AI (DEV).

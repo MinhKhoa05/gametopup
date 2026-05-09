@@ -1,6 +1,6 @@
 # 🚀 GameTopUp Backend Rules (Elite Edition)
 
-Rules for all AI Agents working on GameTopUp Backend. Mandatory.
+Rules for all AI Roles working on GameTopUp Backend. Mandatory.
 
 ## 1. Coding Style
 **Naming**
@@ -155,7 +155,7 @@ DEV MUST choose one of the following remediation actions:
 
 **Option A — Add Comments** (when logic is inherently complex but necessary):
 ```csharp
-// WHY: We check balance BEFORE deducting to avoid a negative-balance race window.
+// We check balance BEFORE deducting to avoid a negative-balance race window.
 // The DB constraint is the final safety net (Rule 16), but this early-exit is cheaper.
 if (wallet.Balance < request.Amount)
     throw new BusinessException("Insufficient balance.");
