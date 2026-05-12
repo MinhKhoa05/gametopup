@@ -60,11 +60,6 @@ The system uses **JWT (JSON Web Token)** for authentication.
 | | POST | `/api/game-packages` | Create a new top-up package | Yes | Admin |
 | | PUT | `/api/game-packages/{id}` | Update package information | Yes | Admin |
 | | DELETE | `/api/game-packages/{id}` | Delete a package | Yes | Admin |
-| **Cart** | GET | `/api/cart/items` | Get list of items in cart | Yes | User |
-| | GET | `/api/cart/items/summary` | Get total quantity of items in cart | Yes | User |
-| | POST | `/api/cart/items` | Add product to cart | Yes | User |
-| | PUT | `/api/cart/items/{productId}` | Update item quantity | Yes | User |
-| | DELETE | `/api/cart/items/{productId}` | Remove item from cart | Yes | User |
 | **Wallet** | POST | `/api/wallet/active` | Activate user wallet | Yes | User |
 | | GET | `/api/wallet` | Check current wallet balance | Yes | User |
 | | GET | `/api/wallet/transactions` | View wallet transaction history | Yes | User |
