@@ -33,14 +33,10 @@ namespace GameTopUp.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPackageById(long id)
         {
-            var package = await _packageService.GetPackageByIdAsync(id);
+            var package = await _packageService.GetPackageByIdOrThrowAsync(id);
             return ApiOk(package);
         }
 
-        /// <summary>
-        /// Tạo gói nạp game mới. Ràng buộc Role Admin để đảm bảo chỉ nhân sự quản lý 
-        /// mới có thể thay đổi cấu hình giá và sản phẩm.
-        /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreatePackage([FromBody] CreateGamePackageRequest request)

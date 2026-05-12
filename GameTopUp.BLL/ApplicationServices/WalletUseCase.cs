@@ -19,23 +19,15 @@ namespace GameTopUp.BLL.ApplicationServices
 
         public async Task<long> ActiveWalletAsync(UserContext context)
         {
-            return await _database.ExecuteInTransactionAsync(async () =>
-            {
-                return await _walletService.CreateWalletAsync(context);
-            });
+            return await _walletService.CreateWalletAsync(context);
         }
 
         public async Task<TransactionResponseDTO> DepositAsync(UserContext context, decimal amount)
         {
             return await _database.ExecuteInTransactionAsync(async () =>
             {
-                var wallet = await _walletService.LockAndGetByUserIdAsync(context.UserId);
-
-                return await _walletService.CreditAsync(
-                    wallet, 
-                    amount, 
-                    WalletTransactionType.Deposit, 
-                    $"Nạp tiền vào ví: {amount:N0} VNĐ");
+                // WHY: UseCase điều phối transaction, che giấu logic nạp tiền trong Service.
+                return await _walletService.DepositAsync(context.UserId, amount);
             });
         }
 
@@ -43,13 +35,8 @@ namespace GameTopUp.BLL.ApplicationServices
         {
             return await _database.ExecuteInTransactionAsync(async () =>
             {
-                var wallet = await _walletService.LockAndGetByUserIdAsync(context.UserId);
-
-                return await _walletService.DebitAsync(
-                    wallet, 
-                    amount, 
-                    WalletTransactionType.Withdraw, 
-                    $"Rút tiền từ ví: {amount:N0} VNĐ");
+                // WHY: Đảm bảo tính nguyên tử cho hành động rút tiền.
+                return await _walletService.WithdrawAsync(context.UserId, amount);
             });
         }
     }

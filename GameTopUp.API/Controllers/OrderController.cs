@@ -60,7 +60,7 @@ namespace GameTopUp.API.Controllers
         [HttpGet("{orderId}")]
         public async Task<IActionResult> GetOrderById(long orderId)
         {
-            var order = await _orderService.GetByIdAsync(orderId);
+            var order = await _orderService.GetByIdOrThrowAsync(orderId);
             return ApiOk(order);
         }
 

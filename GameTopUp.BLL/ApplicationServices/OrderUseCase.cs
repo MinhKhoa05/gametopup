@@ -1,6 +1,5 @@
 using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Services;
-using GameTopUp.BLL.Exceptions;
 using GameTopUp.DAL;
 using GameTopUp.DAL.Entities;
 using GameTopUp.BLL.DTOs.Orders;
@@ -28,29 +27,16 @@ namespace GameTopUp.BLL.ApplicationServices
 
         public async Task<long> PlaceOrderAsync(UserContext context, PlaceOrderRequestDTO request)
         {
-            // WHY: Đưa logic kiểm tra nghiệp vụ xuống Service.
-            await _packageService.CheckAvailabilityAsync(request.GamePackageId, request.Quantity);
-            
-            var package = await _packageService.GetPackageByIdAsync(request.GamePackageId);
+            // Lấy thông tin và kiểm tra tính khả dụng trong 1 lần gọi Service.
+            var package = await _packageService.GetAvailablePackageAsync(request.GamePackageId, request.Quantity);
 
             return await _database.ExecuteInTransactionAsync(async () =>
             {
-                // WHY: Trừ tồn kho ngay khi đặt hàng để đảm bảo "giữ chỗ" sản phẩm cho khách.
+                // Trừ tồn kho ngay khi đặt hàng để đảm bảo "giữ chỗ" sản phẩm cho khách.
                 await _packageService.DecreaseStockAsync(request.GamePackageId, request.Quantity);
                 
-                var order = new Order
-                {
-                    UserId = context.UserId,
-                    GamePackageId = request.GamePackageId,
-                    UnitPrice = package.SalePrice,
-                    Quantity = request.Quantity,
-                    GameAccountInfo = request.GameAccountInfo,
-                    Status = OrderStatus.Pending,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                return await _orderService.CreateOrderAsync(order, context);
+                // Tạo đơn hàng cho khách.
+                return await _orderService.CreateOrderAsync(context, package, request.Quantity, request.GameAccountInfo);
             });            
         }
 
@@ -58,23 +44,12 @@ namespace GameTopUp.BLL.ApplicationServices
         {
             await _database.ExecuteInTransactionAsync(async () =>
             {
-                // 1. Khóa và lấy thông tin đơn hàng
-                var order = await _orderService.LockAndGetByIdAsync(orderId);
-                
-                // 2. Validate nghiệp vụ (ownership, status)
+                // WHY: Lock ở UseCase để đảm bảo quy trình (Order + Wallet) là nguyên tử.
+                var order = await _orderService.GetWithLockByIdOrThrowAsync(orderId);
                 _orderService.ValidateForPayment(order, context);
 
-                // 3. Khóa ví và trừ tiền
-                // WHY: Phải trừ tiền thành công trước khi cập nhật trạng thái đơn hàng.
-                var wallet = await _walletService.LockAndGetByUserIdAsync(context.UserId);
-                await _walletService.DebitAsync(
-                    wallet, 
-                    order.Total, 
-                    WalletTransactionType.PaidOrder, 
-                    $"Thanh toán đơn hàng #{order.Id}", 
-                    order.Id);
-
-                // 4. Cập nhật trạng thái đơn hàng sang Paid
+                // 2. Debit wallet & Mark paid
+                await _walletService.PayOrderAsync(order);
                 await _orderService.MarkAsPaidAsync(order, context);
             });
         }
@@ -83,7 +58,8 @@ namespace GameTopUp.BLL.ApplicationServices
         {
             await _database.ExecuteInTransactionAsync(async () =>
             {
-                var order = await _orderService.LockAndGetByIdAsync(orderId);
+                // WHY: Lock trước khi tiếp nhận để tránh Admin khác cùng xử lý.
+                var order = await _orderService.GetWithLockByIdOrThrowAsync(orderId);
                 await _orderService.PickOrderAsync(order, adminContext);
             });
         }
@@ -92,32 +68,26 @@ namespace GameTopUp.BLL.ApplicationServices
         {
             await _database.ExecuteInTransactionAsync(async () =>
             {
-                var order = await _orderService.LockAndGetByIdAsync(orderId);
+                var order = await _orderService.GetWithLockByIdOrThrowAsync(orderId);
                 await _orderService.CompleteOrderAsync(order, adminContext);
             });
         }
 
-        public async Task CancelOrderAsync(long orderId, UserContext adminContext, string? reason = null)
+        public async Task CancelOrderAsync(long orderId, UserContext userContext, string? reason = null)
         {
             await _database.ExecuteInTransactionAsync(async () =>
             {
-                var order = await _orderService.LockAndGetByIdAsync(orderId);
-
-                // 1. Thực hiện hủy đơn trong Service để lấy trạng thái cũ
-                var oldStatus = await _orderService.CancelOrderAsync(order, adminContext, reason);
-
-                // 2. Đơn hàng đã xử lý trước đó rồi thì không cần làm gì nữa
+                // WHY: Service trả về trạng thái cũ để UseCase quyết định bù trừ (Hoàn tiền/Kho).
+                var order = await _orderService.GetWithLockByIdOrThrowAsync(orderId);
+                var oldStatus = await _orderService.CancelOrderAsync(order, userContext, reason);
                 if (oldStatus == null) return;
 
-                // 3. HOÀN KHO: Vì khi đặt hàng (PlaceOrder) chúng ta đã trừ tồn kho
+                // 2. Refund stock & money
                 await _packageService.IncreaseStockAsync(order.GamePackageId, order.Quantity);
 
-                // 4. HOÀN TIỀN: Chỉ hoàn tiền nếu đơn hàng đã ở trạng thái Paid hoặc Processing
                 if (oldStatus == OrderStatus.Paid || oldStatus == OrderStatus.Processing)
                 {
-                    // WHY: Khóa ví trước khi hoàn tiền để tránh Race Condition (Pessimistic Locking).
-                    var wallet = await _walletService.LockAndGetByUserIdAsync(order.UserId);
-                    await _walletService.CreditAsync(wallet, order.Total, WalletTransactionType.Refund, $"Hoàn tiền đơn hàng #{orderId}. {reason ?? ""}", orderId);
+                    await _walletService.RefundOrderAsync(order, reason);
                 }
             });
         }

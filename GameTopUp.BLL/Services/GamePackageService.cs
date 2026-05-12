@@ -28,7 +28,7 @@ namespace GameTopUp.BLL.Services
             return await _packageRepo.GetByGameIdAsync(gameId);
         }
 
-        public async Task<GamePackage> GetPackageByIdAsync(long id)
+        public async Task<GamePackage> GetPackageByIdOrThrowAsync(long id)
         {
             var package = await _packageRepo.GetByIdAsync(id);
             if (package == null)
@@ -70,7 +70,7 @@ namespace GameTopUp.BLL.Services
 
         public async Task<GamePackage> UpdatePackageAsync(long id, UpdateGamePackageRequest request)
         {
-            var package = await GetPackageByIdAsync(id);
+            var package = await GetPackageByIdOrThrowAsync(id);
             request.Adapt(package);
             await _packageRepo.UpdateAsync(package);
             return package;
@@ -78,7 +78,7 @@ namespace GameTopUp.BLL.Services
 
         public async Task DeletePackageAsync(long id)
         {
-            await GetPackageByIdAsync(id);
+            await GetPackageByIdOrThrowAsync(id);
             await _packageRepo.DeleteAsync(id);
         }
 
@@ -97,14 +97,17 @@ namespace GameTopUp.BLL.Services
             if (affectedRows == 0) throw new BusinessException("Không đủ số lượng trong kho.");            
         }
 
-        public async Task CheckAvailabilityAsync(long id, int quantity)
+        public async Task<GamePackage> GetAvailablePackageAsync(long id, int quantity)
         {
             ValidateStockQuantity(quantity);
-            var package = await GetPackageByIdAsync(id);
+
+            var package = await GetPackageByIdOrThrowAsync(id);
             if (!package.IsActive) throw new BusinessException("Gói nạp hiện không khả dụng.");
             if (package.StockQuantity < quantity) throw new BusinessException("Số lượng trong kho không đủ.");
+            
+            return package;
         }
-
+        
         private void ValidateStockQuantity(int quantity)
         {
             if (quantity <= 0) throw new BusinessException("Số lượng phải lớn hơn 0.");

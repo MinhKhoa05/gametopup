@@ -29,35 +29,13 @@ namespace GameTopUp.DAL.Repositories
             return await _database.InsertAsync<Wallet, long>(wallet);
         }
 
-        public async Task<int> IncreaseBalanceAsync(long userId, decimal amount)
-        {
-            string sql = "UPDATE wallets SET balance = balance + @Amount, updated_at = @UpdatedAt WHERE user_id = @UserId";
-            return await _database.ExecuteAsync(sql, new 
-            { 
-                UserId = userId, 
-                Amount = amount,
-                UpdatedAt = DateTime.UtcNow
-            });
-        }
-
-        public async Task<int> DecreaseBalanceAsync(long userId, decimal amount)
-        {
-            string sql = "UPDATE wallets SET balance = balance - @Amount, updated_at = @UpdatedAt WHERE user_id = @UserId AND balance >= @Amount";
-            return await _database.ExecuteAsync(sql, new 
-            { 
-                UserId = userId, 
-                Amount = amount,
-                UpdatedAt = DateTime.UtcNow
-            });
-        }
-
-        public async Task<int> UpdateAsync(Wallet wallet)
+        public async Task<int> UpdateBalanceAsync(long walletId, decimal newBalance)
         {
             string sql = "UPDATE wallets SET balance = @Balance, updated_at = @UpdatedAt WHERE id = @Id";
             return await _database.ExecuteAsync(sql, new 
-            { 
-                Id = wallet.Id,
-                Balance = wallet.Balance,
+            {
+                Id = walletId,
+                Balance = newBalance,
                 UpdatedAt = DateTime.UtcNow
             });
         }

@@ -1,8 +1,6 @@
 using Mapster;
-using GameTopUp.BLL.Common;
 using GameTopUp.BLL.DTOs.Users;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.DAL;
 using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Interfaces;
 

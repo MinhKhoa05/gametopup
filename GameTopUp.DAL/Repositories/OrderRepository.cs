@@ -32,7 +32,7 @@ namespace GameTopUp.DAL.Repositories
             });
         }
 
-        public async Task<Order?> GetByIdForUpdateAsync(long orderId)
+        public async Task<Order?> GetWithLockByIdAsync(long orderId)
         {
             var sql = "SELECT * FROM orders WHERE id = @Id FOR UPDATE";
             
