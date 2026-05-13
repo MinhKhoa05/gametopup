@@ -14,7 +14,7 @@
 
 **GameTopUp** is a specialized backend platform designed to transform manual, chat-based game top-up workflows into a structured, automated intermediary system. It handles high-concurrency order orchestration, secure wallet management, and precise commission/discount tracking.
 
-📖 **[Read the System Motivation & Goals](./MOTIVATION.md)**
+📖 **[Read the System Motivation & Goals](./MOTIVATION.md)** | 🔌 **[API Integration Guide](./API_GUIDE.md)**
 
 Key features:
 - **Order Orchestration**: Decoupled "Place Order" (Stock Reservation) and "Payment" flows. State-based order processing ensures safe retry handling and prevents duplicate execution in concurrent scenarios.
@@ -93,48 +93,60 @@ The project uses a dual testing approach to ensure reliability:
 
 ## 🏁 How to Run
 
-### 1. Environment Setup
-
-Create a `.env` file in the root directory by copying `.env.example`. This file contains essential configurations for the Database, API, JWT, and CORS.
-
-### 2. Start Services (Flexible Options)
-
-The project supports flexible execution modes to suit different development scenarios:
-
-#### Option 1: Docker Database + Local API (Recommended for Development)
-*Ideal for active development, allowing easy debugging and hot-reloading.*
-
-1. Start the Database container:
-   ```bash
-   docker-compose up -d db
-   ```
-2. Run the API using dotnet CLI:
-   ```bash
-   cd GameTopUp.API
-   dotnet run
-   ```
-   *The API will connect to the Docker DB via `localhost:3307` as configured in your `.env` file.*
-
-#### Option 2: Full Docker Stack (API & Database)
-*Ideal for testing the system in a production-like environment or when .NET SDK is not installed locally.*
-
-Start all services using Docker Compose with the `full` profile:
+### 1. Setup
 ```bash
-docker-compose --profile full up -d
+cp .env.example .env
 ```
+*Configure `.env` with your environment-specific settings.*
 
-| Service | URL/Port | Notes |
-| :--- | :--- | :--- |
-| **API** | `http://localhost:5000` | Swagger UI at `/swagger` |
-| **Database** | `localhost:3307` | MariaDB 11 |
+> [!IMPORTANT]
+> Ensure **Docker Desktop** is running before starting any services.
+
+### 2. Start Services
+
+#### Option A — Hybrid Mode (Docker DB + Local API)
+*Recommended for active development.*
+
+1. Start Database:
+```bash
+docker compose up -d db
+```
+2. Run API:
+```bash
+dotnet run --project GameTopUp.API
+```
+*API connects to MariaDB exposed via `localhost:3307`.*
+
+#### Option B — Full Docker Stack
+*Recommended for integration testing.*
+
+```bash
+docker compose up -d
+```
+*API connects to `db:3306` automatically.*
 
 ---
 
+> [!TIP]
+> - **Reset DB**: `docker compose down -v` (wipes volumes).
+> - **Port 3307**: Exposed for host access (HeidiSQL/DBeaver/Local API).
+> - **Port 3306**: Internal Docker network port.
+
+| Service | Access | Notes |
+|---|---|---|
+| API | http://localhost:5000/swagger | Swagger UI |
+| MariaDB | localhost:3307 | DB: `game_topup_db` |
+
+---
+
+### 🔌 Next Steps: API Integration
+Once the services are running, refer to the **[API Integration Guide](./API_GUIDE.md)** for detailed endpoint documentation, authentication flows, and testing accounts.
+
 ### 3. Run Tests
-Integration tests use an isolated SQLite database and mocked authentication to ensure environment consistency.
-   ```bash
-   dotnet test
-   ```
+```bash
+dotnet test
+```
+*Uses isolated SQLite for integration tests.*
 
 ## 📁 Project Structure
 

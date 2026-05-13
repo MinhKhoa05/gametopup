@@ -19,26 +19,23 @@ DotEnv.Load(new DotEnvOptions(envFilePaths: new[] { envPath }));
 var builder = WebApplication.CreateBuilder(args);
 
 // Map environment variables to configuration
-if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")))
-{
-    builder.Configuration["ConnectionStrings:Default"] = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
-}
-if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("JWT_KEY")))
-{
-    builder.Configuration["Jwt:Key"] = Environment.GetEnvironmentVariable("JWT_KEY");
-}
-if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("JWT_ISSUER")))
-{
-    builder.Configuration["Jwt:Issuer"] = Environment.GetEnvironmentVariable("JWT_ISSUER");
-}
-if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("JWT_AUDIENCE")))
-{
-    builder.Configuration["Jwt:Audience"] = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
-}
-if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")))
-{
-    builder.Configuration["AllowedOrigins"] = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
-}
+// Map environment variables to configuration
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "127.0.0.1";
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "3307";
+var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "game_topup_db";
+var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "game_topup_user";
+var dbPass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "app_pass_456";
+
+// Build Connection String
+var connectionString = $"server={dbHost};port={dbPort};database={dbName};user={dbUser};password={dbPass};SslMode=None;";
+builder.Configuration["ConnectionStrings:Default"] = connectionString;
+
+// Map other variables with sensible defaults
+builder.Configuration["Jwt:Key"] = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Jwt:Key"];
+builder.Configuration["Jwt:Issuer"] = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "GameTopUp";
+builder.Configuration["Jwt:Audience"] = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "GameTopUpUsers";
+builder.Configuration["Jwt:ExpireMinutes"] = Environment.GetEnvironmentVariable("JWT_EXPIRE_MINUTES") ?? "30";
+builder.Configuration["AllowedOrigins"] = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? "http://localhost:3000";
 
 // ================= CORS CONFIGURATION =================
 var originFromConfig = builder.Configuration["AllowedOrigins"];

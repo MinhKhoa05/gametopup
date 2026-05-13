@@ -4,7 +4,7 @@ This document provides detailed instructions on how to integrate and use the Gam
 
 ## 1. Overview
 
-- **Base URL (Development):** `http://localhost:5089/api`
+- **Base URL (Development):** `http://localhost:5000`
 - **Standard Response Body:** All server responses are wrapped in an `ApiResponse` object.
 
 ```json
@@ -80,9 +80,7 @@ The system uses **JWT (JSON Web Token)** for authentication.
 ### Flow 1: Registration -> Login -> Get Profile
 1. **Registration:** Call `POST /api/auth/register` with user details.
 2. **Login:** Call `POST /api/auth/login`. The server returns an `accessToken`.
-3. **Get Profile:** 
-   - Decode the JWT token on the client side to get the `UserId`.
-   - Call `GET /api/users/{id}` with the `Authorization` header to retrieve details.
+3. **Get Profile:** Call `GET /api/users/me` with the `Authorization` header to retrieve details.
 
 ### Flow 2: Wallet Activation -> Deposit -> Check Balance
 1. **Activation:** Call `POST /api/wallet/active` (only needs to be called once after registration).
@@ -98,7 +96,7 @@ The system uses **JWT (JSON Web Token)** for authentication.
 5. **Cancellation (Optional):** If needed, calling `POST /api/orders/{id}/cancel` will automatically restore stock and refund the wallet (if already paid).
 
 ## 6. Important Notes
-- **Request Body/DTO Details:** Please refer to the [Swagger UI](http://localhost:5089/swagger) for the exact structure of each request.
+- **Request Body/DTO Details:** Please refer to the [Swagger UI](http://localhost:5000/swagger) for the exact structure of each request.
 - **HTTP Status Codes:** 
   - `200 OK`: Success.
   - `201 Created`: Resource created successfully.
