@@ -32,6 +32,7 @@ Example:
 
 Must include:
 - Objective
+- Created At (ISO 8601)
 - Reference Memory (Confirm check of `learning.md` & `rules.md`, `architecture.md`)
 - File changes (Create / Modify / Delete)
 - Impact / Risk

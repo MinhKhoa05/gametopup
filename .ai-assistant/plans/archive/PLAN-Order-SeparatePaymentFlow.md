@@ -1,5 +1,8 @@
 # PLAN: Separate Order Creation and Payment Flow
 
+**Created At**: 2026-05-06T15:39:48+07:00
+
+
 ## Objective
 Refactor the ordering process to support "Order Now, Pay Later" logic. Implement a constraint where each user can only have one `Pending` order at a time.
 

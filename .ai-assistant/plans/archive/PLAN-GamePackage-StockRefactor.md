@@ -1,5 +1,8 @@
 # PLAN: Refactor Game Package Stock Management to Normal Quantity
 
+**Created At**: 2026-05-06T15:04:47+07:00
+
+
 ## Objective
 Replace the budget-based stock management (`PackageBudget`, `SpentAmount`) with a standard discrete quantity-based approach (`StockQuantity`). This simplifies the logic to match common product management patterns as requested.
 

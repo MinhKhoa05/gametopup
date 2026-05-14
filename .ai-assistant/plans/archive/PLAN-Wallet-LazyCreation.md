@@ -1,5 +1,8 @@
 # PLAN-Wallet-LazyCreation
 
+**Created At**: 2026-05-02T21:15:32+07:00
+
+
 ## Objective
 Implement explicit wallet creation (manual lazy creation) in `WalletService` and remove `IWalletRepository` dependency from `UserService`. If a user attempts to use wallet features before creation, a `NotFoundException` will be thrown.
 

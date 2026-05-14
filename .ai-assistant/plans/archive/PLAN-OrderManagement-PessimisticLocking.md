@@ -1,5 +1,8 @@
 # PLAN - Order Management - Pessimistic Locking Refactor
 
+**Created At**: 2026-05-04T13:53:34+07:00
+
+
 ## Objective
 Refactor the order cancellation workflow to use pessimistic locking (`SELECT ... FOR UPDATE`) to simplify concurrency handling and improve code readability.
 

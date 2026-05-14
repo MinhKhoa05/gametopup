@@ -41,6 +41,13 @@ namespace GameTopUp.API.Controllers
             if (!Response.HasStarted)
             {
                 Response.Cookies.Append("accessToken", loginResponse.AccessToken, cookieOptions);
+                
+                // USER_TASK: Cần thêm logic lưu Refresh Token vào Cookie
+                // TODO: USER IMPLEMENT
+                // Pseudocode: 
+                // 1. Kiểm tra nếu loginResponse.RefreshToken không rỗng
+                // 2. Thêm vào cookie với tên "refreshToken", có thể set thời gian lâu hơn (ví dụ 7 ngày)
+                // 3. Response.Cookies.Append("refreshToken", loginResponse.RefreshToken, new CookieOptions { ... });
             }
 
             return ApiOk(loginResponse, "Đăng nhập thành công.");
@@ -52,6 +59,22 @@ namespace GameTopUp.API.Controllers
         {
             await _auth.ChangePasswordAsync(CurrentUser, passwordChangeRequest);
             return ApiOk(null, "Đổi mật khẩu thành công");
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh(RefreshTokenRequestDTO request)
+        {
+            var result = await _auth.RefreshAsync(request);
+            return ApiOk(result, "Làm mới token thành công.");
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(RefreshTokenRequestDTO request)
+        {
+            // Note: Chúng ta truyền refresh token lên để revoke nó trong DB
+            await _auth.LogoutAsync(request.RefreshToken);
+            return ApiOk(null, "Đăng xuất thành công.");
         }
     }
 }

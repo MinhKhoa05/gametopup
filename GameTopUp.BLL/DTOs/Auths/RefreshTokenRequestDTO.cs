@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace GameTopUp.BLL.DTOs.Auths
 {
-    public class LoginResponseDTO
+    public class RefreshTokenRequestDTO
     {
-        public string AccessToken { get; set; } = string.Empty;
+        [Required]
         public string RefreshToken { get; set; } = string.Empty;
     }
 }

@@ -1,20 +1,22 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using GameTopUp.BLL.DTOs.Auths;
 using GameTopUp.BLL.Config;
 
 namespace GameTopUp.BLL.Common
 {
     /// <summary>
-    /// TokenService quản lý việc tạo định danh điện tử (JWT) cho người dùng.
-    /// JWT được sử dụng để duy trì trạng thái đăng nhập một cách Stateless, giúp hệ thống 
-    /// dễ dàng mở rộng và giảm tải cho Database.
+    /// TokenService quản lý việc tạo JWT và Refresh Token.
     /// </summary>
     public class TokenService
     {
+        // Dùng const để tránh magic number.
+        private const int RefreshTokenByteSize = 32;
+
         private readonly JwtSettings _jwtSettings;
         private readonly SymmetricSecurityKey _securityKey;
         private readonly JwtSecurityTokenHandler _tokenHandler = new();
@@ -23,17 +25,18 @@ namespace GameTopUp.BLL.Common
         {
             _jwtSettings = jwtOptions.Value;
 
+            // Key dùng để ký JWT bằng HMAC SHA256.
             _securityKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_jwtSettings.Key));
         }
 
         /// <summary>
-        /// Tạo Access Token dựa trên thông tin định danh của người dùng.
-        /// Các Claims được nhúng vào Token để các tầng khác có thể trích xuất thông tin
-        /// mà không cần truy vấn lại Database.
+        /// Tạo Access Token chứa thông tin người dùng.
         /// </summary>
         public string GenerateAccessToken(TokenRequest tokenRequest)
         {
+            var now = DateTime.UtcNow;
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, tokenRequest.UserId.ToString()),
@@ -41,9 +44,12 @@ namespace GameTopUp.BLL.Common
                 new Claim(JwtRegisteredClaimNames.Email, tokenRequest.Email),
                 new Claim(ClaimTypes.Role, tokenRequest.Role),
 
-                // JTI giúp định danh duy nhất mỗi Token, hỗ trợ việc Revoke Token nếu cần
+                // Mỗi token có ID riêng để hỗ trợ revoke/trace.
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat,
+
+                // Thời điểm token được tạo.
+                new Claim(
+                    JwtRegisteredClaimNames.Iat,
                     DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
                     ClaimValueTypes.Integer64)
             };
@@ -56,11 +62,42 @@ namespace GameTopUp.BLL.Common
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpireMinutes),
+
+                // Access token nên có thời gian sống ngắn.
+                expires: now.AddMinutes(_jwtSettings.ExpireMinutes),
+
                 signingCredentials: credentials
             );
 
             return _tokenHandler.WriteToken(token);
+        }
+
+        /// <summary>
+        /// Tạo Refresh Token ngẫu nhiên bảo mật cao.
+        /// </summary>
+        public string GenerateRefreshToken()
+        {
+            // 32 bytes ~ 256-bit entropy.
+            byte[] randomBytes = new byte[RefreshTokenByteSize];
+
+            // Dùng cryptographic random thay vì Random thường.
+            RandomNumberGenerator.Fill(randomBytes);
+
+            // Hex dễ lưu và không có ký tự đặc biệt.
+            return Convert.ToHexString(randomBytes);
+        }
+
+        /// <summary>
+        /// Băm Refresh Token trước khi lưu DB.
+        /// </summary>
+        public string HashToken(string token)
+        {
+            byte[] tokenBytes = Encoding.UTF8.GetBytes(token);
+
+            // Chỉ lưu hash để tăng bảo mật nếu DB bị lộ.
+            byte[] hashBytes = SHA256.HashData(tokenBytes);
+
+            return Convert.ToHexString(hashBytes);
         }
     }
 }

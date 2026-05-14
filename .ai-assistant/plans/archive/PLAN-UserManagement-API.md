@@ -1,5 +1,8 @@
 # PLAN-UserManagement-API
 
+**Created At**: 2026-05-02T21:15:32+07:00
+
+
 ## 1. Objective
 Establish the User Management API suite including CRUD operations, DTOs, and service logic following strict Mapster update patterns and architecture rules.
 

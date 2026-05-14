@@ -1,5 +1,8 @@
 # Plan - Order Management: Admin Pick Order
 
+**Created At**: 2026-05-02T21:23:52+07:00
+
+
 Implement the ability for Admins to claim (pick) a pending order for processing.
 
 ## Objective

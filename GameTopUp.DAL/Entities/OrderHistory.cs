@@ -13,13 +13,13 @@ namespace GameTopUp.DAL.Entities
 
 
         public OrderStatus FromStatus { get; set; }
-        public OrderStatus ToStatus { get; set; } // Tr?ng th�i m?i du?c c?p nh?t
+        public OrderStatus ToStatus { get; set; }
 
-        public string? Note { get; set; } // L� do thay d?i (v� d?: "Sai ID game", "�� ho�n ti?n")
+        public string? Note { get; set; }
 
-        public long ActionBy { get; set; } // Id c?a ngu?i th?c hi?n (Admin ho?c User)
+        public long ActionBy { get; set; }
 
-        public bool IsAdmin { get; set; } // Flag nhanh d? bi?t ai d?i: True = Admin, False = User
+        public bool IsAdmin { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

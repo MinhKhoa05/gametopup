@@ -1,5 +1,8 @@
 # PLAN-OrderManagement-AdminCancel
 
+**Created At**: 2026-05-03T08:13:17+07:00
+
+
 ## Objective
 Implement the **Admin Cancel Order** feature. When an Admin cancels an order, the system must:
 1. Transition the order status to `Cancelled`.

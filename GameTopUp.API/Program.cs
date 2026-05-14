@@ -118,6 +118,7 @@ builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IGamePackageRepository, GamePackageRepository>();
 builder.Services.AddScoped<IGameAccountRepository, GameAccountRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
 // ================= QUERIES =================
 
@@ -127,6 +128,7 @@ builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<GamePackageService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<WalletService>();
+builder.Services.AddScoped<RefreshTokenService>();
 
 // ================= APPLICATION SERVICES =================
 builder.Services.AddScoped<AuthService>();

@@ -1,5 +1,8 @@
 # PLAN-Wallet-Refactoring
 
+**Created At**: 2026-05-02T21:15:32+07:00
+
+
 ## Objective
 Refactor `WalletService` to separate wallet data from the `User` entity. Create a dedicated `Wallet` entity and `WalletRepository` to handle balance operations, adhering to the Repository pattern and separation of concerns.
 

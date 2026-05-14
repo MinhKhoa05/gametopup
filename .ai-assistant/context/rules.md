@@ -103,6 +103,7 @@ Rules for all AI Roles working on GameTopUp Backend. Mandatory.
 
 ## 14. Planning & Knowledge Management
 - **Strict Naming**: All tasks must have a dedicated PLAN file using the format: `PLAN-{topic}-{subtopic}.md`. (e.g., `PLAN-UserManagement-API.md`).
+- **Timestamp**: Every PLAN must include a `Created At` timestamp in ISO 8601 format.
 - **Context Awareness**: Every PLAN must have a `Reference Memory` section confirming review of `memory.md` and `rules.md`.
 - **Update Memory**: After finishing a task, important lessons must be recorded back into `memory.md`.
 

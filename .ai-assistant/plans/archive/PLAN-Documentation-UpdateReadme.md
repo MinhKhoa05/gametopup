@@ -1,5 +1,8 @@
 # PLAN-Documentation-UpdateReadme
 
+**Created At**: 2026-05-02T21:15:32+07:00
+
+
 ## Objective
 Update `README.md` to reflect the current architectural standards, testing infrastructure, and project structure of the GameTopUp backend.
 

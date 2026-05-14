@@ -1,5 +1,8 @@
 # PLAN-Exception-Simplification
 
+**Created At**: 2026-05-02T21:15:32+07:00
+
+
 ## Objective
 Simplify `NotFoundException` and other business exceptions to accept a single `string message` instead of custom structured parameters.
 

@@ -1,5 +1,8 @@
 # PLAN - Order Management - Admin Complete Order
 
+**Created At**: 2026-05-03T09:19:37+07:00
+
+
 Implementing the functionality for an admin to mark an order as "Completed" (Success). This action is restricted to the admin who is currently assigned to the order and when the order is in the "Processing" state.
 
 ## 🎯 Objective
