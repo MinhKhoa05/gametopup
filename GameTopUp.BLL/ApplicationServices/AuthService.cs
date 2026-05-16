@@ -4,6 +4,7 @@ using GameTopUp.BLL.DTOs.Users;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services;
 using GameTopUp.DAL;
+using Mapster;
 
 namespace GameTopUp.BLL.ApplicationServices
 {
@@ -80,7 +81,8 @@ namespace GameTopUp.BLL.ApplicationServices
             return new LoginResponseDTO
             {
                 AccessToken = accessToken,
-                RefreshToken = refreshToken
+                RefreshToken = refreshToken,
+                User = user.Adapt<UserResponseDTO>()
             };
         }
 

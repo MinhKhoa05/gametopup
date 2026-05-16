@@ -127,4 +127,15 @@ CREATE TABLE IF NOT EXISTS order_history (
     INDEX idx_history_order_sort (order_id, created_at)
 ) ENGINE=InnoDB;
 
+-- 9. Table: refresh_tokens
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id BIGINT SIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT SIGNED NOT NULL,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    revoked_at DATETIME NULL,
+    CONSTRAINT fk_refresh_token_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 SET FOREIGN_KEY_CHECKS = 1;

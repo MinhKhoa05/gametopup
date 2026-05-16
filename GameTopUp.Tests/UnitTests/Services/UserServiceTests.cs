@@ -92,7 +92,7 @@ namespace GameTopUp.Tests.UnitTests.Services
             _userRepoMock.Setup(r => r.CreateAsync(It.IsAny<User>())).ReturnsAsync(1);
 
             // Act
-            var userId = await _userService.RegisterAsync(request);
+            var userId = await _userService.RegisterWithHashedPasswordAsync(request, request.Password);
 
             // Assert
             userId.Should().Be(1);
@@ -110,7 +110,7 @@ namespace GameTopUp.Tests.UnitTests.Services
             _userRepoMock.Setup(r => r.GetByEmailAsync(request.Email)).ReturnsAsync(new User());
 
             // Act
-            Func<Task> act = () => _userService.RegisterAsync(request);
+            Func<Task> act = () => _userService.RegisterWithHashedPasswordAsync(request, request.Password);
 
             // Assert
             await act.Should().ThrowAsync<BusinessException>().WithMessage("Email này đã được sử dụng trong hệ thống.");

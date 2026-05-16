@@ -27,7 +27,7 @@ namespace GameTopUp.Tests.UnitTests.Services
             // Arrange
             var wallet = new Wallet { Id = 1, UserId = 1, Balance = 100 };
             decimal amount = 50;
-            _walletRepoMock.Setup(r => r.GetByUserIdForUpdateAsync(1)).ReturnsAsync(wallet);
+            _walletRepoMock.Setup(r => r.GetWithLockByUserIdAsync(1)).ReturnsAsync(wallet);
             _walletRepoMock.Setup(r => r.UpdateBalanceAsync(wallet.Id, 150)).ReturnsAsync(1);
             _walletTxRepoMock.Setup(r => r.CreateAsync(It.IsAny<WalletTransaction>())).ReturnsAsync(999);
 
@@ -49,7 +49,7 @@ namespace GameTopUp.Tests.UnitTests.Services
             // Arrange
             var wallet = new Wallet { Id = 1, UserId = 1, Balance = 200 };
             decimal amount = 80;
-            _walletRepoMock.Setup(r => r.GetByUserIdForUpdateAsync(1)).ReturnsAsync(wallet);
+            _walletRepoMock.Setup(r => r.GetWithLockByUserIdAsync(1)).ReturnsAsync(wallet);
             _walletRepoMock.Setup(r => r.UpdateBalanceAsync(wallet.Id, 120)).ReturnsAsync(1);
             _walletTxRepoMock.Setup(r => r.CreateAsync(It.IsAny<WalletTransaction>())).ReturnsAsync(999);
 
@@ -71,7 +71,7 @@ namespace GameTopUp.Tests.UnitTests.Services
             // Arrange
             var wallet = new Wallet { Id = 1, UserId = 1, Balance = 50 };
             decimal amount = 100;
-            _walletRepoMock.Setup(r => r.GetByUserIdForUpdateAsync(1)).ReturnsAsync(wallet);
+            _walletRepoMock.Setup(r => r.GetWithLockByUserIdAsync(1)).ReturnsAsync(wallet);
 
             // Act
             Func<Task> act = () => _walletService.WithdrawAsync(1, amount);

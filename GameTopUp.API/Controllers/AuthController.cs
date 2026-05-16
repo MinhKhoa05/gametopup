@@ -29,25 +29,20 @@ namespace GameTopUp.API.Controllers
         {
             var loginResponse = await _auth.LoginAsync(loginRequest);
 
-            // Cấu hình Cookie để tăng tính bảo mật (HttpOnly)
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false, // Nên bật True nếu chạy trên HTTPS
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTime.UtcNow.AddDays(7)
-            };
-
             if (!Response.HasStarted)
             {
-                Response.Cookies.Append("accessToken", loginResponse.AccessToken, cookieOptions);
-                
-                // USER_TASK: Cần thêm logic lưu Refresh Token vào Cookie
-                // TODO: USER IMPLEMENT
-                // Pseudocode: 
-                // 1. Kiểm tra nếu loginResponse.RefreshToken không rỗng
-                // 2. Thêm vào cookie với tên "refreshToken", có thể set thời gian lâu hơn (ví dụ 7 ngày)
-                // 3. Response.Cookies.Append("refreshToken", loginResponse.RefreshToken, new CookieOptions { ... });
+                // Cấu hình Cookie cho Refresh Token
+                if (!string.IsNullOrEmpty(loginResponse.RefreshToken))
+                {
+                    var refreshTokenOptions = new CookieOptions
+                    {
+                        HttpOnly = true, // Quan trọng: Chống tấn công XSS (Javascript không đọc được)
+                        Secure = false,  // Sửa thành true khi chạy HTTPS
+                        SameSite = SameSiteMode.Lax, // Chống CSRF ở mức độ cơ bản
+                        Expires = DateTime.UtcNow.AddDays(7) // Thường là 7 ngày hoặc theo cấu hình hệ thống
+                    };
+                    Response.Cookies.Append("refreshToken", loginResponse.RefreshToken, refreshTokenOptions);
+                }
             }
 
             return ApiOk(loginResponse, "Đăng nhập thành công.");

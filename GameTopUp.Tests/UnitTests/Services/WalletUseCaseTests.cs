@@ -39,7 +39,7 @@ namespace GameTopUp.Tests.UnitTests.Services
             var context = new UserContext(1, "user", "Customer");
             var wallet = new Wallet { Id = 1, UserId = 1, Balance = 100 };
             
-            _walletRepoMock.Setup(r => r.GetByUserIdForUpdateAsync(1)).ReturnsAsync(wallet);
+            _walletRepoMock.Setup(r => r.GetWithLockByUserIdAsync(1)).ReturnsAsync(wallet);
             _walletRepoMock.Setup(r => r.UpdateBalanceAsync(wallet.Id, 150)).ReturnsAsync(1);
             _walletTxRepoMock.Setup(r => r.CreateAsync(It.IsAny<WalletTransaction>())).ReturnsAsync(999);
 
@@ -47,7 +47,7 @@ namespace GameTopUp.Tests.UnitTests.Services
             await _walletUseCase.DepositAsync(context, 50);
 
             // Assert
-            _walletRepoMock.Verify(r => r.GetByUserIdForUpdateAsync(1), Times.Once);
+            _walletRepoMock.Verify(r => r.GetWithLockByUserIdAsync(1), Times.Once);
             _walletRepoMock.Verify(r => r.UpdateBalanceAsync(wallet.Id, 150), Times.Once);
         }
 
@@ -58,7 +58,7 @@ namespace GameTopUp.Tests.UnitTests.Services
             var context = new UserContext(1, "user", "Customer");
             var wallet = new Wallet { Id = 1, UserId = 1, Balance = 100 };
             
-            _walletRepoMock.Setup(r => r.GetByUserIdForUpdateAsync(1)).ReturnsAsync(wallet);
+            _walletRepoMock.Setup(r => r.GetWithLockByUserIdAsync(1)).ReturnsAsync(wallet);
             _walletRepoMock.Setup(r => r.UpdateBalanceAsync(wallet.Id, 60)).ReturnsAsync(1);
             _walletTxRepoMock.Setup(r => r.CreateAsync(It.IsAny<WalletTransaction>())).ReturnsAsync(999);
 
@@ -66,7 +66,7 @@ namespace GameTopUp.Tests.UnitTests.Services
             await _walletUseCase.WithdrawAsync(context, 40);
 
             // Assert
-            _walletRepoMock.Verify(r => r.GetByUserIdForUpdateAsync(1), Times.Once);
+            _walletRepoMock.Verify(r => r.GetWithLockByUserIdAsync(1), Times.Once);
             _walletRepoMock.Verify(r => r.UpdateBalanceAsync(wallet.Id, 60), Times.Once);
         }
     }

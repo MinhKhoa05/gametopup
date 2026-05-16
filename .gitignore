@@ -15,6 +15,9 @@ appsettings.Local.json
 appsettings.*.json
 !appsettings.json
 !.env.example
+# Code Coverage Reports
+/*/coveragereport/
+/*/TestResults/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -421,6 +424,3 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-
-# AI Assistant
-.ai-assistant/agents/readme-maintainer.md
