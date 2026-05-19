@@ -27,7 +27,7 @@ namespace GameTopUp.BLL.Utils
 
             string result = sb.ToString().Normalize(NormalizationForm.FormC);
 
-            result = result.Replace("d", "d");
+            result = result.Replace("đ", "d");
 
             result = Regex.Replace(result, @"\s+", " ").Trim();
 

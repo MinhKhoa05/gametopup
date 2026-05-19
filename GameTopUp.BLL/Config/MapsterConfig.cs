@@ -11,6 +11,8 @@ namespace GameTopUp.BLL.Config
     {
         public static void RegisterMappings()
         {
+            TypeAdapterConfig.GlobalSettings.Default.IgnoreNullValues(true);
+
             TypeAdapterConfig<Enum, string>.NewConfig()
                 .MapWith(src => src.ToString());
 

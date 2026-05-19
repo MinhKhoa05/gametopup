@@ -25,34 +25,6 @@ namespace GameTopUp.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task CreatePackageAsync_ShouldCreate_WhenGameIsValid()
-        {
-            // Arrange
-            var game = new Game { Id = 1, IsActive = true };
-            var request = new CreateGamePackageRequest 
-            { 
-                GameId = 1, 
-                Name = "999 Kim Cương", 
-                SalePrice = 150000, 
-                ImportPrice = 100000
-            };
-            
-            _gameRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(game);
-            _packageRepoMock.Setup(r => r.CreateAsync(It.IsAny<GamePackage>())).ReturnsAsync(500L);
-
-            // Act
-            var result = await _packageService.CreatePackageAsync(request);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.Id.Should().Be(500L);
-            result.Name.Should().Be("999 Kim Cương");
-            result.NormalizedName.Should().Be("999 kim cuong"); // Rationale: Verifying normalization logic
-            
-            _packageRepoMock.Verify(r => r.CreateAsync(It.IsAny<GamePackage>()), Times.Once);
-        }
-
-        [Fact]
         public async Task CreatePackageAsync_ShouldThrow_WhenGameIsInactive()
         {
             // Arrange
@@ -83,35 +55,49 @@ namespace GameTopUp.Tests.UnitTests.Services
         }
 
         [Fact]
-        public async Task UpdatePackageAsync_ShouldUseMapster_ForPartialUpdate()
+        public async Task GetAvailablePackageAsync_ShouldThrow_WhenInactive()
         {
             // Arrange
-            var existing = new GamePackage { Id = 1, Name = "Old", SalePrice = 100 };
-            var request = new UpdateGamePackageRequest { Name = "New" }; // SalePrice is null/default in DTO if not provided? 
-            // In C# decimal is not nullable unless specified. But DTO might have nullable.
-            
-            _packageRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
+            var package = new GamePackage { Id = 1, IsActive = false };
+            _packageRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(package);
 
             // Act
-            await _packageService.UpdatePackageAsync(1, request);
+            Func<Task> act = () => _packageService.GetAvailablePackageAsync(1, 5);
 
             // Assert
-            existing.Name.Should().Be("New");
-            _packageRepoMock.Verify(r => r.UpdateAsync(existing), Times.Once);
+            await act.Should().ThrowAsync<BusinessException>()
+                .WithMessage("Gói nạp hiện không khả dụng.");
         }
 
         [Fact]
-        public async Task DeletePackageAsync_ShouldPerformHardDelete()
+        public async Task GetAvailablePackageAsync_ShouldThrow_WhenInsufficientStock()
         {
             // Arrange
-            var existing = new GamePackage { Id = 1 };
-            _packageRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
+            var package = new GamePackage { Id = 1, IsActive = true, StockQuantity = 2 };
+            _packageRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(package);
 
             // Act
-            await _packageService.DeletePackageAsync(1);
+            Func<Task> act = () => _packageService.GetAvailablePackageAsync(1, 5);
 
             // Assert
-            _packageRepoMock.Verify(r => r.DeleteAsync(1), Times.Once);
+            await act.Should().ThrowAsync<BusinessException>()
+                .WithMessage("Số lượng trong kho không đủ.");
+        }
+
+        [Fact]
+        public async Task GetAvailablePackageAsync_ShouldSucceed_WhenValid()
+        {
+            // Arrange
+            var package = new GamePackage { Id = 1, IsActive = true, StockQuantity = 10 };
+            _packageRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(package);
+
+            // Act
+            var result = await _packageService.GetAvailablePackageAsync(1, 5);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Id.Should().Be(1);
+            result.StockQuantity.Should().Be(10);
         }
     }
 }

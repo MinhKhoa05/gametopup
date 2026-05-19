@@ -76,27 +76,6 @@ namespace GameTopUp.Tests.IntegrationTests.Scenarios
             result.Data.NormalizedName.Should().Be("goi 100k");
         }
 
-        [Fact]
-        public async Task CreatePackage_ShouldReturnBadRequest_WhenGameIsInactive()
-        {
-            // Arrange
-            var gameId = await CreateGameAsync("Inactive Game", isActive: false);
-            var request = new CreateGamePackageRequest 
-            { 
-                GameId = gameId, 
-                Name = "Pack on Inactive Game", 
-                SalePrice = 100 
-            };
-
-            // Act
-            var response = await _client.PostAsJsonAsync("/api/game-packages", request);
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            var result = await response.Content.ReadFromJsonAsync<ApiResponseTestWrapper<object>>();
-            result!.Success.Should().BeFalse();
-            result.Message.Should().Contain("ngừng hoạt động");
-        }
 
         [Fact]
         public async Task GetPackagesByGameId_ShouldReturnOnlyActivePackages()

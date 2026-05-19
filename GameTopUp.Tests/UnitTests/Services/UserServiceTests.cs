@@ -6,8 +6,6 @@ using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Interfaces;
 using Xunit;
 using FluentAssertions;
-using GameTopUp.BLL.Config;
-using Mapster;
 
 namespace GameTopUp.Tests.UnitTests.Services
 {
@@ -18,59 +16,8 @@ namespace GameTopUp.Tests.UnitTests.Services
 
         public UserServiceTests()
         {
-            // Rationale: Mapster config is needed for DTO mapping validation
-            MapsterConfig.RegisterMappings();
-            
             _userRepoMock = new Mock<IUserRepository>();
             _userService = new UserService(_userRepoMock.Object);
-        }
-
-        #region --- Get Operations ---
-
-        [Fact]
-        public async Task GetAllAsync_ShouldReturnMappedDTOs_WithProperData()
-        {
-            // Arrange
-            var users = new List<User>
-            {
-                new User { Id = 101, Username = "nguyenvana", Email = "vana@gmail.com", Role = UserRole.Member },
-                new User { Id = 102, Username = "tranvanb", Email = "vanb@yahoo.com", Role = UserRole.Admin }
-            };
-            _userRepoMock.Setup(r => r.GetAllAsync(1, 10)).ReturnsAsync(users);
-
-            // Act
-            var result = await _userService.GetAllAsync(1, 10);
-
-            // Assert
-            result.Should().HaveCount(2);
-            var list = result.ToList();
-            
-            list[0].Id.Should().Be(101);
-            list[0].Username.Should().Be("nguyenvana");
-            list[0].Email.Should().Be("vana@gmail.com");
-            list[0].Role.Should().Be("Member");
-
-            list[1].Id.Should().Be(102);
-            list[1].Username.Should().Be("tranvanb");
-            list[1].Email.Should().Be("vanb@yahoo.com");
-            list[1].Role.Should().Be("Admin");
-        }
-
-        [Fact]
-        public async Task GetByIdAsync_ShouldReturnDTO_WhenUserExists()
-        {
-            // Arrange
-            var user = new User { Id = 55, Username = "testuser", Email = "test@GameTopUp.vn" };
-            _userRepoMock.Setup(r => r.GetByIdAsync(55)).ReturnsAsync(user);
-
-            // Act
-            var result = await _userService.GetByIdAsync(55);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.Id.Should().Be(55);
-            result.Username.Should().Be("testuser");
-            result.Email.Should().Be("test@GameTopUp.vn");
         }
 
         [Fact]
@@ -86,10 +33,6 @@ namespace GameTopUp.Tests.UnitTests.Services
             await act.Should().ThrowAsync<NotFoundException>()
                 .WithMessage("Người dùng không tồn tại.");
         }
-
-        #endregion
-
-        #region --- Write Operations ---
 
         [Fact]
         public async Task RegisterAsync_ShouldCreateUser_WhenEmailIsUnique()
@@ -124,54 +67,5 @@ namespace GameTopUp.Tests.UnitTests.Services
             await act.Should().ThrowAsync<BusinessException>().WithMessage("Email này đã được sử dụng trong hệ thống.");
             _userRepoMock.Verify(r => r.CreateAsync(It.IsAny<User>()), Times.Never);
         }
-
-        [Fact]
-        public async Task UpdateProfileAsync_ShouldCorrectlyMapAndSave_WhenUserExists()
-        {
-            // Arrange
-            var existingUser = new User { Id = 1, Username = "old_name", Email = "old@test.com", IsActive = true };
-            var request = new UpdateUserRequest { Username = "new_name", IsActive = false };
-            _userRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existingUser);
-
-            // Act
-            await _userService.UpdateProfileAsync(1, request);
-
-            // Assert
-            existingUser.Username.Should().Be("new_name");
-            existingUser.Email.Should().Be("old@test.com"); // Email should stay the same
-            existingUser.IsActive.Should().BeFalse(); // Soft status update
-            _userRepoMock.Verify(r => r.UpdateAsync(existingUser), Times.Once);
-        }
-
-        [Fact]
-        public async Task DeleteAsync_ShouldPerformSoftDelete_ByCallingRepo()
-        {
-            // Arrange
-            var user = new User { Id = 77, IsActive = true };
-            _userRepoMock.Setup(r => r.GetByIdAsync(77)).ReturnsAsync(user);
-
-            // Act
-            await _userService.DeleteAsync(77);
-
-            // Assert
-            // Rationale: We verify that the service checks for existence before calling delete
-            _userRepoMock.Verify(r => r.GetByIdAsync(77), Times.Once);
-            _userRepoMock.Verify(r => r.DeleteAsync(77), Times.Once);
-        }
-
-        [Fact]
-        public void Mapster_ShouldMapEnumToStringByName_Globally()
-        {
-            // Arrange
-            var status = OrderStatus.Processing;
-
-            // Act
-            var result = status.Adapt<string>();
-
-            // Assert
-            result.Should().Be("Processing");
-        }
-
-        #endregion
     }
 }

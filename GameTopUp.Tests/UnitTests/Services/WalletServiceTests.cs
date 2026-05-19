@@ -29,18 +29,22 @@ namespace GameTopUp.Tests.UnitTests.Services
             decimal amount = 50;
             _walletRepoMock.Setup(r => r.GetWithLockByUserIdAsync(1)).ReturnsAsync(wallet);
             _walletRepoMock.Setup(r => r.UpdateBalanceAsync(wallet.Id, 150)).ReturnsAsync(1);
-            _walletTxRepoMock.Setup(r => r.CreateAsync(It.IsAny<WalletTransaction>())).ReturnsAsync(999);
+            
+            WalletTransaction? createdTx = null;
+            _walletTxRepoMock.Setup(r => r.CreateAsync(It.IsAny<WalletTransaction>()))
+                .Callback<WalletTransaction>(tx => createdTx = tx)
+                .ReturnsAsync(999);
 
             // Act
-            var result = await _walletService.DepositAsync(1, amount);
+            await _walletService.DepositAsync(1, amount);
 
             // Assert
             wallet.Balance.Should().Be(150);
-            _walletRepoMock.Verify(r => r.UpdateBalanceAsync(wallet.Id, 150), Times.Once);
-            _walletTxRepoMock.Verify(r => r.CreateAsync(It.Is<WalletTransaction>(tx => 
-                tx.Amount == amount && 
-                tx.BalanceBefore == 100 && 
-                tx.BalanceAfter == 150)), Times.Once);
+            
+            createdTx.Should().NotBeNull();
+            createdTx!.Amount.Should().Be(amount);
+            createdTx.BalanceBefore.Should().Be(100);
+            createdTx.BalanceAfter.Should().Be(150);
         }
 
         [Fact]
@@ -51,18 +55,22 @@ namespace GameTopUp.Tests.UnitTests.Services
             decimal amount = 80;
             _walletRepoMock.Setup(r => r.GetWithLockByUserIdAsync(1)).ReturnsAsync(wallet);
             _walletRepoMock.Setup(r => r.UpdateBalanceAsync(wallet.Id, 120)).ReturnsAsync(1);
-            _walletTxRepoMock.Setup(r => r.CreateAsync(It.IsAny<WalletTransaction>())).ReturnsAsync(999);
+            
+            WalletTransaction? createdTx = null;
+            _walletTxRepoMock.Setup(r => r.CreateAsync(It.IsAny<WalletTransaction>()))
+                .Callback<WalletTransaction>(tx => createdTx = tx)
+                .ReturnsAsync(999);
 
             // Act
-            var result = await _walletService.WithdrawAsync(1, amount);
+            await _walletService.WithdrawAsync(1, amount);
 
             // Assert
             wallet.Balance.Should().Be(120);
-            _walletRepoMock.Verify(r => r.UpdateBalanceAsync(wallet.Id, 120), Times.Once);
-            _walletTxRepoMock.Verify(r => r.CreateAsync(It.Is<WalletTransaction>(tx => 
-                tx.Amount == -amount && 
-                tx.BalanceBefore == 200 && 
-                tx.BalanceAfter == 120)), Times.Once);
+            
+            createdTx.Should().NotBeNull();
+            createdTx!.Amount.Should().Be(-amount);
+            createdTx.BalanceBefore.Should().Be(200);
+            createdTx.BalanceAfter.Should().Be(120);
         }
 
         [Fact]

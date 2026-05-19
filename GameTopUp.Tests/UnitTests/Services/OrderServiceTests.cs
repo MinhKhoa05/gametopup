@@ -165,5 +165,51 @@ namespace GameTopUp.Tests.UnitTests.Services
             await act.Should().ThrowAsync<BusinessException>()
                 .WithMessage("Đơn hàng đã hoàn thành không thể hủy.");
         }
+
+        [Fact]
+        public async Task CreateOrderAsync_ShouldThrowBusinessException_WhenUserAlreadyHasPendingOrder()
+        {
+            // Arrange
+            var userContext = new UserContext(1, "testuser", "User");
+            var package = new GamePackage { Id = 10, SalePrice = 50000 };
+            _orderRepoMock.Setup(r => r.HasPendingOrderAsync(1)).ReturnsAsync(true);
+
+            // Act
+            Func<Task> act = () => _orderService.CreateOrderAsync(userContext, package, 1, "account_info");
+
+            // Assert
+            await act.Should().ThrowAsync<BusinessException>()
+                .WithMessage("Bạn đang có một đơn hàng chờ thanh toán*");
+            _orderRepoMock.Verify(r => r.CreateAsync(It.IsAny<Order>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task CreateOrderAsync_ShouldSucceed_WhenUserHasNoPendingOrder()
+        {
+            // Arrange
+            var userContext = new UserContext(1, "testuser", "User");
+            var package = new GamePackage { Id = 10, SalePrice = 50000 };
+            _orderRepoMock.Setup(r => r.HasPendingOrderAsync(1)).ReturnsAsync(false);
+            _orderRepoMock.Setup(r => r.CreateAsync(It.IsAny<Order>())).ReturnsAsync(999L);
+            _orderHistoryRepoMock.Setup(r => r.CreateAsync(It.IsAny<OrderHistory>())).ReturnsAsync(1);
+
+            // Act
+            var orderId = await _orderService.CreateOrderAsync(userContext, package, 2, "account_info");
+
+            // Assert
+            orderId.Should().Be(999L);
+            _orderRepoMock.Verify(r => r.CreateAsync(It.Is<Order>(o =>
+                o.UserId == 1 &&
+                o.GamePackageId == 10 &&
+                o.UnitPrice == 50000 &&
+                o.Quantity == 2 &&
+                o.GameAccountInfo == "account_info" &&
+                o.Status == OrderStatus.Pending)), Times.Once);
+            _orderHistoryRepoMock.Verify(r => r.CreateAsync(It.Is<OrderHistory>(h =>
+                h.OrderId == 999L &&
+                h.FromStatus == OrderStatus.Pending &&
+                h.ToStatus == OrderStatus.Pending &&
+                h.ActionBy == 1)), Times.Once);
+        }
     }
 }
