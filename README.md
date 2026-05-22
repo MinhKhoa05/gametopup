@@ -1,169 +1,146 @@
-<div align="center">
-  <h1>GameTopUp Backend</h1>
-  <p><strong>Structured backend system for game top-up intermediary operations</strong></p>
-</div>
+# GameTopUp Backend
 
 ![.NET 8](https://img.shields.io/badge/.NET-8.0-512bd4?style=flat-square&logo=dotnet)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 ![Dapper](https://img.shields.io/badge/ORM-Dapper-6d429c?style=flat-square)
-
+![](https://img.shields.io/badge/TestContainers-1.0-00A8E8?style=flat-square&logo=docker)
 ---
 
 ## 🚀 Project Overview
 
-**GameTopUp** is a specialized backend platform designed to transform manual, chat-based game top-up workflows into a structured, automated intermediary system. It handles high-concurrency order orchestration, secure wallet management, and precise commission/discount tracking.
+GameTopUp is a backend system that centralises manual game top-up workflows into a structured order and payment platform.
 
-📖 **[Read the System Motivation & Goals](./MOTIVATION.md)** | 🔌 **[API Integration Guide](./API_GUIDE.md)**
+The project focuses on transactional order processing, wallet balance management, inventory reservation, and explicit order state transitions. It explores practical backend engineering concerns such as transaction consistency, concurrency control, and layered architecture.
 
-Key features:
-- **Order Orchestration**: Decoupled "Place Order" (Stock Reservation) and "Payment" flows. State-based order processing ensures safe retry handling and prevents duplicate execution in concurrent scenarios.
-- **Transaction Tracking**: Comprehensive audit trail for wallet transactions using `BalanceBefore` and `BalanceAfter`.
-- **Internal Wallet**: Secure internal wallet using pessimistic locking to ensure consistency under concurrent operations.
-- **Data Integrity**: Database-level constraints and locking mechanisms to enforce business rules such as "One Pending Order per User".
-- **Standardized Responses**: All API endpoints use an `ApiResponse` wrapper for consistent data structure.
+The project focuses mainly on backend workflow orchestration, transaction consistency, and concurrency handling rather than frontend or deployment infrastructure.
 
-## 🛠 Tech Stack
+---
 
-- **Backend Framework**: ASP.NET Core 8 (C#)
-- **Architecture**: RESTful API, Layered Architecture
-- **Database**: MySQL (Production), SQLite (Integration Testing)
-- **Data Access**: Dapper, Dommel
+## 🛠️ Tech Stack
+
+- **Framework**: ASP.NET Core 8 (C#)
+- **Database**: MySQL 8.0 / MariaDB
+- **Data Access**: Dapper + Dommel
 - **Object Mapping**: Mapster
-- **Security**: JWT Authentication, BCrypt
-- **Testing**: xUnit, Moq, FluentAssertions
-- **Infrastructure**: Docker, Docker Compose
+- **Containerisation**: Docker & Docker‑Compose
+- **Testing**: xUnit, Moq, FluentAssertions, Microsoft.AspNetCore.Mvc.Testing, TestContainers
 
-## 🤖 AI Workflow
+---
 
-The project follows a role-based AI-assisted workflow to improve development consistency and code quality:
+## 📦 Architecture
 
-- **Role separation**: Defined roles for analysis, design, implementation, testing, and review
-- **Plan-driven development**: Execution starts only after an approved `PLAN.md`
-- **Shared knowledge base**: `rules.md` and `learning.md` maintain architectural consistency and accumulated development insights
+- **Presentation** (`GameTopUp.API`) – Controllers, global middleware, JWT authentication.
+- **Application Services** – Orchestrates cross‑service use‑cases (`PlaceOrder`, `PayOrder`, `CancelOrder`). Defines transaction boundaries and may call multiple Business Services.
+- **Business Services** – Encapsulates business rules for a single capability (wallet, order, inventory, commission). Each service mainly talks to its own repository.
+- **Data Access** (`GameTopUp.DAL`) – Dapper repositories behind interfaces, sharing `DatabaseContext` for database access and transaction management.
 
-## 🏗 Architecture Overview
+```mermaid
+graph TD
+    Client --> API
+    API --> ApplicationServices
+    ApplicationServices --> BusinessServices
+    BusinessServices --> Repositories
+    Repositories --> MySQL
+```
 
-The application follows a layered architecture:
+---
 
-* **Presentation Layer (`GameTopUp.API`)**: Handles HTTP endpoints, authentication/authorization, and global middleware (exception handling, response wrapping).
-* **Application Services Layer (`GameTopUp.BLL/ApplicationServices`)**: Orchestrates business workflows and ensures transactional consistency across services.
-* **Business Service Layer (`GameTopUp.BLL/Services`)**: Encapsulates business rules, validations, and entity workflows while interacting with repositories for data operations.
-* **Data Access Layer (`GameTopUp.DAL`)**: Handles database operations and data persistence using repositories (MySQL via Dapper), and supports transaction management through `DatabaseContext`.
+## ⚙️ Core Engineering Decisions / Patterns
 
-### Exception to HTTP Mapping
-| Exception Type | HTTP Status | Use Case |
-| :--- | :--- | :--- |
-| `NotFoundException` | 404 | When a resource like a User or Game is not found |
-| `BusinessException` | 400 | For business rule violations like insufficient balance |
-| `UnauthorizedException`| 401 | When authentication fails or tokens expire |
-| `ForbiddenException` | 403 | When a user lacks permission for a resource |
+- **Unit of Work (`DatabaseContext`)** – Single DB connection & transaction shared across repositories, guaranteeing atomic multi‑step operations (wallet & order services).
+- **Pessimistic Locking (`SELECT … FOR UPDATE`)** – Locks wallet & order rows during critical updates (`WalletRepository.GetWithLockByUserIdAsync`, `OrderRepository.GetWithLockByIdAsync`) to prevent race‑condition balance errors.
+- **Conditional Stock Updates** – Uses atomic `UPDATE ... WHERE stock_quantity >= @Quantity` statements to prevent read-modify-write race conditions during stock reservation.
+- **State‑Based Order Processing** – Explicit state machine (`Pending → Paid → Processing → Completed / Cancelled`) provides idempotent transitions and clear audit trails.
+- **Standardised API Responses** – Uniform `ApiResponse<T>` wrapper simplifies client error handling and documentation.
+- **Global Exception Handling** – Uses centralized middleware to map domain/business exceptions to proper HTTP responses, avoiding repeated `try-catch` logic in controllers.
+- **Integration Tests with TestContainers** – Uses temporary MySQL containers to provide isolated, production-like integration testing.
 
-## ⚙️ Key Engineering Decisions
+---
 
-### Transaction Management
-- **Context**: Multi-step database operations (e.g., checkout) require atomicity to prevent partial data updates.
-- **Implementation**: `DatabaseContext` provides an `ExecuteInTransactionAsync()` wrapper that shares a single connection and transaction across multiple repository calls.
+## ✨ Features
 
-### Concurrency Control (Pessimistic Locking)
-- **Problem**: Financial operations (Wallet) and Inventory (Stock) are vulnerable to race conditions.
-- **Implementation**: Uses database-level **Pessimistic Locking** (`SELECT ... FOR UPDATE`).
-  - Wallet: Locked during credit/debit to ensure balance integrity.
-  - Orders: Locked during payment/cancellation to prevent state conflicts.
-- **Result**: Guarantees absolute data consistency even under high concurrent load.
+- Wallet management with balance snapshots.
+- Order placement with stock reservation.
+- Separate payment step updating wallet and order state.
+- Automatic inventory restoration on cancellation.
+- Commission and discount tracking.
+- Admin-managed deposit approval and order processing workflows.
+- Consistent JSON response format.
+- JWT‑based authentication and role‑based authorization.
 
-### Decoupled Order Workflow
-- **Flow**: `Place Order` (Stock Reservation) → `Payment` (Wallet Debit & Mark Paid).
-- **Rationale**: Immediate inventory reservation prevents overselling, while separate payment allows for flexible checkout experiences.
-- **Integrity**: Automatic inventory restoration and wallet refunds on order cancellation, handled via atomic UseCase transactions.
-- **Resilience**: State-based order processing ensures safe retry handling and prevents duplicate execution in concurrent scenarios.
+---
 
-### Audit Trail
-- **Wallet**: Every transaction records `BalanceBefore` and `BalanceAfter`.
-- **Traceability**: All financial movements are linked to specific `OrderId` or transaction reasons for transparent accounting.
+## 🧪 Testing
 
-## 🧪 Testing Strategy
+- **Unit Tests** – BLL services mocked with Moq.
+- **Integration Tests** – Uses TestContainers with temporary MySQL/MariaDB instances for isolated end‑to‑end testing.
+- **Assertions** – FluentAssertions for clear expectations.
 
-The project uses a dual testing approach to ensure reliability:
-- **Unit Tests**: Focus on the BLL layer by mocking repositories with Moq.
-- **Integration Tests**: Verify full API flows using `Microsoft.AspNetCore.Mvc.Testing`. 
-  - Uses an **In-Memory SQLite** database for fast and isolated test execution.
-  - Implements customized `AuthenticationHandler` to simulate multi-user scenarios and role-based access.
-  - Uses `ApiResponseTestWrapper<T>` for strongly-typed verification of standardized responses.
+### Run Tests
 
-## 🏁 How to Run
+> Docker Desktop must be running before executing integration tests.
 
-### 1. Setup
+```bash
+dotnet test
+```
+
+---
+
+## ▶️ Running the Project
+
+### Prerequisites
+
+- Docker Desktop
+- .NET 8 SDK (for local development)
+
+### 1. Setup Environment
+
 ```bash
 cp .env.example .env
 ```
-*Configure `.env` with your environment-specific settings.*
+Update database credentials and JWT settings in `.env`.
 
-> [!IMPORTANT]
-> Ensure **Docker Desktop** is running before starting any services.
+---
 
-### 2. Start Services
+### 2. Start Database
 
-#### Option A — Hybrid Mode (Docker DB + Local API)
-*Recommended for active development.*
-
-1. Start Database:
 ```bash
 docker compose up -d db
 ```
-2. Run API:
+
+---
+
+### 3. Run the API
+
 ```bash
 dotnet run --project GameTopUp.API
 ```
-*API connects to MariaDB exposed via `localhost:3307`.*
+Swagger:
+```
+http://localhost:5000/swagger
+```
 
-#### Option B — Full Docker Stack
-*Recommended for integration testing.*
+---
+
+### Optional: Run Full Docker Stack
 
 ```bash
 docker compose up -d
 ```
-*API connects to `db:3306` automatically.*
 
 ---
 
-> [!TIP]
-> - **Reset DB**: `docker compose down -v` (wipes volumes).
-> - **Port 3307**: Exposed for host access (HeidiSQL/DBeaver/Local API).
-> - **Port 3306**: Internal Docker network port.
+## 📚 Learning Outcomes
 
-| Service | Access | Notes |
-|---|---|---|
-| API | http://localhost:5000/swagger | Swagger UI |
-| MariaDB | localhost:3307 | DB: `game_topup_db` |
+- Managing transactional workflows across multiple services.
+- Applying pessimistic locking for concurrency control.
+- Designing layered backend architectures in ASP.NET Core.
+- Writing isolated integration tests using TestContainers.
 
 ---
 
-### 🔌 Next Steps: API Integration
-Once the services are running, refer to the **[API Integration Guide](./API_GUIDE.md)** for detailed endpoint documentation, authentication flows, and testing accounts.
+## 📖 Additional Documentation
 
-### 3. Run Tests
-```bash
-dotnet test
-```
-*Uses isolated SQLite for integration tests.*
-
-## 📁 Project Structure
-
-```text
-GameTopUp.sln
-├── .ai-assistant/             # AI Workflow and project rules
-│   ├── agents/                # Agent role prompts
-│   ├── context/               # Architecture, rules, and memory
-│   └── plans/                 # Approved development plans
-├── GameTopUp.API/             # Controllers, Middlewares, and API setup
-├── GameTopUp.BLL/             # Logic Layer
-│   ├── ApplicationServices/   # UseCases (Transaction Orchestration)
-│   ├── Services/              # Domain Services (Business Rules)
-│   └── DTOs/                  # Data Transfer Objects
-├── GameTopUp.DAL/             # Data Access Layer
-│   ├── Repositories/          # Dapper-based data operations
-│   └── Entities/              # Database models
-├── GameTopUp.Tests/           # Unit and Integration test projects
-└── Database/                  # SQL scripts and seed data
-```
+- [`PROJECT_BACKGROUND.md`](./PROJECT_BACKGROUND.md) — Operational problems, project goals, and engineering motivation.
+- [`API_GUIDE.md`](./API_GUIDE.md) — API endpoints, authentication, and response formats.
