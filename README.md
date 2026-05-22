@@ -9,11 +9,11 @@
 
 ## 🚀 Project Overview
 
-GameTopUp is a backend system that centralises manual game top-up workflows into a structured order and payment platform.
+GameTopUp is a backend system designed to centralise manual chat-based workflows commonly used by small intermediary game top-up operators offering discount-based services.
 
 The project focuses on transactional order processing, wallet balance management, inventory reservation, and explicit order state transitions. It explores practical backend engineering concerns such as transaction consistency, concurrency control, and layered architecture.
 
-The project focuses mainly on backend workflow orchestration, transaction consistency, and concurrency handling rather than frontend or deployment infrastructure.
+The implementation focuses mainly on backend workflow orchestration, transaction consistency, and concurrency handling rather than frontend or deployment infrastructure.
 
 ---
 

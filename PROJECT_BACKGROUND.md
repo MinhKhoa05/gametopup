@@ -2,15 +2,17 @@
 
 ## 🚀 Background
 
-Many small game top-up shops still operate through manual chat-based workflows. While flexible, this approach introduces several operational and backend-related problems:
+Many small discount-based intermediary game top-up services still operate through manual chat-based workflows. In this model, admins manually receive orders, process payments, and handle game account top-ups through messaging platforms.
+
+While simple to operate, this approach introduces several operational and backend-related problems:
 
 * Orders can be missed during high chat volume.
 * Users cannot clearly track order progress.
 * Payment and wallet records become fragmented across conversations.
-* Manual processing delays order fulfillment.
+* Manual processing slows down fulfillment.
 * Financial reconciliation and auditing become difficult.
 
-These issues become more critical in intermediary top-up models where admins process large numbers of transactions and profit depends on accurate pricing and commission tracking.
+These issues become more critical when admins process large numbers of concurrent transactions and profit depends on accurate pricing, discounts, and commission tracking.
 
 ---
 
