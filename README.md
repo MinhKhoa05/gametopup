@@ -9,11 +9,11 @@
 
 ## 🚀 Project Overview
 
-GameTopUp is a backend system designed to centralise manual chat-based workflows commonly used by small intermediary game top-up operators offering discount-based services.
+GameTopUp is a backend system built to replace the manual chat-based workflows commonly used by small intermediary game top-up services offering discount-based transactions.
 
-The project focuses on transactional order processing, wallet balance management, inventory reservation, and explicit order state transitions. It explores practical backend engineering concerns such as transaction consistency, concurrency control, and layered architecture.
+The project handles order processing, wallet balance management, inventory reservation, and order state transitions with a stronger focus on reliability and transactional consistency.
 
-The implementation focuses mainly on backend workflow orchestration, transaction consistency, and concurrency handling rather than frontend or deployment infrastructure.
+It was mainly developed to solve critical backend challenges such as transaction consistency, concurrency handling, and layered application design. The focus is on backend workflow orchestration and reliability rather than frontend development or deployment infrastructure.
 
 ---
 
@@ -48,13 +48,19 @@ graph TD
 
 ## ⚙️ Core Engineering Decisions / Patterns
 
-- **Unit of Work (`DatabaseContext`)** – Single DB connection & transaction shared across repositories, guaranteeing atomic multi‑step operations (wallet & order services).
-- **Pessimistic Locking (`SELECT … FOR UPDATE`)** – Locks wallet & order rows during critical updates (`WalletRepository.GetWithLockByUserIdAsync`, `OrderRepository.GetWithLockByIdAsync`) to prevent race‑condition balance errors.
-- **Conditional Stock Updates** – Uses atomic `UPDATE ... WHERE stock_quantity >= @Quantity` statements to prevent read-modify-write race conditions during stock reservation.
-- **State‑Based Order Processing** – Explicit state machine (`Pending → Paid → Processing → Completed / Cancelled`) provides idempotent transitions and clear audit trails.
-- **Standardised API Responses** – Uniform `ApiResponse<T>` wrapper simplifies client error handling and documentation.
-- **Global Exception Handling** – Uses centralized middleware to map domain/business exceptions to proper HTTP responses, avoiding repeated `try-catch` logic in controllers.
-- **Integration Tests with TestContainers** – Uses temporary MySQL containers to provide isolated, production-like integration testing.
+- **Unit of Work (`DatabaseContext`)**: Shares a single DB connection and transaction across repositories through a scoped context instead of manually passing `IDbTransaction` through multiple layers. This keeps multi-step operations atomic while reducing transaction-handling boilerplate.
+
+- **Pessimistic Locking (`SELECT ... FOR UPDATE`)**: Locks wallet and order rows during critical balance updates. This prevents race conditions (e.g., multiple payment requests on the same order) by forcing concurrent operations to execute sequentially.
+
+- **Conditional Stock Updates**: Uses atomic `UPDATE ... WHERE stock_quantity >= @Quantity` queries for stock reservation. This eliminates the read-modify-write trap, allowing concurrent inventory updates without requiring a heavy `SERIALIZABLE` isolation level.
+
+- **State-Based Order Processing**: Orders follow explicit transitions (`Pending → Paid → Processing → Completed / Cancelled`). This prevents invalid state changes and improves retry safety during payment processing.
+
+- **Standardised API Responses**: All endpoints return a shared `ApiResponse<T>` structure. This keeps response handling predictable for frontend and API consumers.
+
+- **Global Exception Handling**: Uses centralized middleware to map business exceptions into proper HTTP responses. This reduces duplicated `try-catch` logic inside controllers.
+
+- **Integration Tests with TestContainers**: Runs integration tests against temporary MySQL Docker containers instead of in-memory databases. This ensures tests capture real database-specific behaviors such as locking and constraints in an isolated environment.
 
 ---
 
