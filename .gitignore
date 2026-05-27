@@ -19,8 +19,7 @@ appsettings.*.json
 /coveragereport/
 /coverage/
 /TestResults/
-# ai-assistant
-*.ai-assistant
+AGENTS.md
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

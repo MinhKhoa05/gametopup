@@ -13,10 +13,14 @@ namespace GameTopUp.API.Controllers
     public class AuthController : ApiControllerBase
     {
         private readonly AuthService _auth;
-        
-        public AuthController(AuthService auth)
+        private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _environment;
+
+        public AuthController(AuthService auth, IConfiguration configuration, IWebHostEnvironment environment)
         {
             _auth = auth;
+            _configuration = configuration;
+            _environment = environment;
         }
 
         [HttpPost("register")]
@@ -31,7 +35,7 @@ namespace GameTopUp.API.Controllers
         {
             var loginResponse = await _auth.LoginAsync(loginRequest);
 
-            Response.SetRefreshToken(loginResponse.RefreshToken);
+            SetAuthCookies(loginResponse);
 
             return ApiOk(loginResponse, "Đăng nhập thành công.");
         }
@@ -41,7 +45,7 @@ namespace GameTopUp.API.Controllers
         public async Task<IActionResult> ChangePassword(PasswordChangeRequest passwordChangeRequest)
         {
             await _auth.ChangePasswordAsync(CurrentUser, passwordChangeRequest);
-            return ApiOk(null, "Đổi mật khẩu thành công");
+            return ApiOk(null, "Đổi mật khẩu thành công.");
         }
 
         [HttpPost("refresh")]
@@ -55,7 +59,7 @@ namespace GameTopUp.API.Controllers
 
             var result = await _auth.RefreshAsync(refreshToken);
 
-            Response.SetRefreshToken(result.RefreshToken);
+            SetAuthCookies(result);
 
             return ApiOk(result, "Làm mới token thành công.");
         }
@@ -70,9 +74,33 @@ namespace GameTopUp.API.Controllers
                 await _auth.LogoutAsync(refreshToken);
             }
 
-            Response.DeleteRefreshToken();
+            DeleteAuthCookies();
 
             return ApiOk(null, "Đăng xuất thành công.");
+        }
+
+        private void SetAuthCookies(AuthResponseDTO authResponse)
+        {
+            var secure = ShouldUseSecureCookies();
+            Response.SetAccessToken(authResponse.AccessToken, GetAccessTokenExpireMinutes(), secure);
+            Response.SetRefreshToken(authResponse.RefreshToken, secure);
+        }
+
+        private void DeleteAuthCookies()
+        {
+            var secure = ShouldUseSecureCookies();
+            Response.DeleteAccessToken(secure);
+            Response.DeleteRefreshToken(secure);
+        }
+
+        private int GetAccessTokenExpireMinutes()
+        {
+            return int.TryParse(_configuration["Jwt:ExpireMinutes"], out var minutes) ? minutes : 30;
+        }
+
+        private bool ShouldUseSecureCookies()
+        {
+            return Request.IsHttps || !_environment.IsDevelopment();
         }
     }
 }

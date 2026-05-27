@@ -127,6 +127,15 @@ namespace GameTopUp.BLL.Services
             return await CreditAsync(userId, amount, WalletTransactionType.Deposit, $"Nạp tiền vào ví: {amount:N0} VNĐ");
         }
 
+        public async Task<TransactionResponseDTO> DepositFromVietQrAsync(long userId, decimal amount, string depositCode)
+        {
+            return await CreditAsync(
+                userId,
+                amount,
+                WalletTransactionType.Deposit,
+                $"Duyệt nạp tiền VietQR #{depositCode}: {amount:N0} VND");
+        }
+
         public async Task<TransactionResponseDTO> WithdrawAsync(long userId, decimal amount)
         {
             return await DebitAsync(userId, amount, WalletTransactionType.Withdraw, $"Rút tiền từ ví: {amount:N0} VNĐ");

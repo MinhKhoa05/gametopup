@@ -5,6 +5,7 @@ namespace GameTopUp.BLL.DTOs.Auths
 {
     public class AuthResponseDTO
     {
+        [JsonIgnore]
         public string AccessToken { get; set; } = string.Empty;
 
         [JsonIgnore]

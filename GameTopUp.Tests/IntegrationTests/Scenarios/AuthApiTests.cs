@@ -30,7 +30,7 @@ namespace GameTopUp.Tests.IntegrationTests.Scenarios
         }
 
         [Fact]
-        public async Task Login_ShouldSetCookieAndReturnAccessToken_WhenCredentialsAreValid()
+        public async Task Login_ShouldSetHttpOnlyCookiesAndHideTokens_WhenCredentialsAreValid()
         {
             // Arrange
             await RegisterAsync("testlogin", "testlogin@test.com", "Password123!");
@@ -40,12 +40,19 @@ namespace GameTopUp.Tests.IntegrationTests.Scenarios
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.GetCookie("accessToken").Should().NotBeEmpty();
             response.GetCookie("refreshToken").Should().NotBeEmpty();
+
+            response.Headers.GetValues("Set-Cookie")
+                .Should().Contain(cookie => cookie.Contains("accessToken=")
+                    && cookie.Contains("httponly", StringComparison.OrdinalIgnoreCase)
+                    && cookie.Contains("samesite=lax", StringComparison.OrdinalIgnoreCase));
 
             var result = await response.Content.ReadFromJsonAsync<ApiResponseTestWrapper<AuthResponseDTO>>();
             result!.Success.Should().BeTrue();
-            result.Data!.AccessToken.Should().NotBeNullOrEmpty();
-            result.Data.RefreshToken.Should().BeNullOrEmpty(); // Kept in cookie only
+            result.Data!.AccessToken.Should().BeNullOrEmpty();
+            result.Data.RefreshToken.Should().BeNullOrEmpty();
+            result.Data.User.Should().NotBeNull();
         }
 
         [Fact]
@@ -81,10 +88,11 @@ namespace GameTopUp.Tests.IntegrationTests.Scenarios
 
             var newRefreshToken = response.GetCookie("refreshToken");
             newRefreshToken.Should().NotBeNullOrEmpty().And.NotBe(refreshToken);
+            response.GetCookie("accessToken").Should().NotBeNullOrEmpty();
 
             var result = await response.Content.ReadFromJsonAsync<ApiResponseTestWrapper<AuthResponseDTO>>();
             result!.Success.Should().BeTrue();
-            result.Data!.AccessToken.Should().NotBeNullOrEmpty();
+            result.Data!.AccessToken.Should().BeNullOrEmpty();
         }
 
         [Fact]
@@ -116,9 +124,9 @@ namespace GameTopUp.Tests.IntegrationTests.Scenarios
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var cookieHeader = response.Headers.GetValues("Set-Cookie").FirstOrDefault();
-            cookieHeader.Should().NotBeNull().And.Contain("refreshToken=");
-            (cookieHeader!.Contains("refreshToken=;") || cookieHeader.Contains("expires=")).Should().BeTrue();
+            var cookieHeaders = response.Headers.GetValues("Set-Cookie").ToList();
+            cookieHeaders.Should().Contain(cookie => cookie.Contains("accessToken=") && cookie.Contains("expires=", StringComparison.OrdinalIgnoreCase));
+            cookieHeaders.Should().Contain(cookie => cookie.Contains("refreshToken=") && cookie.Contains("expires=", StringComparison.OrdinalIgnoreCase));
         }
 
         #region PRIVATE AUTH HELPERS

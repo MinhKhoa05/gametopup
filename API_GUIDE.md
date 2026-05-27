@@ -38,6 +38,8 @@ In Swagger UI, only the raw access token is required because the `Bearer` prefix
 
 Frontend or external clients must still send the full `Authorization` header manually.
 
+For browser clients, login and refresh set `accessToken` and `refreshToken` as `HttpOnly` cookies. The frontend should send requests with credentials enabled and should not store tokens in localStorage/sessionStorage.
+
 Example token:
 
 ```text
@@ -67,6 +69,15 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | 3     | PaidOrder |
 | 4     | Refund    |
 
+### Wallet Deposit Request Status
+
+| Value | Status        |
+| ----- | ------------- |
+| 1     | Pending       |
+| 2     | UserConfirmed |
+| 3     | Approved      |
+| 4     | Rejected      |
+
 ---
 
 ## 📡 Critical Endpoints
@@ -83,11 +94,16 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### Wallet
 
-| Method | Endpoint                           | Description                    |
-| ------ | ---------------------------------- | ------------------------------ |
-| GET    | `/api/wallet`                      | Get wallet information         |
-| POST   | `/api/wallet/transactions/deposit` | Create a deposit request       |
-| GET    | `/api/wallet/transactions`         | Get wallet transaction history |
+| Method | Endpoint                                             | Description                               |
+| ------ | ---------------------------------------------------- | ----------------------------------------- |
+| GET    | `/api/wallet`                                        | Get wallet information                    |
+| GET    | `/api/wallet/transactions`                           | Get wallet transaction history            |
+| POST   | `/api/wallet/deposit-requests`                       | Create a VietQR deposit request           |
+| GET    | `/api/wallet/deposit-requests/me`                    | Get current user's deposit requests       |
+| POST   | `/api/wallet/deposit-requests/{id}/confirm-transfer` | User confirms transfer was sent           |
+| GET    | `/api/wallet/deposit-requests`                       | Admin: get deposit requests               |
+| POST   | `/api/wallet/deposit-requests/{id}/approve`          | Admin: approve and credit user's wallet   |
+| POST   | `/api/wallet/deposit-requests/{id}/reject`           | Admin: reject a pending/confirmed request |
 
 ---
 

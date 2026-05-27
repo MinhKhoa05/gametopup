@@ -36,6 +36,10 @@ builder.Configuration["Jwt:Issuer"] = Environment.GetEnvironmentVariable("JWT_IS
 builder.Configuration["Jwt:Audience"] = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "GameTopUpUsers";
 builder.Configuration["Jwt:ExpireMinutes"] = Environment.GetEnvironmentVariable("JWT_EXPIRE_MINUTES") ?? "30";
 builder.Configuration["AllowedOrigins"] = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? "http://localhost:3000";
+builder.Configuration["VietQr:BankId"] = Environment.GetEnvironmentVariable("VIETQR_BANK_ID") ?? builder.Configuration["VietQr:BankId"];
+builder.Configuration["VietQr:AccountNo"] = Environment.GetEnvironmentVariable("VIETQR_ACCOUNT_NO") ?? builder.Configuration["VietQr:AccountNo"];
+builder.Configuration["VietQr:AccountName"] = Environment.GetEnvironmentVariable("VIETQR_ACCOUNT_NAME") ?? builder.Configuration["VietQr:AccountName"];
+builder.Configuration["VietQr:Template"] = Environment.GetEnvironmentVariable("VIETQR_TEMPLATE") ?? builder.Configuration["VietQr:Template"] ?? "compact2";
 
 // ================= CORS CONFIGURATION =================
 var originFromConfig = builder.Configuration["AllowedOrigins"];
@@ -97,6 +101,8 @@ builder.Services.AddSwaggerGen(options =>
 // Bind JwtSettings
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<VietQrSettings>(
+    builder.Configuration.GetSection("VietQr"));
 
 // JWT Authentication
 builder.Services.AddJwtAuthentication(builder.Configuration);
@@ -115,6 +121,7 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderHistoryRepository, OrderHistoryRepository>();
 builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
+builder.Services.AddScoped<IWalletDepositRequestRepository, WalletDepositRequestRepository>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IGamePackageRepository, GamePackageRepository>();
 builder.Services.AddScoped<IGameAccountRepository, GameAccountRepository>();
@@ -128,6 +135,7 @@ builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<GamePackageService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<WalletService>();
+builder.Services.AddScoped<WalletDepositRequestService>();
 builder.Services.AddScoped<RefreshTokenService>();
 
 // ================= APPLICATION SERVICES =================
