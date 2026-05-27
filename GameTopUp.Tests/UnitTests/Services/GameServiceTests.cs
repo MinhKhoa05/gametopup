@@ -1,8 +1,8 @@
 using Moq;
+using GameTopUp.DAL.Interfaces.Games;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services;
 using GameTopUp.DAL.Entities;
-using GameTopUp.DAL.Interfaces;
 using Xunit;
 using FluentAssertions;
 using GameTopUp.BLL.Config;

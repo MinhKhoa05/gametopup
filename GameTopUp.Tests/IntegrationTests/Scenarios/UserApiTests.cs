@@ -1,11 +1,7 @@
 using System.Net;
 using FluentAssertions;
 using GameTopUp.BLL.DTOs.Users;
-using GameTopUp.DAL.Entities;
 using Xunit;
-using Dapper;
-using Microsoft.Extensions.DependencyInjection;
-using GameTopUp.API;
 
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 

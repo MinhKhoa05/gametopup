@@ -1,12 +1,8 @@
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using GameTopUp.BLL.DTOs.Auths;
 using GameTopUp.BLL.DTOs.Users;
-using GameTopUp.API;
 using Xunit;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 

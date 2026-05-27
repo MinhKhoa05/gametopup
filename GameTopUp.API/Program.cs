@@ -3,13 +3,6 @@ using dotenv.net;
 using GameTopUp.API.Extensions;
 using GameTopUp.API.Filters;
 using GameTopUp.API.Middlewares;
-using GameTopUp.BLL.ApplicationServices;
-using GameTopUp.BLL.Common;
-using GameTopUp.BLL.Services;
-using GameTopUp.BLL.Interfaces;
-using GameTopUp.DAL;
-using GameTopUp.DAL.Repositories;
-using GameTopUp.DAL.Interfaces;
 using GameTopUp.BLL.Config;
 
 // Load .env file
@@ -19,32 +12,7 @@ DotEnv.Load(new DotEnvOptions(envFilePaths: new[] { envPath }));
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Map environment variables to configuration
-// Map environment variables to configuration
-var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "127.0.0.1";
-var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "3307";
-var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "game_topup_db";
-var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "game_topup_user";
-var dbPass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "app_pass_456";
-
-// Build Connection String
-var connectionString = $"server={dbHost};port={dbPort};database={dbName};user={dbUser};password={dbPass};SslMode=None;";
-builder.Configuration["ConnectionStrings:Default"] = connectionString;
-
-// Map other variables with sensible defaults
-builder.Configuration["Jwt:Key"] = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Jwt:Key"];
-builder.Configuration["Jwt:Issuer"] = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "GameTopUp";
-builder.Configuration["Jwt:Audience"] = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "GameTopUpUsers";
-builder.Configuration["Jwt:ExpireMinutes"] = Environment.GetEnvironmentVariable("JWT_EXPIRE_MINUTES") ?? "30";
-builder.Configuration["AllowedOrigins"] = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? "http://localhost:3000";
-builder.Configuration["VietQr:BankId"] = Environment.GetEnvironmentVariable("VIETQR_BANK_ID") ?? builder.Configuration["VietQr:BankId"];
-builder.Configuration["VietQr:AccountNo"] = Environment.GetEnvironmentVariable("VIETQR_ACCOUNT_NO") ?? builder.Configuration["VietQr:AccountNo"];
-builder.Configuration["VietQr:AccountName"] = Environment.GetEnvironmentVariable("VIETQR_ACCOUNT_NAME") ?? builder.Configuration["VietQr:AccountName"];
-builder.Configuration["VietQr:Template"] = Environment.GetEnvironmentVariable("VIETQR_TEMPLATE") ?? builder.Configuration["VietQr:Template"] ?? "compact2";
-builder.Configuration["Cloudinary:CloudName"] = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME") ?? builder.Configuration["Cloudinary:CloudName"];
-builder.Configuration["Cloudinary:ApiKey"] = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY") ?? builder.Configuration["Cloudinary:ApiKey"];
-builder.Configuration["Cloudinary:ApiSecret"] = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET") ?? builder.Configuration["Cloudinary:ApiSecret"];
-builder.Configuration["Cloudinary:Folder"] = Environment.GetEnvironmentVariable("CLOUDINARY_FOLDER") ?? builder.Configuration["Cloudinary:Folder"] ?? "gametopup";
+builder.Configuration.ApplyEnvironmentOverrides();
 
 // ================= CORS CONFIGURATION =================
 var originFromConfig = builder.Configuration["AllowedOrigins"];
@@ -103,59 +71,19 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Bind JwtSettings
-builder.Services.Configure<JwtSettings>(
-    builder.Configuration.GetSection("Jwt"));
-builder.Services.Configure<VietQrSettings>(
-    builder.Configuration.GetSection("VietQr"));
-builder.Services.Configure<CloudinarySettings>(
-    builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddGameTopUpOptions(builder.Configuration);
 
 // JWT Authentication
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
-// ================= DATABASE =================
-builder.Services.AddScoped<DatabaseContext>(sp =>
-{
-    var config = sp.GetRequiredService<IConfiguration>();
-    var connectionString = config.GetConnectionString("Default");
-    return new DatabaseContext(new MySqlConnector.MySqlConnection(connectionString!));
-});
+builder.Services
+    .AddGameTopUpDatabase()
+    .AddRepositories()
+    .AddBusinessServices()
+    .AddUseCases()
+    .AddExternalServices();
 
-// ================= REPOSITORIES =================
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IOrderHistoryRepository, OrderHistoryRepository>();
-builder.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
-builder.Services.AddScoped<IWalletRepository, WalletRepository>();
-builder.Services.AddScoped<IWalletDepositRequestRepository, WalletDepositRequestRepository>();
-builder.Services.AddScoped<IGameRepository, GameRepository>();
-builder.Services.AddScoped<IGamePackageRepository, GamePackageRepository>();
-builder.Services.AddScoped<IGameAccountRepository, GameAccountRepository>();
-builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-
-// ================= QUERIES =================
-
-// ================= SERVICES =================
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<GameService>();
-builder.Services.AddScoped<GamePackageService>();
-builder.Services.AddScoped<OrderService>();
-builder.Services.AddScoped<WalletService>();
-builder.Services.AddScoped<WalletDepositRequestService>();
-builder.Services.AddScoped<RefreshTokenService>();
-builder.Services.AddHttpClient<CloudinaryUploader>();
-
-// ================= APPLICATION SERVICES =================
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<OrderUseCase>();
-builder.Services.AddScoped<WalletUseCase>();
-
-// ================= COMMON SERVICES =================
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<TokenService>();
-
-builder.Services.AddScoped<PasswordService>();
 
 // ================= MAPSTER =================
 MapsterConfig.RegisterMappings();

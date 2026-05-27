@@ -1,5 +1,5 @@
 using GameTopUp.DAL.Entities;
-using GameTopUp.DAL.Interfaces;
+using GameTopUp.DAL.Interfaces.Orders;
 using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Exceptions;
 

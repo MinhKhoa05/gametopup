@@ -1,4 +1,3 @@
-using GameTopUp.API;
 using Xunit;
 
 namespace GameTopUp.Tests.IntegrationTests.Infrastructure

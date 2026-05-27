@@ -1,7 +1,7 @@
 using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.DAL.Entities;
-using GameTopUp.DAL.Interfaces;
+using GameTopUp.DAL.Interfaces.Wallets;
 using GameTopUp.BLL.DTOs.Wallets;
 
 namespace GameTopUp.BLL.Services
@@ -37,7 +37,7 @@ namespace GameTopUp.BLL.Services
             long? orderId = null)
         {
             // WHY: Ví đã được đảm bảo tạo ở bước đăng ký nên chỉ cần lấy và khóa.
-            var wallet = await _walletRepo.GetWithLockByUserIdAsync(userId);
+            var wallet = await GetWalletWithLockOrThrowAsync(userId);
 
             if (amount <= 0) throw new BusinessException("Số tiền nạp phải lớn hơn 0.");
 
@@ -72,7 +72,7 @@ namespace GameTopUp.BLL.Services
             long? orderId = null)
         {
             // WHY: Ví đã được đảm bảo tạo ở bước đăng ký nên chỉ cần lấy và khóa.
-            var wallet = await _walletRepo.GetWithLockByUserIdAsync(userId);
+            var wallet = await GetWalletWithLockOrThrowAsync(userId);
 
             if (amount <= 0) throw new BusinessException("Số tiền trừ phải lớn hơn 0.");
             if (wallet.Balance < amount) throw new BusinessException("Số dư ví không đủ.");
@@ -146,6 +146,12 @@ namespace GameTopUp.BLL.Services
             var wallet = await _walletRepo.GetByUserIdAsync(context.UserId) 
                 ?? throw new NotFoundException("Không tìm thấy ví người dùng.");
             return wallet.Balance;
+        }
+
+        private async Task<Wallet> GetWalletWithLockOrThrowAsync(long userId)
+        {
+            return await _walletRepo.GetWithLockByUserIdAsync(userId)
+                ?? throw new NotFoundException("Không tìm thấy ví người dùng.");
         }
 
         public async Task<List<WalletTransaction>> GetTransactionsAsync(UserContext context)

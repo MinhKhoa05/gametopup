@@ -15,14 +15,10 @@ namespace GameTopUp.API.Extensions
                 return;
             }
 
-            response.Cookies.Append(AccessTokenCookieName, accessToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = secure,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTimeOffset.UtcNow.AddMinutes(expireMinutes),
-                Path = "/"
-            });
+            response.Cookies.Append(
+                AccessTokenCookieName,
+                accessToken,
+                CreateAuthCookieOptions(secure, "/", DateTimeOffset.UtcNow.AddMinutes(expireMinutes)));
         }
 
         public static void SetRefreshToken(this HttpResponse response, string refreshToken, bool secure, int expireDays = 7)
@@ -32,14 +28,10 @@ namespace GameTopUp.API.Extensions
                 return;
             }
 
-            response.Cookies.Append(RefreshTokenCookieName, refreshToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = secure,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTimeOffset.UtcNow.AddDays(expireDays),
-                Path = AuthCookiePath
-            });
+            response.Cookies.Append(
+                RefreshTokenCookieName,
+                refreshToken,
+                CreateAuthCookieOptions(secure, AuthCookiePath, DateTimeOffset.UtcNow.AddDays(expireDays)));
         }
 
         public static string? GetRefreshToken(this HttpRequest request)
@@ -56,13 +48,7 @@ namespace GameTopUp.API.Extensions
                 return;
             }
 
-            response.Cookies.Delete(AccessTokenCookieName, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = secure,
-                SameSite = SameSiteMode.Lax,
-                Path = "/"
-            });
+            response.Cookies.Delete(AccessTokenCookieName, CreateAuthCookieOptions(secure, "/"));
         }
 
         public static void DeleteRefreshToken(this HttpResponse response, bool secure)
@@ -72,13 +58,22 @@ namespace GameTopUp.API.Extensions
                 return;
             }
 
-            response.Cookies.Delete(RefreshTokenCookieName, new CookieOptions
+            response.Cookies.Delete(RefreshTokenCookieName, CreateAuthCookieOptions(secure, AuthCookiePath));
+        }
+
+        private static CookieOptions CreateAuthCookieOptions(
+            bool secure,
+            string path,
+            DateTimeOffset? expires = null)
+        {
+            return new CookieOptions
             {
                 HttpOnly = true,
                 Secure = secure,
                 SameSite = SameSiteMode.Lax,
-                Path = AuthCookiePath
-            });
+                Expires = expires,
+                Path = path
+            };
         }
     }
 }

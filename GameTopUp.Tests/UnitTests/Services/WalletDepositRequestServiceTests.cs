@@ -1,10 +1,10 @@
 using FluentAssertions;
+using GameTopUp.DAL.Interfaces.Wallets;
 using GameTopUp.BLL.Common;
-using GameTopUp.BLL.Config;
 using GameTopUp.BLL.Exceptions;
+using GameTopUp.BLL.Options;
 using GameTopUp.BLL.Services;
 using GameTopUp.DAL.Entities;
-using GameTopUp.DAL.Interfaces;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;

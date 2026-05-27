@@ -1,7 +1,7 @@
 using GameTopUp.BLL.DTOs.Games;
+using GameTopUp.DAL.Interfaces.Games;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.DAL.Entities;
-using GameTopUp.DAL.Interfaces;
 using Mapster;
 
 namespace GameTopUp.BLL.Services

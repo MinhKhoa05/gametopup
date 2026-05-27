@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using GameTopUp.BLL.DTOs.Auths;
 using GameTopUp.BLL.DTOs.Users;
-using GameTopUp.BLL.ApplicationServices;
+using GameTopUp.BLL.UseCases;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.API.Extensions;
 
@@ -12,11 +12,11 @@ namespace GameTopUp.API.Controllers
     [ApiController]
     public class AuthController : ApiControllerBase
     {
-        private readonly AuthService _auth;
+        private readonly AuthUseCase _auth;
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _environment;
 
-        public AuthController(AuthService auth, IConfiguration configuration, IWebHostEnvironment environment)
+        public AuthController(AuthUseCase auth, IConfiguration configuration, IWebHostEnvironment environment)
         {
             _auth = auth;
             _configuration = configuration;

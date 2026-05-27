@@ -3,7 +3,6 @@ using FluentAssertions;
 using GameTopUp.BLL.DTOs.Games;
 using GameTopUp.DAL.Entities;
 using Xunit;
-using GameTopUp.API;
 
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 

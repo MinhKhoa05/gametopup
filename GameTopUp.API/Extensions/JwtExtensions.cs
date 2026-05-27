@@ -1,7 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using GameTopUp.BLL.Config;
+using GameTopUp.BLL.Options;
 
 namespace GameTopUp.API.Extensions
 {

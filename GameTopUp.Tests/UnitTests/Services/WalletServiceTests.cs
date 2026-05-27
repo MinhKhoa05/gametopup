@@ -1,6 +1,6 @@
 using Moq;
+using GameTopUp.DAL.Interfaces.Wallets;
 using GameTopUp.BLL.Services;
-using GameTopUp.DAL.Interfaces;
 using GameTopUp.DAL.Entities;
 using GameTopUp.BLL.Exceptions;
 using Xunit;

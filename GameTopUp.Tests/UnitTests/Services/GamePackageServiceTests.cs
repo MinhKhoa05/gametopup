@@ -1,4 +1,5 @@
 using FluentAssertions;
+using GameTopUp.DAL.Interfaces.Games;
 using GameTopUp.BLL.Config;
 using GameTopUp.BLL.DTOs.GamePackages;
 using GameTopUp.BLL.DTOs.Images;
@@ -6,7 +7,6 @@ using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Interfaces;
 using GameTopUp.BLL.Services;
 using GameTopUp.DAL.Entities;
-using GameTopUp.DAL.Interfaces;
 using Moq;
 using Xunit;
 

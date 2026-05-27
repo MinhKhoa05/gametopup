@@ -1,9 +1,9 @@
 using GameTopUp.BLL.Common;
-using GameTopUp.BLL.Config;
+using GameTopUp.DAL.Interfaces.Wallets;
+using GameTopUp.BLL.Options;
 using GameTopUp.BLL.DTOs.Wallets;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.DAL.Entities;
-using GameTopUp.DAL.Interfaces;
 using Microsoft.Extensions.Options;
 
 namespace GameTopUp.BLL.Services

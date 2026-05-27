@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using GameTopUp.DAL;
+using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
 
 namespace GameTopUp.Tests.IntegrationTests.Infrastructure

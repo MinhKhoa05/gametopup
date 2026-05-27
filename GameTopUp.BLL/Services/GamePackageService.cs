@@ -1,30 +1,23 @@
 using GameTopUp.BLL.DTOs.GamePackages;
+using GameTopUp.DAL.Interfaces.Games;
 using GameTopUp.BLL.Exceptions;
+using GameTopUp.BLL.Interfaces;
 using GameTopUp.BLL.Utils;
 using GameTopUp.DAL.Entities;
-using GameTopUp.DAL.Interfaces;
 using Mapster;
 
 namespace GameTopUp.BLL.Services
 {
     public class GamePackageService
     {
-        private const long MaxImageBytes = 5 * 1024 * 1024;
-        private static readonly HashSet<string> AllowedImageContentTypes = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "image/jpeg",
-            "image/png",
-            "image/webp"
-        };
-
         private readonly IGamePackageRepository _packageRepo;
         private readonly IGameRepository _gameRepo;
-        private readonly CloudinaryUploader _cloudinaryUploader;
+        private readonly ICloudinaryUploader _cloudinaryUploader;
 
         public GamePackageService(
             IGamePackageRepository packageRepo,
             IGameRepository gameRepo,
-            CloudinaryUploader cloudinaryUploader)
+            ICloudinaryUploader cloudinaryUploader)
         {
             _packageRepo = packageRepo;
             _gameRepo = gameRepo;
@@ -67,7 +60,7 @@ namespace GameTopUp.BLL.Services
             string contentType,
             long fileLength)
         {
-            ValidateImage(fileName, contentType, fileLength);
+            ImageFileValidator.Validate(fileName, contentType, fileLength);
             await ValidateGameForPackageAsync(request.GameId);
 
             var upload = await _cloudinaryUploader.UploadImageAsync(imageStream, fileName, contentType);
@@ -155,14 +148,5 @@ namespace GameTopUp.BLL.Services
             if (quantity <= 0) throw new BusinessException("Số lượng phải lớn hơn 0.");
         }
 
-        private static void ValidateImage(string fileName, string contentType, long fileLength)
-        {
-            if (fileLength <= 0) throw new BusinessException("File ảnh không hợp lệ.");
-            if (fileLength > MaxImageBytes) throw new BusinessException("Ảnh tải lên không được vượt quá 5MB.");
-            if (!AllowedImageContentTypes.Contains(contentType))
-                throw new BusinessException("Chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP.");
-            if (string.IsNullOrWhiteSpace(fileName))
-                throw new BusinessException("Tên file ảnh không hợp lệ.");
-        }
     }
 }

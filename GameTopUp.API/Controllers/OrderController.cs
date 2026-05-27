@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using GameTopUp.BLL.ApplicationServices;
+using GameTopUp.BLL.UseCases;
 using GameTopUp.BLL.Services;
 using GameTopUp.DAL.Entities;
 using GameTopUp.BLL.DTOs.Orders;

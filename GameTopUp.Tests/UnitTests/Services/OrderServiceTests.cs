@@ -1,6 +1,6 @@
 using Moq;
+using GameTopUp.DAL.Interfaces.Orders;
 using GameTopUp.BLL.Services;
-using GameTopUp.DAL.Interfaces;
 using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.DAL.Entities;
