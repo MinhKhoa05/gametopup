@@ -4,6 +4,7 @@ namespace GameTopUp.BLL.DTOs.GamePackages
     {
         public string? Name { get; set; }
         public string? ImageUrl { get; set; }
+        public string? ImagePublicId { get; set; }
         public decimal? SalePrice { get; set; }
         public decimal? OriginalPrice { get; set; }
         public decimal? ImportPrice { get; set; }

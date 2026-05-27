@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GameTopUp.BLL.DTOs.GamePackages;
+using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services;
 
 namespace GameTopUp.API.Controllers
@@ -43,6 +44,30 @@ namespace GameTopUp.API.Controllers
         {
             var package = await _packageService.CreatePackageAsync(request);
             return ApiCreated(package, "Tạo gói nạp thành công.");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("with-image")]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(5 * 1024 * 1024)]
+        public async Task<IActionResult> CreatePackageWithImage(
+            [FromForm] CreateGamePackageRequest request,
+            [FromForm] IFormFile image)
+        {
+            if (image == null)
+            {
+                throw new BusinessException("Vui lòng chọn file ảnh.");
+            }
+
+            await using var imageStream = image.OpenReadStream();
+            var package = await _packageService.CreatePackageWithImageAsync(
+                request,
+                imageStream,
+                image.FileName,
+                image.ContentType,
+                image.Length);
+
+            return ApiCreated(package, "Tạo gói nạp kèm ảnh thành công.");
         }
 
         [Authorize(Roles = "Admin")]

@@ -119,6 +119,17 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
+### Game Packages
+
+| Method | Endpoint                        | Description                                            |
+| ------ | ------------------------------- | ------------------------------------------------------ |
+| POST   | `/api/game-packages`            | Admin: create a package with an existing image URL     |
+| POST   | `/api/game-packages/with-image` | Admin: create a package from multipart form plus image |
+
+`POST /api/game-packages/with-image` expects `multipart/form-data` fields matching `CreateGamePackageRequest` plus an `image` file. The backend uploads the image to Cloudinary, then stores Cloudinary `secure_url` in `image_url` and `public_id` in `image_public_id`.
+
+---
+
 ## 📦 Response Format
 
 Successful response:

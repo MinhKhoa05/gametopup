@@ -10,6 +10,7 @@ namespace GameTopUp.DAL.Entities
         public long Id { get; set; }
         public string Name { get; set; } = null!;
         public string ImageUrl { get; set; } = string.Empty;
+        public string? ImagePublicId { get; set; }
         public string NormalizedName { get; set; } = null!;
         public long GameId { get; set; }
 

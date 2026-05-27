@@ -6,6 +6,7 @@ using GameTopUp.API.Middlewares;
 using GameTopUp.BLL.ApplicationServices;
 using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Interfaces;
 using GameTopUp.DAL;
 using GameTopUp.DAL.Repositories;
 using GameTopUp.DAL.Interfaces;
@@ -40,6 +41,10 @@ builder.Configuration["VietQr:BankId"] = Environment.GetEnvironmentVariable("VIE
 builder.Configuration["VietQr:AccountNo"] = Environment.GetEnvironmentVariable("VIETQR_ACCOUNT_NO") ?? builder.Configuration["VietQr:AccountNo"];
 builder.Configuration["VietQr:AccountName"] = Environment.GetEnvironmentVariable("VIETQR_ACCOUNT_NAME") ?? builder.Configuration["VietQr:AccountName"];
 builder.Configuration["VietQr:Template"] = Environment.GetEnvironmentVariable("VIETQR_TEMPLATE") ?? builder.Configuration["VietQr:Template"] ?? "compact2";
+builder.Configuration["Cloudinary:CloudName"] = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME") ?? builder.Configuration["Cloudinary:CloudName"];
+builder.Configuration["Cloudinary:ApiKey"] = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY") ?? builder.Configuration["Cloudinary:ApiKey"];
+builder.Configuration["Cloudinary:ApiSecret"] = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET") ?? builder.Configuration["Cloudinary:ApiSecret"];
+builder.Configuration["Cloudinary:Folder"] = Environment.GetEnvironmentVariable("CLOUDINARY_FOLDER") ?? builder.Configuration["Cloudinary:Folder"] ?? "gametopup";
 
 // ================= CORS CONFIGURATION =================
 var originFromConfig = builder.Configuration["AllowedOrigins"];
@@ -103,6 +108,8 @@ builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<VietQrSettings>(
     builder.Configuration.GetSection("VietQr"));
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("Cloudinary"));
 
 // JWT Authentication
 builder.Services.AddJwtAuthentication(builder.Configuration);
@@ -137,6 +144,7 @@ builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<WalletService>();
 builder.Services.AddScoped<WalletDepositRequestService>();
 builder.Services.AddScoped<RefreshTokenService>();
+builder.Services.AddHttpClient<CloudinaryUploader>();
 
 // ================= APPLICATION SERVICES =================
 builder.Services.AddScoped<AuthService>();

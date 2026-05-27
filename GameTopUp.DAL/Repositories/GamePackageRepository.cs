@@ -51,7 +51,7 @@ namespace GameTopUp.DAL.Repositories
         public async Task<int> UpdateAsync(GamePackage gamePackage)
         {
             var sql = @"UPDATE game_packages 
-                        SET name = @Name, image_url = @ImageUrl, normalized_name = @NormalizedName, 
+                        SET name = @Name, image_url = @ImageUrl, image_public_id = @ImagePublicId, normalized_name = @NormalizedName, 
                             sale_price = @SalePrice, original_price = @OriginalPrice, import_price = @ImportPrice, 
                             stock_quantity = @StockQuantity, is_active = @IsActive, updated_at = CURRENT_TIMESTAMP
                         WHERE id = @Id";

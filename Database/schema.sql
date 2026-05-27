@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS game_packages (
     id BIGINT SIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     image_url TEXT,
+    image_public_id VARCHAR(255) NULL,
     normalized_name VARCHAR(150) NOT NULL,
     game_id BIGINT SIGNED NOT NULL,
     sale_price DECIMAL(18, 2) NOT NULL,
@@ -58,7 +59,7 @@ CREATE TABLE IF NOT EXISTS game_packages (
     INDEX idx_packages_normalized (normalized_name)
 ) ENGINE=InnoDB;
 
--- 4. Table: game_accounts
+-- 5. Table: game_accounts
 CREATE TABLE IF NOT EXISTS game_accounts (
     id BIGINT SIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT SIGNED NOT NULL,

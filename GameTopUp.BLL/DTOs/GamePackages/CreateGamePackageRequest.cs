@@ -7,6 +7,7 @@ namespace GameTopUp.BLL.DTOs.GamePackages
         [Required]
         public string Name { get; set; } = null!;
         public string ImageUrl { get; set; } = string.Empty;
+        public string? ImagePublicId { get; set; }
         
         [Required]
         public long GameId { get; set; }
