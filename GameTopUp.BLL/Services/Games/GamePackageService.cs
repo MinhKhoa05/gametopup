@@ -48,18 +48,16 @@ namespace GameTopUp.BLL.Services
         {
             await ValidateGameForPackageAsync(request.GameId);
 
-            var normalizedName = NormalizeName.Normalize(request.Name);
             var package = GamePackage.Create(
                 request.Name,
-                normalizedName,
-                request.ImageUrl,
-                request.ImagePublicId,
                 request.GameId,
                 request.SalePrice,
                 request.OriginalPrice,
                 request.ImportPrice,
-                request.StockQuantity,
-                request.IsActive);
+                request.StockQuantity);
+            package.ImageUrl = request.ImageUrl;
+            package.ImagePublicId = request.ImagePublicId;
+            package.IsActive = request.IsActive;
             package.Id = await _packageRepo.CreateAsync(package);
             return package;
         }
@@ -78,18 +76,16 @@ namespace GameTopUp.BLL.Services
             request.ImageUrl = upload.SecureUrl;
             request.ImagePublicId = upload.PublicId;
 
-            var normalizedName = NormalizeName.Normalize(request.Name);
             var package = GamePackage.Create(
                 request.Name,
-                normalizedName,
-                request.ImageUrl,
-                request.ImagePublicId,
                 request.GameId,
                 request.SalePrice,
                 request.OriginalPrice,
                 request.ImportPrice,
-                request.StockQuantity,
-                request.IsActive);
+                request.StockQuantity);
+            package.ImageUrl = request.ImageUrl;
+            package.ImagePublicId = request.ImagePublicId;
+            package.IsActive = request.IsActive;
             package.Id = await _packageRepo.CreateAsync(package);
             return package;
         }

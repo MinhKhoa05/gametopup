@@ -4,9 +4,6 @@ using GameTopUp.DAL.Interfaces.Wallets;
 
 namespace GameTopUp.DAL.Repositories.Wallets
 {
-    /// <summary>
-    /// Repository quản lý biến động số dư ví (Nạp, Rút, Thanh toán).
-    /// </summary>
     public class WalletTransactionRepository : IWalletTransactionRepository
     {
         private readonly DatabaseContext _database;

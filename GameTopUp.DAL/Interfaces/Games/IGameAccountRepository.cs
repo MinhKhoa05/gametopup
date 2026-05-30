@@ -7,7 +7,7 @@ namespace GameTopUp.DAL.Interfaces.Games
         Task<GameAccount?> GetByIdAsync(long id);
         Task<List<GameAccount>> GetByUserIdAsync(long userId);
         Task<long> CreateAsync(GameAccount gameAccount);
-        Task<int> UpdateAsync(GameAccount gameAccount);
+        Task<bool> UpdateAsync(GameAccount gameAccount);
         Task<int> DeleteAsync(long id);
         Task<int> SetDefaultAsync(long userId, long id);
     }

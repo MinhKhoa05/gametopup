@@ -1,6 +1,7 @@
 using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Interfaces.Orders;
 using GameTopUp.BLL.Context;
+using GameTopUp.BLL.DTOs.Orders;
 using GameTopUp.BLL.Exceptions;
 
 namespace GameTopUp.BLL.Services
@@ -16,33 +17,27 @@ namespace GameTopUp.BLL.Services
             _orderHistoryRepo = orderHistoryRepo;
         }
         
-        public async Task<List<Order>> GetOrdersByUserAsync(UserContext context, OrderStatus? status = null)
-        {
-            return await _orderRepo.GetByUserIdAsync(context.UserId, status);
-        }
+        public Task<List<Order>> GetOrdersByUserAsync(UserContext context, OrderStatus? status = null) =>
+            _orderRepo.GetByUserIdAsync(context.UserId, status);
 
-        public async Task<List<Order>> GetAllOrdersAsync(OrderStatus? status = null)
-        {
-            return await _orderRepo.GetAllAsync(status);
-        }
+        public Task<List<Order>> GetAllOrdersAsync(OrderStatus? status = null) =>
+            _orderRepo.GetAllAsync(status);
 
-        public async Task<List<OrderHistory>> GetHistoriesAsync(long orderId)
-        {
-            return await _orderHistoryRepo.GetByOrderIdAsync(orderId);
-        }
+        public Task<List<OrderHistory>> GetHistoriesAsync(long orderId) =>
+            _orderHistoryRepo.GetByOrderIdAsync(orderId);
 
-        public async Task<Order> GetByIdOrThrowAsync(long orderId)
+        public async Task<Order> GetByIdOrThrowAsync(long orderId, bool withLock = false)
         {
-            return await _orderRepo.GetByIdAsync(orderId)
+            var order = withLock
+                ? await _orderRepo.GetWithLockByIdAsync(orderId)
+                : await _orderRepo.GetByIdAsync(orderId);
+
+            return order
                 ?? throw new NotFoundException(ErrorCodes.OrderNotFound, $"Không tìm thấy đơn hàng #{orderId}");
         }
 
-        public async Task<Order> GetWithLockByIdOrThrowAsync(long orderId)
-        {
-            // WHY: Pessimistic Lock ngăn chặn trạng thái đơn hàng bị thay đổi đồng thời.
-            return await _orderRepo.GetWithLockByIdAsync(orderId)
-                ?? throw new NotFoundException(ErrorCodes.OrderNotFound, $"Không tìm thấy đơn hàng #{orderId}");
-        }
+        public Task<Order> GetWithLockByIdOrThrowAsync(long orderId) =>
+            GetByIdOrThrowAsync(orderId, withLock: true);
 
         public async Task<long> CreateOrderAsync(UserContext context, GamePackage package, int quantity, string gameAccountInfo)
         {
@@ -51,7 +46,7 @@ namespace GameTopUp.BLL.Services
                 throw new BusinessException(ErrorCodes.PendingOrderExists);
             }
 
-            var order = Order.CreatePending(context.UserId, package, quantity, gameAccountInfo);
+            var order = Order.Create(context.UserId, package.Id, package.SalePrice, quantity, gameAccountInfo);
 
             try
             {
@@ -62,150 +57,179 @@ namespace GameTopUp.BLL.Services
                     newOrderId,
                     order.Status,
                     order.Status,
-                    "Đơn hàng được tạo (Chờ thanh toán).",
-                    context.UserId);
+                    context.UserId,
+                    "Đơn hàng được tạo (Chờ thanh toán).");
 
                 await _orderHistoryRepo.CreateAsync(history);
 
                 return newOrderId;
             }
-            catch (Exception ex) when (IsDuplicatePendingOrder(ex))
+            catch (Exception ex) when (IsDuplicateError(ex))
             {
                 throw new BusinessException(ErrorCodes.PendingOrderExists);
             }
         }
 
-        public async Task PickOrderAsync(Order order, UserContext admin)
+        public async Task<OrderChangeResult> PickOrderAsync(Order order, UserContext admin)
         {
-            // WHY: Đảm bảo tính Idempotent cho phép Admin retry nếu mạng lỗi.
-            if (order.Status == OrderStatus.Processing && order.AssignTo == admin.UserId)
-                return;
+            if (order.Status == OrderStatus.Processing && order.AssignedTo == admin.UserId)
+                return OrderChangeResult.Unchanged(order);
 
             if (order.Status == OrderStatus.Processing)
                 throw new BusinessException(ErrorCodes.OrderAlreadyAssigned);
 
-            if (order.Status != OrderStatus.Paid)
-                throw new BusinessException(ErrorCodes.OrderMustBePaidToPick);
-
             var fromStatus = order.Status;
+            ValidateTransition(fromStatus, OrderStatus.Processing);
 
-            order.Status = OrderStatus.Processing;
-            order.AssignTo = admin.UserId;
-            order.AssignAt = DateTime.UtcNow;
-            order.UpdatedAt = DateTime.UtcNow;
+            order.UpdateStatus(OrderStatus.Processing, admin.UserId);
 
-            await _orderRepo.UpdateAsync(order);
-
-            var history = OrderHistory.Create(
-                order.Id,
+            await SaveOrderChangeAsync(
+                order,
                 fromStatus,
-                OrderStatus.Processing,
                 $"Admin {admin.Username} tiếp nhận đơn hàng.",
-                admin.UserId,
-                isAdmin: true);
+                admin);
 
-            await _orderHistoryRepo.CreateAsync(history);
+            return OrderChangeResult.ChangedStatus(order, fromStatus);
         }
 
-        public async Task CompleteOrderAsync(Order order, UserContext admin)
+        public async Task<OrderChangeResult> CompleteOrderAsync(Order order, UserContext admin)
         {
-            // WHY: Cho phép Admin retry an toàn khi mạng chập chờn.
             if (order.Status == OrderStatus.Completed)
-                return;
+                return OrderChangeResult.Unchanged(order);
 
-            if (order.Status != OrderStatus.Processing)
-                throw new BusinessException(ErrorCodes.OrderStatusInvalidToComplete);
+            ValidateTransition(order.Status, OrderStatus.Completed);
 
-            if (order.AssignTo != admin.UserId)
+            if (order.AssignedTo != admin.UserId)
                 throw new BusinessException(ErrorCodes.CannotModifyOthersOrder);
 
-            var fromStatus = order.Status;
-
-            order.Status = OrderStatus.Completed;
-            order.UpdatedAt = DateTime.UtcNow;
-
-            await _orderRepo.UpdateAsync(order);
-
-            var history = OrderHistory.Create(
-                order.Id,
-                fromStatus,
+            return await UpdateStatusAsync(
+                order,
                 OrderStatus.Completed,
                 $"Admin {admin.Username} xác nhận hoàn thành.",
-                admin.UserId,
-                isAdmin: true);
-
-            await _orderHistoryRepo.CreateAsync(history);
+                admin);
         }
 
-        public async Task<OrderStatus?> CancelOrderAsync(Order order, UserContext user, string? reason = null)
+        public async Task<OrderChangeResult> CancelOrderAsync(Order order, UserContext user, string? reason = null)
         {
-            // WHY: Trả về null nếu đơn đã hủy trước đó (Idempotency).
-            if (order.Status == OrderStatus.Cancelled) return null;
+            if (order.Status == OrderStatus.Cancelled)
+                return OrderChangeResult.Unchanged(order);
 
             if (order.Status == OrderStatus.Completed)
                 throw new BusinessException(ErrorCodes.CompletedOrderCannotBeCancelled);
 
-            bool isOwner = order.UserId == user.UserId;
-            bool isAssignedAdmin = order.AssignTo == user.UserId;
+            var isOwner = order.UserId == user.UserId;
+            var isAssignedAdmin = order.AssignedTo == user.UserId;
 
             if (!isOwner && !isAssignedAdmin)
                 throw new ForbiddenException(ErrorCodes.CannotModifyOthersOrder);
-            
-            if (order.Status == OrderStatus.Processing && order.UserId == user.UserId)
+
+            if (order.Status == OrderStatus.Processing && isOwner)
                 throw new ForbiddenException(ErrorCodes.ProcessingOrderCannotBeCancelled);
 
-            var oldStatus = order.Status;
-
-            order.Status = OrderStatus.Cancelled;
-            order.UpdatedAt = DateTime.UtcNow;
-
-            await _orderRepo.UpdateAsync(order);
-
-            var history = OrderHistory.Create(
-                order.Id,
-                oldStatus,
+            return await UpdateStatusAsync(
+                order,
                 OrderStatus.Cancelled,
                 BuildCancelNote(reason),
-                user.UserId);
-
-            await _orderHistoryRepo.CreateAsync(history);
-            return oldStatus;
+                user);
         }
 
         public void ValidateForPayment(Order order, UserContext user)
         {
-            if (order.UserId != user.UserId) 
+            if (order.UserId != user.UserId)
                 throw new BusinessException(ErrorCodes.PaymentForbidden);
-                
-            if (order.Status != OrderStatus.Pending) 
+
+            if (!ValidateTransition(order.Status, OrderStatus.Paid))
                 throw new BusinessException(ErrorCodes.OrderNotPendingPayment);
         }
 
-        public async Task MarkAsPaidAsync(Order order, UserContext user)
+        public async Task<OrderChangeResult> MarkAsPaidAsync(Order order, UserContext user)
         {
-            var fromStatus = order.Status; 
-            order.Status = OrderStatus.Paid; 
-            order.UpdatedAt = DateTime.UtcNow;
-            
-            await _orderRepo.UpdateAsync(order);
+            if (order.UserId != user.UserId)
+                throw new BusinessException(ErrorCodes.PaymentForbidden);
 
-            var history = OrderHistory.Create(
-                order.Id,
-                fromStatus,
-                order.Status,
+            return await UpdateStatusAsync(
+                order,
+                OrderStatus.Paid,
                 "Thanh toán đơn hàng thành công.",
-                user.UserId);
+                user);
+        }
+
+        private async Task<OrderChangeResult> UpdateStatusAsync(
+            Order order,
+            OrderStatus toStatus,
+            string note,
+            UserContext actor)
+        {
+            var fromStatus = order.Status;
+
+            if (!ValidateTransition(fromStatus, toStatus))
+                return OrderChangeResult.Unchanged(order);
+
+            order.UpdateStatus(toStatus);
+
+            await SaveOrderChangeAsync(order, fromStatus, note, actor);
+
+            return OrderChangeResult.ChangedStatus(order, fromStatus);
+        }
+
+        private async Task SaveOrderChangeAsync(
+            Order orderUpdated,
+            OrderStatus fromStatus,
+            string note,
+            UserContext actor)
+        {
+            await _orderRepo.UpdateAsync(orderUpdated);
+
+            // Log lịch sử thay đổi trạng thái
+            var history = OrderHistory.Create(orderUpdated.Id,
+                fromStatus,
+                orderUpdated.Status,
+                actor.UserId,
+                note,
+                actor.Role == UserRole.Admin);
 
             await _orderHistoryRepo.CreateAsync(history);
         }
 
+        private static bool ValidateTransition(OrderStatus fromStatus, OrderStatus toStatus)
+        {
+            if (fromStatus == toStatus)
+                return false;
+
+            var canTransition = toStatus switch
+            {
+                OrderStatus.Paid => fromStatus == OrderStatus.Pending,
+                OrderStatus.Processing => fromStatus == OrderStatus.Paid,
+                OrderStatus.Completed => fromStatus == OrderStatus.Processing,
+                OrderStatus.Cancelled => fromStatus != OrderStatus.Completed,
+                _ => false
+            };
+
+            if (canTransition)
+                return true;
+
+            throw new BusinessException(GetTransitionError(toStatus));
+        }
+
+        private static string GetTransitionError(OrderStatus toStatus)
+        {
+            return toStatus switch
+            {
+                OrderStatus.Paid => ErrorCodes.OrderNotPendingPayment,
+                OrderStatus.Processing => ErrorCodes.OrderMustBePaidToPick,
+                OrderStatus.Completed => ErrorCodes.OrderStatusInvalidToComplete,
+                OrderStatus.Cancelled => ErrorCodes.CompletedOrderCannotBeCancelled,
+                _ => ErrorCodes.BadRequest
+            };
+        }
+
         private static string BuildCancelNote(string? reason)
         {
-            return "H\u1EE7y \u0111\u01A1n h\u00E0ng." +
+            return "Hủy đơn hàng." +
                    (string.IsNullOrEmpty(reason) ? "" : $" L\u00FD do: {reason}");
         }
 
-        private static bool IsDuplicatePendingOrder(Exception ex)
+        private static bool IsDuplicateError(Exception ex)
         {
             return ex.Message.Contains("Duplicate", StringComparison.OrdinalIgnoreCase) ||
                    ex.Message.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase);

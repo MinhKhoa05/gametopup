@@ -25,7 +25,7 @@ namespace GameTopUp.DAL.Entities
         {
         }
 
-        public static WalletDepositRequest CreatePending(
+        public static WalletDepositRequest Create (
             long userId,
             decimal amount,
             string code,

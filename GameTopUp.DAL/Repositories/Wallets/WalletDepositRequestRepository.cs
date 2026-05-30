@@ -20,8 +20,7 @@ namespace GameTopUp.DAL.Repositories.Wallets
 
         public async Task<WalletDepositRequest?> GetByIdAsync(long requestId)
         {
-            const string sql = "SELECT * FROM wallet_deposit_requests WHERE id = @Id";
-            return await _database.QueryFirstAsync<WalletDepositRequest>(sql, new { Id = requestId });
+            return await _database.GetByIdAsync<WalletDepositRequest>(requestId);
         }
 
         public async Task<WalletDepositRequest?> GetWithLockByIdAsync(long requestId)
@@ -53,28 +52,9 @@ namespace GameTopUp.DAL.Repositories.Wallets
             return await _database.QueryAsync<WalletDepositRequest>(sql, new { Status = status });
         }
 
-        public async Task<int> UpdateAsync(WalletDepositRequest request)
+        public async Task<bool> UpdateAsync(WalletDepositRequest request)
         {
-            const string sql = @"
-                UPDATE wallet_deposit_requests
-                SET status = @Status,
-                    user_confirmed_at = @UserConfirmedAt,
-                    reviewed_by = @ReviewedBy,
-                    reviewed_at = @ReviewedAt,
-                    admin_note = @AdminNote,
-                    updated_at = @UpdatedAt
-                WHERE id = @Id";
-
-            return await _database.ExecuteAsync(sql, new
-            {
-                request.Id,
-                request.Status,
-                request.UserConfirmedAt,
-                request.ReviewedBy,
-                request.ReviewedAt,
-                request.AdminNote,
-                request.UpdatedAt
-            });
+            return await _database.UpdateAsync(request);
         }
     }
 }

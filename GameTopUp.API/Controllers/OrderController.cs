@@ -31,8 +31,8 @@ namespace GameTopUp.API.Controllers
         [HttpPost("{orderId}/pay")]
         public async Task<IActionResult> PayOrder(long orderId)
         {
-            await _orderUseCase.PayOrderAsync(orderId, CurrentUser);
-            return ApiOk(null, "Thanh toán đơn hàng thành công");
+            var result = await _orderUseCase.PayOrderAsync(orderId, CurrentUser);
+            return ApiOk(result, "Thanh toán đơn hàng thành công");
         }
 
         [HttpGet("me")]
@@ -68,23 +68,23 @@ namespace GameTopUp.API.Controllers
         [HttpPost("{orderId}/pick")]
         public async Task<IActionResult> PickOrder(long orderId)
         {
-            await _orderUseCase.PickOrderAsync(orderId, CurrentUser);
-            return ApiOk(null, "Bạn đã tiếp nhận đơn hàng thành công.");
+            var result = await _orderUseCase.PickOrderAsync(orderId, CurrentUser);
+            return ApiOk(result, "Bạn đã tiếp nhận đơn hàng thành công.");
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost("{orderId}/complete")]
         public async Task<IActionResult> CompleteOrder(long orderId)
         {
-            await _orderUseCase.CompleteOrderAsync(orderId, CurrentUser);
-            return ApiOk(null, "Đơn hàng đã được hoàn thành thành công.");
+            var result = await _orderUseCase.CompleteOrderAsync(orderId, CurrentUser);
+            return ApiOk(result, "Đơn hàng đã được hoàn thành thành công.");
         }
 
         [HttpPost("{orderId}/cancel")]
         public async Task<IActionResult> CancelOrder(long orderId)
         {
-            await _orderUseCase.CancelOrderAsync(orderId, CurrentUser);
-            return ApiOk(null, "Đơn hàng đã được hủy và hoàn tiền thành công.");
+            var result = await _orderUseCase.CancelOrderAsync(orderId, CurrentUser);
+            return ApiOk(result, "Đơn hàng đã được hủy và hoàn tiền thành công.");
         }
     }
 }

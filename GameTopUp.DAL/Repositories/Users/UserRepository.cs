@@ -4,10 +4,6 @@ using GameTopUp.DAL.Interfaces.Users;
 
 namespace GameTopUp.DAL.Repositories.Users
 {
-    /// <summary>
-    /// Repository quản lý thông tin người dùng và số dư ví.
-    /// Đây là một trong những Repository quan trọng nhất liên quan đến tài chính.
-    /// </summary>
     public class UserRepository : IUserRepository
     {
         private readonly DatabaseContext _database;
@@ -19,12 +15,7 @@ namespace GameTopUp.DAL.Repositories.Users
 
         public async Task<User?> GetByIdAsync(long userId)
         {
-            string sql = "SELECT * FROM users WHERE id = @UserId";
-            
-            return await _database.QueryFirstAsync<User>(sql, new 
-            { 
-                UserId = userId 
-            });
+            return await _database.GetByIdAsync<User>(userId);
         }
 
         public async Task<User?> GetByEmailAsync(string email)
@@ -53,14 +44,9 @@ namespace GameTopUp.DAL.Repositories.Users
             });
         }
 
-        public async Task<int> UpdateAsync(User user)
+        public async Task<bool> UpdateAsync(User user)
         {
-            user.UpdatedAt = DateTime.UtcNow;
-            string sql = @"UPDATE users 
-                           SET username = @Username, email = @Email, role = @Role, is_active = @IsActive, updated_at = @UpdatedAt
-                           WHERE id = @Id";
-            
-            return await _database.ExecuteAsync(sql, user);
+            return await _database.UpdateAsync(user);
         }
 
         public async Task<IEnumerable<User>> GetAllAsync(int page, int pageSize)

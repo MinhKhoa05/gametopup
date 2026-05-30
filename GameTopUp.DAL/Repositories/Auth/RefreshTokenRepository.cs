@@ -15,7 +15,7 @@ namespace GameTopUp.DAL.Repositories.Auth
 
         public async Task<RefreshToken?> GetByTokenHashAsync(string tokenHash)
         {
-            const string sql = "SELECT * FROM refresh_tokens WHERE token_hash = @TokenHash AND revoked_at IS NULL LIMIT 1";
+            const string sql = "SELECT * FROM refresh_tokens WHERE token_hash = @TokenHash";
             return await _database.QueryFirstAsync<RefreshToken>(sql, new { TokenHash = tokenHash });
         }
 

@@ -1,8 +1,4 @@
 using Mapster;
-using GameTopUp.BLL.DTOs.GamePackages;
-using GameTopUp.BLL.DTOs.Users;
-using GameTopUp.BLL.Utils;
-using GameTopUp.DAL.Entities;
 using System;
 
 namespace GameTopUp.BLL.Config
@@ -15,14 +11,6 @@ namespace GameTopUp.BLL.Config
 
             TypeAdapterConfig<Enum, string>.NewConfig()
                 .MapWith(src => src.ToString());
-
-            TypeAdapterConfig<UpdateGamePackageRequest, GamePackage>
-                .NewConfig()
-                .Map(
-                    dest => dest.NormalizedName,
-                    src => NormalizeName.Normalize(src.Name!),
-                    srcCond => srcCond.Name != null
-                );
         }
     }
 }

@@ -35,7 +35,7 @@ namespace GameTopUp.BLL.Services
                 throw new BusinessException(ErrorCodes.EmailExists);
             }
 
-            var user = User.CreateMember(request.Name, request.Email, hashedPassword);
+            var user = User.Create(request.Name, request.Email, hashedPassword);
 
             return await _userRepo.CreateAsync(user);
         }

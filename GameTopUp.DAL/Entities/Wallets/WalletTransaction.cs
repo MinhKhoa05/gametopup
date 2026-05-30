@@ -28,7 +28,7 @@ namespace GameTopUp.DAL.Entities
             decimal balanceBefore,
             decimal balanceAfter,
             WalletTransactionType type,
-            string description,
+            string? description = null,
             long? orderId = null)
         {
             return new WalletTransaction

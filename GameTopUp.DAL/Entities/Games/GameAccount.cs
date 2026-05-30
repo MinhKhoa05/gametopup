@@ -7,22 +7,47 @@ namespace GameTopUp.DAL.Entities
     public class GameAccount
     {
         [Key]
-        public long Id { get; set; } // D�ng long cho d?ng b? v?i c�c b?ng kh�c
+        public long Id { get; set; }
 
-        public long UserId { get; set; } // Ch? s? h?u s? d?a ch? n�y
+        public long UserId { get; set; }
 
-        public long GameId { get; set; } // "freefire", "pubg"...
+        public long GameId { get; set; }
 
-        public string Name { get; set; } = null!; // T�n g?i nh? (v� d?: "Acc ch�nh c?a em")
+        public string Name { get; set; } = null!;
 
-        public string AccountIdentifier { get; set; } = null!; // ID TRONG GAME (V� d?: 88776655)
+        public string AccountIdentifier { get; set; } = null!;
 
-        public string? Server { get; set; } // Server (n?u c�)
+        public string? Server { get; set; }
 
-        public string? Description { get; set; } // Ghi ch� th�m
+        public string? Description { get; set; }
 
-        public bool IsDefault { get; set; } = false; // Uu ti�n ch?n nhanh
+        public bool IsDefault { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
+
+        public GameAccount()
+        {
+        }
+
+        public static GameAccount Create(
+            long userId,
+            long gameId,
+            string name,
+            string accountIdentifier,
+            string? server = null,
+            string? description = null)
+        {
+            return new GameAccount
+            {
+                UserId = userId,
+                GameId = gameId,
+                Name = name,
+                AccountIdentifier = accountIdentifier,
+                Server = server,
+                Description = description,
+                IsDefault = false,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
     }
 }

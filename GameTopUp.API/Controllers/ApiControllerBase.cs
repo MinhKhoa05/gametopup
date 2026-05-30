@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using GameTopUp.BLL.Context;
+using GameTopUp.DAL.Entities;
 
 namespace GameTopUp.API.Controllers
 {
@@ -27,11 +28,16 @@ namespace GameTopUp.API.Controllers
                     return null!;
                 }
 
+                var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+                var role = Enum.TryParse<UserRole>(roleClaim, ignoreCase: true, out var parsedRole)
+                    ? parsedRole
+                    : UserRole.Member;
+
                 return new UserContext
                 {
                     UserId = long.Parse(userIdClaim.Value),
                     Username = User.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty,
-                    Role = User.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty
+                    Role = role
                 };
             }
         }

@@ -1,14 +1,11 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GameTopUp.Tests.IntegrationTests.Infrastructure
 {
-    /// <summary>
-    /// Helper cho test database: seed + query nhanh trong integration test.
-    /// </summary>
     public static class TestDatabaseExtensions
     {
         #region DB EXECUTION
@@ -22,33 +19,18 @@ namespace GameTopUp.Tests.IntegrationTests.Infrastructure
             return await action(db);
         }
 
-        private static async Task WithDb(
-            this CustomWebApplicationFactory<Program> factory,
-            Func<DatabaseContext, Task> action)
-        {
-            using var scope = factory.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            await action(db);
-        }
-
         #endregion
 
         #region SEED
 
         public static async Task<User> SeedUserAsync(
             this CustomWebApplicationFactory<Program> factory,
-            string username,
+            UserRole role = UserRole.Member,
             Action<User>? customize = null)
         {
-            var user = new User
-            {
-                Username = username,
-                Email = $"{username}@test.com",
-                PasswordHash = "hash",
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var uniqueCode = UniqueCode();
+
+            var user = User.Create($"Test User {uniqueCode}", $"test_user_{uniqueCode}@test.local", "hash", role);
 
             customize?.Invoke(user);
 
@@ -62,36 +44,25 @@ namespace GameTopUp.Tests.IntegrationTests.Infrastructure
         public static async Task<Wallet> SeedWalletAsync(
             this CustomWebApplicationFactory<Program> factory,
             long userId,
-            decimal balance,
+            decimal initialBalance = 0,
             Action<Wallet>? customize = null)
         {
-            var wallet = new Wallet
-            {
-                UserId = userId,
-                Balance = balance,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var wallet = Wallet.CreateForUser(userId, initialBalance);
 
             customize?.Invoke(wallet);
 
             return await factory.WithDb(async db =>
             {
-                await db.InsertAsync<Wallet, long>(wallet);
+                wallet.Id = await db.InsertAsync<Wallet, long>(wallet);
                 return wallet;
             });
         }
 
         public static async Task<Game> SeedGameAsync(
             this CustomWebApplicationFactory<Program> factory,
-            string name,
             Action<Game>? customize = null)
         {
-            var game = new Game
-            {
-                Name = name,
-                IsActive = true
-            };
+            var game = Game.Create($"Test Game {UniqueCode()}");
 
             customize?.Invoke(game);
 
@@ -105,20 +76,17 @@ namespace GameTopUp.Tests.IntegrationTests.Infrastructure
         public static async Task<GamePackage> SeedGamePackageAsync(
             this CustomWebApplicationFactory<Program> factory,
             long gameId,
-            string name,
+            decimal salePrice = 100,
+            int initialStock = 0,
             Action<GamePackage>? customize = null)
         {
-            var package = new GamePackage
-            {
-                GameId = gameId,
-                Name = name,
-                NormalizedName = name.ToLower(),
-                SalePrice = 100,
-                OriginalPrice = 100,
-                ImportPrice = 100,
-                IsActive = true,
-                StockQuantity = 0
-            };
+            var package = GamePackage.Create(
+                $"Test Package {UniqueCode()}",
+                gameId,
+                salePrice,
+                salePrice,
+                salePrice,
+                stockQuantity: initialStock);
 
             customize?.Invoke(package);
 
@@ -133,19 +101,14 @@ namespace GameTopUp.Tests.IntegrationTests.Infrastructure
             this CustomWebApplicationFactory<Program> factory,
             long userId,
             long packageId,
+            OrderStatus status = OrderStatus.Pending,
+            int quantity = 1,
+            decimal packageSalePrice = 100, // 
             Action<Order>? customize = null)
         {
-            var order = new Order
-            {
-                UserId = userId,
-                GamePackageId = packageId,
-                UnitPrice = 100,
-                Quantity = 1,
-                GameAccountInfo = "test_acc",
-                Status = OrderStatus.Pending,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+
+            var order = Order.Create(userId, packageId, packageSalePrice, quantity, $"test_acc_{UniqueCode()}");
+            order.Status = status;
 
             customize?.Invoke(order);
 
@@ -182,5 +145,7 @@ namespace GameTopUp.Tests.IntegrationTests.Infrastructure
             => factory.WithDb(db => db.GetByIdAsync<GamePackage>(id));
 
         #endregion
+
+        private static string UniqueCode() => Guid.NewGuid().ToString("N")[..10];
     }
 }

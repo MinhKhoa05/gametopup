@@ -40,9 +40,9 @@ namespace GameTopUp.BLL.UseCases
             });            
         }
 
-        public async Task PayOrderAsync(long orderId, UserContext context)
+        public async Task<OrderActionResponseDTO> PayOrderAsync(long orderId, UserContext context)
         {
-            await _database.ExecuteInTransactionAsync(async () =>
+            return await _database.ExecuteInTransactionAsync(async () =>
             {
                 // WHY: Lock ở UseCase để đảm bảo quy trình (Order + Wallet) là nguyên tử.
                 var order = await _orderService.GetWithLockByIdOrThrowAsync(orderId);
@@ -50,46 +50,68 @@ namespace GameTopUp.BLL.UseCases
 
                 // 2. Debit wallet & Mark paid
                 await _walletService.PayOrderAsync(order);
-                await _orderService.MarkAsPaidAsync(order, context);
+                var result = await _orderService.MarkAsPaidAsync(order, context);
+
+                return MapToActionResponse(result);
             });
         }
 
-        public async Task PickOrderAsync(long orderId, UserContext adminContext)
+        public async Task<OrderActionResponseDTO> PickOrderAsync(long orderId, UserContext adminContext)
         {
-            await _database.ExecuteInTransactionAsync(async () =>
+            return await _database.ExecuteInTransactionAsync(async () =>
             {
                 // WHY: Lock trước khi tiếp nhận để tránh Admin khác cùng xử lý.
                 var order = await _orderService.GetWithLockByIdOrThrowAsync(orderId);
-                await _orderService.PickOrderAsync(order, adminContext);
+                var result = await _orderService.PickOrderAsync(order, adminContext);
+
+                return MapToActionResponse(result);
             });
         }
 
-        public async Task CompleteOrderAsync(long orderId, UserContext adminContext)
+        public async Task<OrderActionResponseDTO> CompleteOrderAsync(long orderId, UserContext adminContext)
         {
-            await _database.ExecuteInTransactionAsync(async () =>
+            return await _database.ExecuteInTransactionAsync(async () =>
             {
                 var order = await _orderService.GetWithLockByIdOrThrowAsync(orderId);
-                await _orderService.CompleteOrderAsync(order, adminContext);
+                var result = await _orderService.CompleteOrderAsync(order, adminContext);
+
+                return MapToActionResponse(result);
             });
         }
 
-        public async Task CancelOrderAsync(long orderId, UserContext userContext, string? reason = null)
+        public async Task<OrderActionResponseDTO> CancelOrderAsync(long orderId, UserContext userContext, string? reason = null)
         {
-            await _database.ExecuteInTransactionAsync(async () =>
+            return await _database.ExecuteInTransactionAsync(async () =>
             {
-                // WHY: Service trả về trạng thái cũ để UseCase quyết định bù trừ (Hoàn tiền/Kho).
                 var order = await _orderService.GetWithLockByIdOrThrowAsync(orderId);
-                var oldStatus = await _orderService.CancelOrderAsync(order, userContext, reason);
-                if (oldStatus == null) return;
+                var result = await _orderService.CancelOrderAsync(order, userContext, reason);
+                if (!result.Changed)
+                    return MapToActionResponse(result);
 
                 // 2. Refund stock & money
                 await _packageService.IncreaseStockAsync(order.GamePackageId, order.Quantity);
 
-                if (oldStatus == OrderStatus.Paid || oldStatus == OrderStatus.Processing)
+                if (result.FromStatus == OrderStatus.Paid || result.FromStatus == OrderStatus.Processing)
                 {
                     await _walletService.RefundOrderAsync(order, reason);
                 }
+
+                return MapToActionResponse(result);
             });
+        }
+
+        private static OrderActionResponseDTO MapToActionResponse(OrderChangeResult result)
+        {
+            return new OrderActionResponseDTO
+            {
+                OrderId = result.Order.Id,
+                FromStatus = result.FromStatus,
+                ToStatus = result.ToStatus,
+                Changed = result.Changed,
+                AssignTo = result.Order.AssignedTo,
+                AssignAt = result.Order.AssignedAt,
+                UpdatedAt = result.Order.UpdatedAt
+            };
         }
     }
 }

@@ -45,7 +45,6 @@ CREATE TABLE IF NOT EXISTS game_packages (
     name VARCHAR(150) NOT NULL,
     image_url TEXT,
     image_public_id VARCHAR(255) NULL,
-    normalized_name VARCHAR(150) NOT NULL,
     game_id BIGINT SIGNED NOT NULL,
     sale_price DECIMAL(18, 2) NOT NULL,
     original_price DECIMAL(18, 2) NOT NULL,
@@ -55,8 +54,7 @@ CREATE TABLE IF NOT EXISTS game_packages (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_package_game FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
-    INDEX idx_packages_lookup (game_id, is_active),
-    INDEX idx_packages_normalized (normalized_name)
+    INDEX idx_packages_lookup (game_id, is_active)
 ) ENGINE=InnoDB;
 
 -- 5. Table: game_accounts
@@ -84,8 +82,8 @@ CREATE TABLE IF NOT EXISTS orders (
     game_package_id BIGINT SIGNED NOT NULL,
     unit_price DECIMAL(18, 2) NOT NULL,
     quantity INT NOT NULL,
-    assign_to BIGINT SIGNED,
-    assign_at DATETIME,
+    assigned_to BIGINT SIGNED,
+    assigned_at DATETIME,
     status INT NOT NULL, -- 1: Pending, 2: Paid, 3: Processing, 4: Completed, 5: Cancelled
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

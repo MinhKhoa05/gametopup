@@ -5,11 +5,6 @@ using Dommel;
 
 namespace GameTopUp.DAL.Database
 {
-    /// <summary>
-    /// DatabaseContext quản lý kết nối và giao dịch (Transaction) với cơ sở dữ liệu.
-    /// Việc tập trung quản lý Transaction tại đây giúp đảm bảo tính toàn vẹn dữ liệu (ACID)
-    /// khi thực hiện nhiều thao tác ghi đồng thời trong một UseCase.
-    /// </summary>
     public class DatabaseContext : IAsyncDisposable, IDisposable
     {
         private readonly DbConnection _connection;
@@ -39,7 +34,7 @@ namespace GameTopUp.DAL.Database
             // Nếu kết nối đã mở, không cần làm gì thêm.
             if (_connection.State == ConnectionState.Open) return;
             
-            // Xử lý retry khi kết nối thất bại, đặc biệt hữu ích trong môi trường có thể gặp sự cố mạng hoặc khi cơ sở dữ liệu đang khởi động lại.
+            // Xử lý retry khi kết nối thất bại
             int maxRetries = 5;
             int delaySeconds = 2;
 
@@ -52,7 +47,6 @@ namespace GameTopUp.DAL.Database
                 }
                 catch (Exception ex) when (i < maxRetries - 1)
                 {
-                    // Log hoặc in ra console nếu cần (trong console app/API có thể dùng Console.WriteLine)
                     Console.WriteLine($"[DatabaseContext] Kết nối thất bại, đang thử lại lần {i + 2}/{maxRetries} sau {delaySeconds}s... Error: {ex.Message}");
                     await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
                 }
@@ -88,14 +82,10 @@ namespace GameTopUp.DAL.Database
             _transaction = null;
         }
 
-        /// <summary>
-        /// Thực thi một chuỗi các hành động bên trong một Transaction.
-        /// Nếu có lỗi xảy ra, toàn bộ các thay đổi sẽ được Rollback để bảo vệ dữ liệu.
-        /// </summary>
         public virtual async Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> action)
         {
-            // Nếu đã có transaction đang chạy (lồng nhau), chỉ thực thi action mà không tạo mới transaction.
-            // Nhằm xử lý trường hợp transaction lồng nhau (nested transaction)
+            // Tránh transaction lồng nhau (nested transaction).
+            // Nếu đã có transaction đang chạy thì chỉ thực thi action. không tạo transaction mới.
             if (_transaction != null)
             {
                 return await action();

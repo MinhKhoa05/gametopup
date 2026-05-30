@@ -9,6 +9,6 @@ namespace GameTopUp.DAL.Interfaces.Wallets
         Task<WalletDepositRequest?> GetWithLockByIdAsync(long requestId);
         Task<List<WalletDepositRequest>> GetByUserIdAsync(long userId, WalletDepositRequestStatus? status = null);
         Task<List<WalletDepositRequest>> GetAllAsync(WalletDepositRequestStatus? status = null);
-        Task<int> UpdateAsync(WalletDepositRequest request);
+        Task<bool> UpdateAsync(WalletDepositRequest request);
     }
 }

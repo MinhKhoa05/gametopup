@@ -4,9 +4,6 @@ using GameTopUp.DAL.Interfaces.Games;
 
 namespace GameTopUp.DAL.Repositories.Games
 {
-    /// <summary>
-    /// Repository quản lý thông tin các gói nạp trong từng Game.
-    /// </summary>
     public class GamePackageRepository : IGamePackageRepository
     {
         private readonly DatabaseContext _database;
@@ -18,12 +15,7 @@ namespace GameTopUp.DAL.Repositories.Games
 
         public async Task<GamePackage?> GetByIdAsync(long id)
         {
-            var sql = "SELECT * FROM game_packages WHERE id = @Id";
-            
-            return await _database.QueryFirstAsync<GamePackage>(sql, new 
-            { 
-                Id = id 
-            });
+            return await _database.GetByIdAsync<GamePackage>(id);
         }
 
         public async Task<List<GamePackage>> GetAllAsync()
@@ -49,15 +41,9 @@ namespace GameTopUp.DAL.Repositories.Games
             return await _database.InsertAsync<GamePackage, long>(gamePackage);
         }
 
-        public async Task<int> UpdateAsync(GamePackage gamePackage)
+        public async Task<bool> UpdateAsync(GamePackage gamePackage)
         {
-            var sql = @"UPDATE game_packages 
-                        SET name = @Name, image_url = @ImageUrl, image_public_id = @ImagePublicId, normalized_name = @NormalizedName, 
-                            sale_price = @SalePrice, original_price = @OriginalPrice, import_price = @ImportPrice, 
-                            stock_quantity = @StockQuantity, is_active = @IsActive, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = @Id";
-            
-            return await _database.ExecuteAsync(sql, gamePackage);
+            return await _database.UpdateAsync(gamePackage);
         }
 
         public async Task<int> IncreaseStockAsync(long id, int quantity)

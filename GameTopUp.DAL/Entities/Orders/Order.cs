@@ -8,7 +8,7 @@ namespace GameTopUp.DAL.Entities
     {
         [Key]
         public long Id { get; set; }
-        
+
         public long UserId { get; set; }
         public string GameAccountInfo { get; set; } = null!;
 
@@ -19,8 +19,8 @@ namespace GameTopUp.DAL.Entities
         [NotMapped]
         public decimal Total => UnitPrice * Quantity;
 
-        public long? AssignTo { get; set; } // Admin đang nhận xử lý
-        public DateTime? AssignAt { get; set; } // Thời điểm admin nhận xử lý
+        public long? AssignedTo { get; set; }
+        public DateTime? AssignedAt { get; set; }
 
         public OrderStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -30,21 +30,45 @@ namespace GameTopUp.DAL.Entities
         {
         }
 
-        public static Order CreatePending(long userId, GamePackage package, int quantity, string gameAccountInfo)
+        public static Order Create(
+            long userId,
+            long gamePackageId,
+            decimal unitPrice,
+            int quantity,
+            string gameAccountInfo)
         {
             var now = DateTime.UtcNow;
 
             return new Order
             {
                 UserId = userId,
-                GamePackageId = package.Id,
-                UnitPrice = package.SalePrice,
+                GamePackageId = gamePackageId,
+                UnitPrice = unitPrice,
                 Quantity = quantity,
                 GameAccountInfo = gameAccountInfo,
+
                 Status = OrderStatus.Pending,
+
+                AssignedTo = null,
+                AssignedAt = null,
+
                 CreatedAt = now,
                 UpdatedAt = now
             };
+        }
+
+        public void UpdateStatus(OrderStatus newStatus, long? assignedTo = null)
+        {
+            var now = DateTime.UtcNow;
+
+            Status = newStatus;
+            UpdatedAt = now;
+
+            if (assignedTo.HasValue)
+            {
+                AssignedTo = assignedTo;
+                AssignedAt = now;
+            }
         }
     }
 

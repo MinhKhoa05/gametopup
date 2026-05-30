@@ -31,8 +31,8 @@ namespace GameTopUp.DAL.Entities
             long orderId,
             OrderStatus fromStatus,
             OrderStatus toStatus,
-            string? note,
             long actionBy,
+            string? note = null,
             bool isAdmin = false)
         {
             return new OrderHistory

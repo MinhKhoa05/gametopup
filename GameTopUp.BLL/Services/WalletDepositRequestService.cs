@@ -29,7 +29,7 @@ namespace GameTopUp.BLL.Services
             var code = CreateDepositCode(context.UserId);
             var transferContent = $"NAP {code}";
             var qrImageUrl = BuildQrImageUrl(amount, transferContent);
-            var request = WalletDepositRequest.CreatePending(
+            var request = WalletDepositRequest.Create(
                 context.UserId,
                 amount,
                 code,

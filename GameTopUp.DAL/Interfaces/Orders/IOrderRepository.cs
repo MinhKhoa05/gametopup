@@ -9,7 +9,7 @@ namespace GameTopUp.DAL.Interfaces.Orders
         Task<List<Order>> GetByUserIdAsync(long userId, OrderStatus? status = null);
         Task<List<Order>> GetAllAsync(OrderStatus? status = null);
         Task<long> CreateAsync(Order order);
-        Task<int> UpdateAsync(Order order);
+        Task<bool> UpdateAsync(Order order);
         Task<bool> HasPendingOrderAsync(long userId);
     }
 }

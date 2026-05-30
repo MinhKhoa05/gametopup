@@ -21,14 +21,14 @@ namespace GameTopUp.DAL.Entities
         {
         }
 
-        public static Wallet CreateForUser(long userId)
+        public static Wallet CreateForUser(long userId, decimal initialBalance = 0)
         {
             var now = DateTime.UtcNow;
 
             return new Wallet
             {
                 UserId = userId,
-                Balance = 0,
+                Balance = initialBalance,
                 CreatedAt = now,
                 UpdatedAt = now
             };

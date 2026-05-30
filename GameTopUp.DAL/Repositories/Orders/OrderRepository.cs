@@ -5,9 +5,6 @@ using GameTopUp.DAL.Interfaces.Orders;
 
 namespace GameTopUp.DAL.Repositories.Orders
 {
-    /// <summary>
-    /// Repository quản lý thông tin đơn hàng.
-    /// </summary>
     public class OrderRepository : IOrderRepository
     {
         private readonly DatabaseContext _database;
@@ -25,12 +22,7 @@ namespace GameTopUp.DAL.Repositories.Orders
 
         public async Task<Order?> GetByIdAsync(long orderId)
         {
-            var sql = "SELECT * FROM orders WHERE id = @Id";
-            
-            return await _database.QueryFirstAsync<Order>(sql, new 
-            { 
-                Id = orderId 
-            });
+            return await _database.GetByIdAsync<Order>(orderId);
         }
 
         public async Task<Order?> GetWithLockByIdAsync(long orderId)
@@ -43,24 +35,9 @@ namespace GameTopUp.DAL.Repositories.Orders
             });
         }
 
-        public async Task<int> UpdateAsync(Order order)
+        public async Task<bool> UpdateAsync(Order order)
         {
-            var sql = @"
-                UPDATE orders 
-                SET status = @Status, 
-                    assign_to = @AssignTo, 
-                    assign_at = @AssignAt, 
-                    updated_at = @UpdatedAt 
-                WHERE id = @Id";
-
-            return await _database.ExecuteAsync(sql, new 
-            { 
-                Id = order.Id,
-                Status = order.Status,
-                AssignTo = order.AssignTo,
-                AssignAt = order.AssignAt,
-                UpdatedAt = order.UpdatedAt
-            });
+            return await _database.UpdateAsync(order);
         }
 
         public async Task<List<Order>> GetByUserIdAsync(long userId, OrderStatus? status = null)

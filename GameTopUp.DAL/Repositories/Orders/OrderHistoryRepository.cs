@@ -4,9 +4,6 @@ using GameTopUp.DAL.Interfaces.Orders;
 
 namespace GameTopUp.DAL.Repositories.Orders
 {
-    /// <summary>
-    /// Repository quản lý lịch sử thay đổi trạng thái của đơn hàng (Audit Log).
-    /// </summary>
     public class OrderHistoryRepository : IOrderHistoryRepository
     {
         private readonly DatabaseContext _database;

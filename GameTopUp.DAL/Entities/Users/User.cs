@@ -27,16 +27,16 @@ namespace GameTopUp.DAL.Entities
         {
         }
 
-        public static User CreateMember(string username, string email, string passwordHash)
+        public static User Create(string displayName, string email, string passwordHash, UserRole role = UserRole.Member)
         {
             var now = DateTime.UtcNow;
 
             return new User
             {
-                Username = username,
+                Username = displayName,
                 Email = email,
                 PasswordHash = passwordHash,
-                Role = UserRole.Member,
+                Role = role,
                 IsActive = true,
                 CreatedAt = now,
                 UpdatedAt = now
