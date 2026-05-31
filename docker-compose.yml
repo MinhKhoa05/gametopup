@@ -19,8 +19,8 @@ services:
       - "${DB_PORT:-3307}:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./Database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
-      - ./Database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+      - ./backend/Database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./backend/Database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD}"]
       interval: 10s
@@ -33,7 +33,7 @@ services:
   # API Service
   api:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     container_name: game_topup_api
     restart: unless-stopped
@@ -49,6 +49,22 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - gametopup_network
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5000/api}
+    container_name: game_topup_frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT_EXTERNAL:-3000}:80"
+    depends_on:
+      - api
     networks:
       - gametopup_network
 

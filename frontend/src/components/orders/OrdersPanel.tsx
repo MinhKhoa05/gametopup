@@ -1,0 +1,52 @@
+import { Banknote } from 'lucide-react';
+import { formatCurrency, formatDate } from '../../lib/format';
+import { statusLabel } from '../../lib/labels';
+import { Order } from '../../types';
+
+export function OrdersPanel({
+  orders,
+  busy,
+  onPay,
+  limit = 5,
+}: {
+  orders: Order[];
+  busy: boolean;
+  onPay: (orderId: number) => void;
+  limit?: number;
+}) {
+  return (
+    <div className="section-panel">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Theo dõi</p>
+          <h2>Đơn của tôi</h2>
+        </div>
+        <span className="pill">{orders.length} đơn</span>
+      </div>
+      <div className="order-list">
+        {orders.slice(0, limit).map((order) => (
+          <div className="order-row" key={order.id}>
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-cyanline/12 text-cyanline">
+              <Banknote size={18} />
+            </div>
+            <div>
+              <strong>Đơn #{order.id}</strong>
+              <span>
+                {statusLabel(order.status)} - {formatDate(order.createdAt)}
+              </span>
+            </div>
+            <div className="ml-auto text-right">
+              <strong>{formatCurrency((order.total ?? order.unitPrice * order.quantity) || 0)}</strong>
+              {order.status === 1 && (
+                <button className="tiny-button" type="button" onClick={() => onPay(order.id)} disabled={busy}>
+                  Thanh toán
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+        {orders.length === 0 && <p className="empty-state">Đăng nhập và đặt gói để xem lịch sử đơn hàng.</p>}
+      </div>
+    </div>
+  );
+}
