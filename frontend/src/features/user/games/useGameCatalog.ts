@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getApiMessage } from '../../lib/api';
-import { Route } from '../../lib/routes';
-import { Game, GamePackage } from '../../types';
+import { getApiMessage } from '../../../lib/api';
+import { Route } from '../../../lib/routes';
+import { Game, GamePackage } from '../../../types';
 import { getGames, getPackagesByGame } from './gameService';
 
 export function useGameCatalog(route: Route, setError: (message: string | null) => void) {

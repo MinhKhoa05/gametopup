@@ -3,7 +3,8 @@ export type Route =
   | { name: 'games'; gameId?: number }
   | { name: 'wallet' }
   | { name: 'orders' }
-  | { name: 'account' };
+  | { name: 'account' }
+  | { name: 'admin'; section?: 'dashboard' | 'games' | 'packages' };
 
 export function parseRoute(pathname = window.location.pathname): Route {
   const segments = pathname.split('/').filter(Boolean);
@@ -15,6 +16,11 @@ export function parseRoute(pathname = window.location.pathname): Route {
   if (segments[0] === 'wallet') return { name: 'wallet' };
   if (segments[0] === 'orders') return { name: 'orders' };
   if (segments[0] === 'account') return { name: 'account' };
+  if (segments[0] === 'admin') {
+    const section = segments[1];
+    if (section === 'games' || section === 'packages') return { name: 'admin', section };
+    return { name: 'admin', section: 'dashboard' };
+  }
 
   return { name: 'home' };
 }
@@ -24,6 +30,7 @@ export function routePath(route: Route) {
   if (route.name === 'wallet') return '/wallet';
   if (route.name === 'orders') return '/orders';
   if (route.name === 'account') return '/account';
+  if (route.name === 'admin') return route.section && route.section !== 'dashboard' ? `/admin/${route.section}` : '/admin';
 
   return '/';
 }

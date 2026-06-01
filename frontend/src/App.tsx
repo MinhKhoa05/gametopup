@@ -2,21 +2,22 @@ import { AppHeader } from './components/layout/AppHeader';
 import { AppFooter } from './components/layout/AppFooter';
 import { ToastNotification } from './components/common/ToastNotification';
 import { useAuthSession } from './features/auth/useAuthSession';
-import { useGameCatalog } from './features/games/useGameCatalog';
-import { useCheckoutOrder } from './features/orders/useCheckoutOrder';
-import { useUserOrders } from './features/orders/useUserOrders';
-import { useDepositRequests } from './features/wallet/useDepositRequests';
-import { useWalletDeposit } from './features/wallet/useWalletDeposit';
-import { useWalletTransactions } from './features/wallet/useWalletTransactions';
+import { useGameCatalog } from './features/user/games/useGameCatalog';
+import { useCheckoutOrder } from './features/user/orders/useCheckoutOrder';
+import { useUserOrders } from './features/user/orders/useUserOrders';
+import { useDepositRequests } from './features/user/wallet/useDepositRequests';
+import { useWalletDeposit } from './features/user/wallet/useWalletDeposit';
+import { useWalletTransactions } from './features/user/wallet/useWalletTransactions';
 import { useAsyncAction } from './hooks/useAsyncAction';
 import { useRoute } from './hooks/useRoute';
 import { Route } from './lib/routes';
-import { AccountPage } from './pages/AccountPage';
-import { GameDetailPage } from './pages/GameDetailPage';
-import { GamesPage } from './pages/GamesPage';
-import { HomePage } from './pages/HomePage';
-import { OrdersPage } from './pages/OrdersPage';
-import { WalletPage } from './pages/WalletPage';
+import { AdminPage } from './features/admin/pages/AdminPage';
+import { AccountPage } from './features/user/pages/AccountPage';
+import { GameDetailPage } from './features/user/pages/GameDetailPage';
+import { GamesPage } from './features/user/pages/GamesPage';
+import { HomePage } from './features/user/pages/HomePage';
+import { OrdersPage } from './features/user/pages/OrdersPage';
+import { WalletPage } from './features/user/pages/WalletPage';
 import { BottomNav } from './components/layout/BottomNav';
 
 export function App() {
@@ -94,6 +95,17 @@ export function App() {
                 busy={action.isLoading}
                 onSubmit={auth.handleAuth}
                 onLogout={auth.handleLogout}
+              />
+            )}
+
+            {route.name === 'admin' && (
+              <AdminPage
+                busy={action.isLoading}
+                execute={action.execute}
+                navigate={navigate}
+                route={route}
+                setError={action.setErrorMessage}
+                user={auth.user}
               />
             )}
           </div>

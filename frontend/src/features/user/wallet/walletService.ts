@@ -1,5 +1,5 @@
-import { api, ApiResponse } from '../../lib/api';
-import { DepositRequest, WalletInfo, WalletTransaction } from '../../types';
+import { api, ApiResponse } from '../../../lib/api';
+import { DepositRequest, WalletInfo, WalletTransaction } from '../../../types';
 
 export async function getWallet() {
   const response = await api.get<ApiResponse<number | WalletInfo>>('/api/wallet');

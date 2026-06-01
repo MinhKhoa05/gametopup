@@ -56,7 +56,7 @@ namespace GameTopUp.API.Controllers
         {
             if (image == null)
             {
-                throw new BusinessException(ErrorCodes.ImageRequired);
+                throw new BusinessException(ErrorCode.ImageRequired);
             }
 
             await using var imageStream = image.OpenReadStream();
@@ -87,3 +87,4 @@ namespace GameTopUp.API.Controllers
         }
     }
 }
+

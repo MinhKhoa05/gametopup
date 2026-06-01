@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { getWallet } from '../wallet/walletService';
 import { getMyOrders, payOrder } from './orderService';
-import { Order, User, WalletInfo } from '../../types';
-import { AsyncActionExecutor } from '../../hooks/useAsyncAction';
+import { Order, User, WalletInfo } from '../../../types';
+import { AsyncActionExecutor } from '../../../hooks/useAsyncAction';
 
 export function useUserOrders(user: User | null, execute: AsyncActionExecutor) {
   const [orders, setOrders] = useState<Order[]>([]);

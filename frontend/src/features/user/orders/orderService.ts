@@ -1,5 +1,5 @@
-import { api, ApiResponse } from '../../lib/api';
-import { Order } from '../../types';
+import { api, ApiResponse } from '../../../lib/api';
+import { Order } from '../../../types';
 
 export async function placeOrder(gamePackageId: number, quantity: number, gameAccountInfo: string) {
   const response = await api.post<ApiResponse<Order>>('/api/orders/place', {

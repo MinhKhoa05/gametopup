@@ -1,10 +1,10 @@
 import { FormEvent } from 'react';
 import { Gamepad2, LogOut, Settings, ShieldCheck, UserRound, WalletCards, ChevronRight } from 'lucide-react';
-import { User, WalletInfo } from '../types';
-import { userDisplayName } from '../lib/labels';
-import { classNames } from '../lib/ui';
-import { Field } from '../components/common/Field';
-import { formatCurrency } from '../lib/format';
+import { User, WalletInfo } from '../../../types';
+import { userDisplayName } from '../../../lib/labels';
+import { classNames } from '../../../lib/ui';
+import { Field } from '../../../components/common/Field';
+import { formatCurrency } from '../../../lib/format';
 
 export function AccountPage({
   authMode,

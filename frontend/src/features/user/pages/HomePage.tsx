@@ -1,9 +1,9 @@
 import { FormEvent, useState } from 'react';
 import { ChevronRight, Zap, ShieldCheck, WalletCards, Gamepad2, Search } from 'lucide-react';
-import { Route } from '../lib/routes';
-import { Game, User, WalletInfo } from '../types';
-import { pickImage, classNames } from '../lib/ui';
-import { AuthPanel } from '../components/auth/AuthPanel';
+import { Route } from '../../../lib/routes';
+import { Game, User, WalletInfo } from '../../../types';
+import { pickImage, classNames } from '../../../lib/ui';
+import { AuthPanel } from '../../../components/auth/AuthPanel';
 
 export function HomePage({
   games,

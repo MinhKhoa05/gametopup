@@ -15,9 +15,9 @@ import {
   WalletCards,
   XCircle,
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '../lib/format';
-import { DepositRequest, User, WalletInfo, WalletTransaction } from '../types';
-import { Route } from '../lib/routes';
+import { formatCurrency, formatDate } from '../../../lib/format';
+import { DepositRequest, User, WalletInfo, WalletTransaction } from '../../../types';
+import { Route } from '../../../lib/routes';
 
 const quickAmounts = [50000, 100000, 200000, 500000];
 const bankNames: Record<string, string> = {

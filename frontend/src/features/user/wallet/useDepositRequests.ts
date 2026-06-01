@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getApiMessage } from '../../lib/api';
-import { DepositRequest, User } from '../../types';
+import { getApiMessage } from '../../../lib/api';
+import { DepositRequest, User } from '../../../types';
 import { getMyDepositRequests } from './walletService';
 
 export function useDepositRequests(user: User | null, setError: (message: string | null) => void) {

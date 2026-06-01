@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getApiMessage } from '../../lib/api';
-import { User, WalletTransaction } from '../../types';
+import { getApiMessage } from '../../../lib/api';
+import { User, WalletTransaction } from '../../../types';
 import { getWalletTransactions } from './walletService';
 
 export function useWalletTransactions(user: User | null, setError: (message: string | null) => void) {

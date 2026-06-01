@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { Gamepad2, Search, Bell, WalletCards, UserRound, LogOut, Receipt, ChevronDown } from 'lucide-react';
+import { Gamepad2, Search, Bell, WalletCards, UserRound, LogOut, Receipt, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { userDisplayName } from '../../lib/labels';
 import { Route } from '../../lib/routes';
 import { classNames } from '../../lib/ui';
 import { User, WalletInfo } from '../../types';
 import { formatCurrency } from '../../lib/format';
+import { isAdminUser } from '../../lib/roles';
 
 export function AppHeader({
   route,
@@ -137,6 +138,17 @@ export function AppHeader({
 
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 rounded-xl bg-ink-light border border-white/5 py-1 shadow-xl z-50">
+                    {isAdminUser(user) && (
+                      <>
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-cyanline hover:text-cyan-100 hover:bg-cyanline/10 flex items-center gap-2 font-bold"
+                          onClick={() => { navigate({name: 'admin'}); setDropdownOpen(false); }}
+                        >
+                          Hồ sơ quản trị
+                        </button>
+                        <div className="border-t border-white/5 my-1"></div>
+                      </>
+                    )}
                     <button 
                       className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 flex items-center gap-2"
                       onClick={() => { navigate({name: 'account'}); setDropdownOpen(false); }}

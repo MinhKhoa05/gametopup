@@ -1,8 +1,8 @@
 import { Search } from 'lucide-react';
-import { Route } from '../lib/routes';
-import { Order } from '../types';
-import { formatCurrency, formatDate } from '../lib/format';
-import { OrderStatusBadge } from '../components/orders/OrderStatusBadge';
+import { Route } from '../../../lib/routes';
+import { Order } from '../../../types';
+import { formatCurrency, formatDate } from '../../../lib/format';
+import { OrderStatusBadge } from '../../../components/orders/OrderStatusBadge';
 
 export function OrdersPage({
   orders,

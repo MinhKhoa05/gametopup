@@ -2,7 +2,10 @@ import { api, ApiResponse } from '../../lib/api';
 import { User } from '../../types';
 
 type AuthPayload = {
-  user: User | null;
+  user: RawUser | null;
+};
+
+type RawUser = User & {
 };
 
 export async function login(email: string, password: string) {
@@ -11,7 +14,7 @@ export async function login(email: string, password: string) {
     password,
   });
 
-  return response.data.data.user;
+  return normalizeUser(response.data.data.user);
 }
 
 export async function register(name: string, email: string, password: string) {
@@ -27,6 +30,19 @@ export async function logout() {
 }
 
 export async function getMe() {
-  const response = await api.get<ApiResponse<User>>('/api/users/me');
-  return response.data.data;
+  const response = await api.get<ApiResponse<RawUser>>('/api/users/me');
+  return normalizeUser(response.data.data);
+}
+
+function normalizeUser(user: RawUser | null): User | null {
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    name: user.name,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    isActive: user.isActive,
+  };
 }

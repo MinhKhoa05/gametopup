@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react';
-import { Route } from '../../lib/routes';
-import { GamePackage } from '../../types';
-import { AsyncActionExecutor } from '../../hooks/useAsyncAction';
+import { Route } from '../../../lib/routes';
+import { GamePackage } from '../../../types';
+import { AsyncActionExecutor } from '../../../hooks/useAsyncAction';
 import { placeOrder } from './orderService';
 
 export function useCheckoutOrder({

@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
-import { AsyncActionExecutor } from '../../hooks/useAsyncAction';
-import { DepositRequest } from '../../types';
+import { AsyncActionExecutor } from '../../../hooks/useAsyncAction';
+import { DepositRequest } from '../../../types';
 import { confirmDepositTransfer, createDepositRequest } from './walletService';
 
 export function useWalletDeposit({

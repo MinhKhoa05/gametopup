@@ -1,10 +1,10 @@
 import { FormEvent } from 'react';
 import { ArrowLeft, CheckCircle2, ChevronRight, Home, ShoppingCart, ShieldCheck } from 'lucide-react';
-import { pickImage, classNames } from '../lib/ui';
-import { formatCurrency } from '../lib/format';
-import { Game, GamePackage, User } from '../types';
-import { Field } from '../components/common/Field';
-import { Route } from '../lib/routes';
+import { pickImage, classNames } from '../../../lib/ui';
+import { formatCurrency } from '../../../lib/format';
+import { Game, GamePackage, User } from '../../../types';
+import { Field } from '../../../components/common/Field';
+import { Route } from '../../../lib/routes';
 
 export function GameDetailPage({
   game,

@@ -1,7 +1,7 @@
 import { Search, ChevronRight } from 'lucide-react';
-import { Route } from '../lib/routes';
-import { Game } from '../types';
-import { pickImage } from '../lib/ui';
+import { Route } from '../../../lib/routes';
+import { Game } from '../../../types';
+import { pickImage } from '../../../lib/ui';
 
 export function GamesPage({
   games,
