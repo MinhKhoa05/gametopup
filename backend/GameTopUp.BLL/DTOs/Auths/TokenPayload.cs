@@ -1,3 +1,5 @@
+using GameTopUp.DAL.Entities;
+
 namespace GameTopUp.BLL.DTOs.Auths
 {
     public class TokenPayload
@@ -11,14 +13,14 @@ namespace GameTopUp.BLL.DTOs.Auths
         {
         }
 
-        public static TokenPayload Create(long userId, string? name, string? email, string? role)
+        public static TokenPayload Create(long userId, string? name, string? email, UserRole? role)
         {
             return new TokenPayload
             {
                 UserId = userId,
                 Name = name,
                 Email = email,
-                Role = role
+                Role = role.ToString()
             };
         }
     }

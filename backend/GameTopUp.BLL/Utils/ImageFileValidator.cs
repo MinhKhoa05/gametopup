@@ -14,12 +14,13 @@ namespace GameTopUp.BLL.Utils
 
         public static void Validate(string fileName, string contentType, long fileLength)
         {
-            if (fileLength <= 0) throw new BusinessException(ErrorCodes.InvalidImageFile);
-            if (fileLength > MaxImageBytes) throw new BusinessException(ErrorCodes.ImageTooLarge);
+            if (fileLength <= 0) throw new BusinessException(ErrorCode.InvalidImageFile);
+            if (fileLength > MaxImageBytes) throw new BusinessException(ErrorCode.ImageTooLarge);
             if (!AllowedContentTypes.Contains(contentType))
-                throw new BusinessException(ErrorCodes.UnsupportedImageType);
+                throw new BusinessException(ErrorCode.UnsupportedImageType);
             if (string.IsNullOrWhiteSpace(fileName))
-                throw new BusinessException(ErrorCodes.InvalidImageFileName);
+                throw new BusinessException(ErrorCode.InvalidImageFileName);
         }
     }
 }
+

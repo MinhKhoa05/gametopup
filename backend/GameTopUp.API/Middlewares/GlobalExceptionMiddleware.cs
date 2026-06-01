@@ -1,14 +1,10 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using GameTopUp.BLL.Exceptions;
 
 namespace GameTopUp.API.Middlewares
 {
-    /// <summary>
-    /// Middleware xử lý ngoại lệ tập trung cho toàn bộ ứng dụng.
-    /// Việc gom lỗi về một nơi giúp đảm bảo phản hồi trả về Client luôn thống nhất về cấu trúc,
-    /// đồng thời bảo mật thông tin bằng cách không để lộ chi tiết lỗi kỹ thuật (Stack Trace).
-    /// </summary>
     public class GlobalExceptionMiddleware
     {
         private readonly RequestDelegate _next;
@@ -28,7 +24,7 @@ namespace GameTopUp.API.Middlewares
             }
             catch (Exception ex)
             {
-                // Nếu Response đã bắt đầu gửi (Headers đã gửi), ta không được phép ghi đè StatusCode hay Content nữa.
+                // Nếu Response đã bắt đầu gửi (Headers đã gửi), không được phép ghi đè StatusCode hay Content nữa.
                 if (context.Response.HasStarted)
                 {
                     _logger.LogWarning("Response đã bắt đầu gửi về client, không thể can thiệp thêm vào Middleware.");
@@ -45,47 +41,45 @@ namespace GameTopUp.API.Middlewares
             context.Response.ContentType = "application/json";
 
             // Phân loại mã lỗi HTTP dựa trên kiểu Exception ném ra từ tầng nghiệp vụ.
-            var statusCode = HttpStatusCode.InternalServerError;
-            
-            if (ex is NotFoundException)
+            var statusCode = ex switch
             {
-                statusCode = HttpStatusCode.NotFound;
-            }
-            else if (ex is UnauthorizedAccessException)
-            {
-                statusCode = HttpStatusCode.Unauthorized;
-            }
-            else if (ex is ForbiddenException)
-            {
-                statusCode = HttpStatusCode.Forbidden;
-            }
-            else if (ex is BusinessException)
-            {
-                statusCode = HttpStatusCode.BadRequest;
-            }
+                NotFoundException => HttpStatusCode.NotFound,
+                UnauthorizedAccessException => HttpStatusCode.Unauthorized,
+                ForbiddenException => HttpStatusCode.Forbidden,
+                BusinessException => HttpStatusCode.BadRequest,
+                _ => HttpStatusCode.InternalServerError // Mặc định là lỗi 500
+            };
 
             context.Response.StatusCode = (int)statusCode;
 
-            // Nếu là lỗi hệ thống (500), ẩn chi tiết lỗi để bảo mật. 
-            // Ngược lại, trả về thông báo lỗi nghiệp vụ cụ thể cho người dùng.
-            var message = ErrorCodes.InternalServerError;
-            string? errorCode = ErrorCodes.InternalServerError;
+            // Thiết lập mặc định ban đầu cho lỗi hệ thống
+            var errorCode = ErrorCode.InternalServerError;
+            string? message = null;
+
+            // Nếu không phải lỗi hệ thống (500), lấy thông tin mã lỗi ra.
             if (statusCode != HttpStatusCode.InternalServerError)
             {
                 message = ex.Message;
-                errorCode = ex is BusinessException businessException
-                    ? businessException.ErrorCode
-                    : message;
+                if (ex is BusinessException businessException)
+                {
+                    errorCode = businessException.ErrorCode;
+                }
+                else
+                {
+                    // Trường hợp ex KHÔNG PHẢI BusinessException (ví dụ lỗi Validation mặc định của .NET)
+                    errorCode = ErrorCode.BadRequest;
+                }
             }
 
-            var response = ApiResponse.Fail(message, errorCode: errorCode);
+            var response = ApiResponse.Fail(errorCode, message);
 
             var options = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response, options));
+            await context.Response.WriteAsJsonAsync(response, options);
         }
     }
 }

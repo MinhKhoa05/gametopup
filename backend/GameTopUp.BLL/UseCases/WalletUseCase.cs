@@ -38,7 +38,7 @@ namespace GameTopUp.BLL.UseCases
                     return _depositRequestService.MapToResponse(request);
 
                 if (request.Status != WalletDepositRequestStatus.UserConfirmed)
-                    throw new BusinessException(ErrorCodes.DepositApproveOnlyUserConfirmed);
+                    throw new BusinessException(ErrorCode.DepositApproveOnlyUserConfirmed);
 
                 await _walletService.DepositFromVietQrAsync(request.UserId, request.Amount, request.Code);
                 await _depositRequestService.MarkApprovedAsync(request, admin, note);
@@ -58,3 +58,4 @@ namespace GameTopUp.BLL.UseCases
         }
     }
 }
+

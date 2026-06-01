@@ -33,7 +33,7 @@ namespace GameTopUp.BLL.Services
                 : await _orderRepo.GetByIdAsync(orderId);
 
             return order
-                ?? throw new NotFoundException(ErrorCodes.OrderNotFound, $"Không tìm thấy đơn hàng #{orderId}");
+                ?? throw new NotFoundException(ErrorCode.OrderNotFound, $"Không tìm thấy đơn hàng #{orderId}");
         }
 
         public Task<Order> GetWithLockByIdOrThrowAsync(long orderId) =>
@@ -43,7 +43,7 @@ namespace GameTopUp.BLL.Services
         {
             if (await _orderRepo.HasPendingOrderAsync(context.UserId))
             {
-                throw new BusinessException(ErrorCodes.PendingOrderExists);
+                throw new BusinessException(ErrorCode.PendingOrderExists);
             }
 
             var order = Order.Create(context.UserId, package.Id, package.SalePrice, quantity, gameAccountInfo);
@@ -66,7 +66,7 @@ namespace GameTopUp.BLL.Services
             }
             catch (Exception ex) when (IsDuplicateError(ex))
             {
-                throw new BusinessException(ErrorCodes.PendingOrderExists);
+                throw new BusinessException(ErrorCode.PendingOrderExists);
             }
         }
 
@@ -76,7 +76,7 @@ namespace GameTopUp.BLL.Services
                 return OrderChangeResult.Unchanged(order);
 
             if (order.Status == OrderStatus.Processing)
-                throw new BusinessException(ErrorCodes.OrderAlreadyAssigned);
+                throw new BusinessException(ErrorCode.OrderAlreadyAssigned);
 
             var fromStatus = order.Status;
             ValidateTransition(fromStatus, OrderStatus.Processing);
@@ -100,7 +100,7 @@ namespace GameTopUp.BLL.Services
             ValidateTransition(order.Status, OrderStatus.Completed);
 
             if (order.AssignedTo != admin.UserId)
-                throw new BusinessException(ErrorCodes.CannotModifyOthersOrder);
+                throw new BusinessException(ErrorCode.CannotModifyOthersOrder);
 
             return await UpdateStatusAsync(
                 order,
@@ -115,16 +115,16 @@ namespace GameTopUp.BLL.Services
                 return OrderChangeResult.Unchanged(order);
 
             if (order.Status == OrderStatus.Completed)
-                throw new BusinessException(ErrorCodes.CompletedOrderCannotBeCancelled);
+                throw new BusinessException(ErrorCode.CompletedOrderCannotBeCancelled);
 
             var isOwner = order.UserId == user.UserId;
             var isAssignedAdmin = order.AssignedTo == user.UserId;
 
             if (!isOwner && !isAssignedAdmin)
-                throw new ForbiddenException(ErrorCodes.CannotModifyOthersOrder);
+                throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
 
             if (order.Status == OrderStatus.Processing && isOwner)
-                throw new ForbiddenException(ErrorCodes.ProcessingOrderCannotBeCancelled);
+                throw new ForbiddenException(ErrorCode.ProcessingOrderCannotBeCancelled);
 
             return await UpdateStatusAsync(
                 order,
@@ -136,16 +136,16 @@ namespace GameTopUp.BLL.Services
         public void ValidateForPayment(Order order, UserContext user)
         {
             if (order.UserId != user.UserId)
-                throw new BusinessException(ErrorCodes.PaymentForbidden);
+                throw new BusinessException(ErrorCode.PaymentForbidden);
 
             if (!ValidateTransition(order.Status, OrderStatus.Paid))
-                throw new BusinessException(ErrorCodes.OrderNotPendingPayment);
+                throw new BusinessException(ErrorCode.OrderNotPendingPayment);
         }
 
         public async Task<OrderChangeResult> MarkAsPaidAsync(Order order, UserContext user)
         {
             if (order.UserId != user.UserId)
-                throw new BusinessException(ErrorCodes.PaymentForbidden);
+                throw new BusinessException(ErrorCode.PaymentForbidden);
 
             return await UpdateStatusAsync(
                 order,
@@ -211,15 +211,15 @@ namespace GameTopUp.BLL.Services
             throw new BusinessException(GetTransitionError(toStatus));
         }
 
-        private static string GetTransitionError(OrderStatus toStatus)
+        private static ErrorCode GetTransitionError(OrderStatus toStatus)
         {
             return toStatus switch
             {
-                OrderStatus.Paid => ErrorCodes.OrderNotPendingPayment,
-                OrderStatus.Processing => ErrorCodes.OrderMustBePaidToPick,
-                OrderStatus.Completed => ErrorCodes.OrderStatusInvalidToComplete,
-                OrderStatus.Cancelled => ErrorCodes.CompletedOrderCannotBeCancelled,
-                _ => ErrorCodes.BadRequest
+                OrderStatus.Paid => ErrorCode.OrderNotPendingPayment,
+                OrderStatus.Processing => ErrorCode.OrderMustBePaidToPick,
+                OrderStatus.Completed => ErrorCode.OrderStatusInvalidToComplete,
+                OrderStatus.Cancelled => ErrorCode.CompletedOrderCannotBeCancelled,
+                _ => ErrorCode.BadRequest
             };
         }
 
@@ -236,3 +236,4 @@ namespace GameTopUp.BLL.Services
         }
     }
 }
+

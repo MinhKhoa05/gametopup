@@ -66,7 +66,7 @@ namespace GameTopUp.DAL.Database
         }
 
         /// <summary>Scalar (COUNT, SUM...)</summary>
-        public static async Task<T?> ScalarAsync<T>(this DatabaseContext db, string sql, object? param = null)
+        public static async Task<T?> ExecuteScalarAsync<T>(this DatabaseContext db, string sql, object? param = null)
         {
             await db.EnsureOpenAsync();
             return await db.Connection.ExecuteScalarAsync<T>(sql, param, db.Transaction);

@@ -9,12 +9,8 @@ using GameTopUp.BLL.Options;
 
 namespace GameTopUp.BLL.Services.Auth
 {
-    /// <summary>
-    /// TokenService quản lý việc tạo JWT và Refresh Token.
-    /// </summary>
     public class TokenService
     {
-        // Dùng const để tránh magic number.
         private const int RefreshTokenByteSize = 32;
 
         private readonly JwtSettings _jwtSettings;
@@ -30,9 +26,6 @@ namespace GameTopUp.BLL.Services.Auth
                 Encoding.UTF8.GetBytes(_jwtSettings.Key));
         }
 
-        /// <summary>
-        /// Tạo Access Token chứa thông tin người dùng.
-        /// </summary>
         public string GenerateAccessToken(TokenPayload payload)
         {
             var now = DateTime.UtcNow;
@@ -72,24 +65,15 @@ namespace GameTopUp.BLL.Services.Auth
             return _tokenHandler.WriteToken(token);
         }
 
-        /// <summary>
-        /// Tạo Refresh Token ngẫu nhiên bảo mật cao.
-        /// </summary>
         public string GenerateRefreshToken()
         {
-            // 32 bytes ~ 256-bit entropy.
             byte[] randomBytes = new byte[RefreshTokenByteSize];
 
-            // Dùng cryptographic random thay vì Random thường.
             RandomNumberGenerator.Fill(randomBytes);
 
-            // Hex dễ lưu và không có ký tự đặc biệt.
             return Convert.ToHexString(randomBytes);
         }
 
-        /// <summary>
-        /// Băm Refresh Token trước khi lưu DB.
-        /// </summary>
         public string HashToken(string token)
         {
             byte[] tokenBytes = Encoding.UTF8.GetBytes(token);

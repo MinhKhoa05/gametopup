@@ -21,35 +21,34 @@ namespace GameTopUp.BLL.Services
             return users.Adapt<IEnumerable<UserResponseDTO>>();
         }
 
-        public async Task<UserResponseDTO> GetByIdAsync(long id)
+        public async Task<User> GetByIdOrThrowAsync(long id)
         {
-            var user = await _userRepo.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCodes.UserNotFound);
-            return user.Adapt<UserResponseDTO>();
+            var user = await _userRepo.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCode.UserNotFound);
+            return user;
         }
 
-        public async Task<long> RegisterWithHashedPasswordAsync(CreateUserRequest request, string hashedPassword)
+        public async Task<long> CreateUserAsync(CreateUserRequest request)
         {
-            var existingUser = await _userRepo.GetByEmailAsync(request.Email);
-            if (existingUser != null)
-            {
-                throw new BusinessException(ErrorCodes.EmailExists);
+            var isEmailExists = await _userRepo.ExistsByEmailAsync(request.Email);
+            if (isEmailExists){
+                throw new BusinessException(ErrorCode.EmailExists);
             }
 
-            var user = User.Create(request.Name, request.Email, hashedPassword);
+            var user = User.Create(request.Name, request.Email, request.Password);
 
             return await _userRepo.CreateAsync(user);
         }
 
         public async Task UpdateProfileAsync(long id, UpdateUserRequest request)
         {
-            var user = await _userRepo.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCodes.UserNotFound);
+            var user = await GetByIdOrThrowAsync(id);
             request.Adapt(user);
             await _userRepo.UpdateAsync(user);
         }
 
         public async Task DeleteAsync(long id)
         {
-            var user = await _userRepo.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCodes.UserNotFound);
+            var user = await GetByIdOrThrowAsync(id);
             await _userRepo.DeleteAsync(id);
         }
 
@@ -58,13 +57,13 @@ namespace GameTopUp.BLL.Services
             return await _userRepo.GetByEmailAsync(email);
         }
 
-        public async Task<User> GetProfileAsync(long userId)
+        public async Task<UserResponseDTO> GetProfileAsync(long userId)
         {
-            var user = await _userRepo.GetByIdAsync(userId) ?? throw new NotFoundException(ErrorCodes.UserNotFound);
-            return user;
+            var user = await GetByIdOrThrowAsync(userId);
+            return user.Adapt<UserResponseDTO>();
         }
 
-        public async Task ChangePasswordAsync(long userId, string newPasswordHash)
+        public async Task UpdatePasswordAsync(long userId, string newPasswordHash)
         {
             await _userRepo.UpdatePasswordAsync(userId, newPasswordHash);
         }

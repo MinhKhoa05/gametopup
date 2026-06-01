@@ -1,10 +1,7 @@
+using GameTopUp.BLL.Exceptions;
+
 namespace GameTopUp.API
 {
-    /// <summary>
-    /// Cấu trúc phản hồi chuẩn (Standard Response Body) cho toàn bộ API của hệ thống.
-    /// Việc thống nhất cấu trúc này giúp Frontend dễ dàng xây dựng các Interceptor xử lý lỗi 
-    /// và hiển thị thông báo một cách tự động.
-    /// </summary>
     public class ApiResponse
     {
         public bool Success { get; set; }
@@ -15,8 +12,8 @@ namespace GameTopUp.API
 
         public object? Data { get; set; }
 
-        private ApiResponse() 
-        { 
+        private ApiResponse()
+        {
         }
 
         public static ApiResponse Ok(object? data = null, string? message = null)
@@ -29,13 +26,16 @@ namespace GameTopUp.API
             };
         }
 
-        public static ApiResponse Fail(string message, object? data = null, string? errorCode = null)
+        public static ApiResponse Fail(ErrorCode errorCode, string? message = null, object? data = null)
         {
             return new ApiResponse
             {
                 Success = false,
-                Message = message,
-                ErrorCode = errorCode,
+
+                // Nếu không truyền message cụ thể, sẽ lấy message mặc định từ ErrorCode để đảm bảo tính nhất quán.
+                Message = message ?? errorCode.GetMessage(),
+                
+                ErrorCode = errorCode.ToString(),
                 Data = data
             };
         }

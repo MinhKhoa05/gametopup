@@ -11,5 +11,6 @@ namespace GameTopUp.DAL.Interfaces.Users
         Task<bool> UpdateAsync(User user);
         Task<IEnumerable<User>> GetAllAsync(int page, int pageSize);
         Task<int> DeleteAsync(long userId);
+        Task<bool> ExistsByEmailAsync(string email);
     }
 }

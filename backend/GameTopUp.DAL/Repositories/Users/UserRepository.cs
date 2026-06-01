@@ -21,10 +21,10 @@ namespace GameTopUp.DAL.Repositories.Users
         public async Task<User?> GetByEmailAsync(string email)
         {
             string sql = "SELECT * FROM users WHERE email = @Email";
-            
-            return await _database.QueryFirstAsync<User>(sql, new 
-            { 
-                Email = email 
+
+            return await _database.QueryFirstAsync<User>(sql, new
+            {
+                Email = email
             });
         }
 
@@ -36,11 +36,11 @@ namespace GameTopUp.DAL.Repositories.Users
         public async Task<int> UpdatePasswordAsync(long userId, string newPasswordHash)
         {
             string sql = "UPDATE users SET password_hash = @PasswordHash WHERE id = @UserId";
-            
-            return await _database.ExecuteAsync(sql, new 
-            { 
-                PasswordHash = newPasswordHash, 
-                UserId = userId 
+
+            return await _database.ExecuteAsync(sql, new
+            {
+                PasswordHash = newPasswordHash,
+                UserId = userId
             });
         }
 
@@ -53,23 +53,29 @@ namespace GameTopUp.DAL.Repositories.Users
         {
             int offset = (page - 1) * pageSize;
             string sql = "SELECT * FROM users ORDER BY created_at DESC LIMIT @Limit OFFSET @Offset";
-            
-            return await _database.QueryAsync<User>(sql, new 
-            { 
-                Limit = pageSize, 
-                Offset = offset 
+
+            return await _database.QueryAsync<User>(sql, new
+            {
+                Limit = pageSize,
+                Offset = offset
             });
         }
 
         public async Task<int> DeleteAsync(long userId)
         {
-            string sql = "UPDATE users SET is_active = 0 WHERE id = @UserId";
-            
-            return await _database.ExecuteAsync(sql, new 
-            { 
-                UserId = userId 
+            const string sql = "UPDATE users SET is_active = 0 WHERE id = @UserId";
+
+            return await _database.ExecuteAsync(sql, new
+            {
+                UserId = userId
             });
         }
 
+        public async Task<bool> ExistsByEmailAsync(string email)
+        {
+            const string sql = "SELECT EXISTS(SELECT 1 FROM Users WHERE Email = @Email)";
+
+            return await _database.ExecuteScalarAsync<bool>(sql, new { Email = email });
+        }
     }
 }

@@ -54,7 +54,7 @@ namespace GameTopUp.API.Controllers
             var refreshToken = Request.GetRefreshToken();
             if (string.IsNullOrEmpty(refreshToken))
             {
-                throw new BusinessException(ErrorCodes.InvalidRefreshToken, ErrorCodes.InvalidOrExpiredRefreshToken);
+                throw new BusinessException(ErrorCode.InvalidRefreshToken);
             }
 
             var result = await _auth.RefreshAsync(refreshToken);
@@ -104,3 +104,4 @@ namespace GameTopUp.API.Controllers
         }
     }
 }
+

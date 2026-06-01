@@ -32,7 +32,7 @@ namespace GameTopUp.BLL.Services
             string description,
             long? orderId = null)
         {
-            if (amount <= 0) throw new BusinessException(ErrorCodes.AmountMustBePositive);
+            if (amount <= 0) throw new BusinessException(ErrorCode.AmountMustBePositive);
 
             return ApplyBalanceChangeAsync(userId, amount, type, description, orderId);
         }
@@ -44,7 +44,7 @@ namespace GameTopUp.BLL.Services
             string description,
             long? orderId = null)
         {
-            if (amount <= 0) throw new BusinessException(ErrorCodes.AmountMustBePositive);
+            if (amount <= 0) throw new BusinessException(ErrorCode.AmountMustBePositive);
 
             return ApplyBalanceChangeAsync(userId, -amount, type, description, orderId);
         }
@@ -56,14 +56,14 @@ namespace GameTopUp.BLL.Services
             string description,
             long? orderId = null)
         {
-            if (balanceChange == 0) throw new BusinessException(ErrorCodes.AmountMustBePositive);
+            if (balanceChange == 0) throw new BusinessException(ErrorCode.AmountMustBePositive);
 
             var wallet = await GetWalletWithLockOrThrowAsync(userId);
             var balanceBefore = wallet.Balance;
             var balanceAfter = balanceBefore + balanceChange;
 
             if (balanceChange < 0 && balanceAfter < 0)
-                throw new BusinessException(ErrorCodes.InsufficientWalletBalance);
+                throw new BusinessException(ErrorCode.InsufficientWalletBalance);
 
             wallet.Balance = balanceAfter;
             wallet.UpdatedAt = DateTime.UtcNow;
@@ -128,14 +128,14 @@ namespace GameTopUp.BLL.Services
         public async Task<decimal> GetBalanceAsync(UserContext context)
         {
             var wallet = await _walletRepo.GetByUserIdAsync(context.UserId) 
-                ?? throw new NotFoundException(ErrorCodes.WalletNotFound);
+                ?? throw new NotFoundException(ErrorCode.WalletNotFound);
             return wallet.Balance;
         }
 
         private async Task<Wallet> GetWalletWithLockOrThrowAsync(long userId)
         {
             return await _walletRepo.GetWithLockByUserIdAsync(userId)
-                ?? throw new NotFoundException(ErrorCodes.WalletNotFound);
+                ?? throw new NotFoundException(ErrorCode.WalletNotFound);
         }
 
         public async Task<List<WalletTransaction>> GetTransactionsAsync(UserContext context)
@@ -144,3 +144,4 @@ namespace GameTopUp.BLL.Services
         }
     }
 }
+

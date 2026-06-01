@@ -24,32 +24,34 @@ namespace GameTopUp.BLL.Services.Auth
             await _repo.CreateAsync(refreshToken);
         }
 
-        public async Task<RefreshToken?> ValidateAndGetAsync(string tokenHash)
+        /// <summary>
+        /// Revoke token cũ và trả về thông tin token đã bị revoke để tầng trên có thể lấy userId, log, v.v.
+        /// </summary>
+        public async Task<RefreshToken?> RevokeTokenAsync(string tokenHash)
         {
             var refreshToken = await _repo.GetByTokenHashAsync(tokenHash);
 
-            // Token không tồn tại.
-            if (refreshToken is null)
-                return null;
+            if (!IsTokenAvailable(refreshToken))
+            {
+                return null; // Token không hợp lệ, trả về null để tầng trên xử lý.
+            }
 
-            // Token đã bị revoke.
-            if (refreshToken.RevokedAt is not null)
+            var success = await _repo.RevokeTokenAsync(tokenHash); 
+            if (!success)
+            {
                 return null;
-
-            // Token đã hết hạn.
-            if (refreshToken.ExpiresAt < DateTime.UtcNow)
-                return null;
+            }
 
             return refreshToken;
         }
 
-        public async Task RevokeTokenAsync(string tokenHash)
+        private static bool IsTokenAvailable(RefreshToken? token)
         {
-            var success = await _repo.RevokeTokenAsync(tokenHash);
+            if (token is null) return false;
+            if (token.RevokedAt is not null) return false;
+            if (token.ExpiresAt < DateTime.UtcNow) return false;
 
-            // Throw exception để tầng trên xử lý response phù hợp.
-            if (!success)
-                throw new BusinessException(ErrorCodes.RevokeTokenFailed);
+            return true; // Token hoàn toàn sạch sẽ, dùng được!
         }
     }
 }

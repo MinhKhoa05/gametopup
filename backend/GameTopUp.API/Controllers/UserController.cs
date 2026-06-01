@@ -27,16 +27,16 @@ namespace GameTopUp.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            var result = await _userService.GetByIdAsync(id);
-            return ApiOk(result);
+            var user = await _userService.GetProfileAsync(id);
+            return ApiOk(user);
         }
 
         [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> GetMyProfile()
         {
-            var result = await _userService.GetByIdAsync(CurrentUser.UserId);
-            return ApiOk(result);
+            var user = await _userService.GetProfileAsync(CurrentUser.UserId);
+            return ApiOk(user);
         }
 
         [Authorize]

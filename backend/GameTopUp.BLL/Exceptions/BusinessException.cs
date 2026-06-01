@@ -1,16 +1,16 @@
-
 namespace GameTopUp.BLL.Exceptions
 {
     /// <summary>
-    /// Ngoại lệ cơ bản cho các lỗi nghiệp vụ trong hệ thống.
-    /// Khi ném ngoại lệ này, Middleware sẽ tự động bắt lại và trả về lỗi 400 Bad Request cho Client.
+    /// Đại diện cho các lỗi nghiệp vụ (Validation, Logic sai...) để phân biệt với lỗi sập hệ thống (500).
+    /// Được Middleware bắt lại và trả về mã lỗi thích hợp (400, 403, 404...) kèm ErrorCode cho Client.
     /// </summary>
     public class BusinessException : Exception
     {
-        public string ErrorCode { get; }
+        public ErrorCode ErrorCode { get; }
 
-        public BusinessException(string errorCode = ErrorCodes.BadRequest, string? message = null)
-            : base(message ?? errorCode)
+        // Lấy message mặc định từ ErrorCode nếu không truyền message cụ thể.
+        public BusinessException(ErrorCode errorCode = ErrorCode.BadRequest, string? message = null)
+            : base(message ?? errorCode.GetMessage())
         {
             ErrorCode = errorCode;
         }
