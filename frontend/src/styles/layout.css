@@ -1,0 +1,116 @@
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content > div:has(.auth-page-slider) {
+  width: 100%;
+  align-self: stretch;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: linear-gradient(180deg, rgba(8, 15, 28, 0.98) 0%, rgba(8, 15, 28, 0.92) 100%);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.24);
+}
+
+.header-shell {
+  position: relative;
+}
+
+.header-shell::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -1px 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(34, 211, 238, 0.2) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+
+.desktop-nav {
+  display: none;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .desktop-nav {
+    display: flex;
+  }
+}
+
+.desktop-nav button {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.desktop-nav button.active {
+  color: var(--color-cyanline);
+  background: rgba(34, 211, 238, 0.12);
+}
+
+.header-dropdown {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(11, 18, 32, 0.98) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow:
+    0 20px 48px rgba(2, 6, 23, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  overflow: hidden;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-ink-light);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  z-index: 50;
+  padding-bottom: env(safe-area-inset-bottom, 10px);
+}
+
+.bottom-nav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  .bottom-nav {
+    display: none;
+  }
+}

@@ -82,7 +82,7 @@ export function GamesAdminPanel({
                   <small>{game.isActive ? 'Đang hiển thị' : 'Đang ẩn'}</small>
                 </div>
                 <StatusPill active={game.isActive} />
-                <div className="admin-actions">
+                <div className="flex gap-2">
                   <button type="button" className="icon-button" title="Sửa game" onClick={() => startEdit(game)}>
                     <Edit3 size={16} />
                   </button>

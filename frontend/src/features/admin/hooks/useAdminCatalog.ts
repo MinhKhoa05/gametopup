@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getAllPackages, getGames } from '../../user/games/gameService';
+import { getAllPackages, getGames } from '../../games/services/gameService';
 import { getApiMessage } from '../../../lib/api';
 import { Game, GamePackage, Order } from '../../../types';
 import { getAdminOrders } from '../services/adminService';

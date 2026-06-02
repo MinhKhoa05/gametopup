@@ -3,7 +3,6 @@ import { Badge } from '../../../components/common/Badge';
 import { Field } from '../../../components/common/Field';
 import { classNames } from '../../../lib/ui';
 import { SectionHeading } from '../../../components/common/SectionHeading';
-import { EmptyState } from '../../../components/common/EmptyState';
 
 export function PanelTitle({
   action,
@@ -15,16 +14,16 @@ export function PanelTitle({
   title: string;
 }) {
   return (
-    <SectionHeading>
-      <div className="section-heading__copy">
-        <h2 className="section-heading__title">{title}</h2>
-      </div>
-      {action && (
-        <button type="button" className="section-heading__action" onClick={onAction}>
-          {action}
-        </button>
-      )}
-    </SectionHeading>
+    <SectionHeading
+      action={
+        action ? (
+          <button type="button" className="section-heading__action" onClick={onAction}>
+            {action}
+          </button>
+        ) : null
+      }
+      title={title}
+    />
   );
 }
 
@@ -53,9 +52,14 @@ export function SearchBox({
 export function StatusPill({ active }: { active: boolean }) {
   return (
     <Badge
-      className={classNames('gametopup-status-pill', active ? 'active' : 'inactive')}
+      className={classNames(
+        'inline-flex min-h-0 items-center justify-center gap-1 rounded-full px-2.5 py-1 text-[0.78rem] font-bold whitespace-nowrap',
+        active
+          ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200'
+          : 'border-slate-500/20 bg-slate-500/15 text-slate-200',
+      )}
       icon={active ? <CheckCircle2 size={14} /> : <X size={14} />}
-      tone={active ? 'success' : 'info'}
+      tone="default"
     >
       {active ? 'Bật' : 'Tắt'}
     </Badge>
@@ -96,9 +100,9 @@ export function AdminSkeleton({ rows }: { rows: number }) {
 
 export function EmptyLine({ text }: { text: string }) {
   return (
-    <EmptyState className="admin-empty-line">
+    <div className="rounded-2xl border border-dashed border-white/12 px-6 py-8 text-slate-400">
       <span>{text}</span>
-    </EmptyState>
+    </div>
   );
 }
 

@@ -3,22 +3,22 @@ import { AppHeader } from './components/layout/AppHeader';
 import { BottomNav } from './components/layout/BottomNav';
 import { ToastNotification } from './components/common/ToastNotification';
 import { AdminPage } from './features/admin/pages/AdminPage';
-import { useAuthSession } from './features/auth/useAuthSession';
-import { useGameCatalog } from './features/user/games/useGameCatalog';
-import { useCheckoutOrder } from './features/user/orders/useCheckoutOrder';
-import { useUserOrders } from './features/user/orders/useUserOrders';
-import { useDepositRequests } from './features/user/wallet/useDepositRequests';
-import { useWalletDeposit } from './features/user/wallet/useWalletDeposit';
-import { useWalletTransactions } from './features/user/wallet/useWalletTransactions';
+import { useAuthSession } from './features/auth/hooks/useAuthSession';
+import { useGameCatalog } from './features/games/hooks/useGameCatalog';
+import { useCheckoutOrder } from './features/orders/hooks/useCheckoutOrder';
+import { useUserOrders } from './features/orders/hooks/useUserOrders';
+import { useDepositRequests } from './features/wallet/hooks/useDepositRequests';
+import { useWalletDeposit } from './features/wallet/hooks/useWalletDeposit';
+import { useWalletTransactions } from './features/wallet/hooks/useWalletTransactions';
 import { useAsyncAction } from './hooks/useAsyncAction';
 import { useRoute } from './hooks/useRoute';
 import { Route } from './lib/routes';
 import { AccountPage } from './features/user/pages/AccountPage';
-import { GameDetailPage } from './features/user/pages/GameDetailPage';
-import { GamesPage } from './features/user/pages/GamesPage';
-import { HomePage } from './features/user/pages/HomePage';
-import { OrdersPage } from './features/user/pages/OrdersPage';
-import { WalletPage } from './features/user/pages/WalletPage';
+import { GameDetailPage } from './features/games/pages/GameDetailPage';
+import { GamesPage } from './features/games/pages/GamesPage';
+import { HomePage } from './features/home/pages/HomePage';
+import { OrdersPage } from './features/orders/pages/OrdersPage';
+import { WalletPage } from './features/wallet/pages/WalletPage';
 import { useAuthStore } from './store/auth.store';
 
 export function App() {
@@ -51,7 +51,7 @@ export function App() {
         )}
 
         {!isAdminRoute && route.name !== 'home' && (
-          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             {route.name === 'games' && !route.gameId && (
               <GamesRoute authLoading={authLoading} route={route} setError={action.setErrorMessage} navigate={navigate} />
             )}

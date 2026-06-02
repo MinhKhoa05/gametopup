@@ -1,26 +1,30 @@
 import { FormEvent } from 'react';
 import {
   ArrowRight,
+  Check,
   Gamepad2,
   LogOut,
   Mail,
   Save,
   ShieldCheck,
   ShoppingBag,
+  UserPlus,
   UserRound,
   WalletCards,
 } from 'lucide-react';
 import { Field } from '../../../components/common/Field';
 import { Badge } from '../../../components/common/Badge';
 import { IconBox } from '../../../components/common/IconBox';
+import { StatCard } from '../../../components/common/StatCard';
 import { SectionHeading } from '../../../components/common/SectionHeading';
+import { AuthSliderForm } from '../../../features/auth/components/AuthSliderForm';
 import { formatCurrency } from '../../../lib/format';
 import { userDisplayName } from '../../../lib/labels';
 import { Route } from '../../../lib/routes';
 import { classNames } from '../../../lib/ui';
 import { User, WalletInfo } from '../../../types';
 import { AsyncActionExecutor } from '../../../hooks/useAsyncAction';
-import { useProfileEditor } from '../profile/useProfileEditor';
+import { useProfileEditor } from '../hooks/useProfileEditor';
 import { authStore, useAuthStore } from '../../../store/auth.store';
 
 function isAdminUser(user: User) {
@@ -62,105 +66,67 @@ export function AccountPage({
 
   if (!user) {
     return (
-      <div className={classNames('auth-page-slider', authMode === 'register' && 'right-panel-active')}>
+      <div className={classNames('auth-page-slider !w-full', authMode === 'register' && 'right-panel-active')}>
         <div className="slider-form-container login-container">
-          <form
-            className="auth-form"
+          <AuthSliderForm
+            busy={busy}
+            form={form}
+            mode="login"
+            onChange={(next) => authStore.setAuthForm(next)}
             onSubmit={(e) => {
               e.preventDefault();
               authStore.setAuthMode('login');
               onSubmit(e);
             }}
-          >
-            <h3>Đăng nhập</h3>
-            <span className="mb-4 block text-sm text-slate-400">
-              Mừng bạn quay trở lại! Đăng nhập để tiếp tục giao dịch.
-            </span>
-            <Field
-              label="Email"
-              value={form.email}
-              onChange={(v) => authStore.setAuthForm({ ...form, email: v })}
-              placeholder="customer01@gametopup.com"
-              type="email"
-            />
-            <Field
-              label="Mật khẩu"
-              value={form.password}
-              onChange={(v) => authStore.setAuthForm({ ...form, password: v })}
-              placeholder="Nhập mật khẩu"
-              type="password"
-            />
-            <button className="btn-primary w-full text-lg mt-2" type="submit" disabled={busy}>
-              {busy ? 'Đang xử lý...' : 'Đăng nhập'}
-            </button>
-            <div className="mt-4 text-center text-sm text-slate-400 block md:hidden">
-              Chưa có tài khoản?{' '}
-              <button type="button" onClick={() => authStore.setAuthMode('register')} className="text-cyanline font-bold">
-                Đăng ký ngay
-              </button>
-            </div>
-          </form>
+            onSwitchMode={(mode) => authStore.setAuthMode(mode)}
+          />
         </div>
 
         <div className="slider-form-container register-container">
-          <form
-            className="auth-form"
+          <AuthSliderForm
+            busy={busy}
+            form={form}
+            mode="register"
+            onChange={(next) => authStore.setAuthForm(next)}
             onSubmit={(e) => {
               e.preventDefault();
               authStore.setAuthMode('register');
               onSubmit(e);
             }}
-          >
-            <h3>Tạo tài khoản</h3>
-            <span className="mb-4 block text-sm text-slate-400">
-              Tạo tài khoản để trải nghiệm nạp game và quản lý ví dễ dàng.
-            </span>
-            <Field
-              label="Tên hiển thị"
-              value={form.displayName}
-              onChange={(v) => authStore.setAuthForm({ ...form, displayName: v })}
-              placeholder="Nguyễn Văn A"
-            />
-            <Field
-              label="Email"
-              value={form.email}
-              onChange={(v) => authStore.setAuthForm({ ...form, email: v })}
-              placeholder="customer01@gametopup.com"
-              type="email"
-            />
-            <Field
-              label="Mật khẩu"
-              value={form.password}
-              onChange={(v) => authStore.setAuthForm({ ...form, password: v })}
-              placeholder="Nhập mật khẩu"
-              type="password"
-            />
-            <button className="btn-primary w-full text-lg mt-2" type="submit" disabled={busy}>
-              {busy ? 'Đang xử lý...' : 'Đăng ký'}
-            </button>
-            <div className="mt-4 text-center text-sm text-slate-400 block md:hidden">
-              Đã có tài khoản?{' '}
-              <button type="button" onClick={() => authStore.setAuthMode('login')} className="text-cyanline font-bold">
-                Đăng nhập
-              </button>
-            </div>
-          </form>
+            onSwitchMode={(mode) => authStore.setAuthMode(mode)}
+          />
         </div>
 
         <div className="slider-overlay-container">
           <div className="slider-overlay">
             <div className="slider-overlay-panel overlay-left">
+              <IconBox size="lg" className="mb-4 bg-white/10 text-white">
+                <UserPlus size={28} />
+              </IconBox>
               <h2>Chào bạn mới!</h2>
               <p>Đăng ký ngay để trải nghiệm dịch vụ nạp game chiết khấu cao và tiện lợi nhất.</p>
-              <button className="btn-outline mt-4" onClick={() => authStore.setAuthMode('login')} type="button">
+              <ul className="my-4 flex flex-col gap-2 text-left text-sm text-[#b0bfd3]">
+                <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Chiết khấu nạp game hấp dẫn</li>
+                <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Thanh toán đa kênh tiện lợi</li>
+                <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Hỗ trợ khách hàng 24/7</li>
+              </ul>
+              <button className="btn-outline mt-2" onClick={() => authStore.setAuthMode('login')} type="button">
                 Đã có tài khoản?
               </button>
             </div>
             <div className="slider-overlay-panel overlay-right">
+              <IconBox size="lg" className="mb-4 bg-white/10 text-white">
+                <ShieldCheck size={28} />
+              </IconBox>
               <h2>Mừng trở lại!</h2>
-              <p>Quản lý ví và theo dõi lịch sử đơn hàng của bạn. Tiếp tục giao dịch ngay hôm nay.</p>
-              <button className="btn-outline mt-4" onClick={() => authStore.setAuthMode('register')} type="button">
-                Chưa có tài khoản?
+              <p>Quản lý ví và theo dõi lịch sử đơn hàng của bạn.</p>
+              <ul className="my-4 flex flex-col gap-2 text-left text-sm text-[#b0bfd3]">
+                <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Quản lý số dư ví</li>
+                <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Theo dõi trạng thái đơn hàng</li>
+                <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Thanh toán nhanh hơn</li>
+              </ul>
+              <button className="btn-outline mt-2" onClick={() => authStore.setAuthMode('register')} type="button">
+                Tạo tài khoản mới
               </button>
             </div>
           </div>
@@ -170,25 +136,30 @@ export function AccountPage({
   }
 
   return (
-    <div className="account-page mx-auto max-w-7xl">
-      <header className="account-header">
-        <div className="account-heading-copy">
-          <h1>Tài khoản của tôi</h1>
-          <p>Quản lý thông tin tài khoản và theo dõi nhanh các hoạt động của bạn.</p>
+    <div className="mx-auto grid max-w-7xl gap-[14px]">
+      <header className="grid items-end gap-2">
+        <div className="grid gap-1.5">
+          <h1 className="m-0 text-[clamp(1.9rem,2.7vw,2.75rem)] font-black leading-none text-white">Tài khoản của tôi</h1>
+          <p className="m-0 max-w-[720px] text-[0.95rem] leading-[1.55] text-[#a7b7ca]">
+            Quản lý thông tin tài khoản và theo dõi nhanh các hoạt động của bạn.
+          </p>
         </div>
       </header>
 
-      <section className="panel account-shell">
+      <section className="grid gap-4 overflow-hidden rounded-[16px] border border-white/5 bg-ink-light p-0">
         <div className="account-summary-card">
           <div className="account-summary-top">
             <div className="account-profile-strip">
-              <IconBox size="lg" className="account-avatar">
+              <IconBox
+                size="lg"
+                className="account-avatar"
+              >
                 <UserRound size={56} strokeWidth={1.8} />
               </IconBox>
-              <div className="account-profile-copy">
-                <div className="account-profile-name">{displayName}</div>
-                <div className="account-profile-email">{user.email}</div>
-                <div className="account-profile-badges">
+              <div className="grid min-w-0 gap-2">
+                <div className="text-[clamp(1.2rem,1.55vw,1.6rem)] font-black leading-[1.1] text-white">{displayName}</div>
+                <div className="text-[0.9rem] text-[#b0bfd3]">{user.email}</div>
+                <div className="flex flex-wrap gap-2.5">
                   <Badge tone="info" icon={<ShieldCheck size={14} />}>
                     {roleLabel}
                   </Badge>
@@ -205,36 +176,34 @@ export function AccountPage({
             <div className="account-summary-divider" />
 
             <div className="account-summary-metrics">
-              <div className="account-summary-metric">
-                <IconBox size="sm" className="border border-cyanline/15 bg-cyanline/10 text-cyanline shadow-[inset_0_0_22px_rgba(34,211,238,0.06)]">
-                  <Mail size={24} />
-                </IconBox>
-                <div>
-                  <small>Số dư ví</small>
-                  <strong>{formatCurrency(wallet?.balance || 0)}</strong>
-                </div>
-              </div>
+              <StatCard
+                surface={false}
+                variant="inline"
+                iconClassName="border border-cyanline/15 bg-cyanline/10 text-cyanline shadow-[inset_0_0_22px_rgba(34,211,238,0.06)]"
+                icon={<Mail size={24} />}
+                label="Số dư ví"
+                value={formatCurrency(wallet?.balance || 0)}
+              />
 
               <div className="account-summary-separator" />
 
-              <div className="account-summary-metric">
-                <IconBox size="sm" className="border border-cyanline/15 bg-cyanline/10 text-cyanline shadow-[inset_0_0_22px_rgba(34,211,238,0.06)]">
-                  <ShoppingBag size={24} />
-                </IconBox>
-                <div>
-                  <small>Đơn hàng</small>
-                  <strong>{ordersCount} đơn</strong>
-                </div>
-              </div>
+              <StatCard
+                surface={false}
+                variant="inline"
+                iconClassName="border border-cyanline/15 bg-cyanline/10 text-cyanline shadow-[inset_0_0_22px_rgba(34,211,238,0.06)]"
+                icon={<ShoppingBag size={24} />}
+                label="Đơn hàng"
+                value={`${ordersCount} đơn`}
+              />
             </div>
           </div>
         </div>
 
         <div className="account-bottom-grid">
-          <section className="gametopup-surface account-quick-card min-h-0">
-            <SectionHeading title="Lối đi nhanh" />
+          <section className="gametopup-surface min-h-0">
+            <SectionHeading className="mb-4" title="Lối đi nhanh" />
 
-            <div className="account-quick-actions">
+            <div className="grid gap-3.5">
               <button type="button" className="gametopup-action-row" onClick={() => navigate({ name: 'wallet' })}>
                 <IconBox size="sm" className="bg-cyanline/10 text-cyanline">
                   <WalletCards size={20} />
@@ -289,8 +258,9 @@ export function AccountPage({
             </div>
           </section>
 
-          <section className="gametopup-surface account-note-card account-note-card--form min-h-0">
+          <section className="gametopup-surface min-h-0">
             <SectionHeading
+              className="mb-4"
               title="Thông tin cá nhân"
               description="Cập nhật thông tin hiển thị trên tài khoản của bạn."
             />

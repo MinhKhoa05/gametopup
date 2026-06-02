@@ -23,17 +23,28 @@ export function DashboardPanel({
   const latestOrders = orders.slice(0, 5);
 
   return (
-    <div className="admin-stack">
-      <div className="admin-quick-stats">
-        <span><strong>{games.length}</strong> Game</span>
-        <span><strong>{metrics.totalPackages}</strong> Gói nạp</span>
-        <span><strong>{metrics.disabledPackages}</strong> Đã tắt</span>
+    <div className="grid min-w-0 gap-5">
+      <div className="flex flex-wrap gap-2.5">
+        <span className="inline-flex items-center gap-2 rounded-full border border-cyanline/16 bg-slate-900/70 px-3.5 py-2 text-[0.86rem] font-semibold text-slate-200">
+          <strong className="text-cyanline text-base font-bold">{games.length}</strong> Game
+        </span>
+        <span className="inline-flex items-center gap-2 rounded-full border border-cyanline/16 bg-slate-900/70 px-3.5 py-2 text-[0.86rem] font-semibold text-slate-200">
+          <strong className="text-cyanline text-base font-bold">{metrics.totalPackages}</strong> Gói nạp
+        </span>
+        <span className="inline-flex items-center gap-2 rounded-full border border-cyanline/16 bg-slate-900/70 px-3.5 py-2 text-[0.86rem] font-semibold text-slate-200">
+          <strong className="text-cyanline text-base font-bold">{metrics.disabledPackages}</strong> Đã tắt
+        </span>
       </div>
 
       <div className="admin-metrics">
         <StatCard icon={<Gamepad2 size={20} />} label="Game đang hoạt động" value={`${metrics.activeGames}/${games.length}`} />
         <StatCard icon={<Clock3 size={20} />} label="Đơn hôm nay" value={metrics.ordersToday.toString()} />
-        <StatCard className="stat-card--warning" icon={<CheckCircle2 size={20} />} label="Đơn đang chờ" value={metrics.pendingOrders.toString()} />
+        <StatCard
+          iconClassName="bg-amber-400/10 text-amber-300"
+          icon={<CheckCircle2 size={20} />}
+          label="Đơn đang chờ"
+          value={metrics.pendingOrders.toString()}
+        />
         <StatCard icon={<BarChart3 size={20} />} label="Doanh thu ghi nhận" value={formatCurrency(metrics.paidRevenue)} />
       </div>
 
@@ -64,7 +75,7 @@ export function DashboardPanel({
 
         <div className="gametopup-surface">
           <PanelTitle title="Hướng dẫn nhanh" />
-          <div className="admin-empty-line admin-summary-note">
+          <div className="rounded-2xl border border-dashed border-white/12 px-6 py-8 text-left leading-6 text-slate-400">
             Vào mục <b>Gói nạp</b>, chọn game ở danh sách bên trái, hệ thống sẽ chỉ tải và hiển thị các gói thuộc đúng game đó.
           </div>
         </div>

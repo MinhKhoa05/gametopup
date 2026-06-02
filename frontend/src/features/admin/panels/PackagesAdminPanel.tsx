@@ -3,7 +3,7 @@ import { Edit3, Plus, Save, Trash2, X } from 'lucide-react';
 import { AsyncActionExecutor } from '../../../hooks/useAsyncAction';
 import { getApiMessage } from '../../../lib/api';
 import { formatCurrency } from '../../../lib/format';
-import { getPackagesByGame } from '../../user/games/gameService';
+import { getPackagesByGame } from '../../games/services/gameService';
 import type { Game, GamePackage } from '../../../types';
 import { createGamePackage, deleteGamePackage, updateGamePackage } from '../services/adminService';
 import { AdminSkeleton, EmptyLine, NumberField, PanelTitle, SearchBox, StatusPill, filterByName, gameName } from '../components/AdminShared';
@@ -238,7 +238,7 @@ export function PackagesAdminPanel({
                     <span className={profit(item) >= 0 ? 'profit' : 'loss'}>Lãi {profit(item) >= 0 ? '+' : ''}{formatCurrency(profit(item))}</span>
                   </div>
                   <StatusPill active={item.isActive} />
-                  <div className="admin-actions">
+                  <div className="flex gap-2">
                     <button type="button" className="icon-button" title="Sửa gói" onClick={() => startEdit(item)}>
                       <Edit3 size={16} />
                     </button>

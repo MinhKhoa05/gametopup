@@ -2,6 +2,7 @@ import { Boxes, Gamepad2, LayoutDashboard } from 'lucide-react';
 import { AsyncActionExecutor } from '../../../hooks/useAsyncAction';
 import { Route } from '../../../lib/routes';
 import { isAdminUser } from '../../../lib/roles';
+import { EmptyState } from '../../../components/common/EmptyState';
 import { useAuthStore } from '../../../store/auth.store';
 import { AdminHeader } from '../components/AdminHeader';
 import { AdminNavButton } from '../components/AdminNavButton';
@@ -30,23 +31,25 @@ export function AdminPage({
   const user = useAuthStore((state) => state.user);
 
   return (
-    <div className="admin-shell">
+    <div className="grid gap-6">
       <AdminHeader loading={catalog.loading} navigate={navigate} onLogout={onLogout} onRefresh={catalog.refresh} route={route} />
 
-      <div className="admin-page-frame mx-auto w-full max-w-[1560px] px-4 pb-8 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1560px] px-4 pb-8 sm:px-6 lg:px-8">
         {!isAdminUser(user) ? (
-          <div className="admin-empty admin-empty--compact">
-            <span>
-              <LayoutDashboard size={26} />
-            </span>
-            <h1>Cần quyền quản trị</h1>
-            <p>Bạn cần đăng nhập bằng tài khoản quản trị để truy cập khu vực này.</p>
-            <button type="button" className="btn-primary" onClick={() => navigate({ name: 'account' })}>
-              Đăng nhập
-            </button>
-          </div>
+          <EmptyState
+            className="max-w-[560px] py-10"
+            icon={
+              <span className="inline-flex h-[54px] w-[54px] items-center justify-center rounded-[16px] bg-cyanline/12 text-cyanline">
+                <LayoutDashboard size={26} />
+              </span>
+            }
+            title="Cần quyền quản trị"
+            description="Bạn cần đăng nhập bằng tài khoản quản trị để truy cập khu vực này."
+            actionLabel="Đăng nhập"
+            onAction={() => navigate({ name: 'account' })}
+          />
         ) : (
-          <div className="admin-layout">
+          <div className="grid grid-cols-[200px_minmax(0,1fr)] items-start gap-[22px]">
             <aside className="admin-sidebar" aria-label="Điều hướng quản trị">
               <AdminNavButton
                 active={section === 'dashboard'}
@@ -68,7 +71,7 @@ export function AdminPage({
               />
             </aside>
 
-            <section className="admin-content">
+            <section className="grid min-w-0 gap-5">
               {section === 'dashboard' && (
                 <DashboardPanel games={catalog.games} loading={catalog.loading} metrics={catalog.metrics} navigate={navigate} orders={catalog.orders} />
               )}

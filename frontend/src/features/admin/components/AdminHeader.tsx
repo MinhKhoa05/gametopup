@@ -24,14 +24,17 @@ export function AdminHeader({
   const displayName = userDisplayName(user);
 
   return (
-    <header className="admin-header">
-      <div className="admin-header-shell mx-auto flex max-w-[1560px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <div className="admin-header-brand">
-          <BrandLogo onClick={() => navigate({ name: 'home' })} title={SITE.adminName} subtitle={subtitleLabel} />
-        </div>
+    <header className="sticky top-0 z-[45] border-b border-slate-400/12 bg-[linear-gradient(180deg,rgba(10,17,31,0.98)_0%,rgba(10,17,31,0.92)_100%)] shadow-[0_10px_30px_rgba(2,6,23,0.18)] backdrop-blur-[14px]">
+      <div className="mx-auto flex max-w-[1560px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        <BrandLogo onClick={() => navigate({ name: 'home' })} title={SITE.adminName} subtitle={subtitleLabel} />
 
-        <div className="admin-header-actions">
-          <button type="button" className="admin-header-action" onClick={onRefresh} disabled={loading}>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            className="inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-slate-400/15 bg-slate-900/80 px-3.5 text-[0.9rem] font-semibold text-slate-200 hover:border-cyanline/20 hover:bg-slate-900/95 disabled:cursor-not-allowed"
+            onClick={onRefresh}
+            disabled={loading}
+          >
             <RotateCcw size={16} className={loading ? 'animate-spin' : undefined} />
             Làm mới
           </button>
