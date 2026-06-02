@@ -11,6 +11,9 @@ import {
   WalletCards,
 } from 'lucide-react';
 import { Field } from '../../../components/common/Field';
+import { Badge } from '../../../components/common/Badge';
+import { IconBox } from '../../../components/common/IconBox';
+import { SectionHeading } from '../../../components/common/SectionHeading';
 import { formatCurrency } from '../../../lib/format';
 import { userDisplayName } from '../../../lib/labels';
 import { Route } from '../../../lib/routes';
@@ -56,11 +59,6 @@ export function AccountPage({
     execute,
     onProfileUpdated,
   });
-
-  const scrollToProfileForm = () => {
-    const formSection = document.querySelector('.account-note-card--form');
-    formSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
 
   if (!user) {
     return (
@@ -184,21 +182,19 @@ export function AccountPage({
         <div className="account-summary-card">
           <div className="account-summary-top">
             <div className="account-profile-strip">
-              <div className="account-avatar">
+              <IconBox size="lg" className="account-avatar">
                 <UserRound size={56} strokeWidth={1.8} />
-              </div>
+              </IconBox>
               <div className="account-profile-copy">
                 <div className="account-profile-name">{displayName}</div>
                 <div className="account-profile-email">{user.email}</div>
                 <div className="account-profile-badges">
-                  <span className="account-badge account-badge--admin">
-                    <ShieldCheck size={14} />
+                  <Badge tone="info" icon={<ShieldCheck size={14} />}>
                     {roleLabel}
-                  </span>
-                  <span className="account-badge account-badge--status">
-                    <span className="status-dot" />
+                  </Badge>
+                  <Badge tone={user?.isActive === false ? 'warning' : 'success'} icon={<span className="status-dot" />}>
                     {statusLabel}
-                  </span>
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -207,9 +203,9 @@ export function AccountPage({
 
             <div className="account-summary-metrics">
               <div className="account-summary-metric">
-                <span className="account-summary-icon">
+                <IconBox size="sm" className="account-summary-icon">
                   <Mail size={24} />
-                </span>
+                </IconBox>
                 <div>
                   <small>Số dư ví</small>
                   <strong>{formatCurrency(wallet?.balance || 0)}</strong>
@@ -219,9 +215,9 @@ export function AccountPage({
               <div className="account-summary-separator" />
 
               <div className="account-summary-metric">
-                <span className="account-summary-icon">
+                <IconBox size="sm" className="account-summary-icon">
                   <ShoppingBag size={24} />
-                </span>
+                </IconBox>
                 <div>
                   <small>Đơn hàng</small>
                   <strong>{ordersCount} đơn</strong>
@@ -233,15 +229,13 @@ export function AccountPage({
 
         <div className="account-bottom-grid">
           <section className="panel account-quick-card">
-            <div className="account-section-heading">
-              <h3>Lối đi nhanh</h3>
-            </div>
+            <SectionHeading title="Lối đi nhanh" />
 
             <div className="account-quick-actions">
               <button type="button" onClick={() => navigate({ name: 'wallet' })}>
-                <span className="account-quick-icon">
+                <IconBox size="sm" className="account-quick-icon">
                   <WalletCards size={20} />
-                </span>
+                </IconBox>
                 <span className="account-quick-copy">
                   <strong>Nạp ví</strong>
                   <small>Thêm tiền và theo dõi giao dịch</small>
@@ -252,9 +246,9 @@ export function AccountPage({
               </button>
 
               <button type="button" onClick={() => navigate({ name: 'orders' })}>
-                <span className="account-quick-icon">
+                <IconBox size="sm" className="account-quick-icon">
                   <Gamepad2 size={20} />
-                </span>
+                </IconBox>
                 <span className="account-quick-copy">
                   <strong>Lịch sử đơn</strong>
                   <small>Xem lại các đơn đã đặt</small>
@@ -265,9 +259,9 @@ export function AccountPage({
               </button>
 
               <button type="button" onClick={() => navigate({ name: 'wallet' })}>
-                <span className="account-quick-icon">
+                <IconBox size="sm" className="account-quick-icon">
                   <WalletCards size={20} />
-                </span>
+                </IconBox>
                 <span className="account-quick-copy">
                   <strong>Lịch sử nạp tiền</strong>
                   <small>Xem giao dịch và số dư ví</small>
@@ -278,9 +272,9 @@ export function AccountPage({
               </button>
 
               <button type="button" className="danger" onClick={onLogout}>
-                <span className="account-quick-icon danger">
+                <IconBox size="sm" className="account-quick-icon danger">
                   <LogOut size={20} />
-                </span>
+                </IconBox>
                 <span className="account-quick-copy">
                   <strong>Đăng xuất</strong>
                   <small>Thoát khỏi tài khoản hiện tại</small>
@@ -293,10 +287,10 @@ export function AccountPage({
           </section>
 
           <section className="panel account-note-card account-note-card--form">
-            <div className="account-section-heading">
-              <h3>Thông tin cá nhân</h3>
-              <p>Cập nhật thông tin hiển thị trên tài khoản của bạn.</p>
-            </div>
+            <SectionHeading
+              title="Thông tin cá nhân"
+              description="Cập nhật thông tin hiển thị trên tài khoản của bạn."
+            />
 
             <form className="account-form" onSubmit={profileEditor.handleSubmit}>
               <Field

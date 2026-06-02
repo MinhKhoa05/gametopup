@@ -5,6 +5,7 @@ import { formatCurrency } from '../../../lib/format';
 import { Game, GamePackage } from '../../../types';
 import { Field } from '../../../components/common/Field';
 import { EmptyState } from '../../../components/common/EmptyState';
+import { SectionHeading } from '../../../components/common/SectionHeading';
 import { Route } from '../../../lib/routes';
 import { useAuthStore } from '../../../store/auth.store';
 
@@ -80,10 +81,7 @@ export function GameDetailPage({
               </div>
             </div>
 
-            <div className="topup-section-heading">
-              <span>{game.name}</span>
-              <h2>Chọn gói nạp</h2>
-            </div>
+            <SectionHeading eyebrow={game.name} title="Chọn gói nạp" />
 
             {packagesLoading ? (
               <div className="topup-loading">Đang tải gói nạp...</div>

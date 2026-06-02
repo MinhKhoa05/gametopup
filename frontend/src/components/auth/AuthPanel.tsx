@@ -3,6 +3,8 @@ import { BadgeCheck, LogOut, ShieldCheck, UserPlus, UserRound, WalletCards } fro
 import { formatCurrency } from '../../lib/format';
 import { userDisplayName } from '../../lib/labels';
 import { WalletInfo } from '../../types';
+import { IconBox } from '../common/IconBox';
+import { StatCard } from '../common/StatCard';
 import { Field } from '../common/Field';
 import { authStore, useAuthStore } from '../../store/auth.store';
 
@@ -23,9 +25,9 @@ export function AuthPanel({ wallet, busy, onSubmit, onLogout }: AuthPanelProps) 
       <aside className="panel bg-gradient-to-br from-ink-lighter to-ink-light">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-cyanline/20 text-cyanline">
+            <IconBox size="md">
               <UserRound size={23} />
-            </div>
+            </IconBox>
             <div>
               <p className="eyebrow">Xin chào</p>
               <h3 className="text-xl font-bold text-white">{userDisplayName(user)}</h3>
@@ -37,19 +39,8 @@ export function AuthPanel({ wallet, busy, onSubmit, onLogout }: AuthPanelProps) 
         </div>
 
         <div className="mt-7 grid gap-3 sm:grid-cols-2">
-          <div className="bg-ink-lighter p-4 rounded-xl border border-white/5">
-            <span className="text-slate-400 text-sm mb-1 flex items-center gap-2">
-              <WalletCards size={16} /> Số dư ví
-            </span>
-            <strong className="text-cyanline text-xl font-black">{formatCurrency(wallet?.balance ?? 0)}</strong>
-          </div>
-
-          <div className="bg-ink-lighter p-4 rounded-xl border border-white/5">
-            <span className="text-slate-400 text-sm mb-1 flex items-center gap-2">
-              <BadgeCheck size={16} /> Tài khoản
-            </span>
-            <strong className="text-white text-lg font-bold">{user.role ?? 'Khách hàng'}</strong>
-          </div>
+          <StatCard icon={<WalletCards size={20} />} label="Số dư ví" value={formatCurrency(wallet?.balance ?? 0)} />
+          <StatCard icon={<BadgeCheck size={20} />} label="Tài khoản" value={user.role ?? 'Khách hàng'} />
         </div>
       </aside>
     );
@@ -60,7 +51,9 @@ export function AuthPanel({ wallet, busy, onSubmit, onLogout }: AuthPanelProps) 
   return (
     <aside className="auth-card">
       <div className="auth-card-header">
-        <div className="auth-card-icon">{isRegister ? <UserPlus size={24} /> : <ShieldCheck size={24} />}</div>
+        <IconBox size="md">
+          {isRegister ? <UserPlus size={24} /> : <ShieldCheck size={24} />}
+        </IconBox>
         <div>
           <p className="eyebrow">Tài khoản</p>
           <h3>{isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}</h3>

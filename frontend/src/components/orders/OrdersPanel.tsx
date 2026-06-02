@@ -17,30 +17,39 @@ export function OrdersPanel({
   limit?: number;
   }) {
   return (
-    <div className="section-panel">
-      <SectionHeading>
-        <div className="section-heading__copy">
-          <p className="eyebrow section-heading__eyebrow">Theo dõi</p>
-          <h2 className="section-heading__title">Đơn của tôi</h2>
-        </div>
-        <span className="pill">{orders.length} đơn</span>
-      </SectionHeading>
-      <div className="order-list">
+    <div className="rounded-2xl border border-white/5 bg-ink-light p-6">
+      <SectionHeading
+        className="mb-5"
+        eyebrow="Theo dõi"
+        title="Đơn của tôi"
+        action={<span className="pill">{orders.length} đơn</span>}
+      />
+      <div className="grid gap-3">
         {orders.slice(0, limit).map((order) => (
-          <div className="order-row" key={order.id}>
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-cyanline/12 text-cyanline">
+          <div
+            key={order.id}
+            className="grid gap-3 rounded-2xl border border-white/5 bg-white/4 p-4 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center"
+          >
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-cyanline/10 text-cyanline">
               <Banknote size={18} />
             </div>
-            <div>
-              <strong>Đơn #{order.id}</strong>
-              <span>
+            <div className="min-w-0">
+              <strong className="block text-white">Đơn #{order.id}</strong>
+              <span className="mt-1 block text-sm text-slate-400">
                 {statusLabel(order.status)} - {formatDate(order.createdAt)}
               </span>
             </div>
-            <div className="ml-auto text-right">
-              <strong>{formatCurrency((order.total ?? order.unitPrice * order.quantity) || 0)}</strong>
+            <div className="text-left md:text-right">
+              <strong className="block text-lg font-black text-cyan-100">
+                {formatCurrency((order.total ?? order.unitPrice * order.quantity) || 0)}
+              </strong>
               {order.status === 1 && (
-                <button className="tiny-button" type="button" onClick={() => onPay(order.id)} disabled={busy}>
+                <button
+                  type="button"
+                  onClick={() => onPay(order.id)}
+                  disabled={busy}
+                  className="mt-2 inline-flex min-h-8 items-center rounded-lg border border-cyan-400/15 bg-cyan-400/10 px-3 text-xs font-bold text-cyan-100 transition-colors hover:bg-cyan-400/15"
+                >
                   Thanh toán
                 </button>
               )}

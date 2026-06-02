@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ShieldCheck, UserRound } from 'lucide-react';
 import { classNames } from '../../lib/ui';
 import type { ReactNode } from 'react';
+import { Badge } from '../common/Badge';
 
 export type HeaderAccountMenuItem = {
   className?: string;
@@ -56,10 +57,9 @@ export function HeaderAccountMenu({
           <div className="header-dropdown-info">
             <div className="header-dropdown-info-text">
               <span className="header-dropdown-info-name">{infoLabel}</span>
-              <span className="header-dropdown-info-badge">
-                <ShieldCheck size={14} />
+              <Badge tone="success" icon={<ShieldCheck size={14} />}>
                 {infoBadge}
-              </span>
+              </Badge>
             </div>
           </div>
 

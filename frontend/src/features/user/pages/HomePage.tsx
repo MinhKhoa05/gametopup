@@ -2,7 +2,7 @@ import { FormEvent, useState } from 'react';
 import { ChevronRight, Zap, ShieldCheck, WalletCards, Gamepad2, Search } from 'lucide-react';
 import { Route } from '../../../lib/routes';
 import { Game, WalletInfo } from '../../../types';
-import { pickImage, classNames } from '../../../lib/ui';
+import { pickImage } from '../../../lib/ui';
 import { AuthPanel } from '../../../components/auth/AuthPanel';
 import { SITE } from '../../../config/site';
 import { useAuthStore } from '../../../store/auth.store';
@@ -85,7 +85,7 @@ export function HomePage({
       <section className="mb-12">
         <div className="flex justify-between items-end mb-6">
           <div>
-            <h2 className="section-title mb-0">Danh Mục Game</h2>
+            <h2 className="mb-0 text-2xl font-extrabold text-white">Danh Mục Game</h2>
           </div>
           <button className="text-cyanline font-bold flex items-center hover:underline" onClick={() => navigate({name: 'games'})}>
             Xem tất cả <ChevronRight size={16} />
@@ -103,7 +103,7 @@ export function HomePage({
 
       {/* Featured Products */}
       <section className="mb-16">
-        <h2 className="section-title">Các Game Phổ Biến</h2>
+        <h2 className="mb-6 text-2xl font-extrabold text-white">Các Game Phổ Biến</h2>
         <div className="product-grid">
           {featured.map(game => {
             const maxDiscount = 12 + (game.name.length % 10);
@@ -132,27 +132,33 @@ export function HomePage({
       {/* Steps and Auth */}
       <section className={user ? "mb-16" : "grid lg:grid-cols-[1fr_400px] gap-8 mb-16"}>
         <div>
-          <h2 className="section-title">Cách Thức Nạp Game</h2>
-          <div className={user ? "steps-grid" : "grid gap-4"}>
-            <div className={classNames("step-card", user ? "text-center items-center" : "flex-row items-center")}>
-              <div className="step-icon"><Gamepad2 size={24} /></div>
-              <div>
-                <strong className="block text-white text-lg">1. Chọn game</strong>
-                <span className="text-slate-400">Tìm tựa game và chọn gói nạp phù hợp.</span>
+          <h2 className="mb-6 text-2xl font-extrabold text-white">Cách Thức Nạp Game</h2>
+          <div className={user ? "grid gap-4 md:grid-cols-3" : "grid gap-4"}>
+            <div className="flex flex-col gap-3 rounded-2xl border border-white/5 bg-ink-lighter p-6 text-center md:items-center">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-cyanline/10 text-cyanline">
+                <Gamepad2 size={24} />
+              </div>
+              <div className="space-y-1">
+                <strong className="block text-lg text-white">1. Chọn game</strong>
+                <span className="block text-slate-400">Tìm tựa game và chọn gói nạp phù hợp.</span>
               </div>
             </div>
-            <div className={classNames("step-card", user ? "text-center items-center" : "flex-row items-center")}>
-              <div className="step-icon"><Zap size={24} /></div>
-              <div>
-                <strong className="block text-white text-lg">2. Nhập ID</strong>
-                <span className="text-slate-400">Cung cấp UID hoặc thông tin tài khoản.</span>
+            <div className="flex flex-col gap-3 rounded-2xl border border-white/5 bg-ink-lighter p-6 text-center md:items-center">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-cyanline/10 text-cyanline">
+                <Zap size={24} />
+              </div>
+              <div className="space-y-1">
+                <strong className="block text-lg text-white">2. Nhập ID</strong>
+                <span className="block text-slate-400">Cung cấp UID hoặc thông tin tài khoản.</span>
               </div>
             </div>
-            <div className={classNames("step-card", user ? "text-center items-center" : "flex-row items-center")}>
-              <div className="step-icon"><WalletCards size={24} /></div>
-              <div>
-                <strong className="block text-white text-lg">3. Thanh toán</strong>
-                <span className="text-slate-400">Sử dụng số dư ví và nhận gói nạp tức thì.</span>
+            <div className="flex flex-col gap-3 rounded-2xl border border-white/5 bg-ink-lighter p-6 text-center md:items-center">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-cyanline/10 text-cyanline">
+                <WalletCards size={24} />
+              </div>
+              <div className="space-y-1">
+                <strong className="block text-lg text-white">3. Thanh toán</strong>
+                <span className="block text-slate-400">Sử dụng số dư ví và nhận gói nạp tức thì.</span>
               </div>
             </div>
           </div>
@@ -160,7 +166,7 @@ export function HomePage({
         
         {!user && (
           <div>
-            <h2 className="section-title hidden lg:block invisible">Đăng nhập</h2>
+            <h2 className="invisible mb-6 text-2xl font-extrabold text-white lg:block">Đăng nhập</h2>
             <AuthPanel wallet={wallet} busy={busy} onSubmit={onAuth} onLogout={onLogout} />
           </div>
         )}
