@@ -20,7 +20,7 @@ export function BottomNav({ route, navigate }: { route: Route; navigate: (route:
         <button
           key={tab.route.name}
           type="button"
-          className={classNames(route.name === tab.route.name && 'active')}
+          className={classNames(route.name === tab.route.name && 'text-cyanline')}
           onClick={() => navigate(tab.route)}
         >
           {bottomNavIcons[tab.route.name]}

@@ -38,7 +38,7 @@ export function DashboardPanel({
       </div>
 
       <div className="admin-two-col">
-        <div className="admin-panel">
+        <div className="gametopup-surface">
           <PanelTitle title="Đơn hàng gần đây" action="Xem đơn hàng" onAction={() => navigate({ name: 'orders' })} />
           {loading ? (
             <AdminSkeleton rows={5} />
@@ -47,7 +47,7 @@ export function DashboardPanel({
           ) : (
             <div className="admin-list">
               {latestOrders.map((order) => (
-                <div className="admin-list-row" key={order.id}>
+                <div className="gametopup-record-row admin-list-row" key={order.id}>
                   <span className="admin-row-icon">#{order.id}</span>
                   <div>
                     <strong>{statusLabel(order.status)}</strong>
@@ -62,7 +62,7 @@ export function DashboardPanel({
           )}
         </div>
 
-        <div className="admin-panel">
+        <div className="gametopup-surface">
           <PanelTitle title="Hướng dẫn nhanh" />
           <div className="admin-empty-line admin-summary-note">
             Vào mục <b>Gói nạp</b>, chọn game ở danh sách bên trái, hệ thống sẽ chỉ tải và hiển thị các gói thuộc đúng game đó.

@@ -109,7 +109,10 @@ export function AppHeader({
         </div>
 
         <div className="header-actions flex flex-1 items-center justify-end gap-3">
-          <label className="header-search hidden max-w-[260px] flex-1 items-center gap-2 md:flex" aria-label="Tìm game">
+          <label
+            className="hidden min-h-11 max-w-[260px] flex-1 items-center gap-2 rounded-[14px] border border-slate-500/20 bg-slate-900/85 px-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] md:flex"
+            aria-label="Tìm game"
+          >
             <Search size={16} className="text-slate-400" />
             <input
               className="w-full border-none bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
@@ -120,16 +123,24 @@ export function AppHeader({
             />
           </label>
 
-          <button type="button" className="header-wallet btn-outline hidden rounded-xl sm:inline-flex" onClick={handleWalletClick}>
+          <button
+            type="button"
+            className="hidden min-h-11 items-center gap-2 rounded-xl border border-cyanline/20 bg-slate-900/85 px-3 text-cyan-100 transition-colors hover:bg-slate-900/95 sm:inline-flex"
+            onClick={handleWalletClick}
+          >
             <Mail size={18} />
             <span className="text-sm font-bold">{user ? `Ví: ${formatCurrency(wallet?.balance || 0)}` : 'Nạp ví'}</span>
           </button>
 
           {user ? (
             <div className="header-user-group flex items-center gap-3">
-              <button type="button" className="icon-button hidden relative sm:inline-flex" title="Thông báo">
+              <button
+                type="button"
+                className="relative hidden h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-ink-lighter text-slate-200 transition-colors hover:bg-ink-light sm:inline-flex"
+                title="Thông báo"
+              >
                 <Bell size={18} />
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500"></span>
+                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
               </button>
 
               <HeaderAccountMenu
@@ -140,9 +151,13 @@ export function AppHeader({
               />
             </div>
           ) : (
-            <button type="button" className="btn-primary rounded-xl" onClick={() => navigate({ name: 'account' })}>
+            <button
+              type="button"
+              className="inline-flex min-h-11 items-center rounded-xl bg-gradient-to-r from-cyanline to-teal-400 px-4 text-sm font-bold text-slate-950 shadow-[0_4px_14px_rgba(34,211,238,0.2)] transition-transform hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(34,211,238,0.3)]"
+              onClick={() => navigate({ name: 'account' })}
+            >
               <UserRound size={17} />
-              <span className="ml-1 hidden text-sm sm:inline">Đăng nhập</span>
+              <span className="ml-1 hidden sm:inline">Đăng nhập</span>
             </button>
           )}
         </div>

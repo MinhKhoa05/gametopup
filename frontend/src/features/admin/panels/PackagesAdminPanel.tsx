@@ -7,6 +7,7 @@ import { getPackagesByGame } from '../../user/games/gameService';
 import type { Game, GamePackage } from '../../../types';
 import { createGamePackage, deleteGamePackage, updateGamePackage } from '../services/adminService';
 import { AdminSkeleton, EmptyLine, NumberField, PanelTitle, SearchBox, StatusPill, filterByName, gameName } from '../components/AdminShared';
+import { Field } from '../../../components/common/Field';
 import { classNames, pickImage } from '../../../lib/ui';
 
 const emptyPackageForm = {
@@ -185,7 +186,7 @@ export function PackagesAdminPanel({
 
   return (
     <div className="admin-editor-layout">
-      <div className="admin-panel admin-packages-browser">
+      <div className="gametopup-surface grid gap-[18px]">
         <PanelTitle title="Chọn game" />
         <div className="admin-game-tabs" role="tablist" aria-label="Chọn game để quản lý gói nạp">
           {games.map((game) => (
@@ -224,7 +225,7 @@ export function PackagesAdminPanel({
               const isEditing = editing?.id === item.id;
 
               return (
-                <div className={classNames('admin-table-row package', isEditing && 'active')} key={item.id}>
+                <div className={classNames('gametopup-record-row admin-table-row package', isEditing && 'active')} key={item.id}>
                   <img src={pickImage(item)} alt="" />
                   <div>
                     <strong>{item.name}</strong>
@@ -252,40 +253,41 @@ export function PackagesAdminPanel({
         )}
       </div>
 
-      <form className="admin-panel admin-form" onSubmit={submit}>
+      <form className="gametopup-surface sticky top-[88px]" onSubmit={submit}>
         <PanelTitle title={editing ? 'Cập nhật gói nạp' : 'Tạo gói nạp'} />
 
-        <div className="admin-form-section">
-          <label className="field">
-            <span>Tên gói</span>
-            <input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required />
-          </label>
-          <label className="field">
-            <span>Ảnh gói</span>
-            <input
-              value={form.imageUrl}
-              onChange={(event) => setForm({ ...form, imageUrl: event.target.value })}
-              placeholder="https://..."
-            />
-          </label>
+        <div className="mb-4 grid gap-3">
+          <Field
+            label="Tên gói"
+            onChange={(value) => setForm({ ...form, name: value })}
+            placeholder="Nhập tên gói"
+            required
+            value={form.name}
+          />
+          <Field
+            label="Ảnh gói"
+            onChange={(value) => setForm({ ...form, imageUrl: value })}
+            placeholder="https://..."
+            value={form.imageUrl}
+          />
           <div className="admin-image-preview">
             {previewSrc ? <img src={previewSrc} alt="Xem trước ảnh gói" /> : <span>Chưa có ảnh</span>}
           </div>
         </div>
 
-        <div className="admin-form-grid">
+        <div className="mb-4 grid gap-3 md:grid-cols-2">
           <NumberField label="Giá bán" value={form.salePrice} onChange={(salePrice) => setForm({ ...form, salePrice })} />
           <NumberField label="Giá gốc" value={form.originalPrice} onChange={(originalPrice) => setForm({ ...form, originalPrice })} />
           <NumberField label="Giá nhập" value={form.importPrice} onChange={(importPrice) => setForm({ ...form, importPrice })} />
           <NumberField label="Tồn kho" value={form.stockQuantity} onChange={(stockQuantity) => setForm({ ...form, stockQuantity })} />
         </div>
 
-        <label className="admin-check">
+        <label className="mb-4 flex items-center gap-2 font-semibold text-slate-200">
           <input type="checkbox" checked={form.isActive} onChange={(event) => setForm({ ...form, isActive: event.target.checked })} />
           <span>Cho phép bán gói này</span>
         </label>
 
-        <div className="admin-form-actions">
+        <div className="mt-4 flex flex-wrap justify-end gap-2">
           {editing && (
             <button type="button" className="btn-secondary" onClick={resetForm}>
               <X size={17} /> Hủy

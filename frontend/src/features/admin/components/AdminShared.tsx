@@ -1,8 +1,9 @@
 import { CheckCircle2, Search, X } from 'lucide-react';
 import { Badge } from '../../../components/common/Badge';
+import { Field } from '../../../components/common/Field';
+import { classNames } from '../../../lib/ui';
 import { SectionHeading } from '../../../components/common/SectionHeading';
 import { EmptyState } from '../../../components/common/EmptyState';
-import { classNames } from '../../../lib/ui';
 
 export function PanelTitle({
   action,
@@ -37,9 +38,14 @@ export function SearchBox({
   value: string;
 }) {
   return (
-    <div className="search-box admin-search">
+    <div className="mb-4 flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-ink-lighter px-3 text-slate-400">
       <Search size={17} />
-      <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />
+      <input
+        className="w-full border-none bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+      />
     </div>
   );
 }
@@ -47,7 +53,7 @@ export function SearchBox({
 export function StatusPill({ active }: { active: boolean }) {
   return (
     <Badge
-      className={classNames('admin-status-pill', active ? 'active' : 'inactive')}
+      className={classNames('gametopup-status-pill', active ? 'active' : 'inactive')}
       icon={active ? <CheckCircle2 size={14} /> : <X size={14} />}
       tone={active ? 'success' : 'info'}
     >
@@ -66,10 +72,15 @@ export function NumberField({
   value: number;
 }) {
   return (
-    <label className="field">
-      <span>{label}</span>
-      <input min={0} type="number" value={value} onChange={(event) => onChange(Number(event.target.value))} required />
-    </label>
+    <Field
+      label={label}
+      min={0}
+      onChange={(next) => onChange(Number(next))}
+      placeholder="0"
+      required
+      type="number"
+      value={String(value)}
+    />
   );
 }
 

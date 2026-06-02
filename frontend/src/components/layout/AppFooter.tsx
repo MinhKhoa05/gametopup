@@ -1,11 +1,4 @@
-import {
-  Facebook,
-  Headset,
-  Mail,
-  MessageCircleMore,
-  ShieldCheck,
-  Zap,
-} from 'lucide-react';
+import { Facebook, Headset, Mail, MessageCircleMore, ShieldCheck, Zap } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { Route } from '../../lib/routes';
 import {
@@ -83,20 +76,30 @@ export function AppFooter({ navigate }: { navigate: (route: Route) => void }) {
           </div>
         </div>
       </div>
-      <div className="footer-copy border-t border-white/5 py-3">
-        <p className="footer-copy-line">{getFooterCopyright()}</p>
-        <div className="footer-developed-row">
-          <span className="footer-developed-name">Developed by {SITE.developerName}</span>
-          <span className="footer-developed-sep" aria-hidden="true">
+      <div className="border-t border-white/5 py-3">
+        <p className="m-0 text-[0.96rem] text-slate-400">{getFooterCopyright()}</p>
+        <div className="flex flex-wrap items-center justify-center gap-2 text-[0.95rem] font-bold text-slate-300">
+          <span className="text-slate-400">Developed by {SITE.developerName}</span>
+          <span className="text-slate-400" aria-hidden="true">
             •
           </span>
-          <a className="footer-developed-link" href={FOOTER_DEVELOPER_LINKS[0].href} target="_blank" rel="noreferrer">
+          <a
+            className="text-sky-300 underline underline-offset-4 transition-colors hover:text-sky-200"
+            href={FOOTER_DEVELOPER_LINKS[0].href}
+            target="_blank"
+            rel="noreferrer"
+          >
             {FOOTER_DEVELOPER_LINKS[0].label}
           </a>
-          <span className="footer-developed-sep" aria-hidden="true">
+          <span className="text-slate-400" aria-hidden="true">
             •
           </span>
-          <a className="footer-developed-link" href={FOOTER_DEVELOPER_LINKS[1].href} target="_blank" rel="noreferrer">
+          <a
+            className="text-sky-300 underline underline-offset-4 transition-colors hover:text-sky-200"
+            href={FOOTER_DEVELOPER_LINKS[1].href}
+            target="_blank"
+            rel="noreferrer"
+          >
             {FOOTER_DEVELOPER_LINKS[1].label}
           </a>
         </div>

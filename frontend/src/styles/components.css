@@ -98,14 +98,117 @@
 }
 
 .panel,
-.glass-panel {
+.glass-panel,
+.gametopup-surface {
   border-radius: 16px;
+}
+
+.panel,
+.gametopup-surface {
+  background: var(--color-ink-light);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.panel,
+.glass-panel {
   padding: 24px;
 }
 
-.panel {
-  background: var(--color-ink-light);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.gametopup-surface {
+  padding: 20px;
+  min-width: 0;
+}
+
+.gametopup-record-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid rgb(255 255 255 / 0.06);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.035);
+  padding: 11px 12px;
+}
+
+.gametopup-action-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 15px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.025);
+  color: #dbe7f5;
+  text-align: left;
+}
+
+.gametopup-action-row:hover {
+  border-color: rgba(34, 211, 238, 0.24);
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.gametopup-action-row__copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.gametopup-action-row__copy strong {
+  color: white;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.gametopup-action-row__copy small {
+  color: #9caec3;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.gametopup-action-row__arrow {
+  color: #e2e8f0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.gametopup-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+  padding: 10px 0;
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.gametopup-summary-row > strong {
+  color: white;
+  text-align: right;
+}
+
+.gametopup-summary-row--total {
+  align-items: center;
+  color: white;
+  font-weight: 900;
+}
+
+.gametopup-summary-row--total > strong {
+  color: var(--color-cyanline);
+  font-size: 1.125rem;
+}
+
+@media (max-width: 760px) {
+  .gametopup-action-row {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .gametopup-action-row__arrow {
+    display: none;
+  }
 }
 
 .glass-panel {

@@ -192,7 +192,10 @@ export function AccountPage({
                   <Badge tone="info" icon={<ShieldCheck size={14} />}>
                     {roleLabel}
                   </Badge>
-                  <Badge tone={user?.isActive === false ? 'warning' : 'success'} icon={<span className="status-dot" />}>
+                  <Badge
+                    tone={user?.isActive === false ? 'warning' : 'success'}
+                    icon={<span className="inline-block h-2 w-2 flex-none rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(34,197,94,0.12)]" />}
+                  >
                     {statusLabel}
                   </Badge>
                 </div>
@@ -203,7 +206,7 @@ export function AccountPage({
 
             <div className="account-summary-metrics">
               <div className="account-summary-metric">
-                <IconBox size="sm" className="account-summary-icon">
+                <IconBox size="sm" className="border border-cyanline/15 bg-cyanline/10 text-cyanline shadow-[inset_0_0_22px_rgba(34,211,238,0.06)]">
                   <Mail size={24} />
                 </IconBox>
                 <div>
@@ -215,7 +218,7 @@ export function AccountPage({
               <div className="account-summary-separator" />
 
               <div className="account-summary-metric">
-                <IconBox size="sm" className="account-summary-icon">
+                <IconBox size="sm" className="border border-cyanline/15 bg-cyanline/10 text-cyanline shadow-[inset_0_0_22px_rgba(34,211,238,0.06)]">
                   <ShoppingBag size={24} />
                 </IconBox>
                 <div>
@@ -228,71 +231,71 @@ export function AccountPage({
         </div>
 
         <div className="account-bottom-grid">
-          <section className="panel account-quick-card">
+          <section className="gametopup-surface account-quick-card min-h-0">
             <SectionHeading title="Lối đi nhanh" />
 
             <div className="account-quick-actions">
-              <button type="button" onClick={() => navigate({ name: 'wallet' })}>
-                <IconBox size="sm" className="account-quick-icon">
+              <button type="button" className="gametopup-action-row" onClick={() => navigate({ name: 'wallet' })}>
+                <IconBox size="sm" className="bg-cyanline/10 text-cyanline">
                   <WalletCards size={20} />
                 </IconBox>
-                <span className="account-quick-copy">
+                <span className="gametopup-action-row__copy">
                   <strong>Nạp ví</strong>
                   <small>Thêm tiền và theo dõi giao dịch</small>
                 </span>
-                <span className="account-quick-arrow">
+                <span className="gametopup-action-row__arrow">
                   <ArrowRight size={18} />
                 </span>
               </button>
 
-              <button type="button" onClick={() => navigate({ name: 'orders' })}>
-                <IconBox size="sm" className="account-quick-icon">
+              <button type="button" className="gametopup-action-row" onClick={() => navigate({ name: 'orders' })}>
+                <IconBox size="sm" className="bg-cyanline/10 text-cyanline">
                   <Gamepad2 size={20} />
                 </IconBox>
-                <span className="account-quick-copy">
+                <span className="gametopup-action-row__copy">
                   <strong>Lịch sử đơn</strong>
                   <small>Xem lại các đơn đã đặt</small>
                 </span>
-                <span className="account-quick-arrow">
+                <span className="gametopup-action-row__arrow">
                   <ArrowRight size={18} />
                 </span>
               </button>
 
-              <button type="button" onClick={() => navigate({ name: 'wallet' })}>
-                <IconBox size="sm" className="account-quick-icon">
+              <button type="button" className="gametopup-action-row" onClick={() => navigate({ name: 'wallet' })}>
+                <IconBox size="sm" className="bg-cyanline/10 text-cyanline">
                   <WalletCards size={20} />
                 </IconBox>
-                <span className="account-quick-copy">
+                <span className="gametopup-action-row__copy">
                   <strong>Lịch sử nạp tiền</strong>
                   <small>Xem giao dịch và số dư ví</small>
                 </span>
-                <span className="account-quick-arrow">
+                <span className="gametopup-action-row__arrow">
                   <ArrowRight size={18} />
                 </span>
               </button>
 
-              <button type="button" className="danger" onClick={onLogout}>
-                <IconBox size="sm" className="account-quick-icon danger">
+              <button type="button" className="gametopup-action-row" onClick={onLogout}>
+                <IconBox size="sm" className="bg-red-500/10 text-red-300">
                   <LogOut size={20} />
                 </IconBox>
-                <span className="account-quick-copy">
+                <span className="gametopup-action-row__copy">
                   <strong>Đăng xuất</strong>
                   <small>Thoát khỏi tài khoản hiện tại</small>
                 </span>
-                <span className="account-quick-arrow">
+                <span className="gametopup-action-row__arrow">
                   <ArrowRight size={18} />
                 </span>
               </button>
             </div>
           </section>
 
-          <section className="panel account-note-card account-note-card--form">
+          <section className="gametopup-surface account-note-card account-note-card--form min-h-0">
             <SectionHeading
               title="Thông tin cá nhân"
               description="Cập nhật thông tin hiển thị trên tài khoản của bạn."
             />
 
-            <form className="account-form" onSubmit={profileEditor.handleSubmit}>
+            <form className="grid gap-4" onSubmit={profileEditor.handleSubmit}>
               <Field
                 label="Tên hiển thị"
                 value={profileEditor.draftName}
@@ -300,20 +303,21 @@ export function AccountPage({
                 placeholder="Nhập tên hiển thị"
               />
 
-              <label className="field">
-                <span>Email</span>
-                <input value={user.email} readOnly className="account-readonly-input" />
-              </label>
+              <Field label="Email" placeholder={user.email} readOnly value={user.email} />
 
-              <div className="account-form-note">
+              <div className="flex items-start gap-2 text-sm leading-6 text-slate-400">
                 <ShieldCheck size={16} />
                 <span>Email là định danh đăng nhập. Hệ thống không dùng username.</span>
               </div>
 
-              {profileEditor.saveError && <div className="account-form-error">{profileEditor.saveError}</div>}
+              {profileEditor.saveError && (
+                <div className="rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                  {profileEditor.saveError}
+                </div>
+              )}
 
-              <div className="account-form-actions">
-                <button className="btn-primary" type="submit" disabled={!profileEditor.canSave || busy}>
+              <div className="flex w-full justify-start gap-2 pt-0.5">
+                <button className="btn-primary min-w-[156px]" type="submit" disabled={!profileEditor.canSave || busy}>
                   <Save size={16} />
                   {busy ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </button>

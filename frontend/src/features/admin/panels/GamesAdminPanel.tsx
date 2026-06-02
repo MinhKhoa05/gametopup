@@ -4,6 +4,7 @@ import { AsyncActionExecutor } from '../../../hooks/useAsyncAction';
 import type { Game } from '../../../types';
 import { createGame, deleteGame, updateGame } from '../services/adminService';
 import { AdminSkeleton, EmptyLine, PanelTitle, SearchBox, StatusPill, filterByName } from '../components/AdminShared';
+import { Field } from '../../../components/common/Field';
 import { pickImage } from '../../../lib/ui';
 
 const emptyGameForm = {
@@ -64,7 +65,7 @@ export function GamesAdminPanel({
 
   return (
     <div className="admin-editor-layout">
-      <div className="admin-panel">
+      <div className="gametopup-surface">
         <PanelTitle title="Danh sách game" />
         <SearchBox value={query} onChange={setQuery} placeholder="Tìm game..." />
         {loading ? (
@@ -74,7 +75,7 @@ export function GamesAdminPanel({
         ) : (
           <div className="admin-table">
             {filteredGames.map((game) => (
-              <div className="admin-table-row" key={game.id}>
+              <div className="gametopup-record-row admin-table-row" key={game.id}>
                 <img src={pickImage(game)} alt="" />
                 <div>
                   <strong>{game.name}</strong>
@@ -95,21 +96,26 @@ export function GamesAdminPanel({
         )}
       </div>
 
-      <form className="admin-panel admin-form" onSubmit={submit}>
+      <form className="gametopup-surface sticky top-[88px]" onSubmit={submit}>
         <PanelTitle title={editing ? 'Cập nhật game' : 'Tạo game'} />
-        <label className="field">
-          <span>Tên game</span>
-          <input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required />
-        </label>
-        <label className="field">
-          <span>Ảnh đại diện</span>
-          <input value={form.imageUrl} onChange={(event) => setForm({ ...form, imageUrl: event.target.value })} placeholder="https://..." />
-        </label>
-        <label className="admin-check">
+        <Field
+          label="Tên game"
+          onChange={(value) => setForm({ ...form, name: value })}
+          placeholder="Nhập tên game"
+          required
+          value={form.name}
+        />
+        <Field
+          label="Ảnh đại diện"
+          onChange={(value) => setForm({ ...form, imageUrl: value })}
+          placeholder="https://..."
+          value={form.imageUrl}
+        />
+        <label className="mb-4 flex items-center gap-2 font-semibold text-slate-200">
           <input type="checkbox" checked={form.isActive} onChange={(event) => setForm({ ...form, isActive: event.target.checked })} />
           <span>Hiển thị game trong danh mục</span>
         </label>
-        <div className="admin-form-actions">
+        <div className="mt-4 flex flex-wrap justify-end gap-2">
           {editing && (
             <button type="button" className="btn-secondary" onClick={resetForm}>
               <X size={17} /> Hủy

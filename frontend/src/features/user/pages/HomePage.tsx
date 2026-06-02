@@ -4,6 +4,7 @@ import { Route } from '../../../lib/routes';
 import { Game, WalletInfo } from '../../../types';
 import { pickImage } from '../../../lib/ui';
 import { AuthPanel } from '../../../components/auth/AuthPanel';
+import { GameGrid } from '../../../components/games/GameGrid';
 import { SITE } from '../../../config/site';
 import { useAuthStore } from '../../../store/auth.store';
 
@@ -59,21 +60,21 @@ export function HomePage({
       {/* Trust Badges */}
       <section className="trust-badges">
         <div className="trust-badge">
-          <Zap size={32} />
+          <Zap size={32} className="text-cyanline" />
           <div>
             <strong className="block text-white">Xử Lý Nhanh Chóng</strong>
             <span className="text-slate-400">Hoàn thành trong 5-15 phút</span>
           </div>
         </div>
         <div className="trust-badge">
-          <ShieldCheck size={32} />
+          <ShieldCheck size={32} className="text-cyanline" />
           <div>
             <strong className="block text-white">Giao Dịch Đảm Bảo</strong>
             <span className="text-slate-400">Uy tín 100%</span>
           </div>
         </div>
         <div className="trust-badge">
-          <WalletCards size={32} />
+          <WalletCards size={32} className="text-cyanline" />
           <div>
             <strong className="block text-white">Giá Rẻ Hơn</strong>
             <span className="text-slate-400">Rẻ hơn tới 15% so với web gốc</span>
@@ -104,29 +105,19 @@ export function HomePage({
       {/* Featured Products */}
       <section className="mb-16">
         <h2 className="mb-6 text-2xl font-extrabold text-white">Các Game Phổ Biến</h2>
-        <div className="product-grid">
-          {featured.map(game => {
+        <GameGrid
+          games={featured}
+          onPick={(game) => navigate({ name: 'games', gameId: game.id })}
+          renderBadges={(game) => {
             const maxDiscount = 12 + (game.name.length % 10);
+
             return (
-              <button key={game.id} className="product-card" onClick={() => navigate({name: 'games', gameId: game.id})}>
-                <div className="product-image">
-                  <img src={pickImage(game)} alt={game.name} />
-                  <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow-lg shadow-red-500/20">CK {maxDiscount}%</div>
-                </div>
-                <div className="product-info">
-                  <h3 className="product-title">{game.name}</h3>
-                  <span className="product-meta">Nạp nhanh bằng ID</span>
-                  <div className="mt-4 flex justify-between items-center w-full">
-                    <span className="text-cyanline font-bold text-sm">Nạp game</span>
-                    <div className="w-8 h-8 rounded-full bg-cyanline/10 text-cyanline flex items-center justify-center">
-                      <ChevronRight size={16} />
-                    </div>
-                  </div>
-                </div>
-              </button>
+              <div className="rounded-md bg-red-500 px-2 py-1 text-xs font-bold text-white shadow-lg shadow-red-500/20">
+                CK {maxDiscount}%
+              </div>
             );
-          })}
-        </div>
+          }}
+        />
       </section>
 
       {/* Steps and Auth */}

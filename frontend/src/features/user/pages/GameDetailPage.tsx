@@ -45,12 +45,12 @@ export function GameDetailPage({
 
   return (
     <div className="topup-page">
-      <div className="flex items-center gap-2 text-sm text-slate-400 mb-5">
+      <div className="mb-5 flex items-center gap-2 text-sm text-slate-400">
         <Home size={16} />
         <ChevronRight size={14} />
         <span>Tất cả Game</span>
         <ChevronRight size={14} />
-        <span className="text-white font-bold">{game.name}</span>
+        <span className="font-bold text-white">{game.name}</span>
       </div>
 
       <div className="topup-shell">
@@ -75,7 +75,7 @@ export function GameDetailPage({
               <div>
                 <p className="eyebrow">Gói nạp</p>
                 <h1>{game.name}</h1>
-                <div className="topup-trust">
+                <div className="flex items-center gap-2 text-sm font-extrabold text-amber-300">
                   <ShieldCheck size={16} /> Dịch vụ nạp trung gian chiết khấu
                 </div>
               </div>
@@ -84,7 +84,9 @@ export function GameDetailPage({
             <SectionHeading eyebrow={game.name} title="Chọn gói nạp" />
 
             {packagesLoading ? (
-              <div className="topup-loading">Đang tải gói nạp...</div>
+              <div className="rounded-[10px] border border-dashed border-white/10 bg-ink-lighter px-6 py-6 text-center text-slate-400">
+                Đang tải gói nạp...
+              </div>
             ) : (
               <div className="topup-package-grid">
                 {packages.map((pkg) => {
@@ -99,8 +101,8 @@ export function GameDetailPage({
                       onClick={() => setSelectedPackageId(pkg.id)}
                     >
                       {discount > 0 && <span className="discount">-{discount}%</span>}
-                      <div className="topup-package-image">
-                        <img src={pickImage(pkg)} alt={pkg.name} />
+                      <div className="mb-[9px] aspect-[1/0.82] overflow-hidden rounded-[6px] bg-ink-dark">
+                        <img src={pickImage(pkg)} alt={pkg.name} className="h-full w-full object-cover" />
                       </div>
                       <strong>{pkg.name}</strong>
                       <small>Còn {pkg.stockQuantity} suất</small>
@@ -115,7 +117,7 @@ export function GameDetailPage({
           </div>
 
           <aside className="topup-summary">
-            <div className="panel">
+            <div className="gametopup-surface rounded-[8px] border-cyanline/16">
               <h2>Thông tin đơn hàng</h2>
 
               <form onSubmit={onSubmit}>
@@ -134,21 +136,21 @@ export function GameDetailPage({
                   placeholder="1"
                 />
 
-                <div className="summary-line">
+                <div className="gametopup-summary-row">
                   <span>Gói đã chọn</span>
                   <strong>{selectedPackage?.name ?? '---'}</strong>
                 </div>
-                <div className="summary-line">
+                <div className="gametopup-summary-row">
                   <span>Tổng tiền hàng</span>
                   <strong>{formatCurrency(total)}</strong>
                 </div>
-                <div className="summary-total">
+                <div className="gametopup-summary-row gametopup-summary-row--total">
                   <span>Tổng thanh toán</span>
                   <strong>{formatCurrency(total)}</strong>
                 </div>
 
-                <label className="summary-check">
-                  <input type="checkbox" checked readOnly />
+                <label className="mb-4 mt-3 flex items-start gap-2 text-[0.74rem] leading-[1.35] text-slate-400">
+                  <input className="mt-0.5 accent-cyanline" type="checkbox" checked readOnly />
                   <span>Tôi đã đọc và đồng ý với các điều khoản sử dụng dịch vụ.</span>
                 </label>
 
@@ -161,7 +163,7 @@ export function GameDetailPage({
                   Mua ngay
                 </button>
 
-                {!user && <p className="text-red-400 text-sm mt-3 text-center">Vui lòng đăng nhập để đặt đơn.</p>}
+                {!user && <p className="mt-3 text-center text-sm text-red-400">Vui lòng đăng nhập để đặt đơn.</p>}
               </form>
             </div>
           </aside>

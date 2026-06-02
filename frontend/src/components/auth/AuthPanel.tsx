@@ -57,7 +57,11 @@ export function AuthPanel({ wallet, busy, onSubmit, onLogout }: AuthPanelProps) 
         <div>
           <p className="eyebrow">Tài khoản</p>
           <h3>{isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}</h3>
-          <span>{isRegister ? 'Tạo tài khoản để quản lý ví và theo dõi đơn hàng.' : 'Đăng nhập để tiếp tục nạp game và thanh toán bằng ví.'}</span>
+          <span>
+            {isRegister
+              ? 'Tạo tài khoản để quản lý ví và theo dõi đơn hàng.'
+              : 'Đăng nhập để tiếp tục nạp game và thanh toán bằng ví.'}
+          </span>
         </div>
       </div>
 
@@ -89,9 +93,13 @@ export function AuthPanel({ wallet, busy, onSubmit, onLogout }: AuthPanelProps) 
         </button>
       </form>
 
-      <div className="auth-switch">
+      <div className="mt-4 flex items-center justify-center gap-2 border-t border-white/7 pt-4 text-sm text-slate-400">
         {isRegister ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'}
-        <button type="button" onClick={() => authStore.setAuthMode(isRegister ? 'login' : 'register')}>
+        <button
+          type="button"
+          onClick={() => authStore.setAuthMode(isRegister ? 'login' : 'register')}
+          className="font-bold text-cyanline"
+        >
           {isRegister ? 'Đăng nhập' : 'Đăng ký ngay'}
         </button>
       </div>
