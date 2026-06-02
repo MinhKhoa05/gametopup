@@ -2,7 +2,7 @@ import { Boxes, Gamepad2, LayoutDashboard } from 'lucide-react';
 import { AsyncActionExecutor } from '../../../hooks/useAsyncAction';
 import { Route } from '../../../lib/routes';
 import { isAdminUser } from '../../../lib/roles';
-import type { User } from '../../../types';
+import { useAuthStore } from '../../../store/auth.store';
 import { AdminHeader } from '../components/AdminHeader';
 import { AdminNavButton } from '../components/AdminNavButton';
 import { DashboardPanel } from '../panels/DashboardPanel';
@@ -17,7 +17,6 @@ export function AdminPage({
   onLogout,
   route,
   setError,
-  user,
 }: {
   busy: boolean;
   execute: AsyncActionExecutor;
@@ -25,14 +24,14 @@ export function AdminPage({
   onLogout: () => void;
   route: Extract<Route, { name: 'admin' }>;
   setError: (message: string | null) => void;
-  user: User | null;
 }) {
   const catalog = useAdminCatalog(setError);
   const section = route.section ?? 'dashboard';
+  const user = useAuthStore((state) => state.user);
 
   return (
     <div className="admin-shell">
-      <AdminHeader loading={catalog.loading} navigate={navigate} onLogout={onLogout} onRefresh={catalog.refresh} route={route} user={user} />
+      <AdminHeader loading={catalog.loading} navigate={navigate} onLogout={onLogout} onRefresh={catalog.refresh} route={route} />
 
       <div className="admin-page-frame mx-auto w-full max-w-[1560px] px-4 pb-8 sm:px-6 lg:px-8">
         {!isAdminUser(user) ? (

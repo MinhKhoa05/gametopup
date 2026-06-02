@@ -4,7 +4,7 @@ import { HeaderAccountMenu } from '../../../components/layout/HeaderAccountMenu'
 import { userDisplayName } from '../../../lib/labels';
 import { Route } from '../../../lib/routes';
 import { ADMIN_HEADER_SUBTITLES, SITE } from '../../../config/site';
-import type { User } from '../../../types';
+import { useAuthStore } from '../../../store/auth.store';
 
 export function AdminHeader({
   loading,
@@ -12,15 +12,14 @@ export function AdminHeader({
   onLogout,
   onRefresh,
   route,
-  user,
 }: {
   loading: boolean;
   navigate: (route: Route) => void;
   onLogout: () => void;
   onRefresh: () => Promise<void>;
   route: Extract<Route, { name: 'admin' }>;
-  user: User | null;
 }) {
+  const user = useAuthStore((state) => state.user);
   const subtitleLabel = ADMIN_HEADER_SUBTITLES[route.section ?? 'dashboard'];
   const displayName = userDisplayName(user);
 

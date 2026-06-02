@@ -26,7 +26,7 @@ const contactIcons = {
 export function AppFooter({ navigate }: { navigate: (route: Route) => void }) {
   return (
     <footer className="app-footer mt-auto">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.35fr_0.8fr_0.8fr_0.9fr] lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-8 sm:px-6 lg:grid-cols-[1.35fr_0.8fr_0.8fr_0.9fr] lg:px-8 lg:py-8">
         <div className="footer-brand-block">
           <BrandLogo onClick={() => navigate({ name: 'home' })} title={SITE.name} subtitle={SITE.tagline} />
           <p>{SITE.footerDescription}</p>
@@ -83,7 +83,7 @@ export function AppFooter({ navigate }: { navigate: (route: Route) => void }) {
           </div>
         </div>
       </div>
-      <div className="footer-copy border-t border-white/5 py-5">
+      <div className="footer-copy border-t border-white/5 py-3">
         <p className="footer-copy-line">{getFooterCopyright()}</p>
         <div className="footer-developed-row">
           <span className="footer-developed-name">Developed by {SITE.developerName}</span>

@@ -2,6 +2,8 @@ import { Banknote } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../lib/format';
 import { statusLabel } from '../../lib/labels';
 import { Order } from '../../types';
+import { EmptyState } from '../common/EmptyState';
+import { SectionHeading } from '../common/SectionHeading';
 
 export function OrdersPanel({
   orders,
@@ -13,16 +15,16 @@ export function OrdersPanel({
   busy: boolean;
   onPay: (orderId: number) => void;
   limit?: number;
-}) {
+  }) {
   return (
     <div className="section-panel">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">Theo dõi</p>
-          <h2>Đơn của tôi</h2>
+      <SectionHeading>
+        <div className="section-heading__copy">
+          <p className="eyebrow section-heading__eyebrow">Theo dõi</p>
+          <h2 className="section-heading__title">Đơn của tôi</h2>
         </div>
         <span className="pill">{orders.length} đơn</span>
-      </div>
+      </SectionHeading>
       <div className="order-list">
         {orders.slice(0, limit).map((order) => (
           <div className="order-row" key={order.id}>
@@ -45,7 +47,7 @@ export function OrdersPanel({
             </div>
           </div>
         ))}
-        {orders.length === 0 && <p className="empty-state">Đăng nhập và đặt gói để xem lịch sử đơn hàng.</p>}
+        {orders.length === 0 && <EmptyState>Đăng nhập và đặt gói để xem lịch sử đơn hàng.</EmptyState>}
       </div>
     </div>
   );

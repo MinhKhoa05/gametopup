@@ -19,6 +19,7 @@ import { GamesPage } from './features/user/pages/GamesPage';
 import { HomePage } from './features/user/pages/HomePage';
 import { OrdersPage } from './features/user/pages/OrdersPage';
 import { WalletPage } from './features/user/pages/WalletPage';
+import { useAuthStore } from './store/auth.store';
 
 export function App() {
   const { route, navigate } = useRoute();
@@ -27,19 +28,20 @@ export function App() {
     navigate,
     execute: action.execute,
   });
-  const userOrders = useUserOrders(auth.user, action.execute);
+  const user = useAuthStore((state) => state.user);
+  const authLoading = useAuthStore((state) => state.authLoading);
+  const userOrders = useUserOrders(user, action.execute);
   const isAdminRoute = route.name === 'admin';
 
   return (
     <div className="main-layout bg-ink text-slate-100">
-      {!isAdminRoute && (
-        <AppHeader route={route} user={auth.user} wallet={userOrders.wallet} navigate={navigate} onLogout={auth.handleLogout} />
-      )}
+      {!isAdminRoute && <AppHeader route={route} wallet={userOrders.wallet} navigate={navigate} onLogout={auth.handleLogout} />}
 
       <main className="main-content">
         {route.name === 'home' && (
           <HomeRoute
-            auth={auth}
+            onAuth={auth.handleAuth}
+            onLogout={auth.handleLogout}
             busy={action.isLoading}
             ordersCount={userOrders.orders.length}
             setError={action.setErrorMessage}
@@ -51,7 +53,7 @@ export function App() {
         {!isAdminRoute && route.name !== 'home' && (
           <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             {route.name === 'games' && !route.gameId && (
-              <GamesRoute authLoading={auth.authLoading} route={route} setError={action.setErrorMessage} navigate={navigate} />
+              <GamesRoute authLoading={authLoading} route={route} setError={action.setErrorMessage} navigate={navigate} />
             )}
 
             {route.name === 'games' && route.gameId && (
@@ -60,7 +62,6 @@ export function App() {
                 route={route}
                 execute={action.execute}
                 setError={action.setErrorMessage}
-                user={auth.user}
                 refreshUserArea={userOrders.refreshUserArea}
                 navigate={navigate}
               />
@@ -71,7 +72,6 @@ export function App() {
                 busy={action.isLoading}
                 execute={action.execute}
                 setError={action.setErrorMessage}
-                user={auth.user}
                 wallet={userOrders.wallet}
                 refreshUserArea={userOrders.refreshUserArea}
                 navigate={navigate}
@@ -84,20 +84,15 @@ export function App() {
 
             {route.name === 'account' && (
               <AccountPage
-                authMode={auth.authMode}
-                setAuthMode={auth.setAuthMode}
-                form={auth.authForm}
-                setForm={auth.setAuthForm}
-                user={auth.user}
-                  wallet={userOrders.wallet}
-                  ordersCount={userOrders.orders.length}
-                  busy={action.isLoading}
-                  onSubmit={auth.handleAuth}
-                  onLogout={auth.handleLogout}
-                  onProfileUpdated={auth.handleProfileUpdated}
-                  execute={action.execute}
-                  navigate={navigate}
-                />
+                wallet={userOrders.wallet}
+                ordersCount={userOrders.orders.length}
+                busy={action.isLoading}
+                onSubmit={auth.handleAuth}
+                onLogout={auth.handleLogout}
+                onProfileUpdated={auth.handleProfileUpdated}
+                execute={action.execute}
+                navigate={navigate}
+              />
             )}
           </div>
         )}
@@ -110,7 +105,6 @@ export function App() {
             onLogout={auth.handleLogout}
             route={route}
             setError={action.setErrorMessage}
-            user={auth.user}
           />
         )}
       </main>
@@ -122,20 +116,21 @@ export function App() {
   );
 }
 
-type AuthSession = ReturnType<typeof useAuthSession>;
 type ExecuteAction = ReturnType<typeof useAsyncAction>['execute'];
 type SetError = ReturnType<typeof useAsyncAction>['setErrorMessage'];
 type UserArea = ReturnType<typeof useUserOrders>;
 
 function HomeRoute({
-  auth,
+  onAuth,
+  onLogout,
   busy,
   ordersCount,
   setError,
   wallet,
   navigate,
 }: {
-  auth: AuthSession;
+  onAuth: ReturnType<typeof useAuthSession>['handleAuth'];
+  onLogout: ReturnType<typeof useAuthSession>['handleLogout'];
   busy: boolean;
   ordersCount: number;
   setError: SetError;
@@ -149,16 +144,11 @@ function HomeRoute({
       games={catalog.games}
       packagesCount={0}
       ordersCount={ordersCount}
-      user={auth.user}
       wallet={wallet}
-      authMode={auth.authMode}
-      setAuthMode={auth.setAuthMode}
-      authForm={auth.authForm}
-      setAuthForm={auth.setAuthForm}
       busy={busy}
       navigate={navigate}
-      onAuth={auth.handleAuth}
-      onLogout={auth.handleLogout}
+      onAuth={onAuth}
+      onLogout={onLogout}
     />
   );
 }
@@ -184,7 +174,6 @@ function GameDetailRoute({
   route,
   execute,
   setError,
-  user,
   refreshUserArea,
   navigate,
 }: {
@@ -192,7 +181,6 @@ function GameDetailRoute({
   route: Route;
   execute: ExecuteAction;
   setError: SetError;
-  user: AuthSession['user'];
   refreshUserArea: UserArea['refreshUserArea'];
   navigate: (route: Route) => void;
 }) {
@@ -211,7 +199,6 @@ function GameDetailRoute({
       packagesLoading={catalog.packagesLoading}
       selectedPackageId={catalog.selectedPackageId}
       setSelectedPackageId={catalog.setSelectedPackageId}
-      user={user}
       quantity={checkout.quantity}
       setQuantity={checkout.setQuantity}
       gameAccountInfo={checkout.gameAccountInfo}
@@ -229,7 +216,6 @@ function WalletRoute({
   busy,
   execute,
   setError,
-  user,
   wallet,
   refreshUserArea,
   navigate,
@@ -237,11 +223,11 @@ function WalletRoute({
   busy: boolean;
   execute: ExecuteAction;
   setError: SetError;
-  user: AuthSession['user'];
   wallet: UserArea['wallet'];
   refreshUserArea: UserArea['refreshUserArea'];
   navigate: (route: Route) => void;
 }) {
+  const user = useAuthStore((state) => state.user);
   const walletTransactions = useWalletTransactions(user, setError);
   const depositRequests = useDepositRequests(user, setError);
   const deposit = useWalletDeposit({
@@ -255,7 +241,6 @@ function WalletRoute({
 
   return (
     <WalletPage
-      user={user}
       wallet={wallet}
       amount={deposit.depositAmount}
       setAmount={deposit.setDepositAmount}

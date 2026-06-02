@@ -2,22 +2,22 @@ import { FormEvent } from 'react';
 import { BadgeCheck, LogOut, ShieldCheck, UserPlus, UserRound, WalletCards } from 'lucide-react';
 import { formatCurrency } from '../../lib/format';
 import { userDisplayName } from '../../lib/labels';
-import { User, WalletInfo } from '../../types';
+import { WalletInfo } from '../../types';
 import { Field } from '../common/Field';
+import { authStore, useAuthStore } from '../../store/auth.store';
 
 export type AuthPanelProps = {
-  authMode: 'login' | 'register';
-  setAuthMode: (mode: 'login' | 'register') => void;
-  form: { displayName: string; email: string; password: string };
-  setForm: (form: { displayName: string; email: string; password: string }) => void;
-  user: User | null;
   wallet: WalletInfo | null;
   busy: boolean;
   onSubmit: (event: FormEvent) => void;
   onLogout: () => void;
 };
 
-export function AuthPanel({ authMode, setAuthMode, form, setForm, user, wallet, busy, onSubmit, onLogout }: AuthPanelProps) {
+export function AuthPanel({ wallet, busy, onSubmit, onLogout }: AuthPanelProps) {
+  const authMode = useAuthStore((state) => state.authMode);
+  const form = useAuthStore((state) => state.authForm);
+  const user = useAuthStore((state) => state.user);
+
   if (user) {
     return (
       <aside className="panel bg-gradient-to-br from-ink-lighter to-ink-light">
@@ -35,13 +35,19 @@ export function AuthPanel({ authMode, setAuthMode, form, setForm, user, wallet, 
             <LogOut size={18} />
           </button>
         </div>
+
         <div className="mt-7 grid gap-3 sm:grid-cols-2">
           <div className="bg-ink-lighter p-4 rounded-xl border border-white/5">
-            <span className="text-slate-400 text-sm mb-1 flex items-center gap-2"><WalletCards size={16} /> Số dư ví</span>
+            <span className="text-slate-400 text-sm mb-1 flex items-center gap-2">
+              <WalletCards size={16} /> Số dư ví
+            </span>
             <strong className="text-cyanline text-xl font-black">{formatCurrency(wallet?.balance ?? 0)}</strong>
           </div>
+
           <div className="bg-ink-lighter p-4 rounded-xl border border-white/5">
-            <span className="text-slate-400 text-sm mb-1 flex items-center gap-2"><BadgeCheck size={16} /> Tài khoản</span>
+            <span className="text-slate-400 text-sm mb-1 flex items-center gap-2">
+              <BadgeCheck size={16} /> Tài khoản
+            </span>
             <strong className="text-white text-lg font-bold">{user.role ?? 'Khách hàng'}</strong>
           </div>
         </div>
@@ -54,9 +60,7 @@ export function AuthPanel({ authMode, setAuthMode, form, setForm, user, wallet, 
   return (
     <aside className="auth-card">
       <div className="auth-card-header">
-        <div className="auth-card-icon">
-          {isRegister ? <UserPlus size={24} /> : <ShieldCheck size={24} />}
-        </div>
+        <div className="auth-card-icon">{isRegister ? <UserPlus size={24} /> : <ShieldCheck size={24} />}</div>
         <div>
           <p className="eyebrow">Tài khoản</p>
           <h3>{isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}</h3>
@@ -69,21 +73,21 @@ export function AuthPanel({ authMode, setAuthMode, form, setForm, user, wallet, 
           <Field
             label="Tên hiển thị"
             value={form.displayName}
-            onChange={(value) => setForm({ ...form, displayName: value })}
+            onChange={(value) => authStore.setAuthForm({ ...form, displayName: value })}
             placeholder="Nguyễn Văn A"
           />
         )}
         <Field
           label="Email"
           value={form.email}
-          onChange={(value) => setForm({ ...form, email: value })}
+          onChange={(value) => authStore.setAuthForm({ ...form, email: value })}
           placeholder="customer01@gametopup.com"
           type="email"
         />
         <Field
           label="Mật khẩu"
           value={form.password}
-          onChange={(value) => setForm({ ...form, password: value })}
+          onChange={(value) => authStore.setAuthForm({ ...form, password: value })}
           placeholder="Nhập mật khẩu"
           type="password"
         />
@@ -94,7 +98,7 @@ export function AuthPanel({ authMode, setAuthMode, form, setForm, user, wallet, 
 
       <div className="auth-switch">
         {isRegister ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'}
-        <button type="button" onClick={() => setAuthMode(isRegister ? 'login' : 'register')}>
+        <button type="button" onClick={() => authStore.setAuthMode(isRegister ? 'login' : 'register')}>
           {isRegister ? 'Đăng nhập' : 'Đăng ký ngay'}
         </button>
       </div>

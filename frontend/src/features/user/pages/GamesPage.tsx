@@ -1,4 +1,5 @@
 import { Search, ChevronRight } from 'lucide-react';
+import { EmptyState } from '../../../components/common/EmptyState';
 import { Route } from '../../../lib/routes';
 import { Game } from '../../../types';
 import { pickImage } from '../../../lib/ui';
@@ -57,7 +58,7 @@ export function GamesPage({
       </div>
       
       {!loading && games.length === 0 && (
-        <div className="empty-state mt-8">Không tìm thấy game nào phù hợp với từ khóa "{query}".</div>
+        <EmptyState className="mt-8">Không tìm thấy game nào phù hợp với từ khóa "{query}".</EmptyState>
       )}
     </div>
   );

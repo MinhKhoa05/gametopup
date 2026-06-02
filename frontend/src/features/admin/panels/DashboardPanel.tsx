@@ -4,7 +4,8 @@ import { formatCurrency, formatDate } from '../../../lib/format';
 import { statusLabel } from '../../../lib/labels';
 import type { Game, Order } from '../../../types';
 import type { AdminCatalogMetrics } from '../hooks/useAdminCatalog';
-import { AdminSkeleton, EmptyLine, MetricCard, PanelTitle } from '../components/AdminShared';
+import { AdminSkeleton, EmptyLine, PanelTitle } from '../components/AdminShared';
+import { StatCard } from '../../../components/common/StatCard';
 
 export function DashboardPanel({
   games,
@@ -30,10 +31,10 @@ export function DashboardPanel({
       </div>
 
       <div className="admin-metrics">
-        <MetricCard icon={<Gamepad2 size={20} />} label="Game đang hoạt động" value={`${metrics.activeGames}/${games.length}`} />
-        <MetricCard icon={<Clock3 size={20} />} label="Đơn hôm nay" value={metrics.ordersToday.toString()} />
-        <MetricCard icon={<CheckCircle2 size={20} />} label="Đơn đang chờ" value={metrics.pendingOrders.toString()} tone="warning" />
-        <MetricCard icon={<BarChart3 size={20} />} label="Doanh thu ghi nhận" value={formatCurrency(metrics.paidRevenue)} />
+        <StatCard icon={<Gamepad2 size={20} />} label="Game đang hoạt động" value={`${metrics.activeGames}/${games.length}`} />
+        <StatCard icon={<Clock3 size={20} />} label="Đơn hôm nay" value={metrics.ordersToday.toString()} />
+        <StatCard className="stat-card--warning" icon={<CheckCircle2 size={20} />} label="Đơn đang chờ" value={metrics.pendingOrders.toString()} />
+        <StatCard icon={<BarChart3 size={20} />} label="Doanh thu ghi nhận" value={formatCurrency(metrics.paidRevenue)} />
       </div>
 
       <div className="admin-two-col">

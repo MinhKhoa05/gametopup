@@ -1,10 +1,8 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect } from 'react';
 import { getMe, login, logout, register } from './authService';
 import { Route } from '../../lib/routes';
-import { User } from '../../types';
 import { AsyncActionExecutor } from '../../hooks/useAsyncAction';
-
-type AuthMode = 'login' | 'register';
+import { authStore, useAuthStore } from '../../store/auth.store';
 
 export function useAuthSession({
   navigate,
@@ -13,28 +11,22 @@ export function useAuthSession({
   navigate: (route: Route) => void;
   execute: AsyncActionExecutor;
 }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [authMode, setAuthMode] = useState<AuthMode>('login');
-  const [authForm, setAuthForm] = useState({
-    displayName: '',
-    email: 'customer01@gametopup.com',
-    password: 'Password123!',
-  });
-  const [authLoading, setAuthLoading] = useState(true);
+  const authMode = useAuthStore((state) => state.authMode);
+  const authForm = useAuthStore((state) => state.authForm);
 
   useEffect(() => {
     let mounted = true;
 
     async function loadCurrentUser() {
-      setAuthLoading(true);
+      authStore.setAuthLoading(true);
 
       try {
         const currentUser = await getMe();
-        if (mounted) setUser(currentUser);
+        if (mounted) authStore.setUser(currentUser);
       } catch {
         // Guest sessions are valid; failing to load /me should not block browsing.
       } finally {
-        if (mounted) setAuthLoading(false);
+        if (mounted) authStore.setAuthLoading(false);
       }
     }
 
@@ -56,7 +48,7 @@ export function useAuthSession({
       {
         successMessage: authMode === 'register' ? 'Đăng ký và đăng nhập thành công.' : 'Đăng nhập thành công.',
         onSuccess: (loggedInUser) => {
-          setUser(loggedInUser);
+          authStore.setUser(loggedInUser);
           navigate({ name: 'games' });
         },
       },
@@ -67,25 +59,21 @@ export function useAuthSession({
     await execute(logout, {
       successMessage: 'Đã đăng xuất.',
       onSuccess: () => {
-        setUser(null);
+        authStore.resetAuthState();
         navigate({ name: 'home' });
       },
     });
   }
 
   function handleProfileUpdated(displayName: string) {
-    setUser((current) => (current ? { ...current, displayName } : current));
+    authStore.updateProfile(displayName);
   }
 
   return {
-    authForm,
-    authLoading,
-    authMode,
     handleAuth,
     handleLogout,
     handleProfileUpdated,
-    setAuthForm,
-    setAuthMode,
-    user,
+    setAuthForm: authStore.setAuthForm,
+    setAuthMode: authStore.setAuthMode,
   };
 }

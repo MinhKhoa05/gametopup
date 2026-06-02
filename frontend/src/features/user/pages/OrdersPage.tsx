@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react';
+import { EmptyState } from '../../../components/common/EmptyState';
 import { Route } from '../../../lib/routes';
 import { Order } from '../../../types';
 import { formatCurrency, formatDate } from '../../../lib/format';
@@ -34,7 +35,7 @@ export function OrdersPage({
 
       <div className="grid gap-4">
         {orders.length === 0 ? (
-          <div className="empty-state py-12">Bạn chưa có đơn hàng nào.</div>
+          <EmptyState className="py-12">Bạn chưa có đơn hàng nào.</EmptyState>
         ) : (
           orders.map(order => (
             <div key={order.id} className="order-row">

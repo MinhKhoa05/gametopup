@@ -2,9 +2,11 @@ import { FormEvent } from 'react';
 import { ArrowLeft, CheckCircle2, ChevronRight, Home, ShoppingCart, ShieldCheck } from 'lucide-react';
 import { pickImage, classNames } from '../../../lib/ui';
 import { formatCurrency } from '../../../lib/format';
-import { Game, GamePackage, User } from '../../../types';
+import { Game, GamePackage } from '../../../types';
 import { Field } from '../../../components/common/Field';
+import { EmptyState } from '../../../components/common/EmptyState';
 import { Route } from '../../../lib/routes';
+import { useAuthStore } from '../../../store/auth.store';
 
 export function GameDetailPage({
   game,
@@ -12,7 +14,6 @@ export function GameDetailPage({
   packagesLoading,
   selectedPackageId,
   setSelectedPackageId,
-  user,
   quantity,
   setQuantity,
   gameAccountInfo,
@@ -28,7 +29,6 @@ export function GameDetailPage({
   packagesLoading: boolean;
   selectedPackageId: number | null;
   setSelectedPackageId: (id: number) => void;
-  user: User | null;
   quantity: number;
   setQuantity: (quantity: number) => void;
   gameAccountInfo: string;
@@ -39,7 +39,8 @@ export function GameDetailPage({
   onSubmit: (event: FormEvent) => void;
   navigate: (route: Route) => void;
 }) {
-  if (!game) return <div className="empty-state">Không tìm thấy game.</div>;
+  const user = useAuthStore((state) => state.user);
+  if (!game) return <EmptyState>Không tìm thấy game.</EmptyState>;
 
   return (
     <div className="topup-page">
@@ -110,7 +111,7 @@ export function GameDetailPage({
                     </button>
                   );
                 })}
-                {packages.length === 0 && <div className="col-span-full empty-state py-8">Chưa có gói nạp.</div>}
+                {packages.length === 0 && <EmptyState className="col-span-full py-8">Chưa có gói nạp.</EmptyState>}
               </div>
             )}
           </div>

@@ -5,6 +5,7 @@ import { Route } from '../../lib/routes';
 import { classNames } from '../../lib/ui';
 import { DepositRequest, User, WalletInfo } from '../../types';
 import { Field } from '../common/Field';
+import { SectionHeading } from '../common/SectionHeading';
 
 const quickAmounts = [100000, 200000, 500000, 1000000];
 
@@ -28,16 +29,16 @@ export function WalletPanel({
   onSubmit: (event: FormEvent) => void;
   onConfirm: () => void;
   navigate: (route: Route) => void;
-}) {
+  }) {
   return (
     <div className="section-panel">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">Ví</p>
-          <h2>Nạp tiền VietQR</h2>
+      <SectionHeading>
+        <div className="section-heading__copy">
+          <p className="eyebrow section-heading__eyebrow">Ví</p>
+          <h2 className="section-heading__title">Nạp tiền VietQR</h2>
         </div>
         <span className="pill">{formatCurrency(wallet?.balance ?? 0)}</span>
-      </div>
+      </SectionHeading>
       {!user && (
         <button type="button" className="secondary-button mb-4" onClick={() => navigate({ name: 'account' })}>
           <UserRound size={18} />

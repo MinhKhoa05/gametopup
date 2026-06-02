@@ -16,9 +16,11 @@ import {
   XCircle,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../../lib/format';
-import { DepositRequest, User, WalletInfo, WalletTransaction } from '../../../types';
+import { DepositRequest, WalletInfo, WalletTransaction } from '../../../types';
 import { Route } from '../../../lib/routes';
 import { SITE } from '../../../config/site';
+import { useAuthStore } from '../../../store/auth.store';
+import { EmptyState } from '../../../components/common/EmptyState';
 
 const quickAmounts = [50000, 100000, 200000, 500000];
 const bankNames: Record<string, string> = {
@@ -46,7 +48,6 @@ type WalletView = 'overview' | 'deposit';
 type TransactionFilter = (typeof transactionFilters)[number]['value'];
 
 export function WalletPage({
-  user,
   wallet,
   amount,
   setAmount,
@@ -61,7 +62,6 @@ export function WalletPage({
   onConfirm,
   navigate,
 }: {
-  user: User | null;
   wallet: WalletInfo | null;
   amount: number;
   setAmount: (val: number) => void;
@@ -76,6 +76,7 @@ export function WalletPage({
   onConfirm: () => void;
   navigate: (route: Route) => void;
 }) {
+  const user = useAuthStore((state) => state.user);
   const [view, setView] = useState<WalletView>('overview');
   const [filter, setFilter] = useState<TransactionFilter>('all');
   const filteredTransactions = useMemo(
@@ -85,12 +86,14 @@ export function WalletPage({
 
   if (!user) {
     return (
-      <div className="empty-state max-w-lg mx-auto mt-12">
-        <WalletCards size={48} className="mx-auto mb-4 text-slate-400" />
-        <h2 className="text-xl text-white font-bold mb-2">Bạn chưa đăng nhập</h2>
-        <p className="mb-6">Vui lòng đăng nhập để quản lý ví và nạp tiền.</p>
-        <button className="btn-primary" onClick={() => navigate({ name: 'account' })}>Đăng nhập ngay</button>
-      </div>
+      <EmptyState
+        className="max-w-lg mx-auto mt-12"
+        icon={<WalletCards size={48} className="mx-auto mb-4 text-slate-400" />}
+        title="Bạn chưa đăng nhập"
+        description="Vui lòng đăng nhập để quản lý ví và nạp tiền."
+        actionLabel="Đăng nhập ngay"
+        onAction={() => navigate({ name: 'account' })}
+      />
     );
   }
 

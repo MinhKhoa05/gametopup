@@ -18,6 +18,7 @@ import { classNames } from '../../../lib/ui';
 import { User, WalletInfo } from '../../../types';
 import { AsyncActionExecutor } from '../../../hooks/useAsyncAction';
 import { useProfileEditor } from '../profile/useProfileEditor';
+import { authStore, useAuthStore } from '../../../store/auth.store';
 
 function isAdminUser(user: User) {
   if (typeof user.role === 'string') return user.role.toLowerCase().includes('admin');
@@ -25,11 +26,6 @@ function isAdminUser(user: User) {
 }
 
 export function AccountPage({
-  authMode,
-  setAuthMode,
-  form,
-  setForm,
-  user,
   wallet,
   ordersCount,
   busy,
@@ -39,11 +35,6 @@ export function AccountPage({
   execute,
   navigate,
 }: {
-  authMode: 'login' | 'register';
-  setAuthMode: (m: 'login' | 'register') => void;
-  form: any;
-  setForm: (f: any) => void;
-  user: User | null;
   wallet: WalletInfo | null;
   ordersCount: number;
   busy: boolean;
@@ -53,6 +44,10 @@ export function AccountPage({
   execute: AsyncActionExecutor;
   navigate: (route: Route) => void;
 }) {
+  const user = useAuthStore((state) => state.user);
+  const authMode = useAuthStore((state) => state.authMode);
+  const form = useAuthStore((state) => state.authForm);
+
   const displayName = userDisplayName(user);
   const roleLabel = user ? (isAdminUser(user) ? 'Quản trị viên' : 'Tài khoản cá nhân') : '';
   const statusLabel = user?.isActive === false ? 'Tạm khóa' : 'Đang hoạt động';
@@ -62,6 +57,11 @@ export function AccountPage({
     onProfileUpdated,
   });
 
+  const scrollToProfileForm = () => {
+    const formSection = document.querySelector('.account-note-card--form');
+    formSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   if (!user) {
     return (
       <div className={classNames('auth-page-slider', authMode === 'register' && 'right-panel-active')}>
@@ -70,7 +70,7 @@ export function AccountPage({
             className="auth-form"
             onSubmit={(e) => {
               e.preventDefault();
-              setAuthMode('login');
+              authStore.setAuthMode('login');
               onSubmit(e);
             }}
           >
@@ -81,14 +81,14 @@ export function AccountPage({
             <Field
               label="Email"
               value={form.email}
-              onChange={(v) => setForm({ ...form, email: v })}
+              onChange={(v) => authStore.setAuthForm({ ...form, email: v })}
               placeholder="customer01@gametopup.com"
               type="email"
             />
             <Field
               label="Mật khẩu"
               value={form.password}
-              onChange={(v) => setForm({ ...form, password: v })}
+              onChange={(v) => authStore.setAuthForm({ ...form, password: v })}
               placeholder="Nhập mật khẩu"
               type="password"
             />
@@ -97,7 +97,7 @@ export function AccountPage({
             </button>
             <div className="mt-4 text-center text-sm text-slate-400 block md:hidden">
               Chưa có tài khoản?{' '}
-              <button type="button" onClick={() => setAuthMode('register')} className="text-cyanline font-bold">
+              <button type="button" onClick={() => authStore.setAuthMode('register')} className="text-cyanline font-bold">
                 Đăng ký ngay
               </button>
             </div>
@@ -109,7 +109,7 @@ export function AccountPage({
             className="auth-form"
             onSubmit={(e) => {
               e.preventDefault();
-              setAuthMode('register');
+              authStore.setAuthMode('register');
               onSubmit(e);
             }}
           >
@@ -120,20 +120,20 @@ export function AccountPage({
             <Field
               label="Tên hiển thị"
               value={form.displayName}
-              onChange={(v) => setForm({ ...form, displayName: v })}
+              onChange={(v) => authStore.setAuthForm({ ...form, displayName: v })}
               placeholder="Nguyễn Văn A"
             />
             <Field
               label="Email"
               value={form.email}
-              onChange={(v) => setForm({ ...form, email: v })}
+              onChange={(v) => authStore.setAuthForm({ ...form, email: v })}
               placeholder="customer01@gametopup.com"
               type="email"
             />
             <Field
               label="Mật khẩu"
               value={form.password}
-              onChange={(v) => setForm({ ...form, password: v })}
+              onChange={(v) => authStore.setAuthForm({ ...form, password: v })}
               placeholder="Nhập mật khẩu"
               type="password"
             />
@@ -142,7 +142,7 @@ export function AccountPage({
             </button>
             <div className="mt-4 text-center text-sm text-slate-400 block md:hidden">
               Đã có tài khoản?{' '}
-              <button type="button" onClick={() => setAuthMode('login')} className="text-cyanline font-bold">
+              <button type="button" onClick={() => authStore.setAuthMode('login')} className="text-cyanline font-bold">
                 Đăng nhập
               </button>
             </div>
@@ -154,14 +154,14 @@ export function AccountPage({
             <div className="slider-overlay-panel overlay-left">
               <h2>Chào bạn mới!</h2>
               <p>Đăng ký ngay để trải nghiệm dịch vụ nạp game chiết khấu cao và tiện lợi nhất.</p>
-              <button className="btn-outline mt-4" onClick={() => setAuthMode('login')} type="button">
+              <button className="btn-outline mt-4" onClick={() => authStore.setAuthMode('login')} type="button">
                 Đã có tài khoản?
               </button>
             </div>
             <div className="slider-overlay-panel overlay-right">
               <h2>Mừng trở lại!</h2>
               <p>Quản lý ví và theo dõi lịch sử đơn hàng của bạn. Tiếp tục giao dịch ngay hôm nay.</p>
-              <button className="btn-outline mt-4" onClick={() => setAuthMode('register')} type="button">
+              <button className="btn-outline mt-4" onClick={() => authStore.setAuthMode('register')} type="button">
                 Chưa có tài khoản?
               </button>
             </div>
@@ -258,6 +258,19 @@ export function AccountPage({
                 <span className="account-quick-copy">
                   <strong>Lịch sử đơn</strong>
                   <small>Xem lại các đơn đã đặt</small>
+                </span>
+                <span className="account-quick-arrow">
+                  <ArrowRight size={18} />
+                </span>
+              </button>
+
+              <button type="button" onClick={() => navigate({ name: 'wallet' })}>
+                <span className="account-quick-icon">
+                  <WalletCards size={20} />
+                </span>
+                <span className="account-quick-copy">
+                  <strong>Lịch sử nạp tiền</strong>
+                  <small>Xem giao dịch và số dư ví</small>
                 </span>
                 <span className="account-quick-arrow">
                   <ArrowRight size={18} />

@@ -23,6 +23,28 @@ export const HEADER_NAV_ITEMS: Array<{ label: string; route: Route }> = [
   { label: 'Lịch sử đơn', route: { name: 'orders' } },
 ];
 
+export type HeaderAccountMenuItemConfig = {
+  label: string;
+  route?: Route;
+  className?: string;
+  dividerAfter?: boolean;
+};
+
+export const HEADER_ACCOUNT_MENU_USER_ITEMS: HeaderAccountMenuItemConfig[] = [
+  { label: 'Hồ sơ', route: { name: 'account' } },
+  { label: 'Lịch sử đơn', route: { name: 'orders' } },
+  { label: 'Lịch sử ví', route: { name: 'wallet' }, dividerAfter: true },
+  { label: 'Đăng xuất', className: 'logout' },
+];
+
+export const HEADER_ACCOUNT_MENU_ADMIN_ITEMS: HeaderAccountMenuItemConfig[] = [
+  { label: 'Hồ sơ', route: { name: 'account' } },
+  { label: 'Lịch sử đơn', route: { name: 'orders' } },
+  { label: 'Lịch sử ví', route: { name: 'wallet' }, dividerAfter: true },
+  { label: 'Trang quản trị', route: { name: 'admin' }, dividerAfter: true },
+  { label: 'Đăng xuất', className: 'logout' },
+];
+
 export const BOTTOM_NAV_ITEMS: Array<{ label: string; route: Route }> = [
   { label: 'Trang chủ', route: { name: 'home' } },
   { label: 'Game', route: { name: 'games' } },

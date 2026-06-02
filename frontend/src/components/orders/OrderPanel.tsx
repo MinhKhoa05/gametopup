@@ -3,6 +3,7 @@ import { ShoppingCart } from 'lucide-react';
 import { formatCurrency } from '../../lib/format';
 import { GamePackage, User } from '../../types';
 import { Field } from '../common/Field';
+import { SectionHeading } from '../common/SectionHeading';
 
 export function OrderPanel({
   user,
@@ -24,13 +25,15 @@ export function OrderPanel({
   total: number;
   busy: boolean;
   onSubmit: (event: FormEvent) => void;
-}) {
+  }) {
   return (
     <div className="checkout-panel">
-      <div>
-        <p className="eyebrow">Đặt đơn</p>
-        <h2>Thông tin nạp</h2>
-      </div>
+      <SectionHeading>
+        <div className="section-heading__copy">
+          <p className="eyebrow section-heading__eyebrow">Đặt đơn</p>
+          <h2 className="section-heading__title">Thông tin nạp</h2>
+        </div>
+      </SectionHeading>
       <form className="mt-4 grid gap-4 md:grid-cols-[1fr_140px]" onSubmit={onSubmit}>
         <Field
           label="UID / Server / Ghi chú tài khoản"

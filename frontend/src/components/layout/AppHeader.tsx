@@ -14,25 +14,29 @@ import { HeaderAccountMenu, type HeaderAccountMenuItem } from './HeaderAccountMe
 import { userDisplayName } from '../../lib/labels';
 import { Route } from '../../lib/routes';
 import { classNames } from '../../lib/ui';
-import { HEADER_NAV_ITEMS, SITE } from '../../config/site';
-import { User, WalletInfo } from '../../types';
+import {
+  HEADER_ACCOUNT_MENU_ADMIN_ITEMS,
+  HEADER_ACCOUNT_MENU_USER_ITEMS,
+  HEADER_NAV_ITEMS,
+  SITE,
+} from '../../config/site';
 import { formatCurrency } from '../../lib/format';
 import { isAdminUser } from '../../lib/roles';
+import { useAuthStore } from '../../store/auth.store';
 
 export function AppHeader({
   route,
-  user,
   wallet,
   navigate,
   onLogout,
 }: {
   route: Route;
-  user: User | null;
-  wallet: WalletInfo | null;
+  wallet: { balance: number } | null;
   navigate: (route: Route) => void;
   onLogout: () => void;
 }) {
   const [keyword, setKeyword] = useState('');
+  const user = useAuthStore((state) => state.user);
 
   const handleWalletClick = () => {
     navigate(user ? { name: 'wallet' } : { name: 'account' });
@@ -46,47 +50,36 @@ export function AppHeader({
 
   const displayName = userDisplayName(user);
   const adminUser = isAdminUser(user);
-  const menuItems: HeaderAccountMenuItem[] = [
-    {
-      label: 'Hồ sơ',
-      icon: <UserRound size={16} />,
-      onClick: () => navigate({ name: 'account' }),
-    },
-    {
-      label: 'Lịch sử đơn',
-      icon: <Receipt size={16} />,
-      onClick: () => navigate({ name: 'orders' }),
-    },
-    {
-      label: 'Lịch sử ví',
-      icon: <WalletCards size={16} />,
-      onClick: () => navigate({ name: 'wallet' }),
-    },
-  ];
+  const baseMenuItems = adminUser ? HEADER_ACCOUNT_MENU_ADMIN_ITEMS : HEADER_ACCOUNT_MENU_USER_ITEMS;
+  const menuItems: HeaderAccountMenuItem[] = baseMenuItems.map((item) => {
+    const icon =
+      item.route?.name === 'account' ? (
+        <UserRound size={16} />
+      ) : item.route?.name === 'orders' ? (
+        <Receipt size={16} />
+      ) : item.route?.name === 'wallet' ? (
+        <WalletCards size={16} />
+      ) : item.route?.name === 'admin' ? (
+        <LayoutDashboard size={16} />
+      ) : (
+        <LogOut size={16} />
+      );
 
-  if (adminUser) {
-    menuItems[2].dividerAfter = true;
-    menuItems.push({
-      label: 'Trang quản trị',
-      icon: <LayoutDashboard size={16} />,
-      onClick: () => navigate({ name: 'admin' }),
-      dividerAfter: true,
-    });
-    menuItems.push({
-      label: 'Đăng xuất',
-      icon: <LogOut size={16} />,
-      className: 'logout',
-      onClick: onLogout,
-    });
-  } else {
-    menuItems[2].dividerAfter = true;
-    menuItems.push({
-      label: 'Đăng xuất',
-      icon: <LogOut size={16} />,
-      className: 'logout',
-      onClick: onLogout,
-    });
-  }
+    return {
+      label: item.label,
+      icon,
+      className: item.className,
+      dividerAfter: item.dividerAfter,
+      onClick: () => {
+        if (item.className === 'logout') {
+          onLogout();
+          return;
+        }
+
+        if (item.route) navigate(item.route);
+      },
+    };
+  });
 
   return (
     <header className="site-header">

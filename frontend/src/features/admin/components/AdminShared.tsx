@@ -1,26 +1,8 @@
 import { CheckCircle2, Search, X } from 'lucide-react';
-import { ReactNode } from 'react';
+import { Badge } from '../../../components/common/Badge';
+import { SectionHeading } from '../../../components/common/SectionHeading';
+import { EmptyState } from '../../../components/common/EmptyState';
 import { classNames } from '../../../lib/ui';
-
-export function MetricCard({
-  icon,
-  label,
-  tone,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  tone?: 'warning';
-  value: string;
-}) {
-  return (
-    <div className={classNames('admin-metric-card', tone === 'warning' && 'warning')}>
-      <span>{icon}</span>
-      <small>{label}</small>
-      <strong>{value}</strong>
-    </div>
-  );
-}
 
 export function PanelTitle({
   action,
@@ -32,14 +14,16 @@ export function PanelTitle({
   title: string;
 }) {
   return (
-    <div className="admin-panel-title">
-      <h2>{title}</h2>
+    <SectionHeading>
+      <div className="section-heading__copy">
+        <h2 className="section-heading__title">{title}</h2>
+      </div>
       {action && (
-        <button type="button" onClick={onAction}>
+        <button type="button" className="section-heading__action" onClick={onAction}>
           {action}
         </button>
       )}
-    </div>
+    </SectionHeading>
   );
 }
 
@@ -62,10 +46,13 @@ export function SearchBox({
 
 export function StatusPill({ active }: { active: boolean }) {
   return (
-    <span className={classNames('admin-status-pill', active ? 'active' : 'inactive')}>
-      {active ? <CheckCircle2 size={14} /> : <X size={14} />}
+    <Badge
+      className={classNames('admin-status-pill', active ? 'active' : 'inactive')}
+      icon={active ? <CheckCircle2 size={14} /> : <X size={14} />}
+      tone={active ? 'success' : 'info'}
+    >
       {active ? 'Bật' : 'Tắt'}
-    </span>
+    </Badge>
   );
 }
 
@@ -97,7 +84,11 @@ export function AdminSkeleton({ rows }: { rows: number }) {
 }
 
 export function EmptyLine({ text }: { text: string }) {
-  return <div className="admin-empty-line">{text}</div>;
+  return (
+    <EmptyState className="admin-empty-line">
+      <span>{text}</span>
+    </EmptyState>
+  );
 }
 
 export function filterByName<T extends { name: string }>(items: T[], query: string) {

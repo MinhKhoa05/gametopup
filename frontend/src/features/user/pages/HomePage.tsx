@@ -1,19 +1,15 @@
 import { FormEvent, useState } from 'react';
 import { ChevronRight, Zap, ShieldCheck, WalletCards, Gamepad2, Search } from 'lucide-react';
 import { Route } from '../../../lib/routes';
-import { Game, User, WalletInfo } from '../../../types';
+import { Game, WalletInfo } from '../../../types';
 import { pickImage, classNames } from '../../../lib/ui';
 import { AuthPanel } from '../../../components/auth/AuthPanel';
 import { SITE } from '../../../config/site';
+import { useAuthStore } from '../../../store/auth.store';
 
 export function HomePage({
   games,
-  user,
   wallet,
-  authMode,
-  setAuthMode,
-  authForm,
-  setAuthForm,
   busy,
   navigate,
   onAuth,
@@ -22,18 +18,14 @@ export function HomePage({
   games: Game[];
   packagesCount: number;
   ordersCount: number;
-  user: User | null;
   wallet: WalletInfo | null;
-  authMode: 'login' | 'register';
-  setAuthMode: (mode: 'login' | 'register') => void;
-  authForm: { displayName: string; email: string; password: string };
-  setAuthForm: (form: { displayName: string; email: string; password: string }) => void;
   busy: boolean;
   navigate: (route: Route) => void;
   onAuth: (event: FormEvent) => void;
   onLogout: () => void;
 }) {
   const [keyword, setKeyword] = useState('');
+  const user = useAuthStore((state) => state.user);
   const featured = games.slice(0, 8);
   
   return (
@@ -169,12 +161,7 @@ export function HomePage({
         {!user && (
           <div>
             <h2 className="section-title hidden lg:block invisible">Đăng nhập</h2>
-            <AuthPanel 
-              authMode={authMode} setAuthMode={setAuthMode} 
-              form={authForm} setForm={setAuthForm} 
-              user={user} wallet={wallet} busy={busy} 
-              onSubmit={onAuth} onLogout={onLogout} 
-            />
+            <AuthPanel wallet={wallet} busy={busy} onSubmit={onAuth} onLogout={onLogout} />
           </div>
         )}
       </section>
