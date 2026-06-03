@@ -15,3 +15,22 @@ export function statusLabel(status: number) {
 
   return labels[status] ?? `Trạng thái ${status}`;
 }
+
+export function userRoleLabel(role?: number | string) {
+  const value = normalizeRole(role);
+  const labels: Record<string, string> = {
+    '0': 'Member',
+    '1': 'Admin',
+    '2': 'Staff',
+    admin: 'Admin',
+    staff: 'Staff',
+    member: 'Member',
+  };
+
+  return labels[value] ?? (value || 'Unknown');
+}
+
+function normalizeRole(role?: number | string) {
+  if (role == null) return '';
+  return String(role).trim().toLowerCase();
+}

@@ -4,7 +4,7 @@ export type Route =
   | { name: 'wallet' }
   | { name: 'orders' }
   | { name: 'account' }
-  | { name: 'admin'; section?: 'dashboard' | 'games' | 'packages' };
+  | { name: 'admin'; section?: 'dashboard' | 'games' | 'packages' | 'orders' | 'users' };
 
 export function parseRoute(pathname = window.location.pathname): Route {
   const segments = pathname.split('/').filter(Boolean);
@@ -18,7 +18,9 @@ export function parseRoute(pathname = window.location.pathname): Route {
   if (segments[0] === 'account') return { name: 'account' };
   if (segments[0] === 'admin') {
     const section = segments[1];
-    if (section === 'games' || section === 'packages') return { name: 'admin', section };
+    if (section === 'games' || section === 'packages' || section === 'orders' || section === 'users') {
+      return { name: 'admin', section };
+    }
     return { name: 'admin', section: 'dashboard' };
   }
 

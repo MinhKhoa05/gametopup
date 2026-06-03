@@ -73,12 +73,21 @@
   border-bottom: 1px solid rgb(34 211 238 / 0.16);
 }
 
-.topup-game-card img {
+.topup-game-card__image {
+  flex: 0 0 auto;
+  width: 92px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 2px solid rgb(255 255 255 / 0.1);
+  background: #0f172a;
+}
+
+.topup-game-card__image img {
   width: 92px;
   height: 92px;
-  border-radius: 14px;
+  display: block;
   object-fit: cover;
-  border: 2px solid rgb(255 255 255 / 0.1);
 }
 
 .topup-game-card h1 {
@@ -189,7 +198,11 @@
     align-items: flex-start;
   }
 
-  .topup-game-card img {
+  .topup-game-card__image {
+    width: 72px;
+  }
+
+  .topup-game-card__image img {
     width: 72px;
     height: 72px;
   }

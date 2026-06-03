@@ -1,25 +1,27 @@
+import type { ReactNode } from 'react';
+import { AppLayout } from './components/layout/AppLayout';
 import { AppFooter } from './components/layout/AppFooter';
 import { AppHeader } from './components/layout/AppHeader';
 import { BottomNav } from './components/layout/BottomNav';
 import { ToastNotification } from './components/common/ToastNotification';
-import { AdminPage } from './features/admin/pages/AdminPage';
-import { useAuthSession } from './features/auth/hooks/useAuthSession';
-import { useGameCatalog } from './features/games/hooks/useGameCatalog';
-import { useCheckoutOrder } from './features/orders/hooks/useCheckoutOrder';
-import { useUserOrders } from './features/orders/hooks/useUserOrders';
-import { useDepositRequests } from './features/wallet/hooks/useDepositRequests';
-import { useWalletDeposit } from './features/wallet/hooks/useWalletDeposit';
-import { useWalletTransactions } from './features/wallet/hooks/useWalletTransactions';
-import { useAsyncAction } from './hooks/useAsyncAction';
-import { useRoute } from './hooks/useRoute';
+import { useAuthSession } from './hooks/auth.hooks';
+import { useAsyncAction } from './hooks/common/useAsyncAction';
+import { useRoute } from './hooks/common/route.hooks';
 import { Route } from './lib/routes';
-import { AccountPage } from './features/user/pages/AccountPage';
-import { GameDetailPage } from './features/games/pages/GameDetailPage';
-import { GamesPage } from './features/games/pages/GamesPage';
-import { HomePage } from './features/home/pages/HomePage';
-import { OrdersPage } from './features/orders/pages/OrdersPage';
-import { WalletPage } from './features/wallet/pages/WalletPage';
+import { AccountPage } from './pages/AccountPage';
+import { GameDetailPage } from './pages/GameDetailPage';
+import { GamesPage } from './pages/GamesPage';
+import { HomePage } from './pages/HomePage';
+import { OrdersPage } from './pages/OrdersPage';
+import { WalletPage } from './pages/WalletPage';
+import { AdminPage } from './pages/admin/AdminPage';
+import { EmptyState } from './components/common/EmptyState';
 import { useAuthStore } from './store/auth.store';
+import { useGameCatalog } from './store/games.store';
+import { useCheckoutOrder, useUserOrders } from './store/orders.store';
+import { useDepositRequests, useWalletDeposit, useWalletTransactions } from './store/wallet.store';
+import { isAdminUser } from './lib/roles';
+import type { User } from './types';
 
 export function App() {
   const { route, navigate } = useRoute();
@@ -29,45 +31,47 @@ export function App() {
     execute: action.execute,
   });
   const user = useAuthStore((state) => state.user);
-  const authLoading = useAuthStore((state) => state.authLoading);
+  const authStatus = useAuthStore((state) => state.authStatus);
   const userOrders = useUserOrders(user, action.execute);
   const isAdminRoute = route.name === 'admin';
 
   return (
-    <div className="main-layout bg-ink text-slate-100">
-      {!isAdminRoute && <AppHeader route={route} wallet={userOrders.wallet} navigate={navigate} onLogout={auth.handleLogout} />}
+    <AppLayout
+      isAdminRoute={isAdminRoute}
+      header={<AppHeader route={route} wallet={userOrders.wallet} navigate={navigate} onLogout={auth.handleLogout} />}
+      footer={<AppFooter navigate={navigate} />}
+      bottomNav={<BottomNav route={route} navigate={navigate} />}
+      toast={<ToastNotification loading={action.isLoading} message={action.successMessage} error={action.errorMessage} />}
+    >
+      {route.name === 'home' && (
+        <HomeRoute
+          onAuth={auth.handleAuth}
+          onLogout={auth.handleLogout}
+          busy={action.isLoading}
+          ordersCount={userOrders.orders.length}
+          setError={action.setErrorMessage}
+          wallet={userOrders.wallet}
+          navigate={navigate}
+        />
+      )}
 
-      <main className="main-content">
-        {route.name === 'home' && (
-          <HomeRoute
-            onAuth={auth.handleAuth}
-            onLogout={auth.handleLogout}
-            busy={action.isLoading}
-            ordersCount={userOrders.orders.length}
-            setError={action.setErrorMessage}
-            wallet={userOrders.wallet}
-            navigate={navigate}
-          />
-        )}
+      {!isAdminRoute && route.name !== 'home' && (
+        <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          {route.name === 'games' && !route.gameId && <GamesRoute route={route} setError={action.setErrorMessage} navigate={navigate} />}
 
-        {!isAdminRoute && route.name !== 'home' && (
-          <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            {route.name === 'games' && !route.gameId && (
-              <GamesRoute authLoading={authLoading} route={route} setError={action.setErrorMessage} navigate={navigate} />
-            )}
+          {route.name === 'games' && route.gameId && (
+            <GameDetailRoute
+              busy={action.isLoading}
+              route={route}
+              execute={action.execute}
+              setError={action.setErrorMessage}
+              refreshUserArea={userOrders.refreshUserArea}
+              navigate={navigate}
+            />
+          )}
 
-            {route.name === 'games' && route.gameId && (
-              <GameDetailRoute
-                busy={action.isLoading}
-                route={route}
-                execute={action.execute}
-                setError={action.setErrorMessage}
-                refreshUserArea={userOrders.refreshUserArea}
-                navigate={navigate}
-              />
-            )}
-
-            {route.name === 'wallet' && (
+          {route.name === 'wallet' && (
+            <AuthGuard authStatus={authStatus} user={user} required="authenticated" fallbackRoute={{ name: 'account' }} navigate={navigate}>
               <WalletRoute
                 busy={action.isLoading}
                 execute={action.execute}
@@ -76,28 +80,32 @@ export function App() {
                 refreshUserArea={userOrders.refreshUserArea}
                 navigate={navigate}
               />
-            )}
+            </AuthGuard>
+          )}
 
-            {route.name === 'orders' && (
+          {route.name === 'orders' && (
+            <AuthGuard authStatus={authStatus} user={user} required="authenticated" fallbackRoute={{ name: 'account' }} navigate={navigate}>
               <OrdersPage orders={userOrders.orders} busy={action.isLoading} onPay={userOrders.handlePay} navigate={navigate} />
-            )}
+            </AuthGuard>
+          )}
 
-            {route.name === 'account' && (
-              <AccountPage
-                wallet={userOrders.wallet}
-                ordersCount={userOrders.orders.length}
-                busy={action.isLoading}
-                onSubmit={auth.handleAuth}
-                onLogout={auth.handleLogout}
-                onProfileUpdated={auth.handleProfileUpdated}
-                execute={action.execute}
-                navigate={navigate}
-              />
-            )}
-          </div>
-        )}
+          {route.name === 'account' && (
+            <AccountPage
+              wallet={userOrders.wallet}
+              ordersCount={userOrders.orders.length}
+              busy={action.isLoading}
+              onSubmit={auth.handleAuth}
+              onLogout={auth.handleLogout}
+              onProfileUpdated={auth.handleProfileUpdated}
+              execute={action.execute}
+              navigate={navigate}
+            />
+          )}
+        </div>
+      )}
 
-        {isAdminRoute && (
+      {isAdminRoute && (
+        <AuthGuard authStatus={authStatus} user={user} required="admin" fallbackRoute={{ name: 'home' }} navigate={navigate}>
           <AdminPage
             busy={action.isLoading}
             execute={action.execute}
@@ -106,13 +114,9 @@ export function App() {
             route={route}
             setError={action.setErrorMessage}
           />
-        )}
-      </main>
-
-      {!isAdminRoute && <AppFooter navigate={navigate} />}
-      {!isAdminRoute && <BottomNav route={route} navigate={navigate} />}
-      <ToastNotification loading={action.isLoading} message={action.successMessage} error={action.errorMessage} />
-    </div>
+        </AuthGuard>
+      )}
+    </AppLayout>
   );
 }
 
@@ -142,6 +146,7 @@ function HomeRoute({
   return (
     <HomePage
       games={catalog.games}
+      gamesLoading={catalog.gamesLoading}
       packagesCount={0}
       ordersCount={ordersCount}
       wallet={wallet}
@@ -153,20 +158,88 @@ function HomeRoute({
   );
 }
 
+function AuthGuard({
+  authStatus,
+  children,
+  fallbackRoute,
+  required,
+  navigate,
+  user,
+}: {
+  authStatus: 'unknown' | 'checking' | 'authenticated' | 'guest';
+  children: ReactNode;
+  fallbackRoute: Route;
+  required: 'authenticated' | 'admin';
+  navigate: (route: Route) => void;
+  user: User | null;
+}) {
+  if (authStatus === 'unknown' || authStatus === 'checking') {
+    return <AuthGuardSkeleton />;
+  }
+
+  if (required === 'admin') {
+    const allowed = Boolean(user && isAdminUser(user));
+    if (!allowed) {
+      return (
+        <EmptyState
+          className="mx-auto max-w-lg py-16"
+          title="Bạn không có quyền truy cập trang này."
+          description="Vui lòng đăng nhập bằng tài khoản quản trị để tiếp tục."
+          actionLabel="Về trang chủ"
+          onAction={() => navigate(fallbackRoute)}
+        />
+      );
+    }
+  } else if (!user) {
+    return (
+      <EmptyState
+        className="mx-auto max-w-lg py-16"
+        title="Bạn cần đăng nhập để tiếp tục."
+        description="Khu vực này chỉ dành cho tài khoản đã xác thực."
+        actionLabel="Đăng nhập"
+        onAction={() => navigate(fallbackRoute)}
+      />
+    );
+  }
+
+  return children;
+}
+
+function AuthGuardSkeleton() {
+  return (
+    <div className="mx-auto max-w-4xl" aria-busy="true" aria-label="Đang xác thực tài khoản">
+      <div className="rounded-2xl border border-white/6 bg-ink-light p-6">
+        <div className="mb-6 h-6 w-48 animate-pulse rounded-full bg-white/10" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="h-28 animate-pulse rounded-2xl bg-white/6" />
+          <div className="h-28 animate-pulse rounded-2xl bg-white/6" />
+        </div>
+        <div className="mt-4 h-12 animate-pulse rounded-xl bg-white/6" />
+      </div>
+    </div>
+  );
+}
+
 function GamesRoute({
-  authLoading,
   route,
   setError,
   navigate,
 }: {
-  authLoading: boolean;
   route: Route;
   setError: SetError;
   navigate: (route: Route) => void;
 }) {
   const catalog = useGameCatalog(route, setError);
 
-  return <GamesPage games={catalog.filteredGames} loading={authLoading || catalog.gamesLoading} query={catalog.query} setQuery={catalog.setQuery} navigate={navigate} />;
+  return (
+    <GamesPage
+      games={catalog.filteredGames}
+      loading={catalog.gamesLoading}
+      query={catalog.query}
+      setQuery={catalog.setQuery}
+      navigate={navigate}
+    />
+  );
 }
 
 function GameDetailRoute({
@@ -195,6 +268,7 @@ function GameDetailRoute({
   return (
     <GameDetailPage
       game={catalog.selectedGame}
+      gameLoading={catalog.gamesLoading}
       packages={catalog.packages}
       packagesLoading={catalog.packagesLoading}
       selectedPackageId={catalog.selectedPackageId}

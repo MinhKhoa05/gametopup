@@ -37,18 +37,20 @@ export function AppHeader({
 }) {
   const [keyword, setKeyword] = useState('');
   const user = useAuthStore((state) => state.user);
+  const authStatus = useAuthStore((state) => state.authStatus);
+  const userSnapshot = useAuthStore((state) => state.userSnapshot);
 
   const handleWalletClick = () => {
     navigate(user ? { name: 'wallet' } : { name: 'account' });
   };
 
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && keyword.trim()) {
+  const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && keyword.trim()) {
       navigate({ name: 'games' });
     }
   };
 
-  const displayName = userDisplayName(user);
+  const displayName = userDisplayName(user) || userSnapshot?.displayName || 'Khách';
   const adminUser = isAdminUser(user);
   const baseMenuItems = adminUser ? HEADER_ACCOUNT_MENU_ADMIN_ITEMS : HEADER_ACCOUNT_MENU_USER_ITEMS;
   const menuItems: HeaderAccountMenuItem[] = baseMenuItems.map((item) => {
@@ -80,6 +82,63 @@ export function AppHeader({
       },
     };
   });
+
+  const authTrigger =
+    authStatus === 'unknown' || authStatus === 'checking' ? (
+      userSnapshot ? (
+        <div className="hidden min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-ink-lighter px-3 py-2 sm:inline-flex">
+          {userSnapshot.avatarUrl ? (
+            <img
+              src={userSnapshot.avatarUrl}
+              alt={userSnapshot.displayName || 'Khách'}
+              className="h-6 w-6 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-cyanline/20 text-cyanline">
+              <UserRound size={14} />
+            </div>
+          )}
+          <div className="grid gap-0.5 text-left">
+            <span className="text-sm font-semibold text-white">{userSnapshot.displayName || 'Khách'}</span>
+          </div>
+        </div>
+      ) : (
+        <div className="hidden min-h-11 items-center gap-3 rounded-xl border border-white/10 bg-ink-lighter px-3 py-2 sm:inline-flex">
+          <div className="h-8 w-8 animate-pulse rounded-full bg-white/10" />
+          <div className="grid gap-1">
+            <div className="h-3 w-24 animate-pulse rounded-full bg-white/10" />
+            <div className="h-2.5 w-16 animate-pulse rounded-full bg-white/10" />
+          </div>
+        </div>
+      )
+    ) : user ? (
+      <div className="header-user-group flex items-center gap-3">
+        <button
+          type="button"
+          className="relative hidden h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-ink-lighter text-slate-200 transition-colors hover:bg-ink-light sm:inline-flex"
+          title="Thông báo"
+        >
+          <Bell size={18} />
+          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
+        </button>
+
+        <HeaderAccountMenu
+          triggerLabel={displayName}
+          infoLabel={displayName}
+          infoBadge={isAdminUser(user) ? 'Quản trị viên' : 'Tài khoản cá nhân'}
+          items={menuItems}
+        />
+      </div>
+    ) : (
+      <button
+        type="button"
+        className="inline-flex min-h-11 items-center rounded-xl bg-gradient-to-r from-cyanline to-teal-400 px-4 text-sm font-bold text-slate-950 shadow-[0_4px_14px_rgba(34,211,238,0.2)] transition-transform hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(34,211,238,0.3)]"
+        onClick={() => navigate({ name: 'account' })}
+      >
+        <UserRound size={17} />
+        <span className="ml-1 hidden sm:inline">Đăng nhập</span>
+      </button>
+    );
 
   return (
     <header className="site-header">
@@ -118,7 +177,7 @@ export function AppHeader({
               className="w-full border-none bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
               placeholder="Tìm game..."
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={(event) => setKeyword(event.target.value)}
               onKeyDown={handleSearch}
             />
           </label>
@@ -132,34 +191,7 @@ export function AppHeader({
             <span className="text-sm font-bold">{user ? `Ví: ${formatCurrency(wallet?.balance || 0)}` : 'Nạp ví'}</span>
           </button>
 
-          {user ? (
-            <div className="header-user-group flex items-center gap-3">
-              <button
-                type="button"
-                className="relative hidden h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-ink-lighter text-slate-200 transition-colors hover:bg-ink-light sm:inline-flex"
-                title="Thông báo"
-              >
-                <Bell size={18} />
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
-              </button>
-
-              <HeaderAccountMenu
-                triggerLabel={displayName}
-                infoLabel={displayName}
-                infoBadge={isAdminUser(user) ? 'Quản trị viên' : 'Tài khoản cá nhân'}
-                items={menuItems}
-              />
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="inline-flex min-h-11 items-center rounded-xl bg-gradient-to-r from-cyanline to-teal-400 px-4 text-sm font-bold text-slate-950 shadow-[0_4px_14px_rgba(34,211,238,0.2)] transition-transform hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(34,211,238,0.3)]"
-              onClick={() => navigate({ name: 'account' })}
-            >
-              <UserRound size={17} />
-              <span className="ml-1 hidden sm:inline">Đăng nhập</span>
-            </button>
-          )}
+          {authTrigger}
         </div>
       </div>
     </header>

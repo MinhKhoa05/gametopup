@@ -163,6 +163,14 @@
   grid-template-columns: auto minmax(0, 1fr) minmax(140px, auto) auto auto;
 }
 
+.admin-table-row.order {
+  grid-template-columns: auto minmax(0, 1.2fr) minmax(140px, auto) auto auto;
+}
+
+.admin-table-row.user {
+  grid-template-columns: auto minmax(0, 1fr) minmax(180px, auto) auto;
+}
+
 .admin-table-row.package.active {
   border-color: rgba(34, 211, 238, 0.56);
   background: rgba(34, 211, 238, 0.08);
@@ -222,6 +230,67 @@
   display: grid;
   gap: 6px;
   justify-items: end;
+}
+
+.admin-order-values,
+.admin-user-badges {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+.admin-order-status {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-order-actions,
+.admin-user-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.admin-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-filter-chip {
+  min-height: 40px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.03);
+  color: #cbd5e1;
+  padding: 0 14px;
+  font-weight: 700;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.admin-filter-chip.active,
+.admin-filter-chip:hover {
+  border-color: rgb(34 211 238 / 0.24);
+  background: rgb(34 211 238 / 0.1);
+  color: #cffafe;
+  transform: translateY(-1px);
+}
+
+.admin-action-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 8px 10px;
+  background: rgba(148, 163, 184, 0.1);
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .admin-package-values .profit,
@@ -319,6 +388,8 @@
 
   .admin-table-row,
   .admin-table-row.package,
+  .admin-table-row.order,
+  .admin-table-row.user,
   .admin-list-row {
     grid-template-columns: 1fr;
   }
@@ -339,5 +410,19 @@
 
   .admin-package-values {
     justify-items: start;
+  }
+
+  .admin-order-values,
+  .admin-user-badges {
+    justify-items: start;
+  }
+
+  .admin-order-status {
+    justify-content: flex-start;
+  }
+
+  .admin-order-actions,
+  .admin-user-actions {
+    justify-content: flex-start;
   }
 }

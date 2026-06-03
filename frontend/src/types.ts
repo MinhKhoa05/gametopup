@@ -19,10 +19,13 @@ export type GamePackage = {
 
 export type User = {
   id: number;
+  avatarUrl?: string;
   displayName?: string;
   email: string;
   role?: number | string;
   isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type WalletInfo = {
@@ -51,6 +54,8 @@ export type Order = {
   quantity: number;
   total?: number;
   status: number;
+  assignedTo?: number | null;
+  assignedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 };
