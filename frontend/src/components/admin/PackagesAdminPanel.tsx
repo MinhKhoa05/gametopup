@@ -1,11 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Edit3, Plus, Save, Trash2, X } from 'lucide-react';
-import { AsyncActionExecutor } from '../../hooks/common/useAsyncAction';
-import { getApiMessage } from '../../lib/api';
 import { formatCurrency } from '../../lib/format';
-import { getPackagesByGame } from '../../services/games.api';
 import type { Game, GamePackage } from '../../types';
-import { createGamePackage, deleteGamePackage, updateGamePackage } from '../../services/admin.api';
 import { AdminSkeleton, EmptyLine, NumberField, PanelTitle, SearchBox, StatusPill, filterByName, gameName } from './AdminShared';
 import { Field } from '../common/Field';
 import { classNames, pickImage } from '../../lib/ui';
@@ -23,42 +19,49 @@ const emptyPackageForm = {
 
 export function PackagesAdminPanel({
   busy,
-  execute,
   games,
+  packages,
   loading,
-  setError,
+  onCreatePackage,
+  onUpdatePackage,
+  onDeletePackage,
 }: {
   busy: boolean;
-  execute: AsyncActionExecutor;
   games: Game[];
+  packages: GamePackage[];
   loading: boolean;
-  setError: (message: string | null) => void;
+  onCreatePackage: (payload: {
+    gameId: number;
+    imageUrl: string;
+    importPrice: number;
+    isActive: boolean;
+    name: string;
+    originalPrice: number;
+    salePrice: number;
+    stockQuantity: number;
+  }) => Promise<void>;
+  onUpdatePackage: (
+    payload: {
+      id: number;
+      imageUrl: string;
+      importPrice: number;
+      isActive: boolean;
+      name: string;
+      originalPrice: number;
+      salePrice: number;
+      stockQuantity: number;
+    },
+  ) => Promise<void>;
+  onDeletePackage: (id: number) => Promise<void>;
 }) {
   const [editing, setEditing] = useState<GamePackage | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
-  const [packages, setPackages] = useState<GamePackage[]>([]);
-  const [packagesLoading, setPackagesLoading] = useState(false);
   const [form, setForm] = useState(emptyPackageForm);
   const [query, setQuery] = useState('');
-
-  async function refreshPackages(gameId: number) {
-    setPackagesLoading(true);
-    setError(null);
-
-    try {
-      const data = await getPackagesByGame(gameId);
-      setPackages(data);
-    } catch (err) {
-      setError(getApiMessage(err));
-    } finally {
-      setPackagesLoading(false);
-    }
-  }
 
   useEffect(() => {
     if (games.length === 0) {
       setSelectedGameId(null);
-      setPackages([]);
       return;
     }
 
@@ -74,36 +77,8 @@ export function PackagesAdminPanel({
     }));
   }, [editing, games, selectedGameId]);
 
-  useEffect(() => {
-    let active = true;
-
-    async function loadPackages() {
-      if (!selectedGameId) {
-        setPackages([]);
-        return;
-      }
-
-      setPackagesLoading(true);
-      setError(null);
-
-      try {
-        const data = await getPackagesByGame(selectedGameId);
-        if (active) setPackages(data);
-      } catch (err) {
-        if (active) setError(getApiMessage(err));
-      } finally {
-        if (active) setPackagesLoading(false);
-      }
-    }
-
-    loadPackages();
-
-    return () => {
-      active = false;
-    };
-  }, [selectedGameId, setError]);
-
-  const scopedPackages = useMemo(() => filterByName(packages, query), [packages, query]);
+  const selectedGamePackages = useMemo(() => packages.filter((item) => item.gameId === selectedGameId), [packages, selectedGameId]);
+  const scopedPackages = useMemo(() => filterByName(selectedGamePackages, query), [selectedGamePackages, query]);
   const profit = (item: GamePackage) => item.salePrice - item.importPrice;
   const selectedGame = selectedGameId ? games.find((game) => game.id === selectedGameId) ?? null : null;
   const previewSrc = form.imageUrl.trim() || (editing ? pickImage(editing) : selectedGame ? pickImage(selectedGame) : '');
@@ -139,39 +114,24 @@ export function PackagesAdminPanel({
       imageUrl: form.imageUrl.trim(),
       name: form.name.trim(),
     };
-
-    await execute(
-      () =>
-        editing
-          ? updateGamePackage(editing.id, {
-              imageUrl: payload.imageUrl,
-              importPrice: payload.importPrice,
-              isActive: payload.isActive,
-              name: payload.name,
-              originalPrice: payload.originalPrice,
-              salePrice: payload.salePrice,
-              stockQuantity: payload.stockQuantity,
-            })
-          : createGamePackage(payload),
-      {
-        successMessage: editing ? 'Đã cập nhật gói nạp.' : 'Đã tạo gói nạp mới.',
-        onSuccess: async () => {
-          resetForm();
-          if (selectedGameId) await refreshPackages(selectedGameId);
-        },
-      },
-    );
+    await (editing
+      ? onUpdatePackage({
+          id: editing.id,
+          imageUrl: payload.imageUrl,
+          importPrice: payload.importPrice,
+          isActive: payload.isActive,
+          name: payload.name,
+          originalPrice: payload.originalPrice,
+          salePrice: payload.salePrice,
+          stockQuantity: payload.stockQuantity,
+        })
+      : onCreatePackage(payload));
+    resetForm();
   }
 
   async function remove(item: GamePackage) {
     if (!window.confirm(`Xóa gói "${item.name}"?`)) return;
-
-    await execute(() => deleteGamePackage(item.id), {
-      successMessage: 'Đã xóa gói nạp.',
-      onSuccess: async () => {
-        if (selectedGameId) await refreshPackages(selectedGameId);
-      },
-    });
+    await onDeletePackage(item.id);
   }
 
   return (
@@ -200,8 +160,6 @@ export function PackagesAdminPanel({
         <SearchBox value={query} onChange={setQuery} placeholder="Tìm gói nạp..." />
 
         {loading && games.length === 0 && packages.length === 0 ? (
-          <AdminSkeleton rows={6} />
-        ) : packagesLoading && packages.length === 0 ? (
           <AdminSkeleton rows={6} />
         ) : !selectedGameId ? (
           <EmptyLine text="Hãy chọn hoặc tạo game trước." />

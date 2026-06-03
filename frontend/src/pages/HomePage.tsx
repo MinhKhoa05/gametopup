@@ -3,10 +3,10 @@ import { ChevronRight, Gamepad2, Search, ShieldCheck, WalletCards, Zap } from 'l
 import { AuthPanel } from '../components/auth/AuthPanel';
 import { Route } from '../lib/routes';
 import { pickImage } from '../lib/ui';
-import { Game, WalletInfo } from '../types';
+import { Game, WalletInfo, User } from '../types';
 import { SITE } from '../config/site';
-import { useAuthStore } from '../store/auth.store';
 import { GameGrid } from '../components/games/GameGrid';
+import type { AuthFormState, AuthMode } from '../types/auth.types';
 
 export function HomePage({
   games,
@@ -14,8 +14,13 @@ export function HomePage({
   wallet,
   busy,
   navigate,
+  authMode,
+  authForm,
+  user,
   onAuth,
   onLogout,
+  onChangeAuthForm,
+  onSwitchAuthMode,
 }: {
   games: Game[];
   gamesLoading: boolean;
@@ -26,9 +31,13 @@ export function HomePage({
   navigate: (route: Route) => void;
   onAuth: (event: FormEvent) => void;
   onLogout: () => void;
+  authMode: AuthMode;
+  authForm: AuthFormState;
+  user: User | null;
+  onChangeAuthForm: (next: AuthFormState) => void;
+  onSwitchAuthMode: (mode: AuthMode) => void;
 }) {
   const [keyword, setKeyword] = useState('');
-  const user = useAuthStore((state) => state.user);
   const featured = games.slice(0, 8);
 
   return (
@@ -163,10 +172,20 @@ export function HomePage({
         {!user && (
           <div>
             <h2 className="mb-6 text-2xl font-extrabold text-white lg:block">Đăng nhập</h2>
-            <AuthPanel wallet={wallet} busy={busy} onSubmit={onAuth} onLogout={onLogout} />
-          </div>
-        )}
-      </section>
-    </div>
+          <AuthPanel
+            authMode={authMode}
+            form={authForm}
+            wallet={wallet}
+            busy={busy}
+            user={user}
+            onSubmit={onAuth}
+            onLogout={onLogout}
+            onChangeAuthForm={onChangeAuthForm}
+            onSwitchMode={onSwitchAuthMode}
+          />
+        </div>
+      )}
+    </section>
+  </div>
   );
 }

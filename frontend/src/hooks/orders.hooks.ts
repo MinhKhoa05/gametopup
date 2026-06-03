@@ -1,28 +1,55 @@
-import { FormEvent, useState, useEffect } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { Route } from '../lib/routes';
-import { GamePackage, Order, User, WalletInfo } from '../types';
+import { GamePackage, User } from '../types';
 import { AsyncActionExecutor } from './common/useAsyncAction';
+import { payOrder, placeOrder, getMyOrders } from '../services/orders.api';
 import { getWallet } from '../services/wallet.api';
-import { getMyOrders, payOrder, placeOrder } from '../services/orders.api';
-import { useAuthStore } from '../store/auth.store';
+import { getApiMessage } from '../lib/api';
+import { ordersActions, useOrdersStore } from '../store/orders.store';
+import type { AuthStatus, AuthUserSnapshot } from '../types/auth.types';
 
-export function useUserOrders(user: User | null, execute: AsyncActionExecutor) {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [wallet, setWallet] = useState<WalletInfo | null>(null);
-  const authStatus = useAuthStore((state) => state.authStatus);
-  const userSnapshot = useAuthStore((state) => state.userSnapshot);
+export function useUserOrders(
+  user: User | null,
+  authStatus: AuthStatus,
+  userSnapshot: AuthUserSnapshot | null,
+  execute: AsyncActionExecutor,
+  setError: (message: string | null) => void,
+) {
+  const ordersState = useOrdersStore(
+    useShallow((state) => ({
+      orders: state.orders,
+      wallet: state.wallet,
+    })),
+  );
 
   async function refreshUserArea() {
-    if (!user && !(authStatus === 'checking' && userSnapshot)) return;
+    if (!user && !(authStatus === 'checking' && userSnapshot)) {
+      ordersActions.clearUserArea();
+      return;
+    }
 
-    const [walletData, orderData] = await Promise.allSettled([getWallet(), getMyOrders()]);
-    if (walletData.status === 'fulfilled') setWallet(walletData.value);
-    if (orderData.status === 'fulfilled') setOrders(orderData.value);
-  }
+    const current = useOrdersStore.getState();
+    const hasData = current.wallet !== null || current.orders.length > 0;
+    ordersActions.setWalletLoading(!hasData);
+    ordersActions.setOrdersLoading(!hasData);
 
-  function clearUserArea() {
-    setWallet(null);
-    setOrders([]);
+    const [walletResult, ordersResult] = await Promise.allSettled([getWallet(), getMyOrders()]);
+
+    if (walletResult.status === 'fulfilled') {
+      ordersActions.setWallet(walletResult.value);
+    } else if (!hasData) {
+      setError(getApiMessage(walletResult.reason));
+    }
+
+    if (ordersResult.status === 'fulfilled') {
+      ordersActions.setOrders(ordersResult.value);
+    } else if (!hasData) {
+      setError(getApiMessage(ordersResult.reason));
+    }
+
+    ordersActions.setWalletLoading(false);
+    ordersActions.setOrdersLoading(false);
   }
 
   async function handlePay(orderId: number) {
@@ -34,7 +61,7 @@ export function useUserOrders(user: User | null, execute: AsyncActionExecutor) {
 
   useEffect(() => {
     if (authStatus === 'guest' || (!user && !userSnapshot)) {
-      clearUserArea();
+      ordersActions.clearUserArea();
       return;
     }
 
@@ -42,12 +69,10 @@ export function useUserOrders(user: User | null, execute: AsyncActionExecutor) {
   }, [authStatus, user, userSnapshot]);
 
   return {
-    clearUserArea,
     handlePay,
-    orders,
+    orders: ordersState.orders,
     refreshUserArea,
-    setOrders,
-    wallet,
+    wallet: ordersState.wallet,
   };
 }
 

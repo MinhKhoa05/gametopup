@@ -7,7 +7,7 @@ import { Route } from '../lib/routes';
 import { classNames, pickImage } from '../lib/ui';
 import { formatCurrency } from '../lib/format';
 import { Game, GamePackage } from '../types';
-import { useAuthStore } from '../store/auth.store';
+import { User } from '../types';
 
 export function GameDetailPage({
   game,
@@ -23,6 +23,7 @@ export function GameDetailPage({
   total,
   selectedPackage,
   busy,
+  user,
   onSubmit,
   navigate,
 }: {
@@ -39,11 +40,10 @@ export function GameDetailPage({
   total: number;
   selectedPackage: GamePackage | null;
   busy: boolean;
+  user: User | null;
   onSubmit: (event: FormEvent) => void;
   navigate: (route: Route) => void;
 }) {
-  const user = useAuthStore((state) => state.user);
-
   if (gameLoading && !game) return <GameDetailSkeleton />;
   if (!game) return <EmptyState>Không tìm thấy game.</EmptyState>;
 

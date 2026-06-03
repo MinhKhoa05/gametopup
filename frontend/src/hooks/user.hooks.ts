@@ -1,8 +1,10 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect } from 'react';
 import { AsyncActionExecutor } from './common/useAsyncAction';
+import { getApiMessage } from '../lib/api';
+import { updateMyProfile } from '../services/user.api';
 import { userDisplayName } from '../lib/labels';
 import { User } from '../types';
-import { updateMyProfile } from '../services/user.api';
+import { userActions, useUserProfileStore } from '../store/user.store';
 
 type UseProfileEditorArgs = {
   user: User | null;
@@ -11,45 +13,49 @@ type UseProfileEditorArgs = {
 };
 
 export function useProfileEditor({ user, execute, onProfileUpdated }: UseProfileEditorArgs) {
-  const initialDisplayName = userDisplayName(user);
-  const [draftName, setDraftName] = useState(initialDisplayName);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const draftName = useUserProfileStore((state) => state.draftName);
+  const saveError = useUserProfileStore((state) => state.saveError);
 
   useEffect(() => {
-    setDraftName(initialDisplayName);
-    setSaveError(null);
-  }, [initialDisplayName]);
-
-  const trimmedName = draftName.trim();
-  const isDirty = trimmedName !== initialDisplayName;
-  const canSave = trimmedName.length > 0 && isDirty;
+    userActions.reset(user);
+  }, [user?.id, user?.displayName, user?.email]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    await execute(
+      async () => {
+        if (!user) {
+          const message = 'Không tìm thấy người dùng để cập nhật.';
+          userActions.setSaveError(message);
+          throw new Error(message);
+        }
 
-    if (!user) {
-      return;
-    }
+        const nextDisplayName = draftName.trim();
 
-    if (!trimmedName) {
-      setSaveError('Tên hiển thị không được để trống.');
-      return;
-    }
-
-    await execute(() => updateMyProfile(user.id, trimmedName), {
-      successMessage: 'Cập nhật tên hiển thị thành công.',
-      onSuccess: () => {
-        onProfileUpdated(trimmedName);
-        setSaveError(null);
+        try {
+          await updateMyProfile(user.id, nextDisplayName);
+          userActions.setSaveError(null);
+          return nextDisplayName;
+        } catch (error) {
+          userActions.setSaveError(getApiMessage(error));
+          throw error;
+        }
       },
-    });
+      {
+        successMessage: 'Đã cập nhật hồ sơ.',
+        onSuccess: (displayName) => {
+          onProfileUpdated(displayName);
+          userActions.setSaveError(null);
+        },
+      },
+    );
   }
 
   return {
-    canSave,
+    canSave: draftName.trim().length > 0 && draftName.trim() !== userDisplayName(user),
     draftName,
     handleSubmit,
     saveError,
-    setDraftName,
+    setDraftName: userActions.setDraftName,
   };
 }

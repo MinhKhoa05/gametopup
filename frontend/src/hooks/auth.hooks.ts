@@ -1,8 +1,61 @@
 import { FormEvent, useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { AsyncActionExecutor } from './common/useAsyncAction';
 import { Route } from '../lib/routes';
-import { authStore, useAuthStore } from '../store/auth.store';
 import { getMe, login, logout, register } from '../services/auth.api';
+import { authActions, useAuthStore } from '../store/auth.store';
+import type { AuthFormState, AuthMode, AuthStatus, AuthUserSnapshot } from '../types/auth.types';
+import type { User } from '../types';
+
+const AUTH_SNAPSHOT_KEY = 'gametopup.auth.snapshot';
+
+function canUseStorage() {
+  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+}
+
+function readSnapshot(): AuthUserSnapshot | null {
+  if (!canUseStorage()) return null;
+
+  try {
+    const raw = window.localStorage.getItem(AUTH_SNAPSHOT_KEY);
+    return raw ? (JSON.parse(raw) as AuthUserSnapshot) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSnapshot(snapshot: AuthUserSnapshot | null) {
+  if (!canUseStorage()) return;
+
+  try {
+    if (snapshot) window.localStorage.setItem(AUTH_SNAPSHOT_KEY, JSON.stringify(snapshot));
+    else window.localStorage.removeItem(AUTH_SNAPSHOT_KEY);
+  } catch {
+    // Best-effort persistence only.
+  }
+}
+
+function sameAuthUser(left: User | AuthUserSnapshot | null, right: User | AuthUserSnapshot | null) {
+  if (!left || !right) return false;
+
+  return (
+    left.id === right.id &&
+    (left.displayName ?? '') === (right.displayName ?? '') &&
+    (left.role ?? '') === (right.role ?? '') &&
+    (left.avatarUrl ?? '') === (right.avatarUrl ?? '')
+  );
+}
+
+function snapshotFromUser(user: User | null): AuthUserSnapshot | null {
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    displayName: user.displayName ?? user.email,
+    avatarUrl: user.avatarUrl,
+    role: user.role,
+  };
+}
 
 export function useAuthSession({
   navigate,
@@ -11,44 +64,85 @@ export function useAuthSession({
   navigate: (route: Route) => void;
   execute: AsyncActionExecutor;
 }) {
-  const authMode = useAuthStore((state) => state.authMode);
-  const authForm = useAuthStore((state) => state.authForm);
+  const { authMode, authForm, user, authStatus, userSnapshot } = useAuthStore(
+    useShallow((state) => ({
+      authMode: state.authMode,
+      authForm: state.authForm,
+      user: state.user,
+      authStatus: state.authStatus,
+      userSnapshot: state.userSnapshot,
+    })),
+  );
+  const cachedSnapshot = readSnapshot();
+  const effectiveUserSnapshot = userSnapshot ?? cachedSnapshot;
 
   useEffect(() => {
-    let mounted = true;
+    let isMounted = true;
 
-    async function loadCurrentUser() {
-      authStore.beginAuthCheck();
+    async function bootstrapAuth() {
+      if (cachedSnapshot && !useAuthStore.getState().userSnapshot) {
+        authActions.setUserSnapshot(cachedSnapshot);
+      }
+
+      authActions.setAuthLoading(true);
+      authActions.setAuthStatus('checking');
 
       try {
-        const currentUser = await getMe();
-        if (mounted) authStore.syncServerUser(currentUser);
+        const serverUser = await getMe();
+        if (!isMounted) return;
+
+        const current = useAuthStore.getState();
+        const nextSnapshot = snapshotFromUser(serverUser);
+
+        if (sameAuthUser(current.user, serverUser)) {
+          if (!sameAuthUser(current.userSnapshot, nextSnapshot)) {
+            authActions.setUserSnapshot(nextSnapshot);
+            writeSnapshot(nextSnapshot);
+          }
+        } else {
+          authActions.setUser(serverUser);
+          authActions.setUserSnapshot(nextSnapshot);
+          writeSnapshot(nextSnapshot);
+        }
+
+        authActions.setAuthStatus('authenticated');
       } catch {
-        if (mounted) authStore.setGuest();
+        if (!isMounted) return;
+        writeSnapshot(null);
+        authActions.setGuest();
       } finally {
-        if (mounted) authStore.setAuthLoading(false);
+        if (!isMounted) return;
+        authActions.setAuthLoading(false);
       }
     }
 
-    loadCurrentUser();
+    bootstrapAuth().catch(() => undefined);
 
     return () => {
-      mounted = false;
+      isMounted = false;
     };
   }, []);
 
   async function handleAuth(event: FormEvent) {
     event.preventDefault();
+    const current = useAuthStore.getState();
 
     await execute(
       async () => {
-        if (authMode === 'register') await register(authForm.displayName, authForm.email, authForm.password);
-        return login(authForm.email, authForm.password);
+        if (current.authMode === 'register') {
+          await register(current.authForm.displayName, current.authForm.email, current.authForm.password);
+        }
+
+        return login(current.authForm.email, current.authForm.password);
       },
       {
-        successMessage: authMode === 'register' ? 'Đăng ký và đăng nhập thành công.' : 'Đăng nhập thành công.',
+        successMessage: current.authMode === 'register' ? 'Đăng ký và đăng nhập thành công.' : 'Đăng nhập thành công.',
         onSuccess: (loggedInUser) => {
-          authStore.setUser(loggedInUser);
+          authActions.setUser(loggedInUser);
+          authActions.setUserSnapshot(snapshotFromUser(loggedInUser));
+          writeSnapshot(snapshotFromUser(loggedInUser));
+          authActions.setAuthStatus('authenticated');
+          authActions.setAuthLoading(false);
           navigate({ name: 'games' });
         },
       },
@@ -56,24 +150,49 @@ export function useAuthSession({
   }
 
   async function handleLogout() {
-    await execute(logout, {
-      successMessage: 'Đã đăng xuất.',
-      onSuccess: () => {
-        authStore.resetAuthState();
-        navigate({ name: 'home' });
+    await execute(
+      async () => {
+        await logout();
       },
-    });
+      {
+        successMessage: 'Đã đăng xuất.',
+        onSuccess: () => {
+          writeSnapshot(null);
+          authActions.setGuest();
+          navigate({ name: 'home' });
+        },
+      },
+    );
   }
 
   function handleProfileUpdated(displayName: string) {
-    authStore.updateProfile(displayName);
+    const current = useAuthStore.getState();
+    if (!current.user) return;
+
+    authActions.setUser({
+      ...current.user,
+      displayName,
+    });
+    const nextSnapshot = snapshotFromUser({
+      ...current.user,
+      displayName,
+    });
+    writeSnapshot(nextSnapshot);
+    authActions.setUserSnapshot(nextSnapshot);
+    authActions.setAuthStatus('authenticated');
+    authActions.setAuthLoading(false);
   }
 
   return {
+    authForm,
+    authMode,
+    authStatus,
     handleAuth,
     handleLogout,
     handleProfileUpdated,
-    setAuthForm: authStore.setAuthForm,
-    setAuthMode: authStore.setAuthMode,
+    setAuthForm: authActions.setAuthForm,
+    setAuthMode: authActions.setAuthMode,
+    user,
+    userSnapshot: effectiveUserSnapshot,
   };
 }

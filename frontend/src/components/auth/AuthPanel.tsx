@@ -8,20 +8,22 @@ import { formatCurrency } from '../../lib/format';
 import { userDisplayName } from '../../lib/labels';
 import { WalletInfo } from '../../types';
 import { AuthFields } from './AuthFields';
-import { authStore, useAuthStore } from '../../store/auth.store';
+import type { AuthFormState, AuthMode } from '../../types/auth.types';
+import type { User } from '../../types';
 
 export type AuthPanelProps = {
+  authMode: AuthMode;
+  form: AuthFormState;
   wallet: WalletInfo | null;
   busy: boolean;
+  user: User | null;
   onSubmit: (event: FormEvent) => void;
   onLogout: () => void;
+  onChangeAuthForm: (next: AuthFormState) => void;
+  onSwitchMode: (mode: AuthMode) => void;
 };
 
-export function AuthPanel({ wallet, busy, onSubmit, onLogout }: AuthPanelProps) {
-  const authMode = useAuthStore((state) => state.authMode);
-  const form = useAuthStore((state) => state.authForm);
-  const user = useAuthStore((state) => state.user);
-
+export function AuthPanel({ wallet, busy, onSubmit, onLogout, authMode, form, user, onChangeAuthForm, onSwitchMode }: AuthPanelProps) {
   if (user) {
     return (
       <aside className="gametopup-surface bg-gradient-to-br from-ink-lighter to-ink-light">
@@ -66,14 +68,14 @@ export function AuthPanel({ wallet, busy, onSubmit, onLogout }: AuthPanelProps) 
           </div>
 
           <form className="mt-6 grid gap-4" onSubmit={onSubmit}>
-            <AuthFields mode={authMode} busy={busy} form={form} onChange={(next) => authStore.setAuthForm(next)} />
+            <AuthFields mode={authMode} busy={busy} form={form} onChange={onChangeAuthForm} />
           </form>
 
           <div className="mt-4 flex items-center justify-center gap-2 border-t border-white/7 pt-4 text-sm text-slate-400">
             {isRegister ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'}
             <button
               type="button"
-              onClick={() => authStore.setAuthMode(isRegister ? 'login' : 'register')}
+              onClick={() => onSwitchMode(isRegister ? 'login' : 'register')}
               className="font-bold text-cyanline"
             >
               {isRegister ? 'Đăng nhập' : 'Đăng ký ngay'}

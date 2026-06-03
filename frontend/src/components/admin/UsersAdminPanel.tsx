@@ -1,14 +1,11 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { Edit3, Save, Trash2, UserCheck2, UserRound } from 'lucide-react';
-import { AsyncActionExecutor } from '../../hooks/common/useAsyncAction';
 import { formatDate } from '../../lib/format';
 import { userRoleLabel } from '../../lib/labels';
 import { classNames } from '../../lib/ui';
 import type { User } from '../../types';
-import { deleteUser, updateUser } from '../../services/admin.api';
 import { AdminSkeleton, EmptyLine, PanelTitle, SearchBox, StatusPill } from './AdminShared';
 import { Field } from '../common/Field';
-import { useAuthStore } from '../../store/auth.store';
 import { Badge } from '../common/Badge';
 
 const emptyForm = {
@@ -20,18 +17,21 @@ const emptyForm = {
 
 export function UsersAdminPanel({
   busy,
-  execute,
   loading,
   refresh,
   users,
+  currentUser,
+  onUpdateUser,
+  onDeleteUser,
 }: {
   busy: boolean;
-  execute: AsyncActionExecutor;
   loading: boolean;
   refresh: () => Promise<void>;
   users: User[];
+  currentUser: User | null;
+  onUpdateUser: (payload: { id: number; displayName: string; email: string; role: number; isActive: boolean }) => Promise<void>;
+  onDeleteUser: (id: number) => Promise<void>;
 }) {
-  const currentUser = useAuthStore((state) => state.user);
   const [editing, setEditing] = useState<User | null>(null);
   const [query, setQuery] = useState('');
   const [form, setForm] = useState(emptyForm);
@@ -73,14 +73,8 @@ export function UsersAdminPanel({
       isActive: form.isActive,
       role: Number(form.role),
     };
-
-    await execute(() => updateUser(editing.id, payload), {
-      successMessage: `Đã cập nhật user #${editing.id}.`,
-      onSuccess: async () => {
-        resetForm();
-        await refresh();
-      },
-    });
+    await onUpdateUser({ id: editing.id, ...payload });
+    resetForm();
   }
 
   async function remove(user: User) {
@@ -90,11 +84,7 @@ export function UsersAdminPanel({
     }
 
     if (!window.confirm(`Vô hiệu hóa user "${user.displayName ?? user.email}"?`)) return;
-
-    await execute(() => deleteUser(user.id), {
-      successMessage: `Đã vô hiệu hóa user #${user.id}.`,
-      onSuccess: refresh,
-    });
+    await onDeleteUser(user.id);
   }
 
   return (

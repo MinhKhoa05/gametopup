@@ -1,8 +1,6 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { Edit3, Plus, Save, Trash2, X } from 'lucide-react';
-import { AsyncActionExecutor } from '../../hooks/common/useAsyncAction';
 import type { Game } from '../../types';
-import { createGame, deleteGame, updateGame } from '../../services/admin.api';
 import { AdminSkeleton, EmptyLine, PanelTitle, SearchBox, StatusPill, filterByName } from './AdminShared';
 import { Field } from '../common/Field';
 import { pickImage } from '../../lib/ui';
@@ -15,16 +13,18 @@ const emptyGameForm = {
 
 export function GamesAdminPanel({
   busy,
-  execute,
   games,
   loading,
-  onChanged,
+  onCreateGame,
+  onUpdateGame,
+  onDeleteGame,
 }: {
   busy: boolean;
-  execute: AsyncActionExecutor;
   games: Game[];
   loading: boolean;
-  onChanged: () => Promise<void>;
+  onCreateGame: (payload: { name: string; imageUrl: string; isActive: boolean }) => Promise<void>;
+  onUpdateGame: (payload: { id: number; name: string; imageUrl: string; isActive: boolean }) => Promise<void>;
+  onDeleteGame: (id: number) => Promise<void>;
 }) {
   const [editing, setEditing] = useState<Game | null>(null);
   const [form, setForm] = useState(emptyGameForm);
@@ -44,23 +44,13 @@ export function GamesAdminPanel({
   async function submit(event: FormEvent) {
     event.preventDefault();
     const payload = { ...form, name: form.name.trim(), imageUrl: form.imageUrl.trim() };
-
-    await execute(() => (editing ? updateGame(editing.id, payload) : createGame(payload)), {
-      successMessage: editing ? 'Đã cập nhật game.' : 'Đã tạo game mới.',
-      onSuccess: async () => {
-        resetForm();
-        await onChanged();
-      },
-    });
+    await (editing ? onUpdateGame({ id: editing.id, ...payload }) : onCreateGame(payload));
+    resetForm();
   }
 
   async function remove(game: Game) {
     if (!window.confirm(`Xóa game "${game.name}"?`)) return;
-
-    await execute(() => deleteGame(game.id), {
-      successMessage: 'Đã xóa game.',
-      onSuccess: onChanged,
-    });
+    await onDeleteGame(game.id);
   }
 
   return (

@@ -22,23 +22,27 @@ import {
 } from '../../config/site';
 import { formatCurrency } from '../../lib/format';
 import { isAdminUser } from '../../lib/roles';
-import { useAuthStore } from '../../store/auth.store';
+import type { AuthStatus, AuthUserSnapshot } from '../../types/auth.types';
+import type { User } from '../../types';
 
 export function AppHeader({
   route,
   wallet,
   navigate,
   onLogout,
+  authStatus,
+  user,
+  userSnapshot,
 }: {
   route: Route;
   wallet: { balance: number } | null;
   navigate: (route: Route) => void;
   onLogout: () => void;
+  authStatus: AuthStatus;
+  user: User | null;
+  userSnapshot: AuthUserSnapshot | null;
 }) {
   const [keyword, setKeyword] = useState('');
-  const user = useAuthStore((state) => state.user);
-  const authStatus = useAuthStore((state) => state.authStatus);
-  const userSnapshot = useAuthStore((state) => state.userSnapshot);
 
   const handleWalletClick = () => {
     navigate(user ? { name: 'wallet' } : { name: 'account' });

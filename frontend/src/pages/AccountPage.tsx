@@ -24,9 +24,8 @@ import { Route } from '../lib/routes';
 import { classNames } from '../lib/ui';
 import { User, WalletInfo } from '../types';
 import { AsyncActionExecutor } from '../hooks/common/useAsyncAction';
+import type { AuthFormState, AuthMode, AuthStatus, AuthUserSnapshot } from '../types/auth.types';
 import { useProfileEditor } from '../hooks/user.hooks';
-import { authStore, useAuthStore } from '../store/auth.store';
-import type { AuthUserSnapshot } from '../store/auth.store';
 
 function isAdminUser(user: User) {
   if (typeof user.role === 'string') return user.role.toLowerCase().includes('admin');
@@ -40,6 +39,13 @@ export function AccountPage({
   onSubmit,
   onLogout,
   onProfileUpdated,
+  authForm,
+  authMode,
+  user: currentUser,
+  authStatus,
+  userSnapshot,
+  onChangeAuthForm,
+  onSwitchAuthMode,
   execute,
   navigate,
 }: {
@@ -49,23 +55,27 @@ export function AccountPage({
   onSubmit: (e: FormEvent) => void;
   onLogout: () => void;
   onProfileUpdated: (displayName: string) => void;
+  authForm: AuthFormState;
+  authMode: AuthMode;
+  user: User | null;
+  authStatus: AuthStatus;
+  userSnapshot: AuthUserSnapshot | null;
+  onChangeAuthForm: (next: AuthFormState) => void;
+  onSwitchAuthMode: (mode: AuthMode) => void;
   execute: AsyncActionExecutor;
   navigate: (route: Route) => void;
 }) {
-  const user = useAuthStore((state) => state.user);
-  const authMode = useAuthStore((state) => state.authMode);
-  const authStatus = useAuthStore((state) => state.authStatus);
-  const userSnapshot = useAuthStore((state) => state.userSnapshot);
-  const form = useAuthStore((state) => state.authForm);
-
-  const displayName = userDisplayName(user);
-  const roleLabel = user ? (isAdminUser(user) ? 'Quản trị viên' : 'Tài khoản cá nhân') : '';
-  const statusLabel = user?.isActive === false ? 'Tạm khóa' : 'Đang hoạt động';
+  const user = currentUser;
+  const form = authForm;
   const profileEditor = useProfileEditor({
     user,
     execute,
     onProfileUpdated,
   });
+
+  const displayName = userDisplayName(user);
+  const roleLabel = user ? (isAdminUser(user) ? 'Quản trị viên' : 'Tài khoản cá nhân') : '';
+  const statusLabel = user?.isActive === false ? 'Tạm khóa' : 'Đang hoạt động';
 
   if (authStatus === 'checking' && !user) {
     return <AccountPageLoading snapshot={userSnapshot} />;
@@ -75,33 +85,33 @@ export function AccountPage({
     return (
       <div className={classNames('auth-page-slider !w-full', authMode === 'register' && 'right-panel-active')}>
         <div className="slider-form-container login-container">
-          <AuthSliderForm
-            busy={busy}
-            form={form}
-            mode="login"
-            onChange={(next) => authStore.setAuthForm(next)}
-            onSubmit={(e) => {
-              e.preventDefault();
-              authStore.setAuthMode('login');
-              onSubmit(e);
-            }}
-            onSwitchMode={(mode) => authStore.setAuthMode(mode)}
-          />
+            <AuthSliderForm
+              busy={busy}
+              form={form}
+              mode="login"
+              onChange={onChangeAuthForm}
+              onSubmit={(e) => {
+                e.preventDefault();
+                onSwitchAuthMode('login');
+                onSubmit(e);
+              }}
+              onSwitchMode={onSwitchAuthMode}
+            />
         </div>
 
         <div className="slider-form-container register-container">
-          <AuthSliderForm
-            busy={busy}
-            form={form}
-            mode="register"
-            onChange={(next) => authStore.setAuthForm(next)}
-            onSubmit={(e) => {
-              e.preventDefault();
-              authStore.setAuthMode('register');
-              onSubmit(e);
-            }}
-            onSwitchMode={(mode) => authStore.setAuthMode(mode)}
-          />
+            <AuthSliderForm
+              busy={busy}
+              form={form}
+              mode="register"
+              onChange={onChangeAuthForm}
+              onSubmit={(e) => {
+                e.preventDefault();
+                onSwitchAuthMode('register');
+                onSubmit(e);
+              }}
+              onSwitchMode={onSwitchAuthMode}
+            />
         </div>
 
         <div className="slider-overlay-container">
@@ -117,7 +127,7 @@ export function AccountPage({
                 <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Thanh toán đa kênh tiện lợi</li>
                 <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Hỗ trợ khách hàng 24/7</li>
               </ul>
-              <button className="btn-outline mt-2" onClick={() => authStore.setAuthMode('login')} type="button">
+              <button className="btn-outline mt-2" onClick={() => onSwitchAuthMode('login')} type="button">
                 Đã có tài khoản?
               </button>
             </div>
@@ -132,7 +142,7 @@ export function AccountPage({
                 <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Theo dõi trạng thái đơn hàng</li>
                 <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Thanh toán nhanh hơn</li>
               </ul>
-              <button className="btn-outline mt-2" onClick={() => authStore.setAuthMode('register')} type="button">
+              <button className="btn-outline mt-2" onClick={() => onSwitchAuthMode('register')} type="button">
                 Tạo tài khoản mới
               </button>
             </div>
@@ -291,7 +301,7 @@ export function AccountPage({
               )}
 
               <div className="flex w-full justify-start gap-2 pt-0.5">
-                <button className="btn-primary min-w-[156px]" type="submit" disabled={!profileEditor.canSave || busy}>
+              <button className="btn-primary min-w-[156px]" type="submit" disabled={!profileEditor.canSave || busy}>
                   <Save size={16} />
                   {busy ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </button>

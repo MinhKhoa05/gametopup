@@ -26,7 +26,7 @@ import { formatCurrency, formatDate } from '../lib/format';
 import { Route } from '../lib/routes';
 import { classNames } from '../lib/ui';
 import { DepositRequest, WalletInfo, WalletTransaction } from '../types';
-import { useAuthStore } from '../store/auth.store';
+import { User } from '../types';
 
 const quickAmounts = [50000, 100000, 200000, 500000];
 const bankNames: Record<string, string> = {
@@ -64,6 +64,7 @@ export function WalletPage({
   transactions,
   transactionsLoading,
   busy,
+  user,
   onSubmit,
   onConfirm,
   navigate,
@@ -78,11 +79,11 @@ export function WalletPage({
   transactions: WalletTransaction[];
   transactionsLoading: boolean;
   busy: boolean;
+  user: User | null;
   onSubmit: (e: FormEvent) => void;
   onConfirm: () => void;
   navigate: (route: Route) => void;
 }) {
-  const user = useAuthStore((state) => state.user);
   const [view, setView] = useState<WalletView>('overview');
   const [filter, setFilter] = useState<TransactionFilter>('all');
   const filteredTransactions = useMemo(

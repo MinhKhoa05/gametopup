@@ -1,14 +1,12 @@
 import { useMemo, useState } from 'react';
 import { CheckCircle2, CircleSlash, Send, TriangleAlert } from 'lucide-react';
-import { AsyncActionExecutor } from '../../hooks/common/useAsyncAction';
 import { formatCurrency, formatDate } from '../../lib/format';
 import { statusLabel } from '../../lib/labels';
 import { classNames } from '../../lib/ui';
 import type { Order } from '../../types';
-import { cancelOrder, completeOrder, pickOrder } from '../../services/admin.api';
 import { AdminSkeleton, EmptyLine, PanelTitle, SearchBox, StatusPill } from './AdminShared';
 import { Badge } from '../common/Badge';
-import { useAuthStore } from '../../store/auth.store';
+import type { User } from '../../types';
 
 type OrderFilter = 'all' | 'pending' | 'paid' | 'processing' | 'completed' | 'cancelled';
 
@@ -23,18 +21,23 @@ const FILTERS: Array<{ key: OrderFilter; label: string }> = [
 
 export function OrdersAdminPanel({
   busy,
-  execute,
   loading,
   orders,
   refresh,
+  currentUser,
+  onPickOrder,
+  onCompleteOrder,
+  onCancelOrder,
 }: {
   busy: boolean;
-  execute: AsyncActionExecutor;
   loading: boolean;
   orders: Order[];
   refresh: () => Promise<void>;
+  currentUser: User | null;
+  onPickOrder: (orderId: number) => Promise<void>;
+  onCompleteOrder: (orderId: number) => Promise<void>;
+  onCancelOrder: (orderId: number) => Promise<void>;
 }) {
-  const currentUser = useAuthStore((state) => state.user);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<OrderFilter>('all');
 
@@ -60,7 +63,8 @@ export function OrdersAdminPanel({
   }, [filter, orders, query]);
 
   async function handleAction(action: () => Promise<unknown>, refreshNote: string) {
-    await execute(action, { successMessage: refreshNote, onSuccess: refresh });
+    await action();
+    await refresh();
   }
 
   return (
@@ -119,21 +123,21 @@ export function OrdersAdminPanel({
 
                   <div className="admin-order-actions">
                     {canPick && (
-                      <button type="button" className="btn-secondary min-h-10 px-4 py-2 text-sm" disabled={busy} onClick={() => void handleAction(() => pickOrder(order.id), `Đã tiếp nhận đơn #${order.id}.`)}>
+                      <button type="button" className="btn-secondary min-h-10 px-4 py-2 text-sm" disabled={busy} onClick={() => void onPickOrder(order.id)}>
                         <Send size={16} />
                         Tiếp nhận
                       </button>
                     )}
 
                     {canComplete && (
-                      <button type="button" className="btn-primary min-h-10 px-4 py-2 text-sm" disabled={busy} onClick={() => void handleAction(() => completeOrder(order.id), `Đã hoàn thành đơn #${order.id}.`)}>
+                      <button type="button" className="btn-primary min-h-10 px-4 py-2 text-sm" disabled={busy} onClick={() => void onCompleteOrder(order.id)}>
                         <CheckCircle2 size={16} />
                         Hoàn thành
                       </button>
                     )}
 
                     {canCancel && (
-                      <button type="button" className="btn-secondary min-h-10 px-4 py-2 text-sm" disabled={busy} onClick={() => void handleAction(() => cancelOrder(order.id), `Đã hủy đơn #${order.id}.`)}>
+                      <button type="button" className="btn-secondary min-h-10 px-4 py-2 text-sm" disabled={busy} onClick={() => void onCancelOrder(order.id)}>
                         <CircleSlash size={16} />
                         Hủy
                       </button>

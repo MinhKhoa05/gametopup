@@ -3,7 +3,7 @@ import { AsyncActionExecutor } from '../../hooks/common/useAsyncAction';
 import { Route } from '../../lib/routes';
 import { isAdminUser } from '../../lib/roles';
 import { EmptyState } from '../../components/common/EmptyState';
-import { useAuthStore } from '../../store/auth.store';
+import { User } from '../../types';
 import { AdminHeader } from '../../components/admin/AdminHeader';
 import { AdminNavButton } from '../../components/admin/AdminNavButton';
 import { DashboardPanel } from '../../components/admin/DashboardPanel';
@@ -11,7 +11,7 @@ import { GamesAdminPanel } from '../../components/admin/GamesAdminPanel';
 import { PackagesAdminPanel } from '../../components/admin/PackagesAdminPanel';
 import { OrdersAdminPanel } from '../../components/admin/OrdersAdminPanel';
 import { UsersAdminPanel } from '../../components/admin/UsersAdminPanel';
-import { useAdminCatalog } from '../../store/admin.store';
+import { useAdminCatalog } from '../../hooks/admin.hooks';
 
 export function AdminPage({
   busy,
@@ -20,6 +20,7 @@ export function AdminPage({
   onLogout,
   route,
   setError,
+  user,
 }: {
   busy: boolean;
   execute: AsyncActionExecutor;
@@ -27,10 +28,10 @@ export function AdminPage({
   onLogout: () => void;
   route: Extract<Route, { name: 'admin' }>;
   setError: (message: string | null) => void;
+  user: User | null;
 }) {
-  const catalog = useAdminCatalog(setError);
+  const catalog = useAdminCatalog(setError, execute);
   const section = route.section ?? 'dashboard';
-  const user = useAuthStore((state) => state.user);
 
   return (
     <div className="grid gap-6">
@@ -51,7 +52,7 @@ export function AdminPage({
             onAction={() => navigate({ name: 'account' })}
           />
         ) : (
-          <div className="grid grid-cols-[200px_minmax(0,1fr)] items-start gap-[22px]">
+              <div className="grid grid-cols-[200px_minmax(0,1fr)] items-start gap-[22px]">
             <aside className="admin-sidebar" aria-label="Điều hướng quản trị">
               <AdminNavButton active={section === 'dashboard'} icon={<LayoutDashboard size={18} />} label="Tổng quan" onClick={() => navigate({ name: 'admin', section: 'dashboard' })} />
               <AdminNavButton active={section === 'games'} icon={<Gamepad2 size={18} />} label="Quản lý game" onClick={() => navigate({ name: 'admin', section: 'games' })} />
@@ -65,13 +66,55 @@ export function AdminPage({
                 <DashboardPanel games={catalog.games} loading={catalog.loading} metrics={catalog.metrics} navigate={navigate} orders={catalog.orders} users={catalog.users} />
               )}
 
-              {section === 'games' && <GamesAdminPanel busy={busy} execute={execute} games={catalog.games} loading={catalog.loading} onChanged={catalog.refresh} />}
+              {section === 'games' && (
+                <GamesAdminPanel
+                  busy={busy}
+                  games={catalog.games}
+                  loading={catalog.loading}
+                  onCreateGame={catalog.createGame}
+                  onUpdateGame={(payload) => catalog.updateGame(payload.id, payload)}
+                  onDeleteGame={catalog.removeGame}
+                />
+              )}
 
-              {section === 'packages' && <PackagesAdminPanel busy={busy} execute={execute} games={catalog.games} loading={catalog.loading} setError={setError} />}
+              {
+                section === 'packages' && (
+                  <PackagesAdminPanel
+                  busy={busy}
+                  games={catalog.games}
+                  packages={catalog.packages}
+                  loading={catalog.loading}
+                  onCreatePackage={catalog.createPackage}
+                  onUpdatePackage={(payload) => catalog.updatePackage(payload.id, payload)}
+                  onDeletePackage={catalog.removePackage}
+                />
+              )
+              }
 
-              {section === 'orders' && <OrdersAdminPanel busy={busy} execute={execute} loading={catalog.loading} orders={catalog.orders} refresh={catalog.refresh} />}
+              {section === 'orders' && (
+                <OrdersAdminPanel
+                  busy={busy}
+                  loading={catalog.loading}
+                  orders={catalog.orders}
+                  refresh={catalog.refresh}
+                  currentUser={user}
+                  onPickOrder={catalog.pickOrder}
+                  onCompleteOrder={catalog.completeOrder}
+                  onCancelOrder={catalog.cancelOrder}
+                />
+              )}
 
-              {section === 'users' && <UsersAdminPanel busy={busy} execute={execute} loading={catalog.loading} users={catalog.users} refresh={catalog.refresh} />}
+              {section === 'users' && (
+                <UsersAdminPanel
+                  busy={busy}
+                  loading={catalog.loading}
+                  users={catalog.users}
+                  refresh={catalog.refresh}
+                  currentUser={user}
+                  onUpdateUser={(payload) => catalog.updateUser(payload.id, payload)}
+                  onDeleteUser={catalog.removeUser}
+                />
+              )}
             </section>
           </div>
         )}

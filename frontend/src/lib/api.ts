@@ -7,7 +7,7 @@ export type ApiResponse<T = unknown> = {
   errorCode?: string;
 };
 
-const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
+const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 const apiBaseUrl = configuredBaseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
 
 export const api = axios.create({

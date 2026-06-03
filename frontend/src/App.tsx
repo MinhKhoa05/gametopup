@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import { AppLayout } from './components/layout/AppLayout';
 import { AppFooter } from './components/layout/AppFooter';
 import { AppHeader } from './components/layout/AppHeader';
@@ -16,37 +16,50 @@ import { OrdersPage } from './pages/OrdersPage';
 import { WalletPage } from './pages/WalletPage';
 import { AdminPage } from './pages/admin/AdminPage';
 import { EmptyState } from './components/common/EmptyState';
-import { useAuthStore } from './store/auth.store';
-import { useGameCatalog } from './store/games.store';
-import { useCheckoutOrder, useUserOrders } from './store/orders.store';
-import { useDepositRequests, useWalletDeposit, useWalletTransactions } from './store/wallet.store';
+import { useGameCatalog } from './hooks/games.hooks';
+import { useCheckoutOrder, useUserOrders } from './hooks/orders.hooks';
+import { useDepositRequests, useWalletDeposit, useWalletTransactions } from './hooks/wallet.hooks';
 import { isAdminUser } from './lib/roles';
 import type { User } from './types';
+import type { AuthFormState, AuthMode, AuthStatus, AuthUserSnapshot } from './types/auth.types';
 
 export function App() {
   const { route, navigate } = useRoute();
   const action = useAsyncAction();
-  const auth = useAuthSession({
-    navigate,
-    execute: action.execute,
-  });
-  const user = useAuthStore((state) => state.user);
-  const authStatus = useAuthStore((state) => state.authStatus);
-  const userOrders = useUserOrders(user, action.execute);
+  const auth = useAuthSession({ navigate, execute: action.execute });
+  const user = auth.user;
+  const authStatus = auth.authStatus;
+  const userSnapshot = auth.userSnapshot;
+  const userOrders = useUserOrders(user, authStatus, userSnapshot, action.execute, action.setErrorMessage);
   const isAdminRoute = route.name === 'admin';
 
   return (
     <AppLayout
       isAdminRoute={isAdminRoute}
-      header={<AppHeader route={route} wallet={userOrders.wallet} navigate={navigate} onLogout={auth.handleLogout} />}
+      header={
+        <AppHeader
+          route={route}
+          wallet={userOrders.wallet}
+          navigate={navigate}
+          onLogout={auth.handleLogout}
+          authStatus={authStatus}
+          user={user}
+          userSnapshot={userSnapshot}
+        />
+      }
       footer={<AppFooter navigate={navigate} />}
       bottomNav={<BottomNav route={route} navigate={navigate} />}
       toast={<ToastNotification loading={action.isLoading} message={action.successMessage} error={action.errorMessage} />}
     >
       {route.name === 'home' && (
-        <HomeRoute
+          <HomeRoute
+          authForm={auth.authForm}
+          authMode={auth.authMode}
+          user={auth.user}
           onAuth={auth.handleAuth}
           onLogout={auth.handleLogout}
+          onChangeAuthForm={auth.setAuthForm}
+          onSwitchAuthMode={auth.setAuthMode}
           busy={action.isLoading}
           ordersCount={userOrders.orders.length}
           setError={action.setErrorMessage}
@@ -66,6 +79,7 @@ export function App() {
               execute={action.execute}
               setError={action.setErrorMessage}
               refreshUserArea={userOrders.refreshUserArea}
+              user={user}
               navigate={navigate}
             />
           )}
@@ -78,6 +92,9 @@ export function App() {
                 setError={action.setErrorMessage}
                 wallet={userOrders.wallet}
                 refreshUserArea={userOrders.refreshUserArea}
+                user={user}
+                authStatus={authStatus}
+                userSnapshot={userSnapshot}
                 navigate={navigate}
               />
             </AuthGuard>
@@ -91,12 +108,19 @@ export function App() {
 
           {route.name === 'account' && (
             <AccountPage
+              authForm={auth.authForm}
+              authMode={auth.authMode}
+              user={user}
+              authStatus={authStatus}
+              userSnapshot={userSnapshot}
               wallet={userOrders.wallet}
               ordersCount={userOrders.orders.length}
               busy={action.isLoading}
               onSubmit={auth.handleAuth}
               onLogout={auth.handleLogout}
               onProfileUpdated={auth.handleProfileUpdated}
+              onChangeAuthForm={auth.setAuthForm}
+              onSwitchAuthMode={auth.setAuthMode}
               execute={action.execute}
               navigate={navigate}
             />
@@ -113,6 +137,7 @@ export function App() {
             onLogout={auth.handleLogout}
             route={route}
             setError={action.setErrorMessage}
+            user={user}
           />
         </AuthGuard>
       )}
@@ -125,16 +150,26 @@ type SetError = ReturnType<typeof useAsyncAction>['setErrorMessage'];
 type UserArea = ReturnType<typeof useUserOrders>;
 
 function HomeRoute({
+  authForm,
+  authMode,
+  user,
   onAuth,
   onLogout,
+  onChangeAuthForm,
+  onSwitchAuthMode,
   busy,
   ordersCount,
   setError,
   wallet,
   navigate,
 }: {
-  onAuth: ReturnType<typeof useAuthSession>['handleAuth'];
-  onLogout: ReturnType<typeof useAuthSession>['handleLogout'];
+  authForm: AuthFormState;
+  authMode: AuthMode;
+  user: User | null;
+  onAuth: (event: FormEvent) => void;
+  onLogout: () => void;
+  onChangeAuthForm: (next: AuthFormState) => void;
+  onSwitchAuthMode: (mode: AuthMode) => void;
   busy: boolean;
   ordersCount: number;
   setError: SetError;
@@ -152,8 +187,13 @@ function HomeRoute({
       wallet={wallet}
       busy={busy}
       navigate={navigate}
+      authForm={authForm}
+      authMode={authMode}
+      user={user}
       onAuth={onAuth}
       onLogout={onLogout}
+      onChangeAuthForm={onChangeAuthForm}
+      onSwitchAuthMode={onSwitchAuthMode}
     />
   );
 }
@@ -166,7 +206,7 @@ function AuthGuard({
   navigate,
   user,
 }: {
-  authStatus: 'unknown' | 'checking' | 'authenticated' | 'guest';
+  authStatus: AuthStatus;
   children: ReactNode;
   fallbackRoute: Route;
   required: 'authenticated' | 'admin';
@@ -248,6 +288,7 @@ function GameDetailRoute({
   execute,
   setError,
   refreshUserArea,
+  user,
   navigate,
 }: {
   busy: boolean;
@@ -255,6 +296,7 @@ function GameDetailRoute({
   execute: ExecuteAction;
   setError: SetError;
   refreshUserArea: UserArea['refreshUserArea'];
+  user: User | null;
   navigate: (route: Route) => void;
 }) {
   const catalog = useGameCatalog(route, setError);
@@ -280,6 +322,7 @@ function GameDetailRoute({
       total={checkout.total}
       selectedPackage={catalog.selectedPackage}
       busy={busy}
+      user={user}
       onSubmit={checkout.handlePlaceOrder}
       navigate={navigate}
     />
@@ -292,6 +335,9 @@ function WalletRoute({
   setError,
   wallet,
   refreshUserArea,
+  user,
+  authStatus,
+  userSnapshot,
   navigate,
 }: {
   busy: boolean;
@@ -299,11 +345,13 @@ function WalletRoute({
   setError: SetError;
   wallet: UserArea['wallet'];
   refreshUserArea: UserArea['refreshUserArea'];
+  user: User | null;
+  authStatus: AuthStatus;
+  userSnapshot: AuthUserSnapshot | null;
   navigate: (route: Route) => void;
 }) {
-  const user = useAuthStore((state) => state.user);
-  const walletTransactions = useWalletTransactions(user, setError);
-  const depositRequests = useDepositRequests(user, setError);
+  const walletTransactions = useWalletTransactions(user, authStatus, userSnapshot, setError);
+  const depositRequests = useDepositRequests(user, authStatus, userSnapshot, setError);
   const deposit = useWalletDeposit({
     refreshUserArea: async () => {
       await refreshUserArea();
@@ -325,6 +373,7 @@ function WalletRoute({
       transactions={walletTransactions.transactions}
       transactionsLoading={walletTransactions.transactionsLoading}
       busy={busy}
+      user={user}
       onSubmit={deposit.handleCreateDeposit}
       onConfirm={deposit.handleConfirmTransfer}
       navigate={navigate}
