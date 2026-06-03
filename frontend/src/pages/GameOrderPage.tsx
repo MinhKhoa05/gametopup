@@ -1,5 +1,24 @@
-import { FormEvent } from 'react';
-import { ArrowLeft, CheckCircle2, ChevronRight, CreditCard, Home, Layers3, ShoppingCart, ShieldCheck, Tag, UserRound, WalletCards } from 'lucide-react';
+﻿import { FormEvent } from 'react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BadgeCheck,
+  CheckCircle2,
+  ChevronRight,
+  Clock3,
+  Copy,
+  CreditCard,
+  Gamepad2,
+  Gift,
+  Home,
+  Layers3,
+  PackageCheck,
+  ShoppingCart,
+  ShieldCheck,
+  Tag,
+  UserRound,
+  WalletCards,
+} from 'lucide-react';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Field } from '../components/ui/Field';
 import { SectionHeading } from '../components/ui/SectionHeading';
@@ -27,6 +46,8 @@ export function GameOrderPage({
   checkoutQuantity,
   checkoutSubtotal,
   checkoutTotal,
+  checkoutOrderId,
+  checkoutSuccessAt,
   onResetCheckout,
   onPayOrder,
   wallet,
@@ -47,12 +68,14 @@ export function GameOrderPage({
   gameAccountInfo: string;
   setGameAccountInfo: (value: string) => void;
   total: number;
-  checkoutStep: 2 | 3;
+  checkoutStep: 2 | 3 | 4;
   checkoutPackage: GamePackage | null;
   checkoutGameAccountInfo: string;
   checkoutQuantity: number;
   checkoutSubtotal: number;
   checkoutTotal: number;
+  checkoutOrderId: number | null;
+  checkoutSuccessAt: number | null;
   onResetCheckout: () => void;
   onPayOrder: () => Promise<void>;
   wallet: WalletInfo | null;
@@ -66,9 +89,12 @@ export function GameOrderPage({
   if (!game) return <EmptyState>Không tìm thấy game.</EmptyState>;
 
   const selectedPackageLabel = checkoutPackage?.name ?? selectedPackage?.name ?? '---';
-  const checkoutImage = game;
   const walletBalance = wallet?.balance ?? 0;
   const shortage = Math.max(0, checkoutTotal - walletBalance);
+  const orderCode = checkoutOrderId ? `#GTU-${String(checkoutOrderId).padStart(6, '0')}` : '#GTU-000000';
+  const successTime = checkoutSuccessAt
+    ? new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(checkoutSuccessAt))
+    : '--/--/---- - --:--';
 
   return (
     <div className="mx-auto max-w-[1120px]">
@@ -81,8 +107,8 @@ export function GameOrderPage({
       </div>
 
       <div className="gametopup-surface p-[22px] max-[760px]:p-4">
-        <div className="topup-steps" aria-label="Tiến trình đặt hàng">
-          {['Xác nhận thông tin', 'Chọn gói nạp', 'Thanh toán'].map((step, index) => {
+        <div className={classNames('topup-steps', checkoutStep === 4 && 'topup-steps--success')} aria-label="Tiến trình đặt hàng">
+          {['Xác nhận thông tin', 'Chọn gói nạp', 'Thanh toán', 'Đặt hàng thành công'].map((step, index) => {
             const stepNumber = index + 1;
             const isActive = checkoutStep === stepNumber;
             const isCompleted = checkoutStep > stepNumber;
@@ -105,11 +131,198 @@ export function GameOrderPage({
           Quay lại danh sách game
         </button>
 
-        {checkoutStep === 3 && checkoutPackage ? (
+        {checkoutStep === 4 && checkoutPackage && checkoutOrderId ? (
+          <div className="topup-success-stack">
+            <section className="topup-success-banner-panel">
+              <div className="topup-success-banner__mark">
+                <div className="topup-success-banner__icon">
+                  <CheckCircle2 size={36} />
+                </div>
+              </div>
+
+              <div className="topup-success-banner__content">
+                <h1>Đặt hàng thành công!</h1>
+                <p className="topup-success-banner__lead">
+                  Đơn hàng của bạn đã được ghi nhận và đang chờ admin xử lý.
+                </p>
+                <p>
+                  Cảm ơn bạn đã tin tưởng lựa chọn GameTopUp. Chúng tôi sẽ xử lý đơn hàng trong thời gian sớm nhất.
+                </p>
+              </div>
+
+              <div className="topup-success-banner__art" aria-hidden="true">
+                <div className="topup-success-banner__gift">
+                  <Gift size={52} />
+                </div>
+                <div className="topup-success-banner__pad">
+                  <Gamepad2 size={44} />
+                </div>
+              </div>
+            </section>
+
+            <div className="topup-success-body">
+              <section className="topup-success-card">
+                <div className="topup-success-section">
+                  <div className="topup-success-section__head">
+                    <div className="topup-success-section__icon">
+                      <Copy size={16} />
+                    </div>
+                    <h3>THÔNG TIN ĐƠN HÀNG</h3>
+                  </div>
+
+                  <div className="topup-success-summary">
+                    <div className="topup-success-summary__row">
+                      <span className="topup-success-summary__label">
+                        <Copy size={14} />
+                        Mã đơn hàng
+                      </span>
+                      <strong className="topup-success-summary__value topup-success-summary__value--code">{orderCode}</strong>
+                    </div>
+                    <div className="topup-success-summary__row">
+                      <span className="topup-success-summary__label">
+                        <BadgeCheck size={14} />
+                        Game
+                      </span>
+                      <strong className="topup-success-summary__value">{game.name}</strong>
+                    </div>
+                    <div className="topup-success-summary__row">
+                      <span className="topup-success-summary__label">
+                        <PackageCheck size={14} />
+                        Gói nạp
+                      </span>
+                      <strong className="topup-success-summary__value">{selectedPackageLabel}</strong>
+                    </div>
+                    <div className="topup-success-summary__row">
+                      <span className="topup-success-summary__label">
+                        <UserRound size={14} />
+                        UID / Server / Tên nhân vật
+                      </span>
+                      <strong className="topup-success-summary__value">{checkoutGameAccountInfo}</strong>
+                    </div>
+                    <div className="topup-success-summary__row">
+                      <span className="topup-success-summary__label">
+                        <Layers3 size={14} />
+                        Số lượng
+                      </span>
+                      <strong className="topup-success-summary__value">{checkoutQuantity}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="topup-success-section">
+                  <div className="topup-success-section__head">
+                    <div className="topup-success-section__icon topup-success-section__icon--payment">
+                      <WalletCards size={16} />
+                    </div>
+                    <h3>THÔNG TIN THANH TOÁN</h3>
+                  </div>
+
+                  <div className="topup-success-summary">
+                    <div className="topup-success-summary__row">
+                      <span className="topup-success-summary__label">
+                        <WalletCards size={14} />
+                        Hình thức
+                      </span>
+                      <strong className="topup-success-summary__value">Ví GameTopUp</strong>
+                    </div>
+                    <div className="topup-success-summary__row">
+                      <span className="topup-success-summary__label">
+                        <Layers3 size={14} />
+                        Tạm tính
+                      </span>
+                      <strong className="topup-success-summary__value">{formatCurrency(checkoutSubtotal)}</strong>
+                    </div>
+                    <div className="topup-success-summary__row">
+                      <span className="topup-success-summary__label">
+                        <BadgeCheck size={14} />
+                        Giảm giá
+                      </span>
+                      <strong className="topup-success-summary__value topup-success-summary__value--discount">-0 đ</strong>
+                    </div>
+                    <div className="topup-success-summary__row topup-success-summary__row--total">
+                      <span>Tổng thanh toán</span>
+                      <strong>{formatCurrency(checkoutTotal)}</strong>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <aside className="topup-success-aside">
+                <div className="topup-success-aside__head">
+                <h2>TRẠNG THÁI ĐƠN HÀNG</h2>
+                </div>
+
+                <div className="topup-success-timeline">
+                  <div className="topup-success-timeline__item topup-success-timeline__item--done">
+                    <div className="topup-success-timeline__icon">
+                      <CheckCircle2 size={18} />
+                    </div>
+                    <div className="topup-success-timeline__content">
+                      <div className="topup-success-timeline__head">
+                        <strong>Đã thanh toán</strong>
+                        <span className="topup-success-timeline__badge topup-success-timeline__badge--done">Hoàn tất</span>
+                      </div>
+                      <p>{successTime}</p>
+                    </div>
+                  </div>
+
+                  <div className="topup-success-timeline__item topup-success-timeline__item--active">
+                    <div className="topup-success-timeline__icon topup-success-timeline__icon--active">
+                      <Clock3 size={18} />
+                    </div>
+                    <div className="topup-success-timeline__content">
+                      <div className="topup-success-timeline__head">
+                        <strong>Chờ admin xử lý</strong>
+                        <span className="topup-success-timeline__badge topup-success-timeline__badge--active">Đang xử lý</span>
+                      </div>
+                      <p>Admin sẽ kiểm tra và nạp trong ít phút.</p>
+                      <small>Ước tính: 1 - 5 phút</small>
+                    </div>
+                  </div>
+
+                  <div className="topup-success-timeline__item topup-success-timeline__item--pending">
+                    <div className="topup-success-timeline__icon topup-success-timeline__icon--pending">
+                      <PackageCheck size={18} />
+                    </div>
+                    <div className="topup-success-timeline__content">
+                      <div className="topup-success-timeline__head">
+                        <strong>Hoàn tất</strong>
+                        <span className="topup-success-timeline__badge topup-success-timeline__badge--pending">Chưa hoàn tất</span>
+                      </div>
+                      <p>Sẽ thông báo khi nạp thành công.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="topup-success-timeline-note">
+                  <BadgeCheck size={15} />
+                  <span>Admin sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất. Vui lòng không tạo lại đơn giống nhau.</span>
+                </div>
+
+                <button type="button" className="btn-primary w-full" onClick={() => navigate({ name: 'orders' })}>
+                  <ArrowRight size={18} />
+                  Xem chi tiết đơn hàng
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-outline w-full"
+                  onClick={() => {
+                    onResetCheckout();
+                    navigate({ name: 'games' });
+                  }}
+                >
+                  <Gamepad2 size={18} />
+                  Tiếp tục nạp game
+                </button>
+              </aside>
+            </div>
+          </div>
+        ) : checkoutStep === 3 && checkoutPackage ? (
           <div className="topup-checkout-body">
             <section className="topup-checkout-card">
               <div className="topup-order-head">
-                <img className="topup-order-head__image" src={pickImage(checkoutImage)} alt={game.name} />
+                <img className="topup-order-head__image" src={pickImage(game)} alt={game.name} />
                 <div className="min-w-0">
                   <p className="eyebrow">THÔNG TIN ĐƠN HÀNG</p>
                   <h1>{game.name}</h1>
@@ -258,7 +471,7 @@ export function GameOrderPage({
                 <div className="min-w-0">
                   <p className="eyebrow">Gói nạp</p>
                   <h1>{game.name}</h1>
-                  <div className="flex items-center gap-2 text-sm font-extrabold text-amber-300">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-amber-300">
                     <ShieldCheck size={16} /> Dịch vụ nạp trung gian chiết khấu
                   </div>
                 </div>
@@ -369,7 +582,7 @@ function PackageGridSkeleton() {
 
 function GameOrderSkeleton() {
   return (
-    <div className="mx-auto max-w-[1120px]" aria-busy="true" aria-label="Đang tải chi tiết game">
+    <div className="mx-auto max-w-[1120px]" aria-busy="true" aria-label="Đang tải trang đặt hàng">
       <div className="mb-5 flex items-center gap-2 text-sm text-slate-400">
         <div className="h-4 w-4 animate-pulse rounded-full bg-white/10" />
         <div className="h-4 w-4 animate-pulse rounded-full bg-white/10" />
@@ -380,7 +593,7 @@ function GameOrderSkeleton() {
 
       <div className="gametopup-surface p-[22px] max-[760px]:p-4">
         <div className="topup-steps" aria-hidden="true">
-          {Array.from({ length: 3 }).map((_, index) => (
+          {Array.from({ length: 4 }).map((_, index) => (
             <div key={`step-skeleton-${index}`} className={classNames('topup-step', index === 1 && 'active')}>
               <span className="animate-pulse bg-white/10 text-transparent">0</span>
               <small className="h-3 w-20 animate-pulse rounded-full bg-white/10 text-transparent" />

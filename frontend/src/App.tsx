@@ -364,6 +364,8 @@ function GameDetailRoute({
       checkoutQuantity={checkout.checkoutQuantity}
       checkoutSubtotal={checkout.checkoutSubtotal}
       checkoutTotal={checkout.checkoutTotal}
+      checkoutOrderId={checkout.checkoutOrderId}
+      checkoutSuccessAt={checkout.checkoutSuccessAt}
       onResetCheckout={checkout.resetCheckout}
       onPayOrder={checkout.handlePayOrder}
       wallet={wallet}

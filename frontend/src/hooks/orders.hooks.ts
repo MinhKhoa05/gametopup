@@ -78,10 +78,12 @@ export function useCheckoutOrder({
 }) {
   const [quantity, setQuantity] = useState(1);
   const [gameAccountInfo, setGameAccountInfo] = useState('');
-  const [checkoutStep, setCheckoutStep] = useState<2 | 3>(2);
+  const [checkoutStep, setCheckoutStep] = useState<2 | 3 | 4>(2);
   const [checkoutPackage, setCheckoutPackage] = useState<GamePackage | null>(null);
   const [checkoutQuantity, setCheckoutQuantity] = useState(1);
   const [checkoutGameAccountInfo, setCheckoutGameAccountInfo] = useState('');
+  const [checkoutOrderId, setCheckoutOrderId] = useState<number | null>(null);
+  const [checkoutSuccessAt, setCheckoutSuccessAt] = useState<number | null>(null);
   const checkoutSubtotal = checkoutPackage ? checkoutPackage.salePrice * checkoutQuantity : 0;
   const checkoutTotal = checkoutSubtotal;
   const selectedTotal = selectedPackage ? selectedPackage.salePrice * quantity : 0;
@@ -93,6 +95,8 @@ export function useCheckoutOrder({
     setCheckoutPackage(selectedPackage);
     setCheckoutQuantity(quantity);
     setCheckoutGameAccountInfo(gameAccountInfo);
+    setCheckoutOrderId(null);
+    setCheckoutSuccessAt(null);
     setCheckoutStep(3);
   }
 
@@ -105,7 +109,10 @@ export function useCheckoutOrder({
       return orderId;
     }, {
       successMessage: 'Thanh toán đơn hàng thành công.',
-      onSuccess: async () => {
+      onSuccess: async (orderId) => {
+        setCheckoutOrderId(orderId);
+        setCheckoutSuccessAt(Date.now());
+        setCheckoutStep(4);
         await refreshUserArea();
       },
     });
@@ -116,14 +123,18 @@ export function useCheckoutOrder({
     setCheckoutPackage(null);
     setCheckoutQuantity(1);
     setCheckoutGameAccountInfo('');
+    setCheckoutOrderId(null);
+    setCheckoutSuccessAt(null);
   }, []);
 
   return {
     checkoutPackage,
     checkoutStep,
+    checkoutOrderId,
     checkoutQuantity,
     checkoutSubtotal,
     checkoutTotal,
+    checkoutSuccessAt,
     checkoutGameAccountInfo,
     gameAccountInfo,
     handlePlaceOrder,
