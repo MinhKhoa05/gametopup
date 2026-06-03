@@ -1,6 +1,5 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Route } from '../lib/routes';
 import { GamePackage, User } from '../types';
 import { AsyncActionExecutor } from './common/useAsyncAction';
 import { payOrder, placeOrder, getMyOrders } from '../services/orders.api';
@@ -69,40 +68,70 @@ export function useUserOrders(
 }
 
 export function useCheckoutOrder({
-  navigate,
   refreshUserArea,
   execute,
   selectedPackage,
 }: {
-  navigate: (route: Route) => void;
   refreshUserArea: () => Promise<void>;
   execute: AsyncActionExecutor;
   selectedPackage: GamePackage | null;
 }) {
   const [quantity, setQuantity] = useState(1);
   const [gameAccountInfo, setGameAccountInfo] = useState('');
-  const total = selectedPackage ? selectedPackage.salePrice * quantity : 0;
+  const [checkoutStep, setCheckoutStep] = useState<2 | 3>(2);
+  const [checkoutPackage, setCheckoutPackage] = useState<GamePackage | null>(null);
+  const [checkoutQuantity, setCheckoutQuantity] = useState(1);
+  const [checkoutGameAccountInfo, setCheckoutGameAccountInfo] = useState('');
+  const checkoutSubtotal = checkoutPackage ? checkoutPackage.salePrice * checkoutQuantity : 0;
+  const checkoutTotal = checkoutSubtotal;
+  const selectedTotal = selectedPackage ? selectedPackage.salePrice * quantity : 0;
 
   async function handlePlaceOrder(event: FormEvent) {
     event.preventDefault();
     if (!selectedPackage) return;
 
-    await execute(() => placeOrder(selectedPackage.id, quantity, gameAccountInfo), {
-      successMessage: 'Đã tạo đơn. Bạn có thể thanh toán ngay bằng số dư ví.',
-      onSuccess: async () => {
-        setGameAccountInfo('');
-        await refreshUserArea();
-        navigate({ name: 'orders' });
-      },
-    });
+    setCheckoutPackage(selectedPackage);
+    setCheckoutQuantity(quantity);
+    setCheckoutGameAccountInfo(gameAccountInfo);
+    setCheckoutStep(3);
   }
 
+  const handlePayOrder = useCallback(async () => {
+    if (!checkoutPackage) return;
+
+    await execute(async () => {
+      const orderId = await placeOrder(checkoutPackage.id, checkoutQuantity, checkoutGameAccountInfo);
+      await payOrder(orderId);
+      return orderId;
+    }, {
+      successMessage: 'Thanh toán đơn hàng thành công.',
+      onSuccess: async () => {
+        await refreshUserArea();
+      },
+    });
+  }, [checkoutGameAccountInfo, checkoutPackage, checkoutQuantity, execute, refreshUserArea]);
+
+  const resetCheckout = useCallback(() => {
+    setCheckoutStep(2);
+    setCheckoutPackage(null);
+    setCheckoutQuantity(1);
+    setCheckoutGameAccountInfo('');
+  }, []);
+
   return {
+    checkoutPackage,
+    checkoutStep,
+    checkoutQuantity,
+    checkoutSubtotal,
+    checkoutTotal,
+    checkoutGameAccountInfo,
     gameAccountInfo,
     handlePlaceOrder,
+    handlePayOrder,
+    resetCheckout,
     quantity,
     setGameAccountInfo,
     setQuantity,
-    total,
+    selectedTotal,
   };
 }

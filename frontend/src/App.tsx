@@ -15,7 +15,7 @@ import { isAdminUser } from './lib/roles';
 import { Route } from './lib/routes';
 import { AccountPage } from './pages/AccountPage';
 import { AdminPage } from './pages/admin/AdminPage';
-import { GameDetailPage } from './pages/GameDetailPage';
+import { GameOrderPage } from './pages/GameOrderPage';
 import { GamesPage } from './pages/GamesPage';
 import { HomePage } from './pages/HomePage';
 import { OrdersPage } from './pages/OrdersPage';
@@ -76,12 +76,13 @@ export function App() {
           {route.name === 'games' && !route.gameId && <GamesRoute route={route} setError={action.setErrorMessage} navigate={navigate} />}
 
           {route.name === 'games' && route.gameId && (
-            <GameDetailRoute
+          <GameDetailRoute
               busy={action.isLoading}
               route={route}
               execute={action.execute}
               setError={action.setErrorMessage}
               refreshUserArea={userOrders.refreshUserArea}
+              wallet={wallet}
               user={user}
               navigate={navigate}
             />
@@ -324,6 +325,7 @@ function GameDetailRoute({
   execute,
   setError,
   refreshUserArea,
+  wallet,
   user,
   navigate,
 }: {
@@ -332,19 +334,19 @@ function GameDetailRoute({
   execute: ExecuteAction;
   setError: SetError;
   refreshUserArea: UserArea['refreshUserArea'];
+  wallet: WalletState;
   user: User | null;
   navigate: (route: Route) => void;
 }) {
   const catalog = useGameCatalog(route, setError);
   const checkout = useCheckoutOrder({
-    navigate,
     refreshUserArea,
     execute,
     selectedPackage: catalog.selectedPackage,
   });
 
   return (
-    <GameDetailPage
+    <GameOrderPage
       game={catalog.selectedGame}
       gameLoading={catalog.gamesLoading}
       packages={catalog.packages}
@@ -355,7 +357,16 @@ function GameDetailRoute({
       setQuantity={checkout.setQuantity}
       gameAccountInfo={checkout.gameAccountInfo}
       setGameAccountInfo={checkout.setGameAccountInfo}
-      total={checkout.total}
+      total={checkout.selectedTotal}
+      checkoutStep={checkout.checkoutStep}
+      checkoutPackage={checkout.checkoutPackage}
+      checkoutGameAccountInfo={checkout.checkoutGameAccountInfo}
+      checkoutQuantity={checkout.checkoutQuantity}
+      checkoutSubtotal={checkout.checkoutSubtotal}
+      checkoutTotal={checkout.checkoutTotal}
+      onResetCheckout={checkout.resetCheckout}
+      onPayOrder={checkout.handlePayOrder}
+      wallet={wallet}
       selectedPackage={catalog.selectedPackage}
       busy={busy}
       user={user}

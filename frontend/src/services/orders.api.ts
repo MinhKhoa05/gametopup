@@ -2,7 +2,7 @@ import { api, ApiResponse } from '../lib/api';
 import { Order } from '../types';
 
 export async function placeOrder(gamePackageId: number, quantity: number, gameAccountInfo: string) {
-  const response = await api.post<ApiResponse<Order>>('/api/orders/place', { gamePackageId, quantity, gameAccountInfo});
+  const response = await api.post<ApiResponse<number>>('/api/orders/place', { gamePackageId, quantity, gameAccountInfo });
   return response.data.data;
 }
 

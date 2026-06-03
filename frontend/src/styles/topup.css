@@ -57,10 +57,26 @@
   box-shadow: 0 0 0 4px rgb(34 211 238 / 0.1);
 }
 
+.topup-step.completed {
+  color: #a5f3fc;
+}
+
+.topup-step.completed span {
+  color: #04202c;
+  background: rgb(34 211 238 / 0.7);
+}
+
 .topup-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
   gap: 28px;
+  align-items: start;
+}
+
+.topup-checkout-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 18px;
   align-items: start;
 }
 
@@ -71,6 +87,11 @@
   margin-bottom: 20px;
   padding-bottom: 20px;
   border-bottom: 1px solid rgb(34 211 238 / 0.16);
+}
+
+.topup-game-card--compact {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
 }
 
 .topup-game-card__image {
@@ -88,6 +109,15 @@
   height: 92px;
   display: block;
   object-fit: cover;
+}
+
+.topup-game-card__image--compact {
+  width: 80px;
+}
+
+.topup-game-card__image--compact img {
+  width: 80px;
+  height: 80px;
 }
 
 .topup-game-card h1 {
@@ -153,6 +183,341 @@
   margin-bottom: 8px;
 }
 
+.topup-checkout-card,
+.topup-payment-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px 20px 18px;
+  border-radius: 14px;
+  border: 1px solid rgb(34 211 238 / 0.13);
+  background: linear-gradient(180deg, rgb(12 23 41 / 0.96), rgb(8 15 28 / 0.98));
+}
+
+.topup-section-divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, rgb(34 211 238 / 0.18), transparent);
+}
+
+.topup-payment-card__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.topup-order-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgb(34 211 238 / 0.16);
+}
+
+.topup-order-head__image {
+  flex: 0 0 auto;
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 2px solid rgb(255 255 255 / 0.08);
+}
+
+.topup-order-head h1 {
+  margin: 4px 0 6px;
+  color: #fff;
+  font-size: clamp(1.42rem, 2vw, 1.92rem);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.topup-order-head__package {
+  margin: 0;
+  color: #22d3ee;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.topup-order-head__package span {
+  color: #38bdf8;
+}
+
+.topup-breakdown {
+  display: grid;
+  gap: 0;
+}
+
+.topup-breakdown__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.06);
+  color: #94a3b8;
+  font-size: 0.92rem;
+}
+
+.topup-breakdown__row:last-child {
+  border-bottom: 0;
+}
+
+.topup-breakdown__row span {
+  font-weight: 500;
+}
+
+.topup-breakdown__row strong {
+  color: #fff;
+  font-weight: 700;
+  text-align: right;
+}
+
+.topup-breakdown__row--total {
+  padding-top: 14px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.topup-breakdown__row--total strong {
+  color: var(--color-cyanline);
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.topup-breakdown__discount {
+  color: #94a3b8;
+}
+
+.topup-order-details {
+  display: grid;
+  gap: 0;
+}
+
+.topup-order-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.06);
+}
+
+.topup-order-detail:last-child {
+  border-bottom: 0;
+}
+
+.topup-order-detail span {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.79rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.topup-order-detail__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topup-order-detail__label svg {
+  color: #8fb7d6;
+  flex: 0 0 auto;
+}
+
+.topup-order-detail strong {
+  color: #fff;
+  font-size: 0.96rem;
+  font-weight: 600;
+  line-height: 1.35;
+  word-break: break-word;
+  text-align: right;
+}
+
+.topup-wallet-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px 15px 15px;
+  border-radius: 14px;
+  border: 1px solid rgb(255 255 255 / 0.06);
+  background: rgb(7 13 24 / 0.72);
+}
+
+.topup-wallet-summary__icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgb(34 211 238 / 0.16), rgb(34 211 238 / 0.06));
+  border: 1px solid rgb(34 211 238 / 0.15);
+  color: var(--color-cyanline);
+}
+
+.topup-wallet-summary__content {
+  display: grid;
+  gap: 8px;
+}
+
+.topup-wallet-summary__heading {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.topup-wallet-summary__stack {
+  display: grid;
+  gap: 0;
+  padding: 0;
+}
+
+.topup-wallet-summary__line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  min-height: 38px;
+  padding: 7px 0;
+}
+
+.topup-wallet-summary__line span {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.topup-wallet-summary__line strong {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.topup-wallet-summary__value--balance {
+  color: #67e8f9;
+  font-size: 1.2rem;
+}
+
+.topup-wallet-summary__value--due {
+  color: #fdba74;
+}
+
+.topup-wallet-summary__divider {
+  height: 1px;
+  background: rgb(255 255 255 / 0.08);
+}
+
+.topup-wallet-summary__line--shortage strong {
+  color: #fb7185;
+}
+
+.topup-wallet-summary__line--shortage span {
+  color: #fda4af;
+}
+
+.topup-payment-option {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 15px;
+  border-radius: 14px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  background: rgb(255 255 255 / 0.03);
+  text-align: left;
+  color: #e2e8f0;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+}
+
+.topup-payment-option:hover {
+  border-color: rgb(34 211 238 / 0.35);
+  background: rgb(34 211 238 / 0.07);
+}
+
+.topup-payment-option--selected {
+  border-color: rgb(34 211 238 / 0.85);
+  background: rgb(34 211 238 / 0.1);
+}
+
+.topup-payment-option__icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgb(34 211 238 / 0.12);
+  color: var(--color-cyanline);
+}
+
+.topup-payment-option__icon--alt {
+  background: rgb(148 163 184 / 0.12);
+  color: #dbeafe;
+}
+
+.topup-payment-option strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.topup-payment-option span {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.77rem;
+  line-height: 1.35;
+  color: #94a3b8;
+}
+
+.topup-payment-option--selected strong {
+  color: #ffffff;
+}
+
+.topup-payment-option__status {
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--color-cyanline);
+}
+
+.topup-payment-option__status--muted {
+  color: #64748b;
+}
+
+.topup-warning,
+.topup-success {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.topup-warning {
+  border: 1px solid rgb(245 158 11 / 0.22);
+  background: rgb(245 158 11 / 0.08);
+  color: #fde68a;
+}
+
+.topup-success {
+  border: 1px solid rgb(34 197 94 / 0.2);
+  background: rgb(34 197 94 / 0.08);
+  color: #bbf7d0;
+}
+
+.topup-warning p,
+.topup-success p {
+  margin: 0;
+}
+
 .gametopup-summary-row {
   display: flex;
   justify-content: space-between;
@@ -171,16 +536,20 @@
 .gametopup-summary-row--total {
   align-items: center;
   color: white;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .gametopup-summary-row--total > strong {
   color: var(--color-cyanline);
-  font-size: 1.125rem;
+  font-size: 1.08rem;
 }
 
 @media (max-width: 1024px) {
   .topup-body {
+    grid-template-columns: 1fr;
+  }
+
+  .topup-checkout-body {
     grid-template-columns: 1fr;
   }
 }
@@ -205,5 +574,32 @@
   .topup-game-card__image img {
     width: 72px;
     height: 72px;
+  }
+
+  .topup-checkout-card,
+  .topup-payment-card {
+    padding: 16px;
+  }
+
+  .topup-order-head {
+    gap: 12px;
+  }
+
+  .topup-order-head__image {
+    width: 72px;
+    height: 72px;
+  }
+
+  .topup-payment-option {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .topup-order-detail,
+  .topup-wallet-summary__line {
+    min-height: 40px;
+  }
+
+  .topup-payment-option__status {
+    display: none;
   }
 }
