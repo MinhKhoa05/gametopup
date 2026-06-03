@@ -1,12 +1,29 @@
 import { FormEvent, useState } from 'react';
-import { ChevronRight, Gamepad2, Search, ShieldCheck, WalletCards, Zap } from 'lucide-react';
+import {
+  ArrowRight,
+  ChevronRight,
+  Gamepad2 as Gamepad2Icon,
+  LogOut,
+  Search,
+  ShieldCheck,
+  UserRound,
+  WalletCards as WalletCardsIcon,
+  WalletCards,
+  Zap,
+} from 'lucide-react';
 import { AuthPanel } from '../components/auth/AuthPanel';
-import { Route } from '../lib/routes';
-import { pickImage } from '../lib/ui';
-import { Game, WalletInfo, User } from '../types';
-import { SITE } from '../config/site';
 import { GameGrid } from '../components/games/GameGrid';
-import type { AuthFormState, AuthMode } from '../types/auth.types';
+import { HowToTopupSection } from '../components/home/HowToTopupSection';
+import { IconBox } from '../components/common/IconBox';
+import { StatCard } from '../components/common/StatCard';
+import { SITE } from '../config/site';
+import { formatCurrency } from '../lib/format';
+import { userDisplayName } from '../lib/labels';
+import { Route } from '../lib/routes';
+import { classNames, pickImage } from '../lib/ui';
+import { Game, User, WalletInfo } from '../types';
+import type { AuthFormState, AuthMode, AuthStatus, AuthUserSnapshot } from '../types/auth.types';
+import { useStableLoginView } from '../hooks/common/useStableLoginView';
 
 export function HomePage({
   games,
@@ -16,7 +33,9 @@ export function HomePage({
   navigate,
   authMode,
   authForm,
+  authStatus,
   user,
+  userSnapshot,
   onAuth,
   onLogout,
   onChangeAuthForm,
@@ -33,12 +52,17 @@ export function HomePage({
   onLogout: () => void;
   authMode: AuthMode;
   authForm: AuthFormState;
+  authStatus: AuthStatus;
   user: User | null;
+  userSnapshot: AuthUserSnapshot | null;
   onChangeAuthForm: (next: AuthFormState) => void;
   onSwitchAuthMode: (mode: AuthMode) => void;
 }) {
   const [keyword, setKeyword] = useState('');
   const featured = games.slice(0, 8);
+  const { hasLogin, hasKnownSession, isAuthPending } = useStableLoginView({ authStatus, user, userSnapshot });
+  const displayName = userDisplayName(user) || userSnapshot?.displayName || 'Khách';
+  const showAuthSkeleton = isAuthPending && !hasKnownSession;
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -129,63 +153,112 @@ export function HomePage({
           onPick={(game) => navigate({ name: 'games', gameId: game.id })}
           renderBadges={(game) => {
             const maxDiscount = 12 + (game.name.length % 10);
-
             return <div className="rounded-md bg-red-500 px-2 py-1 text-xs font-bold text-white shadow-lg shadow-red-500/20">CK {maxDiscount}%</div>;
           }}
         />
       </section>
 
-      <section className={user ? 'mb-16' : 'mb-16 grid gap-8 lg:grid-cols-[1fr_400px]'}>
-        <div>
-          <h2 className="mb-6 text-2xl font-extrabold text-white">Cách Thức Nạp Game</h2>
-          <div className={user ? 'grid gap-4 md:grid-cols-3' : 'grid gap-4'}>
-            <div className="flex flex-col gap-3 rounded-2xl border border-white/5 bg-ink-lighter p-6 text-center md:items-center">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-cyanline/10 text-cyanline">
-                <Gamepad2 size={24} />
+      <section className={classNames('mb-16 grid items-start gap-8', hasLogin ? 'lg:grid-cols-1' : 'lg:grid-cols-[1fr_400px]')}>
+        <HowToTopupSection hasLogin={hasLogin} />
+
+        {!hasLogin ? (
+          <div className="self-start">
+            {showAuthSkeleton ? (
+              <aside className="gametopup-surface h-fit self-start bg-gradient-to-br from-ink-lighter to-ink-light">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-xl bg-white/8" />
+                    <div className="grid gap-2">
+                      <div className="h-3.5 w-24 rounded-full bg-white/8" />
+                      <div className="h-5 w-32 rounded-full bg-white/8" />
+                    </div>
+                  </div>
+                  <div className="h-9 w-9 rounded-xl bg-white/8" />
+                </div>
+
+                <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                  <div className="h-20 rounded-2xl bg-white/6" />
+                  <div className="h-20 rounded-2xl bg-white/6" />
+                </div>
+
+                <div className="mt-6 grid gap-4">
+                  <div className="h-12 rounded-xl bg-white/6" />
+                  <div className="h-12 rounded-xl bg-white/6" />
+                  <div className="h-12 rounded-xl bg-white/6" />
+                </div>
+              </aside>
+            ) : (
+              <AuthPanel
+                authMode={authMode}
+                form={authForm}
+                wallet={wallet}
+                busy={busy}
+                user={user}
+                authStatus={authStatus}
+                userSnapshot={userSnapshot}
+                onSubmit={onAuth}
+                onLogout={onLogout}
+                onChangeAuthForm={onChangeAuthForm}
+                onSwitchMode={onSwitchAuthMode}
+              />
+            )}
+          </div>
+        ) : null}
+      </section>
+
+      {hasLogin ? (
+        <section className="mb-16">
+          <div className="gametopup-surface bg-gradient-to-br from-ink-lighter to-ink-light">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <IconBox size="md">
+                  <UserRound size={23} />
+                </IconBox>
+                <div>
+                  <p className="eyebrow">Xin chào</p>
+                  <h3 className="text-xl font-bold text-white">{displayName}</h3>
+                </div>
               </div>
-              <div className="space-y-1">
-                <strong className="block text-lg text-white">1. Chọn game</strong>
-                <span className="block text-slate-400">Tìm tựa game và chọn gói nạp phù hợp.</span>
-              </div>
+              <button className="icon-button" type="button" onClick={onLogout} disabled={busy} title="Đăng xuất">
+                <LogOut size={18} />
+              </button>
             </div>
-            <div className="flex flex-col gap-3 rounded-2xl border border-white/5 bg-ink-lighter p-6 text-center md:items-center">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-cyanline/10 text-cyanline">
-                <Zap size={24} />
-              </div>
-              <div className="space-y-1">
-                <strong className="block text-lg text-white">2. Nhập ID</strong>
-                <span className="block text-slate-400">Cung cấp UID hoặc thông tin tài khoản.</span>
-              </div>
+
+            <div className="mt-7 grid gap-3 sm:grid-cols-2">
+              <StatCard icon={<WalletCardsIcon size={20} />} label="Số dư ví" value={formatCurrency(wallet?.balance ?? 0)} />
+              <StatCard icon={<Gamepad2Icon size={20} />} label="Tài khoản" value={user?.role ?? userSnapshot?.role ?? 'Khách hàng'} />
             </div>
-            <div className="flex flex-col gap-3 rounded-2xl border border-white/5 bg-ink-lighter p-6 text-center md:items-center">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-cyanline/10 text-cyanline">
-                <WalletCards size={24} />
-              </div>
-              <div className="space-y-1">
-                <strong className="block text-lg text-white">3. Thanh toán</strong>
-                <span className="block text-slate-400">Sử dụng số dư ví và nhận gói nạp tức thì.</span>
-              </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button type="button" className="gametopup-action-row min-w-[220px] flex-1" onClick={() => navigate({ name: 'wallet' })}>
+                <IconBox size="sm" className="bg-cyanline/10 text-cyanline">
+                  <WalletCardsIcon size={20} />
+                </IconBox>
+                <span className="gametopup-action-row__copy">
+                  <strong>Nạp ví</strong>
+                  <small>Thêm tiền và theo dõi giao dịch</small>
+                </span>
+                <span className="gametopup-action-row__arrow">
+                  <ArrowRight size={18} />
+                </span>
+              </button>
+
+              <button type="button" className="gametopup-action-row min-w-[220px] flex-1" onClick={() => navigate({ name: 'orders' })}>
+                <IconBox size="sm" className="bg-cyanline/10 text-cyanline">
+                  <Gamepad2Icon size={20} />
+                </IconBox>
+                <span className="gametopup-action-row__copy">
+                  <strong>Lịch sử đơn</strong>
+                  <small>Xem lại các đơn đã đặt</small>
+                </span>
+                <span className="gametopup-action-row__arrow">
+                  <ArrowRight size={18} />
+                </span>
+              </button>
             </div>
           </div>
-        </div>
-
-        {!user && (
-          <div>
-            <h2 className="mb-6 text-2xl font-extrabold text-white lg:block">Đăng nhập</h2>
-          <AuthPanel
-            authMode={authMode}
-            form={authForm}
-            wallet={wallet}
-            busy={busy}
-            user={user}
-            onSubmit={onAuth}
-            onLogout={onLogout}
-            onChangeAuthForm={onChangeAuthForm}
-            onSwitchMode={onSwitchAuthMode}
-          />
-        </div>
-      )}
-    </section>
-  </div>
+        </section>
+      ) : null}
+    </div>
   );
 }

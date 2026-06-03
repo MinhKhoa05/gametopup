@@ -39,7 +39,7 @@ export function App() {
       header={
         <AppHeader
           route={route}
-          wallet={userOrders.wallet}
+          wallet={userOrders.wallet ?? userOrders.walletSnapshot}
           navigate={navigate}
           onLogout={auth.handleLogout}
           authStatus={authStatus}
@@ -52,10 +52,12 @@ export function App() {
       toast={<ToastNotification loading={action.isLoading} message={action.successMessage} error={action.errorMessage} />}
     >
       {route.name === 'home' && (
-          <HomeRoute
+      <HomeRoute
           authForm={auth.authForm}
           authMode={auth.authMode}
+          authStatus={authStatus}
           user={auth.user}
+          userSnapshot={userSnapshot}
           onAuth={auth.handleAuth}
           onLogout={auth.handleLogout}
           onChangeAuthForm={auth.setAuthForm}
@@ -63,7 +65,7 @@ export function App() {
           busy={action.isLoading}
           ordersCount={userOrders.orders.length}
           setError={action.setErrorMessage}
-          wallet={userOrders.wallet}
+          wallet={userOrders.wallet ?? userOrders.walletSnapshot}
           navigate={navigate}
         />
       )}
@@ -90,7 +92,7 @@ export function App() {
                 busy={action.isLoading}
                 execute={action.execute}
                 setError={action.setErrorMessage}
-                wallet={userOrders.wallet}
+                wallet={userOrders.wallet ?? userOrders.walletSnapshot}
                 refreshUserArea={userOrders.refreshUserArea}
                 user={user}
                 authStatus={authStatus}
@@ -113,7 +115,7 @@ export function App() {
               user={user}
               authStatus={authStatus}
               userSnapshot={userSnapshot}
-              wallet={userOrders.wallet}
+              wallet={userOrders.wallet ?? userOrders.walletSnapshot}
               ordersCount={userOrders.orders.length}
               busy={action.isLoading}
               onSubmit={auth.handleAuth}
@@ -152,7 +154,9 @@ type UserArea = ReturnType<typeof useUserOrders>;
 function HomeRoute({
   authForm,
   authMode,
+  authStatus,
   user,
+  userSnapshot,
   onAuth,
   onLogout,
   onChangeAuthForm,
@@ -165,7 +169,9 @@ function HomeRoute({
 }: {
   authForm: AuthFormState;
   authMode: AuthMode;
+  authStatus: AuthStatus;
   user: User | null;
+  userSnapshot: AuthUserSnapshot | null;
   onAuth: (event: FormEvent) => void;
   onLogout: () => void;
   onChangeAuthForm: (next: AuthFormState) => void;
@@ -189,7 +195,9 @@ function HomeRoute({
       navigate={navigate}
       authForm={authForm}
       authMode={authMode}
+      authStatus={authStatus}
       user={user}
+      userSnapshot={userSnapshot}
       onAuth={onAuth}
       onLogout={onLogout}
       onChangeAuthForm={onChangeAuthForm}
@@ -350,8 +358,8 @@ function WalletRoute({
   userSnapshot: AuthUserSnapshot | null;
   navigate: (route: Route) => void;
 }) {
-  const walletTransactions = useWalletTransactions(user, authStatus, userSnapshot, setError);
-  const depositRequests = useDepositRequests(user, authStatus, userSnapshot, setError);
+  const walletTransactions = useWalletTransactions(user, setError);
+  const depositRequests = useDepositRequests(user, setError);
   const deposit = useWalletDeposit({
     refreshUserArea: async () => {
       await refreshUserArea();

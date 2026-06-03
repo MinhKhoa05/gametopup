@@ -1,16 +1,14 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { AsyncActionExecutor } from './common/useAsyncAction';
 import { DepositRequest, User } from '../types';
 import { confirmDepositTransfer, createDepositRequest, getMyDepositRequests, getWalletTransactions } from '../services/wallet.api';
 import { getApiMessage } from '../lib/api';
-import { walletActions, useWalletStore } from '../store/wallet.store';
-import type { AuthStatus, AuthUserSnapshot } from '../types/auth.types';
+import { useWalletStore } from '../store/wallet.store';
+import { executeBackgroundFetch } from './common/useBackgroundFetch';
 
 export function useWalletTransactions(
   user: User | null,
-  authStatus: AuthStatus,
-  userSnapshot: AuthUserSnapshot | null,
   setError: (message: string | null) => void,
 ) {
   const transactionsState = useWalletStore(
@@ -20,33 +18,22 @@ export function useWalletTransactions(
     })),
   );
 
-  async function refreshTransactions() {
-    if (!user && !(authStatus === 'checking' && userSnapshot)) {
-      walletActions.clearWalletData();
-      return;
-    }
-
-    const hasData = useWalletStore.getState().transactions.length > 0;
-    walletActions.setTransactionsLoading(!hasData);
-
-    try {
-      const data = await getWalletTransactions();
-      walletActions.setTransactions(data);
-    } catch (error) {
-      if (!hasData) setError(getApiMessage(error));
-    } finally {
-      walletActions.setTransactionsLoading(false);
-    }
-  }
+  const refreshTransactions = useCallback(async () => {
+    if (!user) return;
+    const current = useWalletStore.getState();
+    
+    await executeBackgroundFetch({
+      hasData: current.transactions.length > 0,
+      setLoading: current.setTransactionsLoading,
+      setError,
+      fetcher: getWalletTransactions,
+      onSuccess: current.setTransactions,
+    });
+  }, [setError, user]);
 
   useEffect(() => {
-    if (authStatus === 'guest' || (!user && !userSnapshot)) {
-      walletActions.clearWalletData();
-      return;
-    }
-
     refreshTransactions().catch(() => undefined);
-  }, [authStatus, user, userSnapshot]);
+  }, [refreshTransactions, user?.id]);
 
   return {
     refreshTransactions,
@@ -101,8 +88,6 @@ export function useWalletDeposit({
 
 export function useDepositRequests(
   user: User | null,
-  authStatus: AuthStatus,
-  userSnapshot: AuthUserSnapshot | null,
   setError: (message: string | null) => void,
 ) {
   const depositRequestsState = useWalletStore(
@@ -112,33 +97,22 @@ export function useDepositRequests(
     })),
   );
 
-  async function refreshDepositRequests() {
-    if (!user && !(authStatus === 'checking' && userSnapshot)) {
-      walletActions.clearWalletData();
-      return;
-    }
+  const refreshDepositRequests = useCallback(async () => {
+    if (!user) return;
+    const current = useWalletStore.getState();
 
-    const hasData = useWalletStore.getState().depositRequests.length > 0;
-    walletActions.setDepositRequestsLoading(!hasData);
-
-    try {
-      const data = await getMyDepositRequests();
-      walletActions.setDepositRequests(data);
-    } catch (error) {
-      if (!hasData) setError(getApiMessage(error));
-    } finally {
-      walletActions.setDepositRequestsLoading(false);
-    }
-  }
+    await executeBackgroundFetch({
+      hasData: current.depositRequests.length > 0,
+      setLoading: current.setDepositRequestsLoading,
+      setError,
+      fetcher: getMyDepositRequests,
+      onSuccess: current.setDepositRequests,
+    });
+  }, [setError, user]);
 
   useEffect(() => {
-    if (authStatus === 'guest' || (!user && !userSnapshot)) {
-      walletActions.clearWalletData();
-      return;
-    }
-
     refreshDepositRequests().catch(() => undefined);
-  }, [authStatus, user, userSnapshot]);
+  }, [refreshDepositRequests, user?.id]);
 
   return {
     depositRequests: depositRequestsState.depositRequests,

@@ -1,14 +1,5 @@
 import { useState } from 'react';
-import {
-  Bell,
-  LayoutDashboard,
-  LogOut,
-  Mail,
-  Receipt,
-  Search,
-  UserRound,
-  WalletCards,
-} from 'lucide-react';
+import { Bell, LayoutDashboard, LogOut, Mail, Receipt, Search, UserRound, WalletCards } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { HeaderAccountMenu, type HeaderAccountMenuItem } from './HeaderAccountMenu';
 import { userDisplayName } from '../../lib/labels';
@@ -22,6 +13,7 @@ import {
 } from '../../config/site';
 import { formatCurrency } from '../../lib/format';
 import { isAdminUser } from '../../lib/roles';
+import { useStableLoginView } from '../../hooks/common/useStableLoginView';
 import type { AuthStatus, AuthUserSnapshot } from '../../types/auth.types';
 import type { User } from '../../types';
 
@@ -43,19 +35,14 @@ export function AppHeader({
   userSnapshot: AuthUserSnapshot | null;
 }) {
   const [keyword, setKeyword] = useState('');
-
-  const handleWalletClick = () => {
-    navigate(user ? { name: 'wallet' } : { name: 'account' });
-  };
-
-  const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && keyword.trim()) {
-      navigate({ name: 'games' });
-    }
-  };
-
+  const { hasKnownSession, hasLogin, isAuthPending } = useStableLoginView({ authStatus, user, userSnapshot });
+  const effectiveRole = user?.role ?? userSnapshot?.role;
   const displayName = userDisplayName(user) || userSnapshot?.displayName || 'Khách';
-  const adminUser = isAdminUser(user);
+  const adminUser =
+    isAdminUser(user) ||
+    (typeof effectiveRole === 'string'
+      ? effectiveRole.toLowerCase().includes('admin')
+      : effectiveRole === 1);
   const baseMenuItems = adminUser ? HEADER_ACCOUNT_MENU_ADMIN_ITEMS : HEADER_ACCOUNT_MENU_USER_ITEMS;
   const menuItems: HeaderAccountMenuItem[] = baseMenuItems.map((item) => {
     const icon =
@@ -87,62 +74,15 @@ export function AppHeader({
     };
   });
 
-  const authTrigger =
-    authStatus === 'unknown' || authStatus === 'checking' ? (
-      userSnapshot ? (
-        <div className="hidden min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-ink-lighter px-3 py-2 sm:inline-flex">
-          {userSnapshot.avatarUrl ? (
-            <img
-              src={userSnapshot.avatarUrl}
-              alt={userSnapshot.displayName || 'Khách'}
-              className="h-6 w-6 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-cyanline/20 text-cyanline">
-              <UserRound size={14} />
-            </div>
-          )}
-          <div className="grid gap-0.5 text-left">
-            <span className="text-sm font-semibold text-white">{userSnapshot.displayName || 'Khách'}</span>
-          </div>
-        </div>
-      ) : (
-        <div className="hidden min-h-11 items-center gap-3 rounded-xl border border-white/10 bg-ink-lighter px-3 py-2 sm:inline-flex">
-          <div className="h-8 w-8 animate-pulse rounded-full bg-white/10" />
-          <div className="grid gap-1">
-            <div className="h-3 w-24 animate-pulse rounded-full bg-white/10" />
-            <div className="h-2.5 w-16 animate-pulse rounded-full bg-white/10" />
-          </div>
-        </div>
-      )
-    ) : user ? (
-      <div className="header-user-group flex items-center gap-3">
-        <button
-          type="button"
-          className="relative hidden h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-ink-lighter text-slate-200 transition-colors hover:bg-ink-light sm:inline-flex"
-          title="Thông báo"
-        >
-          <Bell size={18} />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
-        </button>
+  const handleWalletClick = () => {
+    navigate(hasLogin ? { name: 'wallet' } : { name: 'account' });
+  };
 
-        <HeaderAccountMenu
-          triggerLabel={displayName}
-          infoLabel={displayName}
-          infoBadge={isAdminUser(user) ? 'Quản trị viên' : 'Tài khoản cá nhân'}
-          items={menuItems}
-        />
-      </div>
-    ) : (
-      <button
-        type="button"
-        className="inline-flex min-h-11 items-center rounded-xl bg-gradient-to-r from-cyanline to-teal-400 px-4 text-sm font-bold text-slate-950 shadow-[0_4px_14px_rgba(34,211,238,0.2)] transition-transform hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(34,211,238,0.3)]"
-        onClick={() => navigate({ name: 'account' })}
-      >
-        <UserRound size={17} />
-        <span className="ml-1 hidden sm:inline">Đăng nhập</span>
-      </button>
-    );
+  const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && keyword.trim()) {
+      navigate({ name: 'games' });
+    }
+  };
 
   return (
     <header className="site-header">
@@ -157,7 +97,7 @@ export function AppHeader({
                 type="button"
                 className={classNames(route.name === link.route.name && 'active')}
                 onClick={() => {
-                  if (link.route.name === 'orders' && !user) {
+                  if ((link.route.name === 'orders' || link.route.name === 'wallet') && !hasLogin) {
                     navigate({ name: 'account' });
                     return;
                   }
@@ -186,18 +126,109 @@ export function AppHeader({
             />
           </label>
 
-          <button
-            type="button"
-            className="hidden min-h-11 items-center gap-2 rounded-xl border border-cyanline/20 bg-slate-900/85 px-3 text-cyan-100 transition-colors hover:bg-slate-900/95 sm:inline-flex"
-            onClick={handleWalletClick}
-          >
-            <Mail size={18} />
-            <span className="text-sm font-bold">{user ? `Ví: ${formatCurrency(wallet?.balance || 0)}` : 'Nạp ví'}</span>
-          </button>
-
-          {authTrigger}
+          <HeaderWalletButton hasLogin={hasLogin} wallet={wallet} onClick={handleWalletClick} />
+          <HeaderAuthSlot
+            hasLogin={hasLogin}
+            hasKnownSession={hasKnownSession}
+            isAuthPending={isAuthPending}
+            userSnapshot={userSnapshot}
+            displayName={displayName}
+            adminUser={adminUser}
+            menuItems={menuItems}
+            onLogout={onLogout}
+            onNavigate={navigate}
+          />
         </div>
       </div>
     </header>
+  );
+}
+
+function HeaderWalletButton({
+  hasLogin,
+  wallet,
+  onClick,
+}: {
+  hasLogin: boolean;
+  wallet: { balance: number } | null;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="hidden min-h-11 min-w-[176px] items-center gap-2 rounded-xl border border-cyanline/20 bg-slate-900/85 px-3 text-cyan-100 transition-colors hover:bg-slate-900/95 sm:inline-flex"
+      onClick={onClick}
+    >
+      <Mail size={18} />
+      <span className="grid text-left leading-tight">
+        <span className="text-sm font-bold">{hasLogin && wallet ? `Ví: ${formatCurrency(wallet.balance)}` : 'Nạp ví'}</span>
+        <span className="text-[11px] font-medium text-slate-400">{hasLogin && wallet ? 'Mở ví của bạn' : 'Đăng nhập để dùng ví'}</span>
+      </span>
+    </button>
+  );
+}
+
+function HeaderAuthSlot({
+  hasLogin,
+  hasKnownSession,
+  isAuthPending,
+  userSnapshot,
+  displayName,
+  adminUser,
+  menuItems,
+  onLogout,
+  onNavigate,
+}: {
+  hasLogin: boolean;
+  hasKnownSession: boolean;
+  isAuthPending: boolean;
+  userSnapshot: AuthUserSnapshot | null;
+  displayName: string;
+  adminUser: boolean;
+  menuItems: HeaderAccountMenuItem[];
+  onLogout: () => void;
+  onNavigate: (route: Route) => void;
+}) {
+  const showSkeleton = isAuthPending && !hasKnownSession;
+
+  return (
+    <div className="header-user-group hidden min-h-11 min-w-[176px] items-center justify-end gap-3 sm:flex">
+      {showSkeleton ? (
+        <div className="flex min-h-11 min-w-[176px] items-center gap-3 rounded-xl border border-white/10 bg-ink-lighter px-3 py-2">
+          <div className="h-8 w-8 animate-pulse rounded-full bg-white/10" />
+          <div className="grid gap-1">
+            <div className="h-3 w-24 animate-pulse rounded-full bg-white/10" />
+            <div className="h-2.5 w-16 animate-pulse rounded-full bg-white/10" />
+          </div>
+        </div>
+      ) : hasLogin ? (
+        <>
+          <button
+            type="button"
+            className="relative hidden h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-ink-lighter text-slate-200 transition-colors hover:bg-ink-light sm:inline-flex"
+            title="Thông báo"
+          >
+            <Bell size={18} />
+            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
+          </button>
+
+          <HeaderAccountMenu
+            triggerLabel={displayName}
+            infoLabel={displayName}
+            infoBadge={adminUser ? 'Quản trị viên' : 'Tài khoản cá nhân'}
+            items={menuItems}
+          />
+        </>
+      ) : (
+        <button
+          type="button"
+          className="inline-flex min-h-11 min-w-[176px] items-center justify-center rounded-xl bg-gradient-to-r from-cyanline to-teal-400 px-4 text-sm font-bold text-slate-950 shadow-[0_4px_14px_rgba(34,211,238,0.2)] transition-transform hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(34,211,238,0.3)]"
+          onClick={() => onNavigate({ name: 'account' })}
+        >
+          <UserRound size={17} />
+          <span className="ml-1 hidden sm:inline">Đăng nhập</span>
+        </button>
+      )}
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import { getApiMessage } from '../lib/api';
 import { updateMyProfile } from '../services/user.api';
 import { userDisplayName } from '../lib/labels';
 import { User } from '../types';
-import { userActions, useUserProfileStore } from '../store/user.store';
+import { useUserProfileStore } from '../store/user.store';
 
 type UseProfileEditorArgs = {
   user: User | null;
@@ -17,7 +17,7 @@ export function useProfileEditor({ user, execute, onProfileUpdated }: UseProfile
   const saveError = useUserProfileStore((state) => state.saveError);
 
   useEffect(() => {
-    userActions.reset(user);
+    useUserProfileStore.getState().reset(user);
   }, [user?.id, user?.displayName, user?.email]);
 
   async function handleSubmit(event: FormEvent) {
@@ -26,7 +26,7 @@ export function useProfileEditor({ user, execute, onProfileUpdated }: UseProfile
       async () => {
         if (!user) {
           const message = 'Không tìm thấy người dùng để cập nhật.';
-          userActions.setSaveError(message);
+          useUserProfileStore.getState().setSaveError(message);
           throw new Error(message);
         }
 
@@ -34,10 +34,10 @@ export function useProfileEditor({ user, execute, onProfileUpdated }: UseProfile
 
         try {
           await updateMyProfile(user.id, nextDisplayName);
-          userActions.setSaveError(null);
+          useUserProfileStore.getState().setSaveError(null);
           return nextDisplayName;
         } catch (error) {
-          userActions.setSaveError(getApiMessage(error));
+          useUserProfileStore.getState().setSaveError(getApiMessage(error));
           throw error;
         }
       },
@@ -45,7 +45,7 @@ export function useProfileEditor({ user, execute, onProfileUpdated }: UseProfile
         successMessage: 'Đã cập nhật hồ sơ.',
         onSuccess: (displayName) => {
           onProfileUpdated(displayName);
-          userActions.setSaveError(null);
+          useUserProfileStore.getState().setSaveError(null);
         },
       },
     );
@@ -56,6 +56,6 @@ export function useProfileEditor({ user, execute, onProfileUpdated }: UseProfile
     draftName,
     handleSubmit,
     saveError,
-    setDraftName: userActions.setDraftName,
+    setDraftName: (draftName: string) => useUserProfileStore.getState().setDraftName(draftName),
   };
 }

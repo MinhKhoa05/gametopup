@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Game, GamePackage } from '../types';
 
 type GamesStore = {
@@ -13,60 +14,36 @@ type GamesStore = {
   clearPackagesForGame: (gameId: number) => void;
 };
 
-const initialState: Omit<GamesStore, 'setGames' | 'setGamesLoading' | 'setPackagesForGame' | 'setPackagesLoadingForGame' | 'clearPackagesForGame'> = {
-  games: [],
-  gamesLoading: false,
-  packagesByGame: {},
-  packagesLoadingByGame: {},
-};
-
-export const useGamesStore = create<GamesStore>((set) => ({
-  ...initialState,
-  setGames: (games) =>
-    set({
-      games,
+export const useGamesStore = create<GamesStore>()(
+  persist(
+    (set) => ({
+      games: [],
       gamesLoading: false,
+      packagesByGame: {},
+      packagesLoadingByGame: {},
+      setGames: (games) => set({ games, gamesLoading: false }),
+      setGamesLoading: (gamesLoading) => set({ gamesLoading }),
+      setPackagesForGame: (gameId, packages) =>
+        set((state) => ({
+          packagesByGame: { ...state.packagesByGame, [gameId]: packages },
+          packagesLoadingByGame: { ...state.packagesLoadingByGame, [gameId]: false },
+        })),
+      setPackagesLoadingForGame: (gameId, loading) =>
+        set((state) => ({
+          packagesLoadingByGame: { ...state.packagesLoadingByGame, [gameId]: loading },
+        })),
+      clearPackagesForGame: (gameId) =>
+        set((state) => {
+          const packagesByGame = { ...state.packagesByGame };
+          const packagesLoadingByGame = { ...state.packagesLoadingByGame };
+          delete packagesByGame[gameId];
+          delete packagesLoadingByGame[gameId];
+          return { packagesByGame, packagesLoadingByGame };
+        }),
     }),
-  setGamesLoading: (gamesLoading) => set({ gamesLoading }),
-  setPackagesForGame: (gameId, packages) =>
-    set((current) => ({
-      packagesByGame: {
-        ...current.packagesByGame,
-        [gameId]: packages,
-      },
-      packagesLoadingByGame: {
-        ...current.packagesLoadingByGame,
-        [gameId]: false,
-      },
-    })),
-  setPackagesLoadingForGame: (gameId, loading) =>
-    set((current) => ({
-      packagesLoadingByGame: {
-        ...current.packagesLoadingByGame,
-        [gameId]: loading,
-      },
-    })),
-  clearPackagesForGame: (gameId) =>
-    set((current) => {
-      const nextPackagesByGame = { ...current.packagesByGame };
-      const nextLoadingByGame = { ...current.packagesLoadingByGame };
-
-      delete nextPackagesByGame[gameId];
-      delete nextLoadingByGame[gameId];
-
-      return {
-        packagesByGame: nextPackagesByGame,
-        packagesLoadingByGame: nextLoadingByGame,
-      };
-    }),
-}));
-
-export const gamesActions = {
-  clearPackagesForGame: (gameId: number) => useGamesStore.getState().clearPackagesForGame(gameId),
-  setGames: (games: Game[]) => useGamesStore.getState().setGames(games),
-  setGamesLoading: (gamesLoading: boolean) => useGamesStore.getState().setGamesLoading(gamesLoading),
-  setPackagesForGame: (gameId: number, packages: GamePackage[]) =>
-    useGamesStore.getState().setPackagesForGame(gameId, packages),
-  setPackagesLoadingForGame: (gameId: number, loading: boolean) =>
-    useGamesStore.getState().setPackagesLoadingForGame(gameId, loading),
-};
+    {
+      name: 'gametopup-games-cache',
+      partialize: (state) => ({ games: state.games, packagesByGame: state.packagesByGame }),
+    }
+  )
+);

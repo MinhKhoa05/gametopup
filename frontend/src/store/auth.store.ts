@@ -4,6 +4,14 @@ import type { User } from '../types';
 
 export type { AuthFormState, AuthMode, AuthStatus, AuthUserSnapshot } from '../types/auth.types';
 
+const AUTH_SNAPSHOT_KEY = 'gametopup.auth.snapshot';
+const readSnapshot = (): AuthUserSnapshot | null => {
+  try { return JSON.parse(window.localStorage.getItem(AUTH_SNAPSHOT_KEY) || 'null'); } catch { return null; }
+};
+const writeSnapshot = (s: AuthUserSnapshot | null) => {
+  try { if (s) window.localStorage.setItem(AUTH_SNAPSHOT_KEY, JSON.stringify(s)); else window.localStorage.removeItem(AUTH_SNAPSHOT_KEY); } catch {}
+};
+
 type AuthStore = {
   authForm: AuthFormState;
   authLoading: boolean;
@@ -18,60 +26,34 @@ type AuthStore = {
   setUser: (user: User | null) => void;
   setUserSnapshot: (userSnapshot: AuthUserSnapshot | null) => void;
   setGuest: () => void;
-  resetAuthState: () => void;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
-  authForm: {
-    displayName: '',
-    email: 'customer01@gametopup.com',
-    password: 'Password123!',
-  },
+  authForm: { displayName: '', email: 'customer01@gametopup.com', password: 'Password123!' },
   authLoading: false,
   authMode: 'login',
   authStatus: 'unknown',
   user: null,
-  userSnapshot: null,
-
+  userSnapshot: readSnapshot(),
   setAuthForm: (authForm) => set({ authForm }),
   setAuthLoading: (authLoading) => set({ authLoading }),
   setAuthMode: (authMode) => set({ authMode }),
   setAuthStatus: (authStatus) => set({ authStatus }),
-
-  setUser: (user) =>
-    set({ user }),
-
-  setUserSnapshot: (userSnapshot) => {
-    set({ userSnapshot });
-  },
-
+  setUser: (user) => set({ user }),
+  setUserSnapshot: (userSnapshot) => { writeSnapshot(userSnapshot); set({ userSnapshot }); },
   setGuest: () => {
-    set({
-      authLoading: false,
-      authStatus: 'guest',
-      user: null,
-      userSnapshot: null,
-    });
-  },
+    writeSnapshot(null);
+    set((state) => {
+      if (
+        state.authLoading === false &&
+        state.authStatus === 'guest' &&
+        state.user === null &&
+        state.userSnapshot === null
+      ) {
+        return state;
+      }
 
-  resetAuthState: () => {
-    set({
-      authLoading: false,
-      authMode: 'login',
-      authStatus: 'unknown',
-      user: null,
-      userSnapshot: null,
+      return { authLoading: false, authStatus: 'guest', user: null, userSnapshot: null };
     });
   },
 }));
-
-export const authActions = {
-  resetAuthState: () => useAuthStore.getState().resetAuthState(),
-  setAuthForm: (authForm: AuthFormState) => useAuthStore.getState().setAuthForm(authForm),
-  setAuthLoading: (authLoading: boolean) => useAuthStore.getState().setAuthLoading(authLoading),
-  setAuthMode: (authMode: AuthMode) => useAuthStore.getState().setAuthMode(authMode),
-  setAuthStatus: (authStatus: AuthStatus) => useAuthStore.getState().setAuthStatus(authStatus),
-  setGuest: () => useAuthStore.getState().setGuest(),
-  setUser: (user: User | null) => useAuthStore.getState().setUser(user),
-  setUserSnapshot: (userSnapshot: AuthUserSnapshot | null) => useAuthStore.getState().setUserSnapshot(userSnapshot),
-};

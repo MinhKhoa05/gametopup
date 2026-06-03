@@ -11,7 +11,11 @@ import { GamesAdminPanel } from '../../components/admin/GamesAdminPanel';
 import { PackagesAdminPanel } from '../../components/admin/PackagesAdminPanel';
 import { OrdersAdminPanel } from '../../components/admin/OrdersAdminPanel';
 import { UsersAdminPanel } from '../../components/admin/UsersAdminPanel';
-import { useAdminCatalog } from '../../hooks/admin.hooks';
+import { useAdminGames } from '../../hooks/admin/admin-games.hooks';
+import { useAdminPackages } from '../../hooks/admin/admin-packages.hooks';
+import { useAdminOrders } from '../../hooks/admin/admin-orders.hooks';
+import { useAdminUsers } from '../../hooks/admin/admin-users.hooks';
+import { useAdminMetrics } from '../../hooks/admin/admin-metrics.hooks';
 
 export function AdminPage({
   busy,
@@ -30,12 +34,21 @@ export function AdminPage({
   setError: (message: string | null) => void;
   user: User | null;
 }) {
-  const catalog = useAdminCatalog(setError, execute);
+  const { games, createGame, updateGame, removeGame, loading: gamesLoading, refresh: refreshGames } = useAdminGames(setError, execute);
+  const { packages, createPackage, updatePackage, removePackage, loading: packagesLoading, refresh: refreshPackages } = useAdminPackages(setError, execute);
+  const { orders, pickOrder, completeOrder, cancelOrder, loading: ordersLoading, refresh: refreshOrders } = useAdminOrders(setError, execute);
+  const { users, updateUser, removeUser, loading: usersLoading, refresh: refreshUsers } = useAdminUsers(setError, execute);
+  const metrics = useAdminMetrics();
+  
+  const loading = gamesLoading || packagesLoading || ordersLoading || usersLoading;
+  const refreshAll = async () => {
+    await Promise.all([refreshGames(), refreshPackages(), refreshOrders(), refreshUsers()]);
+  };
   const section = route.section ?? 'dashboard';
 
   return (
     <div className="grid gap-6">
-      <AdminHeader loading={catalog.loading} navigate={navigate} onLogout={onLogout} onRefresh={catalog.refresh} route={route} />
+      <AdminHeader loading={loading} navigate={navigate} onLogout={onLogout} onRefresh={refreshAll} route={route} />
 
       <div className="mx-auto w-full max-w-[1560px] px-4 pb-8 sm:px-6 lg:px-8">
         {!isAdminUser(user) ? (
@@ -63,17 +76,17 @@ export function AdminPage({
 
             <section className="grid min-w-0 gap-5">
               {section === 'dashboard' && (
-                <DashboardPanel games={catalog.games} loading={catalog.loading} metrics={catalog.metrics} navigate={navigate} orders={catalog.orders} users={catalog.users} />
+                <DashboardPanel games={games} loading={loading} metrics={metrics} navigate={navigate} orders={orders} users={users} />
               )}
 
               {section === 'games' && (
                 <GamesAdminPanel
                   busy={busy}
-                  games={catalog.games}
-                  loading={catalog.loading}
-                  onCreateGame={catalog.createGame}
-                  onUpdateGame={(payload) => catalog.updateGame(payload.id, payload)}
-                  onDeleteGame={catalog.removeGame}
+                  games={games}
+                  loading={loading}
+                  onCreateGame={createGame}
+                  onUpdateGame={(payload) => updateGame(payload.id, payload)}
+                  onDeleteGame={removeGame}
                 />
               )}
 
@@ -81,12 +94,12 @@ export function AdminPage({
                 section === 'packages' && (
                   <PackagesAdminPanel
                   busy={busy}
-                  games={catalog.games}
-                  packages={catalog.packages}
-                  loading={catalog.loading}
-                  onCreatePackage={catalog.createPackage}
-                  onUpdatePackage={(payload) => catalog.updatePackage(payload.id, payload)}
-                  onDeletePackage={catalog.removePackage}
+                  games={games}
+                  packages={packages}
+                  loading={loading}
+                  onCreatePackage={createPackage}
+                  onUpdatePackage={(payload) => updatePackage(payload.id, payload)}
+                  onDeletePackage={removePackage}
                 />
               )
               }
@@ -94,25 +107,25 @@ export function AdminPage({
               {section === 'orders' && (
                 <OrdersAdminPanel
                   busy={busy}
-                  loading={catalog.loading}
-                  orders={catalog.orders}
-                  refresh={catalog.refresh}
+                  loading={loading}
+                  orders={orders}
+                  refresh={refreshOrders}
                   currentUser={user}
-                  onPickOrder={catalog.pickOrder}
-                  onCompleteOrder={catalog.completeOrder}
-                  onCancelOrder={catalog.cancelOrder}
+                  onPickOrder={pickOrder}
+                  onCompleteOrder={completeOrder}
+                  onCancelOrder={cancelOrder}
                 />
               )}
 
               {section === 'users' && (
                 <UsersAdminPanel
                   busy={busy}
-                  loading={catalog.loading}
-                  users={catalog.users}
-                  refresh={catalog.refresh}
+                  loading={loading}
+                  users={users}
+                  refresh={refreshUsers}
                   currentUser={user}
-                  onUpdateUser={(payload) => catalog.updateUser(payload.id, payload)}
-                  onDeleteUser={catalog.removeUser}
+                  onUpdateUser={(payload) => updateUser(payload.id, payload)}
+                  onDeleteUser={removeUser}
                 />
               )}
             </section>
