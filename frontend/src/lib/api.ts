@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 export type ApiResponse<T = unknown> = {
   success: boolean;
@@ -26,14 +26,19 @@ type AuthRetryConfig = AxiosRequestConfig & {
 let refreshRequest: Promise<void> | null = null;
 
 async function refreshSession() {
-  refreshRequest ??= api
-    .post<ApiResponse<unknown>>('/api/auth/refresh', null, {
-      _skipAuthRefresh: true,
-    } as AuthRetryConfig)
-    .then(() => undefined)
-    .finally(() => {
+  if (refreshRequest) {
+    return refreshRequest;
+  }
+
+  refreshRequest = (async () => {
+    try {
+      await api.post<ApiResponse<unknown>>('/api/auth/refresh', null, {
+        _skipAuthRefresh: true,
+      } as AuthRetryConfig);
+    } finally {
       refreshRequest = null;
-    });
+    }
+  })();
 
   return refreshRequest;
 }
@@ -64,8 +69,8 @@ api.interceptors.response.use(
     try {
       await refreshSession();
       return api(originalRequest);
-    } catch (refreshError) {
-      return Promise.reject(refreshError);
+    } catch {
+      return Promise.reject(error);
     }
   },
 );

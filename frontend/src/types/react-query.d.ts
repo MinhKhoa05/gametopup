@@ -5,5 +5,8 @@ declare module '@tanstack/react-query' {
     queryMeta: {
       persist?: boolean;
     };
+    mutationMeta: {
+      silence?: boolean;
+    };
   }
 }

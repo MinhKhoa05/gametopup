@@ -1,16 +1,14 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, ApiResponse } from '../lib/api';
-import { Game, GamePackage } from '../types';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { api, type ApiResponse } from '../lib/api';
+import type { Game, GamePackage } from '../types';
 
-// ==========================================
-// 1. API SERVICES (pure server calls)
-// ==========================================
 export const GAMES_QUERY_KEY = ['games'] as const;
 const GAMES_STALE_TIME = 1000 * 60 * 10;
 const GAME_PACKAGES_STALE_TIME = 1000 * 60 * 10;
 
-export const gamePackagesQueryKey = (gameId: number | null | undefined) =>
-  ['game-packages', gameId] as const;
+export function gamePackagesQueryKey(gameId: number | null | undefined) {
+  return ['game-packages', gameId] as const;
+}
 
 export async function getGames() {
   const response = await api.get<ApiResponse<Game[]>>('/api/games');
@@ -22,34 +20,27 @@ export async function getPackagesByGame(gameId: number) {
   return response.data.data;
 }
 
-// ==========================================
-// 2. REACT QUERY HOOKS (cache / SWR / background revalidate)
-// ==========================================
 export function useGamesQuery() {
   return useQuery({
     queryKey: GAMES_QUERY_KEY,
     queryFn: getGames,
-    placeholderData: (previousData) => previousData,
+    placeholderData: keepPreviousData,
     staleTime: GAMES_STALE_TIME,
     meta: { persist: true },
   });
 }
 
 export function useGamePackagesQuery(gameId: number | null | undefined) {
+  function getGamePackages() {
+    return getPackagesByGame(gameId as number);
+  }
+
   return useQuery({
     queryKey: gamePackagesQueryKey(gameId),
-    queryFn: () => getPackagesByGame(gameId as number),
+    queryFn: getGamePackages,
     enabled: Boolean(gameId),
-    placeholderData: (previousData) => previousData,
+    placeholderData: keepPreviousData,
     staleTime: GAME_PACKAGES_STALE_TIME,
     meta: { persist: true },
   });
-}
-
-export function useRefreshGamesQuery() {
-  const queryClient = useQueryClient();
-
-  return async () => {
-    await queryClient.invalidateQueries({ queryKey: GAMES_QUERY_KEY });
-  };
 }

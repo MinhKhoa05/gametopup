@@ -5,22 +5,19 @@ import { Route } from '../lib/routes';
 import { formatCurrency, formatDate } from '../lib/format';
 import { classNames } from '../lib/ui';
 import { Order } from '../types';
-import { AsyncActionExecutor } from '../hooks/common/useAsyncAction';
 import { useUserOrders } from '../hooks/orders.hooks';
 
 export function OrdersPage({
   busy,
-  execute,
   user,
   navigate,
 }: {
   busy: boolean;
-  execute: AsyncActionExecutor;
   user: import('../types').User | null;
   navigate: (route: Route) => void;
 }) {
   const isLoggedIn = Boolean(user);
-  const userOrders = useUserOrders(isLoggedIn, execute);
+  const userOrders = useUserOrders(isLoggedIn);
 
   return (
     <div className="mx-auto max-w-4xl">

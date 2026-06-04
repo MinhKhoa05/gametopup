@@ -1,50 +1,33 @@
 import { FormEvent, useCallback, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import type { GamePackage } from '../types';
-import { AsyncActionExecutor } from './common/useAsyncAction';
-import { ordersQueryKey, payOrder, placeOrder, useOrdersQuery } from '../services/orders';
-import { useRefreshWalletQuery, useWalletQuery } from '../services/wallet';
+import { useOrderMutations, useOrdersQuery } from '../services/orders';
+import { useWalletQuery } from '../services/wallet';
 
-export function useUserOrders(isLoggedIn: boolean, execute: AsyncActionExecutor) {
+export function useUserOrders(isLoggedIn: boolean) {
   const ordersQuery = useOrdersQuery(isLoggedIn);
   const walletQuery = useWalletQuery(isLoggedIn);
-  const queryClient = useQueryClient();
-  const refreshWallet = useRefreshWalletQuery();
-
-  const refreshUserArea = useCallback(async () => {
-    if (!isLoggedIn) return;
-
-    await Promise.all([
-      refreshWallet(),
-      queryClient.invalidateQueries({ queryKey: ordersQueryKey }),
-    ]);
-  }, [isLoggedIn, queryClient, refreshWallet]);
+  const orderMutations = useOrderMutations();
 
   const handlePay = useCallback(
-    async (orderId: number) => {
-      await execute(() => payOrder(orderId), {
-        successMessage: 'Thanh toán đơn hàng thành công.',
-        onSuccess: refreshUserArea,
-      });
+    (orderId: number) => {
+      orderMutations.pay.mutate({ orderId });
     },
-    [execute, refreshUserArea],
+    [orderMutations.pay],
   );
 
   return {
+    busy: orderMutations.place.isPending || orderMutations.pay.isPending,
     handlePay,
     orders: ordersQuery.data ?? [],
-    refreshUserArea,
+    ordersLoading: ordersQuery.isPending && !ordersQuery.data,
     wallet: walletQuery.data ?? null,
+    walletLoading: walletQuery.isPending && !walletQuery.data,
   };
 }
 
 export function useCheckoutOrder({
-  refreshUserArea,
-  execute,
   selectedPackage,
 }: {
-  refreshUserArea: () => Promise<void>;
-  execute: AsyncActionExecutor;
   selectedPackage: GamePackage | null;
 }) {
   const [quantity, setQuantity] = useState(1);
@@ -55,6 +38,7 @@ export function useCheckoutOrder({
   const [checkoutGameAccountInfo, setCheckoutGameAccountInfo] = useState('');
   const [checkoutOrderId, setCheckoutOrderId] = useState<number | null>(null);
   const [checkoutSuccessAt, setCheckoutSuccessAt] = useState<number | null>(null);
+  const orderMutations = useOrderMutations();
   const checkoutSubtotal = checkoutPackage ? checkoutPackage.salePrice * checkoutQuantity : 0;
   const checkoutTotal = checkoutSubtotal;
   const selectedTotal = selectedPackage ? selectedPackage.salePrice * quantity : 0;
@@ -74,23 +58,22 @@ export function useCheckoutOrder({
   const handlePayOrder = useCallback(async () => {
     if (!checkoutPackage) return;
 
-    await execute(
-      async () => {
-        const orderId = await placeOrder(checkoutPackage.id, checkoutQuantity, checkoutGameAccountInfo);
-        await payOrder(orderId);
-        return orderId;
+    await orderMutations.place.mutateAsync(
+      {
+        gamePackageId: checkoutPackage.id,
+        quantity: checkoutQuantity,
+        gameAccountInfo: checkoutGameAccountInfo,
       },
       {
-        successMessage: 'Thanh toán đơn hàng thành công.',
         onSuccess: async (orderId) => {
+          await orderMutations.pay.mutateAsync({ orderId });
           setCheckoutOrderId(orderId);
           setCheckoutSuccessAt(Date.now());
           setCheckoutStep(4);
-          await refreshUserArea();
         },
       },
     );
-  }, [checkoutGameAccountInfo, checkoutPackage, checkoutQuantity, execute, refreshUserArea]);
+  }, [checkoutGameAccountInfo, checkoutPackage, checkoutQuantity, orderMutations]);
 
   const resetCheckout = useCallback(() => {
     setCheckoutStep(2);
@@ -102,6 +85,7 @@ export function useCheckoutOrder({
   }, []);
 
   return {
+    busy: orderMutations.place.isPending || orderMutations.pay.isPending,
     checkoutPackage,
     checkoutStep,
     checkoutOrderId,

@@ -1,9 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { QueryClient } from '@tanstack/react-query';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { persistQueryClientRestore, persistQueryClientSubscribe } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { App } from './App';
+import { queryClient } from './lib/queryClient';
 import './styles/globals.css';
 import './styles/animations.css';
 import './styles/components.css';
@@ -15,7 +16,6 @@ import './styles/topup.css';
 import './styles/account.css';
 import './styles/admin.css';
 
-const queryClient = new QueryClient();
 const persister = createSyncStoragePersister({
   storage: window.localStorage,
 });
@@ -67,12 +67,26 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, { 
   }
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
-      <AppErrorBoundary>
-        <App />
-      </AppErrorBoundary>
-    </PersistQueryClientProvider>
-  </React.StrictMode>,
-);
+async function bootstrap() {
+  await persistQueryClientRestore({
+    queryClient,
+    ...persistOptions,
+  });
+
+  persistQueryClientSubscribe({
+    queryClient,
+    ...persistOptions,
+  });
+
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <AppErrorBoundary>
+          <App />
+        </AppErrorBoundary>
+      </QueryClientProvider>
+    </React.StrictMode>,
+  );
+}
+
+void bootstrap();

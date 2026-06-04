@@ -4,7 +4,6 @@ import { AuthSection } from '../components/account/AuthSection';
 import { AccountProfileSection } from '../components/account/AccountProfileSection';
 import type { Route } from '../lib/routes';
 import type { AuthFormData, AuthMode, AuthStatus, User, WalletInfo } from '../types';
-import type { AsyncActionExecutor } from '../hooks/common/useAsyncAction';
 import { useProfileEditor } from '../hooks/user.hooks';
 
 export function AccountPage({
@@ -13,14 +12,12 @@ export function AccountPage({
   busy,
   onSubmit,
   onLogout,
-  onProfileUpdated,
   authForm,
   authMode,
   user,
   authStatus,
   onChangeAuthForm,
   onSwitchAuthMode,
-  execute,
   navigate,
 }: {
   wallet: WalletInfo | null;
@@ -28,21 +25,15 @@ export function AccountPage({
   busy: boolean;
   onSubmit: (e: FormEvent) => void;
   onLogout: () => void;
-  onProfileUpdated: (displayName: string) => void;
   authForm: AuthFormData;
   authMode: AuthMode;
   user: User | null;
   authStatus: AuthStatus;
   onChangeAuthForm: (next: AuthFormData) => void;
   onSwitchAuthMode: (mode: AuthMode) => void;
-  execute: AsyncActionExecutor;
   navigate: (route: Route) => void;
 }) {
-  const profileEditor = useProfileEditor({
-    user,
-    execute,
-    onProfileUpdated,
-  });
+  const profileEditor = useProfileEditor({ user });
 
   if (authStatus === 'checking' && !user) {
     return <AccountPageLoading />;
@@ -73,7 +64,7 @@ export function AccountPage({
           user={user}
           wallet={wallet}
           ordersCount={ordersCount}
-          busy={busy}
+          busy={profileEditor.isPending}
           navigate={navigate}
           onLogout={onLogout}
           profileEditor={profileEditor}

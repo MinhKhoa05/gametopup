@@ -86,7 +86,7 @@ export function AdminPage({
     });
   };
   const removeGame = async (id: number) => {
-    await gameMutations.remove.mutateAsync(id);
+    await gameMutations.remove.mutateAsync({ id });
   };
 
   const createPackage = async (payload: Parameters<typeof packageMutations.create.mutateAsync>[0]) => {
@@ -116,17 +116,17 @@ export function AdminPage({
     });
   };
   const removePackage = async (id: number) => {
-    await packageMutations.remove.mutateAsync(id);
+    await packageMutations.remove.mutateAsync({ id });
   };
 
   const pickOrder = async (orderId: number) => {
-    await orderMutations.pick.mutateAsync(orderId);
+    await orderMutations.pick.mutateAsync({ orderId });
   };
   const completeOrder = async (orderId: number) => {
-    await orderMutations.complete.mutateAsync(orderId);
+    await orderMutations.complete.mutateAsync({ orderId });
   };
   const cancelOrder = async (orderId: number) => {
-    await orderMutations.cancel.mutateAsync(orderId);
+    await orderMutations.cancel.mutateAsync({ orderId });
   };
 
   const updateUser = async (payload: { id: number; displayName: string; email: string; role: number; isActive: boolean }) => {
@@ -141,7 +141,7 @@ export function AdminPage({
     });
   };
   const removeUser = async (id: number) => {
-    await userMutations.remove.mutateAsync(id);
+    await userMutations.remove.mutateAsync({ id });
   };
 
   const refreshAll = async () => {

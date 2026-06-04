@@ -18,6 +18,7 @@ import type { AuthStatus, User } from '../../types';
 export function AppHeader({
   route,
   wallet,
+  walletLoading,
   navigate,
   onLogout,
   authStatus,
@@ -25,6 +26,7 @@ export function AppHeader({
 }: {
   route: Route;
   wallet: { balance: number } | null;
+  walletLoading: boolean;
   navigate: (route: Route) => void;
   onLogout: () => void;
   authStatus: AuthStatus;
@@ -76,6 +78,7 @@ export function AppHeader({
       navigate({ name: 'games' });
     }
   };
+
   const shouldShowAuthSkeleton = isAuthPending && !hasKnownSession;
   const visibleNavItems = HEADER_NAV_ITEMS.filter((item) => {
     if (hasLogin) return true;
@@ -124,7 +127,7 @@ export function AppHeader({
             />
           </label>
 
-          <HeaderWalletButton hasLogin={hasLogin} wallet={wallet} onClick={handleWalletClick} />
+          <HeaderWalletButton hasLogin={hasLogin} wallet={wallet} walletLoading={walletLoading} onClick={handleWalletClick} />
           <HeaderAuthSlot
             hasLogin={hasLogin}
             shouldShowAuthSkeleton={shouldShowAuthSkeleton}
@@ -143,10 +146,12 @@ export function AppHeader({
 function HeaderWalletButton({
   hasLogin,
   wallet,
+  walletLoading,
   onClick,
 }: {
   hasLogin: boolean;
   wallet: { balance: number } | null;
+  walletLoading: boolean;
   onClick: () => void;
 }) {
   return (
@@ -156,10 +161,17 @@ function HeaderWalletButton({
       onClick={onClick}
     >
       <Mail size={18} />
-      <span className="grid text-left leading-tight">
-        <span className="text-sm font-bold">{hasLogin && wallet ? `Ví: ${formatCurrency(wallet.balance)}` : 'Nạp ví'}</span>
-        <span className="text-[11px] font-medium text-slate-400">{hasLogin && wallet ? 'Mở ví của bạn' : 'Đăng nhập để dùng ví'}</span>
-      </span>
+      {walletLoading ? (
+        <span className="grid min-w-[120px] gap-1 text-left leading-tight">
+          <span className="h-4 w-20 animate-pulse rounded-full bg-white/10" />
+          <span className="h-3 w-28 animate-pulse rounded-full bg-white/10" />
+        </span>
+      ) : (
+        <span className="grid text-left leading-tight">
+          <span className="text-sm font-bold">{hasLogin && wallet ? `Ví: ${formatCurrency(wallet.balance)}` : 'Nạp ví'}</span>
+          <span className="text-[11px] font-medium text-slate-400">{hasLogin && wallet ? 'Mở ví của bạn' : 'Đăng nhập để dùng ví'}</span>
+        </span>
+      )}
     </button>
   );
 }

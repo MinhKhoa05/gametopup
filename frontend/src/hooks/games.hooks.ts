@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { getApiMessage } from '../lib/api';
 import { Route } from '../lib/routes';
 import { Game, GamePackage } from '../types';
 import { useGamePackagesQuery, useGamesQuery } from '../services/games';
@@ -15,7 +14,7 @@ function isSelectablePackage(pkg: GamePackage) {
   return pkg.isActive && pkg.stockQuantity > 0;
 }
 
-export function useGameCatalog(route: Route, setError: (message: string | null) => void) {
+export function useGameCatalog(route: Route) {
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim().toLowerCase();
@@ -31,18 +30,6 @@ export function useGameCatalog(route: Route, setError: (message: string | null) 
   const filteredGames = normalizedQuery
     ? games.filter((game) => game.name.toLowerCase().includes(normalizedQuery))
     : games;
-
-  useEffect(() => {
-    if (gamesQuery.error && !gamesQuery.data) {
-      setError(getApiMessage(gamesQuery.error));
-    }
-  }, [gamesQuery.data, gamesQuery.error, setError]);
-
-  useEffect(() => {
-    if (packagesQuery.error && !packagesQuery.data) {
-      setError(getApiMessage(packagesQuery.error));
-    }
-  }, [packagesQuery.data, packagesQuery.error, setError]);
 
   useEffect(() => {
     if (!selectedGame) {
@@ -66,8 +53,10 @@ export function useGameCatalog(route: Route, setError: (message: string | null) 
 
   return {
     filteredGames,
+    gamesError: gamesQuery.error,
     games,
     gamesLoading: gamesQuery.isPending && !gamesQuery.data,
+    packagesError: packagesQuery.error,
     packages: selectedGamePackages,
     packagesLoading: packagesQuery.isPending && !packagesQuery.data,
     query,
