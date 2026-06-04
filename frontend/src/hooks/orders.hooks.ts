@@ -1,69 +1,40 @@
-import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { useShallow } from 'zustand/react/shallow';
-import { GamePackage, User } from '../types';
+import { FormEvent, useCallback, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import type { GamePackage } from '../types';
 import { AsyncActionExecutor } from './common/useAsyncAction';
-import { payOrder, placeOrder, getMyOrders } from '../services/orders.api';
-import { getWallet } from '../services/wallet.api';
-import { getApiMessage } from '../lib/api';
-import { useOrdersStore } from '../store/orders.store';
-import { useWalletStore } from '../store/wallet.store';
-import type { CachedUser, AuthStatus } from '../types';
-import { executeBackgroundFetch } from './common/useBackgroundFetch';
+import { ordersQueryKey, payOrder, placeOrder, useOrdersQuery } from '../services/orders';
+import { useRefreshWalletQuery, useWalletQuery } from '../services/wallet';
 
-export function useUserOrders(
-  user: User | null,
-  authStatus: AuthStatus,
-  cachedUser: CachedUser | null,
-  execute: AsyncActionExecutor,
-  setError: (message: string | null) => void,
-) {
-  const ordersState = useOrdersStore(
-    useShallow((state) => ({
-      orders: state.orders,
-    })),
-  );
+export function useUserOrders(isLoggedIn: boolean, execute: AsyncActionExecutor) {
+  const ordersQuery = useOrdersQuery(isLoggedIn);
+  const walletQuery = useWalletQuery(isLoggedIn);
+  const queryClient = useQueryClient();
+  const refreshWallet = useRefreshWalletQuery();
 
   const refreshUserArea = useCallback(async () => {
-    if (!user) return;
-    const currentOrders = useOrdersStore.getState();
-    const currentWallet = useWalletStore.getState();
-    const hasData = currentWallet.wallet !== null || currentOrders.orders.length > 0;
+    if (!isLoggedIn) return;
 
-    await executeBackgroundFetch({
-      hasData,
-      setLoading: (loading) => {
-        currentWallet.setWalletLoading(loading);
-        currentOrders.setOrdersLoading(loading);
-      },
-      setError,
-      fetcher: () => Promise.allSettled([getWallet(), getMyOrders()]),
-      onSuccess: ([walletResult, ordersResult]) => {
-        if (walletResult.status === 'fulfilled') {
-          currentWallet.setWallet(walletResult.value);
-        }
-        else if (!hasData) setError(getApiMessage(walletResult.reason));
+    await Promise.all([
+      refreshWallet(),
+      queryClient.invalidateQueries({ queryKey: ordersQueryKey }),
+    ]);
+  }, [isLoggedIn, queryClient, refreshWallet]);
 
-        if (ordersResult.status === 'fulfilled') currentOrders.setOrders(ordersResult.value);
-        else if (!hasData) setError(getApiMessage(ordersResult.reason));
-      },
-    });
-  }, [setError, user]);
-
-  useEffect(() => {
-    refreshUserArea().catch(() => undefined);
-  }, [refreshUserArea, user?.id]);
-
-  const handlePay = useCallback(async (orderId: number) => {
-    await execute(() => payOrder(orderId), {
-      successMessage: 'Thanh toán đơn hàng thành công.',
-      onSuccess: refreshUserArea,
-    });
-  }, [execute, refreshUserArea]);
+  const handlePay = useCallback(
+    async (orderId: number) => {
+      await execute(() => payOrder(orderId), {
+        successMessage: 'Thanh toán đơn hàng thành công.',
+        onSuccess: refreshUserArea,
+      });
+    },
+    [execute, refreshUserArea],
+  );
 
   return {
     handlePay,
-    orders: ordersState.orders,
+    orders: ordersQuery.data ?? [],
     refreshUserArea,
+    wallet: walletQuery.data ?? null,
   };
 }
 
@@ -103,19 +74,22 @@ export function useCheckoutOrder({
   const handlePayOrder = useCallback(async () => {
     if (!checkoutPackage) return;
 
-    await execute(async () => {
-      const orderId = await placeOrder(checkoutPackage.id, checkoutQuantity, checkoutGameAccountInfo);
-      await payOrder(orderId);
-      return orderId;
-    }, {
-      successMessage: 'Thanh toán đơn hàng thành công.',
-      onSuccess: async (orderId) => {
-        setCheckoutOrderId(orderId);
-        setCheckoutSuccessAt(Date.now());
-        setCheckoutStep(4);
-        await refreshUserArea();
+    await execute(
+      async () => {
+        const orderId = await placeOrder(checkoutPackage.id, checkoutQuantity, checkoutGameAccountInfo);
+        await payOrder(orderId);
+        return orderId;
       },
-    });
+      {
+        successMessage: 'Thanh toán đơn hàng thành công.',
+        onSuccess: async (orderId) => {
+          setCheckoutOrderId(orderId);
+          setCheckoutSuccessAt(Date.now());
+          setCheckoutStep(4);
+          await refreshUserArea();
+        },
+      },
+    );
   }, [checkoutGameAccountInfo, checkoutPackage, checkoutQuantity, execute, refreshUserArea]);
 
   const resetCheckout = useCallback(() => {

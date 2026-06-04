@@ -10,7 +10,6 @@ import { useAsyncAction } from './hooks/common/useAsyncAction';
 import { useRoute } from './hooks/common/route.hooks';
 import { useGameCatalog } from './hooks/games.hooks';
 import { useCheckoutOrder, useUserOrders } from './hooks/orders.hooks';
-import { useDepositRequests, useWalletDeposit, useWalletTransactions } from './hooks/wallet.hooks';
 import { isAdminUser } from './lib/roles';
 import { Route } from './lib/routes';
 import { AccountPage } from './pages/AccountPage';
@@ -20,8 +19,8 @@ import { GamesPage } from './pages/GamesPage';
 import { HomePage } from './pages/HomePage';
 import { OrdersPage } from './pages/OrdersPage';
 import { WalletPage } from './pages/WalletPage';
-import { useWalletStore } from './store/wallet.store';
-import type { AuthFormState, AuthMode, AuthStatus, CachedUser, User, WalletInfo } from './types';
+import type { AuthFormState, AuthMode, AuthStatus, User, WalletInfo } from './types';
+import { Toaster } from 'sonner';
 
 export function App() {
   const { route, navigate } = useRoute();
@@ -29,9 +28,9 @@ export function App() {
   const auth = useAuthSession({ navigate, execute: action.execute });
   const user = auth.user;
   const authStatus = auth.authStatus;
-  const cachedUser = auth.cachedUser;
-  const userOrders = useUserOrders(user, authStatus, cachedUser, action.execute, action.setErrorMessage);
-  const wallet = useWalletStore((state) => state.wallet);
+  const isLoggedIn = Boolean(user);
+  const userOrders = useUserOrders(isLoggedIn, action.execute);
+  const wallet = userOrders.wallet;
   const isAdminRoute = route.name === 'admin';
 
   return (
@@ -45,12 +44,16 @@ export function App() {
           onLogout={auth.handleLogout}
           authStatus={authStatus}
           user={user}
-          cachedUser={cachedUser}
           />
       }
       footer={<AppFooter navigate={navigate} />}
-      bottomNav={<BottomNav route={route} navigate={navigate} hasLogin={Boolean(user || cachedUser)} />}
-      toast={<ToastNotification loading={action.isLoading} message={action.successMessage} error={action.errorMessage} />}
+      bottomNav={<BottomNav route={route} navigate={navigate} hasLogin={Boolean(user)} />}
+      toast={
+        <>
+          <ToastNotification loading={action.isLoading} message={action.successMessage} error={action.errorMessage} />
+          <Toaster richColors position="top-right" />
+        </>
+      }
     >
       {route.name === 'home' && (
         <HomeRoute
@@ -58,7 +61,6 @@ export function App() {
           authMode={auth.authMode}
           authStatus={authStatus}
           user={auth.user}
-          cachedUser={cachedUser}
           onAuth={auth.handleAuth}
           onLogout={auth.handleLogout}
           onChangeAuthForm={auth.setAuthForm}
@@ -90,23 +92,13 @@ export function App() {
 
           {route.name === 'wallet' && (
             <AuthGuard authStatus={authStatus} user={user} required="authenticated" fallbackRoute={{ name: 'account' }} navigate={navigate}>
-              <WalletRoute
-                busy={action.isLoading}
-                execute={action.execute}
-                setError={action.setErrorMessage}
-                wallet={wallet}
-                refreshUserArea={userOrders.refreshUserArea}
-                user={user}
-                authStatus={authStatus}
-                cachedUser={cachedUser}
-                navigate={navigate}
-              />
+              <WalletRoute busy={action.isLoading} execute={action.execute} wallet={wallet} user={user} navigate={navigate} />
             </AuthGuard>
           )}
 
           {route.name === 'orders' && (
             <AuthGuard authStatus={authStatus} user={user} required="authenticated" fallbackRoute={{ name: 'account' }} navigate={navigate}>
-              <OrdersPage orders={userOrders.orders} busy={action.isLoading} onPay={userOrders.handlePay} navigate={navigate} />
+              <OrdersPage busy={action.isLoading} execute={action.execute} user={user} navigate={navigate} />
             </AuthGuard>
           )}
 
@@ -116,7 +108,6 @@ export function App() {
               authMode={auth.authMode}
               user={user}
               authStatus={authStatus}
-              cachedUser={cachedUser}
               wallet={wallet}
               ordersCount={userOrders.orders.length}
               busy={action.isLoading}
@@ -134,15 +125,7 @@ export function App() {
 
       {isAdminRoute && (
         <AuthGuard authStatus={authStatus} user={user} required="admin" fallbackRoute={{ name: 'home' }} navigate={navigate}>
-          <AdminPage
-            busy={action.isLoading}
-            execute={action.execute}
-            navigate={navigate}
-            onLogout={auth.handleLogout}
-            route={route}
-            setError={action.setErrorMessage}
-            user={user}
-          />
+          <AdminPage navigate={navigate} onLogout={auth.handleLogout} route={route} user={user} />
         </AuthGuard>
       )}
     </AppLayout>
@@ -161,7 +144,6 @@ function HomeRoute({
   authMode,
   authStatus,
   user,
-  cachedUser,
   onAuth,
   onLogout,
   onChangeAuthForm,
@@ -176,7 +158,6 @@ function HomeRoute({
   authMode: AuthMode;
   authStatus: AuthStatus;
   user: User | null;
-  cachedUser: CachedUser | null;
   onAuth: (event: FormEvent) => void;
   onLogout: () => void;
   onChangeAuthForm: (next: AuthFormState) => void;
@@ -202,7 +183,6 @@ function HomeRoute({
       authMode={authMode}
       authStatus={authStatus}
       user={user}
-      cachedUser={cachedUser}
       onAuth={onAuth}
       onLogout={onLogout}
       onChangeAuthForm={onChangeAuthForm}
@@ -381,51 +361,17 @@ function GameDetailRoute({
 function WalletRoute({
   busy,
   execute,
-  setError,
   wallet,
-  refreshUserArea,
   user,
-  authStatus,
-  cachedUser,
   navigate,
 }: {
   busy: boolean;
   execute: ExecuteAction;
-  setError: SetError;
   wallet: WalletState;
-  refreshUserArea: UserArea['refreshUserArea'];
   user: User | null;
-  authStatus: AuthStatus;
-  cachedUser: CachedUser | null;
   navigate: (route: Route) => void;
 }) {
-  const walletTransactions = useWalletTransactions(user, setError);
-  const depositRequests = useDepositRequests(user, setError);
-  const deposit = useWalletDeposit({
-    refreshUserArea: async () => {
-      await refreshUserArea();
-      await walletTransactions.refreshTransactions();
-      await depositRequests.refreshDepositRequests();
-    },
-    execute,
-  });
-
   return (
-    <WalletPage
-      wallet={wallet}
-      amount={deposit.depositAmount}
-      setAmount={deposit.setDepositAmount}
-      deposit={deposit.deposit}
-      clearDeposit={() => deposit.setDeposit(null)}
-      depositRequests={depositRequests.depositRequests}
-      depositRequestsLoading={depositRequests.depositRequestsLoading}
-      transactions={walletTransactions.transactions}
-      transactionsLoading={walletTransactions.transactionsLoading}
-      busy={busy}
-      user={user}
-      onSubmit={deposit.handleCreateDeposit}
-      onConfirm={deposit.handleConfirmTransfer}
-      navigate={navigate}
-    />
+    <WalletPage wallet={wallet} busy={busy} user={user} execute={execute} navigate={navigate} />
   );
 }

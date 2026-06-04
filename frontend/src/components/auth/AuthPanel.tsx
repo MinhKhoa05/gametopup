@@ -8,7 +8,7 @@ import { formatCurrency } from '../../lib/format';
 import { userDisplayName } from '../../lib/labels';
 import { WalletInfo } from '../../types';
 import { AuthFields } from './AuthFields';
-import type { AuthFormState, AuthMode, AuthStatus, CachedUser, User } from '../../types';
+import type { AuthFormState, AuthMode, AuthStatus, User } from '../../types';
 
 export type AuthPanelProps = {
   authMode: AuthMode;
@@ -17,25 +17,49 @@ export type AuthPanelProps = {
   busy: boolean;
   user: User | null;
   authStatus: AuthStatus;
-  cachedUser: CachedUser | null;
   onSubmit: (event: FormEvent) => void;
   onLogout: () => void;
   onChangeAuthForm: (next: AuthFormState) => void;
   onSwitchMode: (mode: AuthMode) => void;
 };
 
-export function AuthPanel({ wallet, busy, onSubmit, onLogout, authMode, form, user, authStatus, cachedUser, onChangeAuthForm, onSwitchMode }: AuthPanelProps) {
-  const hasLogin = Boolean(user || (authStatus !== 'guest' && cachedUser));
-  const displayName = userDisplayName(user) || cachedUser?.displayName || 'Khách';
+export function AuthPanel({
+  wallet,
+  busy,
+  onSubmit,
+  onLogout,
+  authMode,
+  form,
+  user,
+  authStatus,
+  onChangeAuthForm,
+  onSwitchMode,
+}: AuthPanelProps) {
+  const isAuthPending = authStatus === 'unknown' || authStatus === 'checking';
+  const hasLogin = Boolean(user);
+  const displayName = userDisplayName(user) || 'Khách';
   const isRegister = authMode === 'register';
+
+  if (isAuthPending && !user) {
+    return (
+      <aside className="gametopup-surface h-fit self-start bg-gradient-to-br from-ink-lighter to-ink-light">
+        <div className="flex items-center justify-between gap-4">
+          <div className="h-9 w-48 animate-pulse rounded-full bg-white/10" />
+          <div className="h-9 w-9 animate-pulse rounded-xl bg-white/10" />
+        </div>
+        <div className="mt-7 grid gap-3 sm:grid-cols-2">
+          <div className="h-20 animate-pulse rounded-2xl bg-white/6" />
+          <div className="h-20 animate-pulse rounded-2xl bg-white/6" />
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside className="gametopup-surface h-fit self-start bg-gradient-to-br from-ink-lighter to-ink-light">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <IconBox size="md">
-            {hasLogin ? <UserRound size={23} /> : isRegister ? <UserPlus size={23} /> : <ShieldCheck size={23} />}
-          </IconBox>
+          <IconBox size="md">{hasLogin ? <UserRound size={23} /> : isRegister ? <UserPlus size={23} /> : <ShieldCheck size={23} />}</IconBox>
           <div>
             <p className="eyebrow">{hasLogin ? 'Xin chào' : isRegister ? 'Chào bạn mới' : 'Đăng nhập'}</p>
             <h3 className="text-xl font-bold text-white">{hasLogin ? displayName : isRegister ? 'Đăng ký' : 'Đăng nhập'}</h3>
@@ -51,7 +75,7 @@ export function AuthPanel({ wallet, busy, onSubmit, onLogout, authMode, form, us
       {hasLogin ? (
         <div className="mt-7 grid gap-3 sm:grid-cols-2">
           <StatCard icon={<WalletCards size={20} />} label="Số dư ví" value={formatCurrency(wallet?.balance ?? 0)} />
-          <StatCard icon={<BadgeCheck size={20} />} label="Tài khoản" value={user?.role ?? cachedUser?.role ?? 'Khách hàng'} />
+          <StatCard icon={<BadgeCheck size={20} />} label="Tài khoản" value={user?.role ?? 'Khách hàng'} />
         </div>
       ) : (
         <>

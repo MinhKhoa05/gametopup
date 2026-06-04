@@ -18,7 +18,6 @@ const emptyForm = {
 export function UsersAdminPanel({
   busy,
   loading,
-  refresh,
   users,
   currentUser,
   onUpdateUser,
@@ -26,7 +25,6 @@ export function UsersAdminPanel({
 }: {
   busy: boolean;
   loading: boolean;
-  refresh: () => Promise<void>;
   users: User[];
   currentUser: User | null;
   onUpdateUser: (payload: { id: number; displayName: string; email: string; role: number; isActive: boolean }) => Promise<void>;

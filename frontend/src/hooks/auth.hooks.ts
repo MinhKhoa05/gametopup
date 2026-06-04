@@ -1,88 +1,86 @@
-import { FormEvent, useEffect } from 'react';
-import { useShallow } from 'zustand/react/shallow';
+import { FormEvent } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { AsyncActionExecutor } from './common/useAsyncAction';
 import { Route } from '../lib/routes';
-import { getMe, login, logout, register } from '../services/auth.api';
+import { AUTH_USER_QUERY_KEY, login, logout, register, useAuthUserQuery } from '../services/auth';
+import { depositRequestsQueryKey, transactionsQueryKey, walletQueryKey } from '../services/wallet';
+import { ordersQueryKey } from '../services/orders';
 import { useAuthStore } from '../store/auth.store';
-import type { CachedUser, User } from '../types';
+import type { AuthStatus, User } from '../types';
 
-function snapshotFromUser(user: User | null): CachedUser | null {
-  if (!user) return null;
-  return { id: user.id, displayName: user.displayName ?? user.email, avatarUrl: user.avatarUrl, role: user.role };
+function clearSessionQueries(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.removeQueries({ queryKey: AUTH_USER_QUERY_KEY });
+  queryClient.removeQueries({ queryKey: walletQueryKey });
+  queryClient.removeQueries({ queryKey: transactionsQueryKey });
+  queryClient.removeQueries({ queryKey: depositRequestsQueryKey });
+  queryClient.removeQueries({ queryKey: ordersQueryKey });
 }
 
-export function useAuthSession({ navigate, execute }: { navigate: (route: Route) => void; execute: AsyncActionExecutor; }) {
-  const { authMode, authForm, user, authStatus, cachedUser } = useAuthStore(
-    useShallow((state) => ({
-      authMode: state.authMode,
-      authForm: state.authForm,
-      user: state.user,
-      authStatus: state.authStatus,
-      cachedUser: state.cachedUser,
-    })),
-  );
+export function useAuthSession({
+  navigate,
+  execute,
+}: {
+  navigate: (route: Route) => void;
+  execute: AsyncActionExecutor;
+}) {
+  const queryClient = useQueryClient();
+  const authUserQuery = useAuthUserQuery();
+  const user = authUserQuery.data ?? null;
+  const authStatus: AuthStatus = authUserQuery.isLoading ? 'checking' : user ? 'authenticated' : 'guest';
+  const authMode = useAuthStore((state) => state.authMode);
+  const authForm = useAuthStore((state) => state.authForm);
 
-  useEffect(() => {
-    let isMounted = true;
-    async function bootstrapAuth() {
-      useAuthStore.getState().setAuthStatus('checking');
-      try {
-        const serverUser = await getMe();
-        if (!isMounted) return;
+  async function syncAuthUser(nextUser: User | null) {
+    clearSessionQueries(queryClient);
 
-        const store = useAuthStore.getState();
-        store.setUser(serverUser);
-        store.setCachedUser(snapshotFromUser(serverUser));
-        store.setAuthStatus('authenticated');
-      } catch {
-        if (!isMounted) return;
-        useAuthStore.getState().setGuest();
-      }
+    if (nextUser) {
+      queryClient.setQueryData(AUTH_USER_QUERY_KEY, nextUser);
     }
-
-    bootstrapAuth().catch(() => undefined);
-    return () => { isMounted = false; };
-  }, []);
+  }
 
   async function handleAuth(event: FormEvent) {
     event.preventDefault();
     const current = useAuthStore.getState();
+
     await execute(
       async () => {
         if (current.authMode === 'register') {
           await register(current.authForm.displayName, current.authForm.email, current.authForm.password);
         }
+
         return login(current.authForm.email, current.authForm.password);
       },
       {
         successMessage: current.authMode === 'register' ? 'Đăng ký và đăng nhập thành công.' : 'Đăng nhập thành công.',
-        onSuccess: (loggedInUser) => {
-          const store = useAuthStore.getState();
-          store.setUser(loggedInUser);
-          store.setCachedUser(snapshotFromUser(loggedInUser));
-          store.setAuthStatus('authenticated');
+        onSuccess: async (loggedInUser) => {
+          await syncAuthUser(loggedInUser);
           navigate({ name: 'games' });
         },
-      }
+      },
     );
   }
 
   async function handleLogout() {
-    await execute(async () => { await logout(); }, {
-      successMessage: 'Đã đăng xuất.',
-      onSuccess: () => {
-        useAuthStore.getState().setGuest();
-        navigate({ name: 'home' });
+    await execute(
+      async () => {
+        await logout();
       },
-    });
+      {
+        successMessage: 'Đã đăng xuất.',
+        onSuccess: async () => {
+          clearSessionQueries(queryClient);
+          useAuthStore.getState().setGuest();
+          navigate({ name: 'home' });
+        },
+      },
+    );
   }
 
   function handleProfileUpdated(displayName: string) {
-    const current = useAuthStore.getState();
-    if (!current.user) return;
-    current.setUser({ ...current.user, displayName });
-    current.setCachedUser(snapshotFromUser({ ...current.user, displayName }));
-    current.setAuthStatus('authenticated');
+    const currentUser = authUserQuery.data;
+    if (!currentUser) return;
+
+    queryClient.setQueryData(AUTH_USER_QUERY_KEY, { ...currentUser, displayName });
   }
 
   return {
@@ -95,6 +93,5 @@ export function useAuthSession({ navigate, execute }: { navigate: (route: Route)
     setAuthForm: (f: any) => useAuthStore.getState().setAuthForm(f),
     setAuthMode: (m: any) => useAuthStore.getState().setAuthMode(m),
     user,
-    cachedUser,
   };
 }

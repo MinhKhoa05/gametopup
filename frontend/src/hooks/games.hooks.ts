@@ -1,102 +1,75 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Route } from '../lib/routes';
+import { useEffect, useState } from 'react';
 import { getApiMessage } from '../lib/api';
-import { getGames, getPackagesByGame } from '../services/games.api';
-import { GamePackage } from '../types';
-import { useGamesStore } from '../store/games.store';
-import { executeBackgroundFetch } from './common/useBackgroundFetch';
+import { Route } from '../lib/routes';
+import { Game, GamePackage } from '../types';
+import { useGamePackagesQuery, useGamesQuery } from '../services/games';
+
+const EMPTY_GAMES: Game[] = [];
+const EMPTY_PACKAGES: GamePackage[] = [];
+
+function getDefaultPackageId(packages: GamePackage[]) {
+  return packages.find(isSelectablePackage)?.id ?? packages[0]?.id ?? null;
+}
+
+function isSelectablePackage(pkg: GamePackage) {
+  return pkg.isActive && pkg.stockQuantity > 0;
+}
 
 export function useGameCatalog(route: Route, setError: (message: string | null) => void) {
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
   const [query, setQuery] = useState('');
-  
-  const emptyPackages = useMemo<GamePackage[]>(() => [], []);
+  const normalizedQuery = query.trim().toLowerCase();
 
-  const games = useGamesStore((state) => state.games);
-  const gamesLoading = useGamesStore((state) => state.gamesLoading);
+  const gamesQuery = useGamesQuery();
   const routeGameId = route.name === 'games' ? route.gameId : undefined;
-  
+  const shouldLoadPackages = route.name === 'games' && routeGameId !== undefined;
+  const games = gamesQuery.data ?? EMPTY_GAMES;
   const selectedGame = games.find((game) => game.id === routeGameId) ?? games[0] ?? null;
-  const selectedGamePackages = useGamesStore((state) => {
-    if (selectedGame?.id) return state.packagesByGame[selectedGame.id] ?? emptyPackages;
-    return emptyPackages;
-  });
-  const packagesLoading = useGamesStore((state) => {
-    if (!selectedGame?.id) return false;
-    return state.packagesLoadingByGame[selectedGame.id] ?? false;
-  });
-  const selectedPackage = selectedGamePackages.find((item) => item.id === selectedPackageId) ?? null;
+  const packagesQuery = useGamePackagesQuery(shouldLoadPackages ? selectedGame?.id : undefined);
+  const selectedGamePackages = packagesQuery.data ?? EMPTY_PACKAGES;
+  const selectedPackage = selectedGamePackages.find((item) => item.id === selectedPackageId && isSelectablePackage(item)) ?? null;
+  const filteredGames = normalizedQuery
+    ? games.filter((game) => game.name.toLowerCase().includes(normalizedQuery))
+    : games;
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function refreshGames() {
-      const current = useGamesStore.getState();
-      await executeBackgroundFetch({
-        hasData: current.games.length > 0,
-        setLoading: current.setGamesLoading,
-        setError,
-        fetcher: getGames,
-        onSuccess: (data) => {
-          if (!cancelled) useGamesStore.getState().setGames(data);
-        },
-      });
+    if (gamesQuery.error && !gamesQuery.data) {
+      setError(getApiMessage(gamesQuery.error));
     }
-
-    refreshGames().catch(() => undefined);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [setError]);
-
-  const filteredGames = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) return games;
-    return games.filter((game) => game.name.toLowerCase().includes(normalized));
-  }, [games, query]);
+  }, [gamesQuery.data, gamesQuery.error, setError]);
 
   useEffect(() => {
-    if (route.name !== 'games' || !selectedGame?.id) {
+    if (packagesQuery.error && !packagesQuery.data) {
+      setError(getApiMessage(packagesQuery.error));
+    }
+  }, [packagesQuery.data, packagesQuery.error, setError]);
+
+  useEffect(() => {
+    if (!selectedGame) {
+      setSelectedPackageId(null);
       return;
     }
 
-    let cancelled = false;
+    const nextSelectedPackageId = getDefaultPackageId(selectedGamePackages);
 
-    async function refreshPackages() {
-      const current = useGamesStore.getState();
-      const existingPackages = current.packagesByGame[selectedGame.id] ?? [];
-      
-      await executeBackgroundFetch({
-        hasData: existingPackages.length > 0,
-        setLoading: (loading) => current.setPackagesLoadingForGame(selectedGame.id, loading),
-        setError,
-        fetcher: () => getPackagesByGame(selectedGame.id),
-        onSuccess: (data) => {
-          if (cancelled) return;
-          useGamesStore.getState().setPackagesForGame(selectedGame.id, data);
-          setSelectedPackageId(data.find((item: GamePackage) => item.isActive && item.stockQuantity > 0)?.id ?? data[0]?.id ?? null);
-        },
-      });
-    }
+    setSelectedPackageId((current) => {
+      if (current !== null) {
+        const currentPackage = selectedGamePackages.find((item) => item.id === current);
+        if (currentPackage && isSelectablePackage(currentPackage)) {
+          return current;
+        }
+      }
 
-    refreshPackages().catch(() => undefined);
-
-    const currentPackages = useGamesStore.getState().packagesByGame[selectedGame.id] ?? [];
-    const selected = currentPackages.find((item: GamePackage) => item.isActive && item.stockQuantity > 0)?.id ?? currentPackages[0]?.id ?? null;
-    setSelectedPackageId(selected);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [route.name, selectedGame?.id, setError]);
+      return nextSelectedPackageId;
+    });
+  }, [selectedGame?.id, selectedGamePackages]);
 
   return {
     filteredGames,
     games,
-    gamesLoading,
+    gamesLoading: gamesQuery.isPending && !gamesQuery.data,
     packages: selectedGamePackages,
-    packagesLoading,
+    packagesLoading: packagesQuery.isPending && !packagesQuery.data,
     query,
     selectedGame,
     selectedPackage,

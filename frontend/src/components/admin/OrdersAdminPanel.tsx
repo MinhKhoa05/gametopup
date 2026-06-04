@@ -23,7 +23,6 @@ export function OrdersAdminPanel({
   busy,
   loading,
   orders,
-  refresh,
   currentUser,
   onPickOrder,
   onCompleteOrder,
@@ -32,7 +31,6 @@ export function OrdersAdminPanel({
   busy: boolean;
   loading: boolean;
   orders: Order[];
-  refresh: () => Promise<void>;
   currentUser: User | null;
   onPickOrder: (orderId: number) => Promise<void>;
   onCompleteOrder: (orderId: number) => Promise<void>;
@@ -61,11 +59,6 @@ export function OrdersAdminPanel({
       );
     });
   }, [filter, orders, query]);
-
-  async function handleAction(action: () => Promise<unknown>, refreshNote: string) {
-    await action();
-    await refresh();
-  }
 
   return (
     <div className="grid gap-5">

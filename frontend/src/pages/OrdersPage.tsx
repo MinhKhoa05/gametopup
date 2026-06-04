@@ -5,18 +5,23 @@ import { Route } from '../lib/routes';
 import { formatCurrency, formatDate } from '../lib/format';
 import { classNames } from '../lib/ui';
 import { Order } from '../types';
+import { AsyncActionExecutor } from '../hooks/common/useAsyncAction';
+import { useUserOrders } from '../hooks/orders.hooks';
 
 export function OrdersPage({
-  orders,
   busy,
-  onPay,
+  execute,
+  user,
   navigate,
 }: {
-  orders: Order[];
   busy: boolean;
-  onPay: (orderId: number) => void;
+  execute: AsyncActionExecutor;
+  user: import('../types').User | null;
   navigate: (route: Route) => void;
 }) {
+  const isLoggedIn = Boolean(user);
+  const userOrders = useUserOrders(isLoggedIn, execute);
+
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-8 flex items-center justify-between gap-4">
@@ -43,10 +48,10 @@ export function OrdersPage({
       </div>
 
       <div className="grid gap-4">
-        {orders.length === 0 ? (
+        {userOrders.orders.length === 0 ? (
           <EmptyState className="py-12">Bạn chưa có đơn hàng nào.</EmptyState>
         ) : (
-          orders.map((order) => (
+          userOrders.orders.map((order) => (
             <div
               key={order.id}
               className="grid gap-4 rounded-2xl border border-white/5 bg-ink-lighter p-4 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:items-center"
@@ -69,7 +74,7 @@ export function OrdersPage({
               </div>
               <div className="md:border-l md:border-white/5 md:pl-4">
                 {order.status === 0 ? (
-                  <button className="btn-primary min-h-10 px-6 py-2 text-sm" onClick={() => onPay(order.id)} disabled={busy}>
+                  <button className="btn-primary min-h-10 px-6 py-2 text-sm" onClick={() => userOrders.handlePay(order.id)} disabled={busy}>
                     Thanh toán
                   </button>
                 ) : (

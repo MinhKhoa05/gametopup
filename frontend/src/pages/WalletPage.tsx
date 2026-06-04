@@ -25,6 +25,8 @@ import { SITE } from '../config/site';
 import { formatCurrency, formatDate } from '../lib/format';
 import { Route } from '../lib/routes';
 import { classNames } from '../lib/ui';
+import { AsyncActionExecutor } from '../hooks/common/useAsyncAction';
+import { useDepositRequests, useWalletDeposit, useWalletTransactions } from '../hooks/wallet.hooks';
 import { DepositRequest, WalletInfo, WalletTransaction } from '../types';
 import { User } from '../types';
 
@@ -55,40 +57,32 @@ type TransactionFilter = (typeof transactionFilters)[number]['value'];
 
 export function WalletPage({
   wallet,
-  amount,
-  setAmount,
-  deposit,
-  clearDeposit,
-  depositRequests,
-  depositRequestsLoading,
-  transactions,
-  transactionsLoading,
   busy,
   user,
-  onSubmit,
-  onConfirm,
+  execute,
   navigate,
 }: {
   wallet: WalletInfo | null;
-  amount: number;
-  setAmount: (val: number) => void;
-  deposit: DepositRequest | null;
-  clearDeposit: () => void;
-  depositRequests: DepositRequest[];
-  depositRequestsLoading: boolean;
-  transactions: WalletTransaction[];
-  transactionsLoading: boolean;
   busy: boolean;
   user: User | null;
-  onSubmit: (e: FormEvent) => void;
-  onConfirm: () => void;
+  execute: AsyncActionExecutor;
   navigate: (route: Route) => void;
 }) {
   const [view, setView] = useState<WalletView>('overview');
   const [filter, setFilter] = useState<TransactionFilter>('all');
+  const isLoggedIn = Boolean(user);
+  const walletTransactions = useWalletTransactions(isLoggedIn);
+  const depositRequests = useDepositRequests(isLoggedIn);
+  const deposit = useWalletDeposit({
+    refreshUserArea: async () => {
+      await walletTransactions.refreshTransactions();
+      await depositRequests.refreshDepositRequests();
+    },
+    execute,
+  });
   const filteredTransactions = useMemo(
-    () => transactions.filter((item) => filter === 'all' || getTransactionGroup(item.type) === filter),
-    [filter, transactions],
+    () => walletTransactions.transactions.filter((item) => filter === 'all' || getTransactionGroup(item.type) === filter),
+    [filter, walletTransactions.transactions],
   );
 
   if (!user) {
@@ -104,14 +98,14 @@ export function WalletPage({
     );
   }
 
-  if (view === 'deposit' || deposit) {
+  if (view === 'deposit' || deposit.deposit) {
     return (
       <div className="mx-auto w-full max-w-6xl space-y-4">
-        <button
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-slate-300 transition-colors hover:border-cyanline/30 hover:text-cyan-100"
-          type="button"
-          onClick={() => {
-            clearDeposit();
+          <button
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-slate-300 transition-colors hover:border-cyanline/30 hover:text-cyan-100"
+            type="button"
+            onClick={() => {
+            deposit.setDeposit(null);
             setView('overview');
           }}
         >
@@ -135,7 +129,19 @@ export function WalletPage({
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <main className="min-w-0">
-            <WalletPanel user={user} wallet={wallet} amount={amount} setAmount={setAmount} deposit={deposit} busy={busy} onSubmit={onSubmit} onConfirm={onConfirm} navigate={navigate} />
+              <WalletPanel
+              user={user}
+              wallet={wallet}
+              amount={deposit.depositAmount}
+              setAmount={deposit.setDepositAmount}
+              deposit={deposit.deposit}
+              busy={busy}
+              createDepositPending={deposit.createDepositPending}
+              confirmDepositPending={deposit.confirmDepositPending}
+              onSubmit={deposit.handleCreateDeposit}
+              onConfirm={deposit.handleConfirmTransfer}
+              navigate={navigate}
+            />
           </main>
 
           <aside className="grid gap-4">
@@ -214,7 +220,7 @@ export function WalletPage({
         </button>
       </div>
 
-      <DepositRequestList loading={depositRequestsLoading} requests={depositRequests} onCreate={() => setView('deposit')} />
+      <DepositRequestList loading={depositRequests.depositRequestsLoading} requests={depositRequests.depositRequests} onCreate={() => setView('deposit')} />
 
       <section className="rounded-2xl border border-white/6 bg-ink-light">
         <SectionHeading
@@ -242,7 +248,7 @@ export function WalletPage({
           ))}
         </div>
 
-        <WalletTransactionList loading={transactionsLoading} transactions={filteredTransactions} />
+        <WalletTransactionList loading={walletTransactions.transactionsLoading} transactions={filteredTransactions} />
       </section>
     </div>
   );

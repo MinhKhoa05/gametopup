@@ -3,14 +3,7 @@ import { SectionHeading } from '../components/ui/SectionHeading';
 import { AuthSection } from '../components/account/AuthSection';
 import { AccountProfileSection } from '../components/account/AccountProfileSection';
 import type { Route } from '../lib/routes';
-import type {
-  AuthFormData,
-  AuthMode,
-  AuthStatus,
-  CachedUser,
-  User,
-  WalletInfo,
-} from '../types';
+import type { AuthFormData, AuthMode, AuthStatus, User, WalletInfo } from '../types';
 import type { AsyncActionExecutor } from '../hooks/common/useAsyncAction';
 import { useProfileEditor } from '../hooks/user.hooks';
 
@@ -25,7 +18,6 @@ export function AccountPage({
   authMode,
   user,
   authStatus,
-  cachedUser,
   onChangeAuthForm,
   onSwitchAuthMode,
   execute,
@@ -41,7 +33,6 @@ export function AccountPage({
   authMode: AuthMode;
   user: User | null;
   authStatus: AuthStatus;
-  cachedUser: CachedUser | null;
   onChangeAuthForm: (next: AuthFormData) => void;
   onSwitchAuthMode: (mode: AuthMode) => void;
   execute: AsyncActionExecutor;
@@ -54,16 +45,14 @@ export function AccountPage({
   });
 
   if (authStatus === 'checking' && !user) {
-    return <AccountPageLoading cachedUser={cachedUser} />;
+    return <AccountPageLoading />;
   }
 
   return (
     <div className="mx-auto grid max-w-7xl gap-[14px]">
       <header className="grid items-end gap-2">
         <div className="grid gap-1.5">
-          <h1 className="m-0 text-[clamp(1.9rem,2.7vw,2.75rem)] font-black leading-none text-white">
-            Tài khoản của tôi
-          </h1>
+          <h1 className="m-0 text-[clamp(1.9rem,2.7vw,2.75rem)] font-black leading-none text-white">Tài khoản của tôi</h1>
           <p className="m-0 max-w-[720px] text-[0.95rem] leading-[1.55] text-[#a7b7ca]">
             Quản lý thông tin tài khoản và theo dõi nhanh các hoạt động của bạn.
           </p>
@@ -94,9 +83,7 @@ export function AccountPage({
   );
 }
 
-function AccountPageLoading({ cachedUser }: { cachedUser: CachedUser | null }) {
-  const displayName = cachedUser?.displayName || 'Đang tải tài khoản...';
-
+function AccountPageLoading() {
   return (
     <div className="mx-auto grid max-w-7xl gap-[14px]" aria-busy="true" aria-label="Đang xác thực tài khoản">
       <header className="grid items-end gap-2">
@@ -120,7 +107,7 @@ function AccountPageLoading({ cachedUser }: { cachedUser: CachedUser | null }) {
                   <div className="h-6 w-32 animate-pulse rounded-full bg-white/8" />
                   <div className="h-6 w-28 animate-pulse rounded-full bg-white/8" />
                 </div>
-                <div className="text-sm text-slate-400">{displayName}</div>
+                <div className="text-sm text-slate-400">Đang tải tài khoản...</div>
               </div>
             </div>
 
@@ -146,11 +133,7 @@ function AccountPageLoading({ cachedUser }: { cachedUser: CachedUser | null }) {
           </section>
 
           <section className="gametopup-surface min-h-0">
-            <SectionHeading
-              className="mb-4"
-              title="Thông tin cá nhân"
-              description="Đang đồng bộ dữ liệu tài khoản."
-            />
+            <SectionHeading className="mb-4" title="Thông tin cá nhân" description="Đang đồng bộ dữ liệu tài khoản." />
             <div className="grid gap-4">
               <div className="h-12 animate-pulse rounded-xl bg-white/6" />
               <div className="h-12 animate-pulse rounded-xl bg-white/6" />

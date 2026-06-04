@@ -13,8 +13,7 @@ import {
 } from '../../config/site';
 import { formatCurrency } from '../../lib/format';
 import { isAdminUser } from '../../lib/roles';
-import { useStableLoginView } from '../../hooks/common/useStableLoginView';
-import type { CachedUser, AuthStatus, User } from '../../types';
+import type { AuthStatus, User } from '../../types';
 
 export function AppHeader({
   route,
@@ -23,7 +22,6 @@ export function AppHeader({
   onLogout,
   authStatus,
   user,
-  cachedUser,
 }: {
   route: Route;
   wallet: { balance: number } | null;
@@ -31,17 +29,13 @@ export function AppHeader({
   onLogout: () => void;
   authStatus: AuthStatus;
   user: User | null;
-  cachedUser: CachedUser | null;
 }) {
   const [keyword, setKeyword] = useState('');
-  const { hasKnownSession, hasLogin, isAuthPending } = useStableLoginView({ authStatus, user, cachedUser });
-  const effectiveRole = user?.role ?? cachedUser?.role;
-  const displayName = userDisplayName(user) || cachedUser?.displayName || 'Khách';
-  const adminUser =
-    isAdminUser(user) ||
-    (typeof effectiveRole === 'string'
-      ? effectiveRole.toLowerCase().includes('admin')
-      : effectiveRole === 1);
+  const hasLogin = Boolean(user);
+  const isAuthPending = authStatus === 'unknown' || authStatus === 'checking';
+  const hasKnownSession = hasLogin || !isAuthPending;
+  const displayName = userDisplayName(user) || 'Khách';
+  const adminUser = isAdminUser(user);
   const baseMenuItems = adminUser ? HEADER_ACCOUNT_MENU_ADMIN_ITEMS : HEADER_ACCOUNT_MENU_USER_ITEMS;
   const menuItems: HeaderAccountMenuItem[] = baseMenuItems.map((item) => {
     const icon =
@@ -134,7 +128,6 @@ export function AppHeader({
           <HeaderAuthSlot
             hasLogin={hasLogin}
             shouldShowAuthSkeleton={shouldShowAuthSkeleton}
-            cachedUser={cachedUser}
             displayName={displayName}
             adminUser={adminUser}
             menuItems={menuItems}
@@ -174,7 +167,6 @@ function HeaderWalletButton({
 function HeaderAuthSlot({
   hasLogin,
   shouldShowAuthSkeleton,
-  cachedUser,
   displayName,
   adminUser,
   menuItems,
@@ -183,7 +175,6 @@ function HeaderAuthSlot({
 }: {
   hasLogin: boolean;
   shouldShowAuthSkeleton: boolean;
-  cachedUser: CachedUser | null;
   displayName: string;
   adminUser: boolean;
   menuItems: HeaderAccountMenuItem[];

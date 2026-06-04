@@ -1,9 +1,9 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { AsyncActionExecutor } from './common/useAsyncAction';
 import { getApiMessage } from '../lib/api';
-import { updateMyProfile } from '../services/user.api';
 import { userDisplayName } from '../lib/labels';
 import { User } from '../types';
+import { useUpdateMyProfileMutation } from '../services/user';
 
 type UseProfileEditorArgs = {
   user: User | null;
@@ -14,6 +14,7 @@ type UseProfileEditorArgs = {
 export function useProfileEditor({ user, execute, onProfileUpdated }: UseProfileEditorArgs) {
   const [draftName, setDraftName] = useState('');
   const [saveError, setSaveError] = useState<string | null>(null);
+  const updateProfileMutation = useUpdateMyProfileMutation(user?.id ?? null);
 
   useEffect(() => {
     setDraftName(user?.displayName ?? '');
@@ -24,17 +25,9 @@ export function useProfileEditor({ user, execute, onProfileUpdated }: UseProfile
     event.preventDefault();
     await execute(
       async () => {
-        if (!user) {
-          const message = 'Không tìm thấy người dùng để cập nhật.';
-          setSaveError(message);
-          throw new Error(message);
-        }
-
         const nextDisplayName = draftName.trim();
-
         try {
-          await updateMyProfile(user.id, nextDisplayName);
-          setSaveError(null);
+          await updateProfileMutation.mutateAsync(nextDisplayName);
           return nextDisplayName;
         } catch (error) {
           setSaveError(getApiMessage(error));
@@ -44,8 +37,8 @@ export function useProfileEditor({ user, execute, onProfileUpdated }: UseProfile
       {
         successMessage: 'Đã cập nhật hồ sơ.',
         onSuccess: (displayName) => {
-          onProfileUpdated(displayName);
           setSaveError(null);
+          onProfileUpdated(displayName);
         },
       },
     );

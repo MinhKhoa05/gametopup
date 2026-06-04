@@ -18,6 +18,8 @@ export function WalletPanel({
   setAmount,
   deposit,
   busy,
+  createDepositPending,
+  confirmDepositPending,
   onSubmit,
   onConfirm,
   navigate,
@@ -28,6 +30,8 @@ export function WalletPanel({
   setAmount: (amount: number) => void;
   deposit: DepositRequest | null;
   busy: boolean;
+  createDepositPending: boolean;
+  confirmDepositPending: boolean;
   onSubmit: (event: FormEvent) => void;
   onConfirm: () => void;
   navigate: (route: Route) => void;
@@ -76,7 +80,7 @@ export function WalletPanel({
 
           <Field label="Số tiền" value={String(amount)} onChange={(value) => setAmount(Number(value) || 0)} type="number" placeholder="200000" />
 
-          <button className="btn-primary w-full text-lg" type="submit" disabled={!user || busy}>
+          <button className="btn-primary w-full text-lg" type="submit" disabled={!user || busy || createDepositPending}>
             <CreditCard size={18} />
             Tạo yêu cầu nạp
           </button>
@@ -100,7 +104,7 @@ export function WalletPanel({
             <InfoRow label="Số tiền" value={formatCurrency(deposit.amount)} highlight />
             <InfoRow label="Mã yêu cầu" value={deposit.code} code />
             <InfoRow label="Nội dung nạp" value={deposit.transferContent} code />
-            <button className="btn-primary mt-2 h-12 w-full text-base" type="button" onClick={onConfirm} disabled={busy}>
+            <button className="btn-primary mt-2 h-12 w-full text-base" type="button" onClick={onConfirm} disabled={busy || confirmDepositPending}>
               <CheckCircle2 size={18} />
               Xác nhận đã chuyển khoản
             </button>

@@ -1,5 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { App } from './App';
 import './styles/globals.css';
 import './styles/animations.css';
@@ -11,6 +14,19 @@ import './styles/auth.css';
 import './styles/topup.css';
 import './styles/account.css';
 import './styles/admin.css';
+
+const queryClient = new QueryClient();
+const persister = createSyncStoragePersister({
+  storage: window.localStorage,
+});
+
+const persistOptions = {
+  persister,
+  maxAge: 1000 * 60 * 60 * 24,
+  dehydrateOptions: {
+    shouldDehydrateQuery: (query: { meta?: { persist?: boolean } }) => query.meta?.persist === true,
+  },
+};
 
 class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: Error | null }> {
   constructor(props: { children: React.ReactNode }) {
@@ -53,8 +69,10 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, { 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AppErrorBoundary>
-      <App />
-    </AppErrorBoundary>
+    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
+      <AppErrorBoundary>
+        <App />
+      </AppErrorBoundary>
+    </PersistQueryClientProvider>
   </React.StrictMode>,
 );

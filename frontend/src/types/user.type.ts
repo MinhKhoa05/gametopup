@@ -8,5 +8,3 @@ export type User = {
   createdAt?: string;
   updatedAt?: string;
 };
-
-export type CachedUser = Pick<User, 'id' | 'avatarUrl' | 'displayName' | 'role'>;

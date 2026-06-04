@@ -7,8 +7,7 @@ import { SITE } from '../config/site';
 import { Route } from '../lib/routes';
 import { classNames, pickImage } from '../lib/ui';
 import { Game, User, WalletInfo } from '../types';
-import type { AuthFormData, AuthMode, AuthStatus, CachedUser } from '../types';
-import { useStableLoginView } from '../hooks/common/useStableLoginView';
+import type { AuthFormData, AuthMode, AuthStatus } from '../types';
 
 export function HomePage({
   games,
@@ -20,7 +19,6 @@ export function HomePage({
   authForm,
   authStatus,
   user,
-  cachedUser,
   onAuth,
   onLogout,
   onChangeAuthForm,
@@ -39,20 +37,20 @@ export function HomePage({
   authForm: AuthFormData;
   authStatus: AuthStatus;
   user: User | null;
-  cachedUser: CachedUser | null;
   onChangeAuthForm: (next: AuthFormData) => void;
   onSwitchAuthMode: (mode: AuthMode) => void;
 }) {
   const [keyword, setKeyword] = useState('');
   const featured = games.slice(0, 8);
-  const { hasLogin } = useStableLoginView({ authStatus, user, cachedUser });
+  const hasLogin = Boolean(user);
+  const isAuthPending = authStatus === 'unknown' || authStatus === 'checking';
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <section className="hero-ecommerce">
         <div className="relative z-10 max-w-2xl">
           <p className="mb-4 inline-block rounded-full border border-cyanline/30 bg-cyanline/20 px-3 py-1 text-sm font-bold text-cyanline">
-            Dịch Vụ Nạp Hộ - Trung Gian Uy Tín
+            Dịch vụ nạp hộ - Trung gian uy tín
           </p>
           <h1 className="mb-6 text-4xl font-black leading-tight text-white sm:text-6xl">
             Nạp Game Qua Đại Lý
@@ -119,7 +117,11 @@ export function HomePage({
                 </div>
               ))
             : games.map((game) => (
-                <button key={game.id} className="category-item flex flex-col items-center justify-start" onClick={() => navigate({ name: 'games', gameId: game.id })}>
+                <button
+                  key={game.id}
+                  className="category-item flex flex-col items-center justify-start"
+                  onClick={() => navigate({ name: 'games', gameId: game.id })}
+                >
                   <img src={pickImage(game)} alt={game.name} className="shrink-0" width={72} height={72} />
                   <span className="leading-tight">{game.name}</span>
                 </button>
@@ -143,7 +145,7 @@ export function HomePage({
 
       <section className={classNames('mb-16 grid items-start gap-8', hasLogin ? 'lg:grid-cols-1' : 'lg:grid-cols-[1fr_400px]')}>
         <HowToTopupSection hasLogin={hasLogin} />
-        
+
         {!hasLogin ? (
           <div className="self-start">
             <AuthPanel
@@ -153,7 +155,6 @@ export function HomePage({
               busy={busy}
               user={user}
               authStatus={authStatus}
-              cachedUser={cachedUser}
               onSubmit={onAuth}
               onLogout={onLogout}
               onChangeAuthForm={onChangeAuthForm}

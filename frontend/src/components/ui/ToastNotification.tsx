@@ -50,7 +50,11 @@ export function ToastNotification({
         <strong>{type === 'loading' ? 'Đang xử lý' : type === 'success' ? 'Thành công' : 'Có lỗi xảy ra'}</strong>
         <span>{text}</span>
       </div>
-      <button type="button" aria-label="Đóng thông báo" onClick={() => setVisible(false)}>
+      <button
+        type="button"
+        aria-label="Đóng thông báo"
+        onClick={() => setVisible(false)}
+      >
         <X size={16} />
       </button>
       <div className="toast-progress" />
