@@ -33,10 +33,11 @@ export function BottomNav({
         <button
           key={tab.route.name}
           type="button"
-          className={classNames(route.name === tab.route.name && 'text-cyanline')}
+          aria-current={route.name === tab.route.name ? 'page' : undefined}
+          className={classNames('bottom-nav__item', route.name === tab.route.name && 'active')}
           onClick={() => navigate(tab.route)}
         >
-          {bottomNavIcons[tab.route.name]}
+          <span className="bottom-nav__icon">{bottomNavIcons[tab.route.name]}</span>
           <span>{tab.label}</span>
         </button>
       ))}

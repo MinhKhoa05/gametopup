@@ -1,6 +1,8 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api, type ApiResponse } from '../lib/api';
+import { useAuthStore } from '../store/auth.store';
+import { useGameOrderStore } from '../store/game-order.store';
 import type { User } from '../types';
 
 export const AUTH_USER_QUERY_KEY = ['auth-user'] as const;
@@ -81,9 +83,11 @@ export function useLogoutMutation() {
 
   return useMutation({
     mutationFn: logout,
-    onSuccess: function handleLogoutSuccess() {
+    onSuccess: async function handleLogoutSuccess() {
       queryClient.clear();
       queryClient.setQueryData<User | null>(AUTH_USER_QUERY_KEY, null);
+      useAuthStore.getState().setGuest();
+      useGameOrderStore.getState().resetWizard();
       toast.success('Đăng xuất thành công.');
     },
   });

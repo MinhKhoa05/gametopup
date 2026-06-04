@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
+import { useAuthStore } from '../store/auth.store';
 
 export type ApiResponse<T = unknown> = {
   success: boolean;
@@ -70,6 +71,7 @@ api.interceptors.response.use(
       await refreshSession();
       return api(originalRequest);
     } catch {
+      useAuthStore.getState().markSessionExpired();
       return Promise.reject(error);
     }
   },

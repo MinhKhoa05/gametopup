@@ -1,53 +1,29 @@
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { ChevronRight, Search, ShieldCheck, WalletCards, Zap } from 'lucide-react';
 import { AuthPanel } from '../components/auth/AuthPanel';
 import { GameGrid } from '../components/games/GameGrid';
 import { HowToTopupSection } from '../components/home/HowToTopupSection';
 import { SITE } from '../config/site';
+import { useAuthSession } from '../hooks/auth.hooks';
+import { useGameCatalog } from '../hooks/games.hooks';
 import { Route } from '../lib/routes';
 import { classNames, pickImage } from '../lib/ui';
-import { Game, User, WalletInfo } from '../types';
-import type { AuthFormData, AuthMode, AuthStatus } from '../types';
-
 export function HomePage({
-  games,
-  gamesLoading,
-  wallet,
-  busy,
   navigate,
-  authMode,
-  authForm,
-  authStatus,
-  user,
-  onAuth,
-  onLogout,
-  onChangeAuthForm,
-  onSwitchAuthMode,
 }: {
-  games: Game[];
-  gamesLoading: boolean;
-  packagesCount: number;
-  ordersCount: number;
-  wallet: WalletInfo | null;
-  busy: boolean;
   navigate: (route: Route) => void;
-  onAuth: (event: FormEvent) => void;
-  onLogout: () => void;
-  authMode: AuthMode;
-  authForm: AuthFormData;
-  authStatus: AuthStatus;
-  user: User | null;
-  onChangeAuthForm: (next: AuthFormData) => void;
-  onSwitchAuthMode: (mode: AuthMode) => void;
 }) {
   const [keyword, setKeyword] = useState('');
+  const { games, gamesLoading } = useGameCatalog({ name: 'home' });
+  const { authBusy, authForm, authMode, authStatus, handleAuth, handleLogout, setAuthForm, setAuthMode, user } = useAuthSession({
+    navigate,
+  });
   const featured = games.slice(0, 8);
   const hasLogin = Boolean(user);
-  const isAuthPending = authStatus === 'unknown' || authStatus === 'checking';
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <section className="hero-ecommerce">
+    <div className="home-page mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="hero-ecommerce home-hero">
         <div className="relative z-10 max-w-2xl">
           <p className="mb-4 inline-block rounded-full border border-cyanline/30 bg-cyanline/20 px-3 py-1 text-sm font-bold text-cyanline">
             Dịch vụ nạp hộ - Trung gian uy tín
@@ -75,7 +51,7 @@ export function HomePage({
         </div>
       </section>
 
-      <section className="trust-badges">
+      <section className="trust-badges home-trust-badges">
         <div className="trust-badge">
           <Zap size={32} className="text-cyanline" />
           <div>
@@ -99,8 +75,8 @@ export function HomePage({
         </div>
       </section>
 
-      <section className="mb-12">
-        <div className="mb-6 flex items-end justify-between">
+      <section className="home-section mb-12">
+        <div className="mb-6 flex items-end justify-between gap-4 max-[640px]:flex-col max-[640px]:items-start">
           <div>
             <h2 className="mb-0 text-2xl font-extrabold text-white">Danh Mục Game</h2>
           </div>
@@ -108,7 +84,7 @@ export function HomePage({
             Xem tất cả <ChevronRight size={16} />
           </button>
         </div>
-        <div className="category-strip items-start">
+        <div className="category-strip home-category-strip items-start">
           {gamesLoading && games.length === 0
             ? Array.from({ length: 6 }).map((_, index) => (
                 <div key={`category-skeleton-${index}`} className="category-item flex flex-col items-center justify-start" aria-hidden="true">
@@ -129,7 +105,7 @@ export function HomePage({
         </div>
       </section>
 
-      <section className="mb-16">
+      <section className="home-section mb-16">
         <h2 className="mb-6 text-2xl font-extrabold text-white">Các Game Phổ Biến</h2>
         <GameGrid
           games={featured}
@@ -143,7 +119,7 @@ export function HomePage({
         />
       </section>
 
-      <section className={classNames('mb-16 grid items-start gap-8', hasLogin ? 'lg:grid-cols-1' : 'lg:grid-cols-[1fr_400px]')}>
+      <section className={classNames('home-section mb-16 grid items-start gap-8', hasLogin ? 'lg:grid-cols-1' : 'lg:grid-cols-[1fr_400px]')}>
         <HowToTopupSection hasLogin={hasLogin} />
 
         {!hasLogin ? (
@@ -151,14 +127,14 @@ export function HomePage({
             <AuthPanel
               authMode={authMode}
               form={authForm}
-              wallet={wallet}
-              busy={busy}
+              wallet={null}
+              busy={authBusy}
               user={user}
               authStatus={authStatus}
-              onSubmit={onAuth}
-              onLogout={onLogout}
-              onChangeAuthForm={onChangeAuthForm}
-              onSwitchMode={onSwitchAuthMode}
+              onSubmit={handleAuth}
+              onLogout={handleLogout}
+              onChangeAuthForm={setAuthForm}
+              onSwitchMode={setAuthMode}
             />
           </div>
         ) : null}

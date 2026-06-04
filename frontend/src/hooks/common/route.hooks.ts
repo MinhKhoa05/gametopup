@@ -1,27 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate as useRouterNavigate } from 'react-router-dom';
 import { parseRoute, Route, routePath } from '../../lib/routes';
 
 export function useRoute() {
-  const [route, setRoute] = useState<Route>(() => parseRoute());
-
+  const location = useLocation();
+  const routerNavigate = useRouterNavigate();
+  const [route, setRoute] = useState<Route>(() => parseRoute(location.pathname));
   useEffect(() => {
-    const onPopState = () => setRoute(parseRoute());
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, []);
+    setRoute(parseRoute(location.pathname));
+  }, [location.pathname]);
 
-  function navigate(nextRoute: Route) {
+  const navigate = useCallback((nextRoute: Route) => {
     const nextPath = routePath(nextRoute);
 
-    if (window.location.pathname === nextPath) {
-      window.scrollTo({ top: 0, behavior: 'auto' });
-      return;
-    }
-
-    window.history.pushState(null, '', nextPath);
-    setRoute(nextRoute);
+    routerNavigate(nextPath);
     window.scrollTo({ top: 0, behavior: 'auto' });
-  }
+  }, [routerNavigate]);
 
   return { route, navigate };
 }

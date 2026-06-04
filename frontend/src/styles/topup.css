@@ -1,14 +1,21 @@
 .topup-steps {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  max-width: 840px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  width: min(100%, 640px);
   margin: 0 auto 22px;
 }
 
 .topup-steps--success {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  max-width: 840px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.topup-steps--forward {
+  animation: topup-steps-slide-forward 220ms ease;
+}
+
+.topup-steps--back {
+  animation: topup-steps-slide-back 220ms ease;
 }
 
 .topup-step {
@@ -19,6 +26,7 @@
   gap: 6px;
   color: #64748b;
   text-align: center;
+  transition: color 180ms ease, transform 180ms ease;
 }
 
 .topup-step:not(:last-child)::after {
@@ -44,6 +52,7 @@
   font-weight: 900;
   border: 1px solid rgb(255 255 255 / 0.08);
   z-index: 1;
+  transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
 }
 
 .topup-step small {
@@ -60,6 +69,7 @@
   color: #04111c;
   background: var(--color-cyanline);
   box-shadow: 0 0 0 4px rgb(34 211 238 / 0.1);
+  transform: translateY(-1px) scale(1.06);
 }
 
 .topup-step.completed {
@@ -69,12 +79,13 @@
 .topup-step.completed span {
   color: #04202c;
   background: rgb(34 211 238 / 0.7);
+  transform: translateY(-1px) scale(1.03);
 }
 
 .topup-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 28px;
+  gap: 18px;
   align-items: start;
 }
 
@@ -914,6 +925,10 @@
 }
 
 @media (max-width: 1024px) {
+  .topup-steps {
+    width: min(100%, 640px);
+  }
+
   .topup-body {
     grid-template-columns: 1fr;
   }
@@ -1015,5 +1030,74 @@
   .topup-success-timeline__item:not(:last-child)::after {
     left: 19px;
     top: 40px;
+  }
+}
+
+.game-order-stage {
+  animation: game-order-slide-in 220ms ease;
+  will-change: transform, opacity;
+}
+
+.game-order-stage--back {
+  animation-name: game-order-slide-back;
+}
+
+@keyframes topup-steps-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes topup-steps-slide-forward {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes topup-steps-slide-back {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes game-order-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(22px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes game-order-slide-back {
+  from {
+    opacity: 0;
+    transform: translateX(-22px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }

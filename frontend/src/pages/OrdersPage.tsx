@@ -4,16 +4,14 @@ import { OrderStatusBadge } from '../components/orders/OrderStatusBadge';
 import { Route } from '../lib/routes';
 import { formatCurrency, formatDate } from '../lib/format';
 import { classNames } from '../lib/ui';
-import { Order } from '../types';
 import { useUserOrders } from '../hooks/orders.hooks';
+import type { Order, User } from '../types';
 
 export function OrdersPage({
-  busy,
   user,
   navigate,
 }: {
-  busy: boolean;
-  user: import('../types').User | null;
+  user: User | null;
   navigate: (route: Route) => void;
 }) {
   const isLoggedIn = Boolean(user);
@@ -30,7 +28,7 @@ export function OrdersPage({
       </div>
 
       <div className="mb-6 flex gap-2 overflow-x-auto border-b border-white/10 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {['Tất cả', 'Chờ xử lý', 'Đã hoàn thành', 'Đã huỷ'].map((label, index) => (
+        {['Tất cả', 'Chờ xử lý', 'Đã hoàn thành', 'Đã hủy'].map((label, index) => (
           <button
             key={label}
             type="button"
@@ -71,7 +69,7 @@ export function OrdersPage({
               </div>
               <div className="md:border-l md:border-white/5 md:pl-4">
                 {order.status === 0 ? (
-                  <button className="btn-primary min-h-10 px-6 py-2 text-sm" onClick={() => userOrders.handlePay(order.id)} disabled={busy}>
+                  <button className="btn-primary min-h-10 px-6 py-2 text-sm" onClick={() => userOrders.handlePay(order.id)} disabled={userOrders.busy}>
                     Thanh toán
                   </button>
                 ) : (

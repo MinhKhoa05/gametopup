@@ -1,39 +1,25 @@
-import type { FormEvent } from 'react';
 import { SectionHeading } from '../components/ui/SectionHeading';
 import { AuthSection } from '../components/account/AuthSection';
 import { AccountProfileSection } from '../components/account/AccountProfileSection';
+import { useAuthSession } from '../hooks/auth.hooks';
 import type { Route } from '../lib/routes';
-import type { AuthFormData, AuthMode, AuthStatus, User, WalletInfo } from '../types';
-import { useProfileEditor } from '../hooks/user.hooks';
 
 export function AccountPage({
-  wallet,
-  ordersCount,
-  busy,
-  onSubmit,
-  onLogout,
-  authForm,
-  authMode,
-  user,
-  authStatus,
-  onChangeAuthForm,
-  onSwitchAuthMode,
   navigate,
 }: {
-  wallet: WalletInfo | null;
-  ordersCount: number;
-  busy: boolean;
-  onSubmit: (e: FormEvent) => void;
-  onLogout: () => void;
-  authForm: AuthFormData;
-  authMode: AuthMode;
-  user: User | null;
-  authStatus: AuthStatus;
-  onChangeAuthForm: (next: AuthFormData) => void;
-  onSwitchAuthMode: (mode: AuthMode) => void;
   navigate: (route: Route) => void;
 }) {
-  const profileEditor = useProfileEditor({ user });
+  const {
+    authBusy,
+    authForm,
+    authMode,
+    authStatus,
+    handleAuth,
+    handleLogout,
+    setAuthForm,
+    setAuthMode,
+    user,
+  } = useAuthSession({ navigate });
 
   if (authStatus === 'checking' && !user) {
     return <AccountPageLoading />;
@@ -52,22 +38,18 @@ export function AccountPage({
 
       {!user ? (
         <AuthSection
-          busy={busy}
+          busy={authBusy}
           form={authForm}
           authMode={authMode}
-          onChange={onChangeAuthForm}
-          onSubmit={onSubmit}
-          onSwitchMode={onSwitchAuthMode}
+          onChange={setAuthForm}
+          onSubmit={handleAuth}
+          onSwitchMode={setAuthMode}
         />
       ) : (
         <AccountProfileSection
           user={user}
-          wallet={wallet}
-          ordersCount={ordersCount}
-          busy={profileEditor.isPending}
           navigate={navigate}
-          onLogout={onLogout}
-          profileEditor={profileEditor}
+          onLogout={handleLogout}
         />
       )}
     </div>

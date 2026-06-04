@@ -1,4 +1,4 @@
-import type { FormEvent, ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import { AppLayout } from './components/layout/AppLayout';
 import { AppFooter } from './components/layout/AppFooter';
@@ -7,8 +7,9 @@ import { BottomNav } from './components/layout/BottomNav';
 import { EmptyState } from './components/ui/EmptyState';
 import { useAuthSession } from './hooks/auth.hooks';
 import { useRoute } from './hooks/common/route.hooks';
+import { queryClient } from './lib/queryClient';
 import { useGameCatalog } from './hooks/games.hooks';
-import { useCheckoutOrder, useUserOrders } from './hooks/orders.hooks';
+import { useUserOrders } from './hooks/orders.hooks';
 import { isAdminUser } from './lib/roles';
 import { Route } from './lib/routes';
 import { AccountPage } from './pages/AccountPage';
@@ -18,7 +19,10 @@ import { GamesPage } from './pages/GamesPage';
 import { HomePage } from './pages/HomePage';
 import { OrdersPage } from './pages/OrdersPage';
 import { WalletPage } from './pages/WalletPage';
-import type { AuthFormState, AuthMode, AuthStatus, User, WalletInfo } from './types';
+import { useAuthStore } from './store/auth.store';
+import { useGameOrderStore } from './store/game-order.store';
+import { AUTH_USER_QUERY_KEY } from './services/auth';
+import type { AuthStatus, User, WalletInfo } from './types';
 
 export function App() {
   const { route, navigate } = useRoute();
@@ -29,6 +33,19 @@ export function App() {
   const userOrders = useUserOrders(isLoggedIn);
   const wallet = userOrders.wallet;
   const isAdminRoute = route.name === 'admin';
+  const sessionExpiredAt = useAuthStore((state) => state.sessionExpiredAt);
+
+  useEffect(() => {
+    if (!sessionExpiredAt) {
+      return;
+    }
+
+    queryClient.clear();
+    queryClient.setQueryData(AUTH_USER_QUERY_KEY, null);
+    useAuthStore.getState().setGuest();
+    useGameOrderStore.getState().resetWizard();
+    navigate({ name: 'account' });
+  }, [navigate, sessionExpiredAt]);
 
   return (
     <AppLayout
@@ -37,7 +54,6 @@ export function App() {
         <AppHeader
           route={route}
           wallet={wallet}
-          walletLoading={userOrders.walletLoading}
           navigate={navigate}
           onLogout={auth.handleLogout}
           authStatus={authStatus}
@@ -49,20 +65,7 @@ export function App() {
       toast={<Toaster richColors position="top-right" />}
     >
       {route.name === 'home' && (
-        <HomeRoute
-          authForm={auth.authForm}
-          authMode={auth.authMode}
-          authStatus={authStatus}
-          user={auth.user}
-          onAuth={auth.handleAuth}
-          onLogout={auth.handleLogout}
-          onChangeAuthForm={auth.setAuthForm}
-          onSwitchAuthMode={auth.setAuthMode}
-          busy={auth.authBusy}
-          ordersCount={userOrders.orders.length}
-          wallet={wallet}
-          navigate={navigate}
-        />
+        <HomePage navigate={navigate} />
       )}
 
       {!isAdminRoute && route.name !== 'home' && (
@@ -70,13 +73,7 @@ export function App() {
           {route.name === 'games' && !route.gameId && <GamesRoute route={route} navigate={navigate} />}
 
           {route.name === 'games' && route.gameId && (
-            <GameDetailRoute
-              route={route}
-              busy={false}
-              wallet={wallet}
-              user={user}
-              navigate={navigate}
-            />
+            <GameDetailRoute route={route} navigate={navigate} />
           )}
 
           {route.name === 'wallet' && (
@@ -87,23 +84,12 @@ export function App() {
 
           {route.name === 'orders' && (
             <AuthGuard authStatus={authStatus} user={user} required="authenticated" fallbackRoute={{ name: 'account' }} navigate={navigate}>
-              <OrdersPage busy={userOrders.busy} user={user} navigate={navigate} />
+              <OrdersPage user={user} navigate={navigate} />
             </AuthGuard>
           )}
 
           {route.name === 'account' && (
             <AccountPage
-              authForm={auth.authForm}
-              authMode={auth.authMode}
-              user={user}
-              authStatus={authStatus}
-              wallet={wallet}
-              ordersCount={userOrders.orders.length}
-              busy={auth.authBusy}
-              onSubmit={auth.handleAuth}
-              onLogout={auth.handleLogout}
-              onChangeAuthForm={auth.setAuthForm}
-              onSwitchAuthMode={auth.setAuthMode}
               navigate={navigate}
             />
           )}
@@ -115,62 +101,12 @@ export function App() {
           <AdminPage navigate={navigate} onLogout={auth.handleLogout} route={route} user={user} />
         </AuthGuard>
       )}
-    </AppLayout>
-  );
-}
+      </AppLayout>
+    );
+  }
 
 const AUTH_GUARD_EMPTY_STATE_CLASS = 'mx-auto max-w-lg py-16';
 type WalletState = WalletInfo | null;
-
-function HomeRoute({
-  authForm,
-  authMode,
-  authStatus,
-  user,
-  onAuth,
-  onLogout,
-  onChangeAuthForm,
-  onSwitchAuthMode,
-  busy,
-  ordersCount,
-  wallet,
-  navigate,
-}: {
-  authForm: AuthFormState;
-  authMode: AuthMode;
-  authStatus: AuthStatus;
-  user: User | null;
-  onAuth: (event: FormEvent) => void;
-  onLogout: () => void;
-  onChangeAuthForm: (next: AuthFormState) => void;
-  onSwitchAuthMode: (mode: AuthMode) => void;
-  busy: boolean;
-  ordersCount: number;
-  wallet: WalletState;
-  navigate: (route: Route) => void;
-}) {
-  const catalog = useGameCatalog({ name: 'home' });
-
-  return (
-    <HomePage
-      games={catalog.games}
-      gamesLoading={catalog.gamesLoading}
-      packagesCount={0}
-      ordersCount={ordersCount}
-      wallet={wallet}
-      busy={busy}
-      navigate={navigate}
-      authForm={authForm}
-      authMode={authMode}
-      authStatus={authStatus}
-      user={user}
-      onAuth={onAuth}
-      onLogout={onLogout}
-      onChangeAuthForm={onChangeAuthForm}
-      onSwitchAuthMode={onSwitchAuthMode}
-    />
-  );
-}
 
 function AuthGuard({
   authStatus,
@@ -279,54 +215,13 @@ function GamesRoute({
 }
 
 function GameDetailRoute({
-  busy,
   route,
-  wallet,
-  user,
   navigate,
 }: {
-  busy: boolean;
   route: Route;
-  wallet: WalletState;
-  user: User | null;
   navigate: (route: Route) => void;
 }) {
-  const catalog = useGameCatalog(route);
-  const checkout = useCheckoutOrder({
-    selectedPackage: catalog.selectedPackage,
-  });
-
-  return (
-    <GameOrderPage
-      game={catalog.selectedGame}
-      gameLoading={catalog.gamesLoading}
-      packages={catalog.packages}
-      packagesLoading={catalog.packagesLoading}
-      selectedPackageId={catalog.selectedPackageId}
-      setSelectedPackageId={catalog.setSelectedPackageId}
-      quantity={checkout.quantity}
-      setQuantity={checkout.setQuantity}
-      gameAccountInfo={checkout.gameAccountInfo}
-      setGameAccountInfo={checkout.setGameAccountInfo}
-      total={checkout.selectedTotal}
-      checkoutStep={checkout.checkoutStep}
-      checkoutPackage={checkout.checkoutPackage}
-      checkoutGameAccountInfo={checkout.checkoutGameAccountInfo}
-      checkoutQuantity={checkout.checkoutQuantity}
-      checkoutSubtotal={checkout.checkoutSubtotal}
-      checkoutTotal={checkout.checkoutTotal}
-      checkoutOrderId={checkout.checkoutOrderId}
-      checkoutSuccessAt={checkout.checkoutSuccessAt}
-      onResetCheckout={checkout.resetCheckout}
-      onPayOrder={checkout.handlePayOrder}
-      wallet={wallet}
-      selectedPackage={catalog.selectedPackage}
-      busy={busy || checkout.busy}
-      user={user}
-      onSubmit={checkout.handlePlaceOrder}
-      navigate={navigate}
-    />
-  );
+  return <GameOrderPage route={route} navigate={navigate} />;
 }
 
 function WalletRoute({
@@ -338,5 +233,5 @@ function WalletRoute({
   user: User | null;
   navigate: (route: Route) => void;
 }) {
-  return <WalletPage wallet={wallet} busy={false} user={user} navigate={navigate} />;
+  return <WalletPage wallet={wallet} user={user} navigate={navigate} />;
 }

@@ -18,7 +18,7 @@ const contactIcons = {
 
 export function AppFooter({ navigate }: { navigate: (route: Route) => void }) {
   return (
-    <footer className="mt-auto border-t border-slate-400/14 bg-[linear-gradient(180deg,rgba(9,19,35,0.6),rgba(7,17,31,0.92))] pt-[6px]">
+    <footer className="mt-auto border-t border-slate-400/14 bg-[linear-gradient(180deg,rgba(9,19,35,0.6),rgba(7,17,31,0.92))] pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] pt-[6px] md:pb-0">
       <div className="mx-auto grid max-w-7xl gap-12 px-4 py-8 sm:px-6 lg:grid-cols-[1.35fr_0.8fr_0.8fr_0.9fr] lg:px-8 lg:py-8">
         <div className="grid gap-3">
           <BrandLogo className="w-fit" onClick={() => navigate({ name: 'home' })} title={SITE.name} subtitle={SITE.tagline} />

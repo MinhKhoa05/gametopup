@@ -20,27 +20,32 @@ export async function getPackagesByGame(gameId: number) {
   return response.data.data;
 }
 
-export function useGamesQuery() {
-  return useQuery({
+export function useGamesQuery<TData = Game[]>(options?: {
+  select?: (games: Game[]) => TData;
+}) {
+  return useQuery<Game[], Error, TData>({
     queryKey: GAMES_QUERY_KEY,
     queryFn: getGames,
     placeholderData: keepPreviousData,
     staleTime: GAMES_STALE_TIME,
     meta: { persist: true },
+    select: options?.select,
   });
 }
 
-export function useGamePackagesQuery(gameId: number | null | undefined) {
-  function getGamePackages() {
-    return getPackagesByGame(gameId as number);
-  }
-
-  return useQuery({
+export function useGamePackagesQuery<TData = GamePackage[]>(
+  gameId: number | null | undefined,
+  options?: {
+    select?: (packages: GamePackage[]) => TData;
+  },
+) {
+  return useQuery<GamePackage[], Error, TData>({
     queryKey: gamePackagesQueryKey(gameId),
-    queryFn: getGamePackages,
+    queryFn: () => getPackagesByGame(gameId as number),
     enabled: Boolean(gameId),
     placeholderData: keepPreviousData,
     staleTime: GAME_PACKAGES_STALE_TIME,
     meta: { persist: true },
+    select: options?.select,
   });
 }

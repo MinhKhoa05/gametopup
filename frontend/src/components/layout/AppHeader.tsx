@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, LayoutDashboard, LogOut, Mail, Receipt, Search, UserRound, WalletCards } from 'lucide-react';
+import { Bell, LayoutDashboard, LogOut, Receipt, Search, UserRound, WalletCards } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { HeaderAccountMenu, type HeaderAccountMenuItem } from './HeaderAccountMenu';
 import { userDisplayName } from '../../lib/labels';
@@ -18,7 +18,6 @@ import type { AuthStatus, User } from '../../types';
 export function AppHeader({
   route,
   wallet,
-  walletLoading,
   navigate,
   onLogout,
   authStatus,
@@ -26,7 +25,6 @@ export function AppHeader({
 }: {
   route: Route;
   wallet: { balance: number } | null;
-  walletLoading: boolean;
   navigate: (route: Route) => void;
   onLogout: () => void;
   authStatus: AuthStatus;
@@ -127,7 +125,7 @@ export function AppHeader({
             />
           </label>
 
-          <HeaderWalletButton hasLogin={hasLogin} wallet={wallet} walletLoading={walletLoading} onClick={handleWalletClick} />
+          <HeaderWalletButton hasLogin={hasLogin} wallet={wallet} onClick={handleWalletClick} />
           <HeaderAuthSlot
             hasLogin={hasLogin}
             shouldShowAuthSkeleton={shouldShowAuthSkeleton}
@@ -146,32 +144,27 @@ export function AppHeader({
 function HeaderWalletButton({
   hasLogin,
   wallet,
-  walletLoading,
   onClick,
 }: {
   hasLogin: boolean;
   wallet: { balance: number } | null;
-  walletLoading: boolean;
   onClick: () => void;
 }) {
+  if (!hasLogin) {
+    return null;
+  }
+
   return (
     <button
       type="button"
       className="hidden min-h-11 min-w-[176px] items-center gap-2 rounded-xl border border-cyanline/20 bg-slate-900/85 px-3 text-cyan-100 transition-colors hover:bg-slate-900/95 sm:inline-flex"
       onClick={onClick}
     >
-      <Mail size={18} />
-      {walletLoading ? (
-        <span className="grid min-w-[120px] gap-1 text-left leading-tight">
-          <span className="h-4 w-20 animate-pulse rounded-full bg-white/10" />
-          <span className="h-3 w-28 animate-pulse rounded-full bg-white/10" />
-        </span>
-      ) : (
-        <span className="grid text-left leading-tight">
-          <span className="text-sm font-bold">{hasLogin && wallet ? `Ví: ${formatCurrency(wallet.balance)}` : 'Nạp ví'}</span>
-          <span className="text-[11px] font-medium text-slate-400">{hasLogin && wallet ? 'Mở ví của bạn' : 'Đăng nhập để dùng ví'}</span>
-        </span>
-      )}
+      <WalletCards size={18} />
+      <span className="grid text-left leading-tight">
+        <span className="text-sm font-bold">{wallet ? `Ví: ${formatCurrency(wallet.balance)}` : 'Ví'}</span>
+        <span className="text-[11px] font-medium text-slate-400">{wallet ? 'Mở ví của bạn' : 'Đang tải ví...'}</span>
+      </span>
     </button>
   );
 }

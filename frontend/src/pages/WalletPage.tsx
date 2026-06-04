@@ -56,12 +56,10 @@ type TransactionFilter = (typeof transactionFilters)[number]['value'];
 
 export function WalletPage({
   wallet,
-  busy,
   user,
   navigate,
 }: {
   wallet: WalletInfo | null;
-  busy: boolean;
   user: User | null;
   navigate: (route: Route) => void;
 }) {
@@ -71,6 +69,7 @@ export function WalletPage({
   const walletTransactions = useWalletTransactions(isLoggedIn);
   const depositRequests = useDepositRequests(isLoggedIn);
   const deposit = useWalletDeposit();
+  const busy = deposit.createDepositPending || deposit.confirmDepositPending;
   const filteredTransactions = useMemo(
     () => walletTransactions.transactions.filter((item) => filter === 'all' || getTransactionGroup(item.type) === filter),
     [filter, walletTransactions.transactions],
