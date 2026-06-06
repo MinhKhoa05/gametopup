@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowDownLeft, ArrowUpRight, CheckCircle2, History, ShieldCheck, WalletCards } from 'lucide-react';
-import { ActionCard, Badge, Button, EmptyState, IconBox, SectionHeading, StatCard } from '../components/ui';
+import { Badge, Button, EmptyState, IconBox, SectionHeading, StatCard } from '../components/ui';
 import { DepositRequestList, WalletPanel, WalletTransactionList } from '../components/wallet';
 import { SITE } from '../config/site';
 import { formatCurrency } from '../lib/format';
@@ -7,6 +7,33 @@ import { useAuthSession } from '../hooks/auth.hooks';
 import { useRoute } from '../hooks/common/route.hooks';
 import { useWalletPage } from '../hooks/wallet.hooks';
 import { TRANSACTION_FILTERS, WALLET_DEPOSIT_WARNING, walletHeroClassName } from './wallet-page.data';
+
+const DEPOSIT_TIPS = [
+  {
+    icon: ShieldCheck,
+    title: 'Chỉ đúng nội dung',
+    description: 'Nhập đúng nội dung chuyển khoản được cấp.',
+    className: 'border-cyan/15 bg-cyan/10 text-cyan-50',
+  },
+  {
+    icon: WalletCards,
+    title: 'Đúng số tiền',
+    description: 'Chuyển đúng số tiền đang hiển thị.',
+    className: 'border-emerald-400/15 bg-emerald-400/10 text-emerald-300',
+  },
+  {
+    icon: CheckCircle2,
+    title: 'Xác nhận sau khi chuyển',
+    description: 'Bấm xác nhận khi giao dịch đã xong.',
+    className: 'border-violet-400/15 bg-violet-400/10 text-violet-300',
+  },
+  {
+    icon: History,
+    title: 'Admin duyệt 10 - 15 phút',
+    description: 'Số dư cập nhật sau khi duyệt.',
+    className: 'border-amber-400/15 bg-amber-400/10 text-amber-300',
+  },
+] as const;
 
 export function WalletPage() {
   const { navigate } = useRoute();
@@ -86,96 +113,59 @@ export function WalletPage() {
           </div>
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <main className="min-w-0">
-            <WalletPanel
-              user={user}
-              wallet={wallet}
-              deposit={deposit.deposit}
-              depositState={{
-                amount: deposit.depositAmount,
-                busy: deposit.createDepositPending || deposit.confirmDepositPending,
-                confirmDepositPending: deposit.confirmDepositPending,
-                createDepositPending: deposit.createDepositPending,
-                onConfirm: deposit.handleConfirmTransfer,
-                onSubmit: deposit.handleCreateDeposit,
-                setAmount: deposit.setDepositAmount,
-              }}
-            />
-          </main>
+        <main className="min-w-0">
+          <WalletPanel
+            user={user}
+            wallet={wallet}
+            deposit={deposit.deposit}
+            depositState={{
+              amount: deposit.depositAmount,
+              busy: deposit.createDepositPending || deposit.confirmDepositPending,
+              confirmDepositPending: deposit.confirmDepositPending,
+              createDepositPending: deposit.createDepositPending,
+              onConfirm: deposit.handleConfirmTransfer,
+              onSubmit: deposit.handleCreateDeposit,
+              setAmount: deposit.setDepositAmount,
+            }}
+          />
+        </main>
 
-          <aside className="grid gap-4 self-start lg:sticky lg:top-24">
-            <section className="gt-surface-ink rounded-2xl p-5">
-              <div className="mb-4 flex items-center gap-3">
-                <IconBox size="md" className="border border-cyan/15 bg-cyan/10 text-cyan-50">
-                  <ShieldCheck size={18} />
-                </IconBox>
-                <div>
-                  <p className="gt-eyebrow">Lưu ý khi nạp tiền</p>
-                  <h3 className="m-0 text-lg font-black text-white">Đọc nhanh trước khi chuyển khoản</h3>
+        <section className="gt-surface-ink rounded-2xl p-5 sm:p-6">
+          <div className="mb-4 flex items-center gap-3">
+            <IconBox size="md" className="border border-cyan/15 bg-cyan/10 text-cyan-50">
+              <ShieldCheck size={18} />
+            </IconBox>
+            <div>
+              <p className="gt-eyebrow">Lưu ý khi nạp tiền</p>
+              <h3 className="m-0 text-lg font-black text-white">Đọc nhanh trước khi chuyển khoản</h3>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {DEPOSIT_TIPS.map((tip) => {
+              const Icon = tip.icon;
+
+              return (
+                <div key={tip.title} className={`rounded-2xl border p-4 ${tip.className}`}>
+                  <div className="flex items-start gap-3">
+                    <IconBox size="sm" className={tip.className}>
+                      <Icon size={16} />
+                    </IconBox>
+                    <div className="min-w-0">
+                      <strong className="block text-sm font-black text-white">{tip.title}</strong>
+                      <span className="mt-1 block text-sm leading-5 text-slate-300">{tip.description}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              );
+            })}
+          </div>
 
-              <div className="grid gap-3">
-                <ActionCard
-                  icon={
-                    <IconBox size="sm" className="border border-cyan/15 bg-cyan/10 text-cyan-50">
-                      <ShieldCheck size={16} />
-                    </IconBox>
-                  }
-                  title="Chỉ đúng nội dung"
-                  description="Nhập đúng nội dung."
-                  className="p-4"
-                />
-                <ActionCard
-                  icon={
-                    <IconBox size="sm" className="border border-emerald-400/15 bg-emerald-400/10 text-emerald-300">
-                      <WalletCards size={16} />
-                    </IconBox>
-                  }
-                  title="Đúng số tiền"
-                  description="Chuyển đúng số tiền hiển thị."
-                  className="p-4"
-                />
-                <ActionCard
-                  icon={
-                    <IconBox size="sm" className="border border-violet-400/15 bg-violet-400/10 text-violet-300">
-                      <CheckCircle2 size={16} />
-                    </IconBox>
-                  }
-                  title="Xác nhận sau khi chuyển"
-                  description="Bấm xác nhận sau khi xong."
-                  className="p-4"
-                />
-                <ActionCard
-                  icon={
-                    <IconBox size="sm" className="border border-amber-400/15 bg-amber-400/10 text-amber-300">
-                      <History size={16} />
-                    </IconBox>
-                  }
-                  title="Admin duyệt 10 - 15 phút"
-                  description="Số dư cập nhật sau khi duyệt."
-                  className="p-4"
-                />
-                <ActionCard
-                  icon={
-                    <IconBox size="sm" className="border border-sky-400/15 bg-sky-400/10 text-sky-300">
-                      <ShieldCheck size={16} />
-                    </IconBox>
-                  }
-                  title="Cần hỗ trợ?"
-                  description="Liên hệ CSKH nếu quá 15 phút."
-                  className="p-4"
-                />
-              </div>
-            </section>
-
-            <section className="rounded-2xl border border-cyan/15 bg-cyan/8 p-5 text-slate-300">
-              <strong className="block text-white">{WALLET_DEPOSIT_WARNING.title}</strong>
-              <span className="mt-1 block text-sm leading-6">{WALLET_DEPOSIT_WARNING.description}</span>
-            </section>
-          </aside>
-        </div>
+          <section className="mt-4 rounded-2xl border border-cyan/15 bg-cyan/8 p-4 text-slate-300">
+            <strong className="block text-white">{WALLET_DEPOSIT_WARNING.title}</strong>
+            <span className="mt-1 block text-sm leading-6">{WALLET_DEPOSIT_WARNING.description}</span>
+          </section>
+        </section>
       </div>
     );
   }
@@ -199,28 +189,35 @@ export function WalletPage() {
       </section>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <ActionCard
-          icon={
+        <Button
+          className="min-h-24 justify-start rounded-2xl border border-white/8 bg-white/4 px-5 py-4 text-left text-white hover:border-cyan/20 hover:bg-white/6"
+          onClick={() => walletPage.setView('deposit')}
+        >
+          <div className="flex items-center gap-3">
             <IconBox size="sm">
               <ArrowDownLeft size={18} />
             </IconBox>
-          }
-          title="Nạp tiền"
-          description="Tạo mã QR chuyển khoản VietQR."
-          onClick={() => walletPage.setView('deposit')}
-        />
+            <div>
+              <strong className="block text-base font-black">Nạp tiền</strong>
+              <span className="block text-sm font-normal text-slate-300">Tạo mã QR chuyển khoản VietQR.</span>
+            </div>
+          </div>
+        </Button>
 
-        <ActionCard
-          icon={
+        <Button
+          className="min-h-24 justify-start rounded-2xl border border-white/8 bg-white/4 px-5 py-4 text-left text-white opacity-65"
+          disabled
+        >
+          <div className="flex items-center gap-3">
             <IconBox size="sm">
               <ArrowUpRight size={18} />
             </IconBox>
-          }
-          title="Rút tiền"
-          description="Chức năng đang được phát triển."
-          disabled
-          className="opacity-65"
-        />
+            <div>
+              <strong className="block text-base font-black">Rút tiền</strong>
+              <span className="block text-sm font-normal text-slate-300">Chức năng đang được phát triển.</span>
+            </div>
+          </div>
+        </Button>
       </div>
 
       <DepositRequestList

@@ -46,6 +46,7 @@ export function WalletPanel({ user, wallet, deposit, depositState }: WalletPanel
   const { navigate } = useRoute();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const { amount, busy, confirmDepositPending, createDepositPending, onConfirm, onSubmit, setAmount } = depositState;
+  const bankName = getBankDisplayName(deposit?.bankId);
 
   useEffect(() => {
     if (!copiedKey) return;
@@ -142,24 +143,24 @@ export function WalletPanel({ user, wallet, deposit, depositState }: WalletPanel
               </div>
 
               <div className="grid gap-2">
-                <RecordRow className="grid-cols-[minmax(0,0.75fr)_minmax(0,1fr)] px-4 py-3">
+                <RecordRow className="grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] px-4 py-3">
                   <span className="text-sm font-semibold text-slate-400">Ngân hàng</span>
-                  <div className="flex items-center gap-2">
-                    <strong className="text-right text-sm font-black text-white">{deposit.bankId ?? 'Ngân hàng liên kết'}</strong>
+                  <div className="flex w-full items-center justify-end gap-2 text-right">
+                    <BankLogoBadge bankId={deposit?.bankId} bankName={bankName} />
                     <CopyActionButton
                       copied={copiedKey === 'bank'}
                       label="Ngân hàng"
                       onCopy={async () => {
-                        const copied = await copyValue(deposit.bankId ?? 'Ngân hàng liên kết');
+                        const copied = await copyValue(bankName);
                         if (copied) setCopiedKey('bank');
                       }}
                     />
                   </div>
                 </RecordRow>
 
-                <RecordRow className="grid-cols-[minmax(0,0.75fr)_minmax(0,1fr)] px-4 py-3">
+                <RecordRow className="grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] px-4 py-3">
                   <span className="text-sm font-semibold text-slate-400">Số tài khoản</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex w-full items-center justify-end gap-2 text-right">
                     <strong className="font-mono text-right text-sm font-black tracking-tight text-white">{deposit.accountNo ?? '---'}</strong>
                     <CopyActionButton
                       copied={copiedKey === 'account'}
@@ -172,9 +173,9 @@ export function WalletPanel({ user, wallet, deposit, depositState }: WalletPanel
                   </div>
                 </RecordRow>
 
-                <RecordRow className="grid-cols-[minmax(0,0.75fr)_minmax(0,1fr)] px-4 py-3">
+                <RecordRow className="grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] px-4 py-3">
                   <span className="text-sm font-semibold text-slate-400">Người nhận</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex w-full items-center justify-end gap-2 text-right">
                     <strong className="text-right text-sm font-black text-white">{deposit.accountName ?? '---'}</strong>
                     <CopyActionButton
                       copied={copiedKey === 'name'}
@@ -187,9 +188,9 @@ export function WalletPanel({ user, wallet, deposit, depositState }: WalletPanel
                   </div>
                 </RecordRow>
 
-                <RecordRow highlighted className="grid-cols-[minmax(0,0.75fr)_minmax(0,1fr)] px-4 py-3">
+                <RecordRow highlighted className="grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] px-4 py-3">
                   <span className="text-sm font-semibold text-slate-400">Nội dung</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex w-full items-center justify-end gap-2 text-right">
                     <strong className="max-w-[220px] truncate text-right font-mono text-sm font-black tracking-tight text-cyan-50">
                       {deposit.transferContent}
                     </strong>
@@ -278,4 +279,45 @@ async function copyValue(value: string) {
     toast.error('Không thể sao chép lúc này.');
     return false;
   }
+}
+
+function getBankDisplayName(bankId?: string): string {
+  const normalized = bankId?.trim().toLowerCase();
+
+  if (!normalized) {
+    return 'Ngân hàng liên kết';
+  }
+
+  if (normalized === 'vcb' || normalized === 'vietcombank') {
+    return 'Vietcombank';
+  }
+
+  return bankId ?? 'Ngân hàng liên kết';
+}
+
+function getBankLogoLabel(bankId?: string): string {
+  const normalized = bankId?.trim().toLowerCase();
+
+  if (!normalized) {
+    return 'NH';
+  }
+
+  if (normalized === 'vcb' || normalized === 'vietcombank') {
+    return 'VCB';
+  }
+
+  return normalized.slice(0, 3).toUpperCase();
+}
+
+function BankLogoBadge({ bankId, bankName }: { bankId?: string; bankName: string }) {
+  const logoLabel = getBankLogoLabel(bankId);
+
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-1">
+      <span className="grid size-7 place-items-center rounded-full bg-emerald-400 text-[0.62rem] font-black leading-none text-slate-950">
+        {logoLabel}
+      </span>
+      <strong className="text-right text-sm font-black text-white">{bankName}</strong>
+    </span>
+  );
 }

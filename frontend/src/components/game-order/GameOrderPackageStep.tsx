@@ -4,6 +4,7 @@ import { ShieldCheck, ShoppingCart } from 'lucide-react';
 import { Button, EmptyState, Field } from '../ui';
 import { formatCurrency } from '../../lib/format';
 import { classNames, pickImage } from '../../lib/ui';
+import { useRoute } from '../../hooks/common/route.hooks';
 import type { Game, User } from '../../types';
 import type { GameOrderPackage } from '../../hooks/game-order.hooks';
 import { useGameOrderStore } from '../../store/game-order.store';
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export function GameOrderPackageStep({ game, packages, isLoading, user }: Props) {
+  const { navigate } = useRoute();
   const selectedPackageId = useGameOrderStore((state) => state.selectedPackageId);
   const quantity = useGameOrderStore((state) => state.quantity);
   const gameAccountInfo = useGameOrderStore((state) => state.gameAccountInfo);
@@ -45,6 +47,7 @@ export function GameOrderPackageStep({ game, packages, isLoading, user }: Props)
     if (!selectedPackage) return;
 
     startCheckout({ selectedPackage, gameName: game.name });
+    navigate({ name: 'games', gameId: game.id, step: 2 });
   }
 
   return (

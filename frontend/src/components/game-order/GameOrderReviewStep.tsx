@@ -21,7 +21,6 @@ export function GameOrderReviewStep({ game, user, wallet, walletLoading }: Props
   const checkoutPackage = useGameOrderStore((state) => state.checkoutPackage);
   const checkoutQuantity = useGameOrderStore((state) => state.checkoutQuantity);
   const checkoutGameAccountInfo = useGameOrderStore((state) => state.checkoutGameAccountInfo);
-  const setStep = useGameOrderStore((state) => state.setStep);
   const setCheckoutSuccess = useGameOrderStore((state) => state.setCheckoutSuccess);
   const orderMutations = useOrderMutations();
 
@@ -131,7 +130,7 @@ export function GameOrderReviewStep({ game, user, wallet, walletLoading }: Props
         </div>
 
         <div className="flex gap-3">
-          <Button className="w-full" onClick={() => setStep(1)}>
+          <Button className="w-full" onClick={() => navigate({ name: 'games', gameId: game.id, step: 1 })}>
             Quay lại
           </Button>
           <Button
@@ -149,6 +148,7 @@ export function GameOrderReviewStep({ game, user, wallet, walletLoading }: Props
 
                 await orderMutations.pay.mutateAsync({ orderId });
                 setCheckoutSuccess(orderId);
+                navigate({ name: 'games', gameId: game.id, step: 3 });
               } catch {
                 // Toasts are handled by the shared mutation hooks.
               }
@@ -180,11 +180,6 @@ export function GameOrderReviewStep({ game, user, wallet, walletLoading }: Props
                   <strong className={classNames('text-right text-[1rem] font-bold', row.valueClassName)}>{row.value}</strong>
                 </div>
               ))}
-              <div className="h-px w-full bg-white/[0.06]" aria-hidden="true" />
-              <div className="flex min-h-9 items-center justify-between gap-3 py-1.5">
-                <span className="text-rose-300">Thiếu</span>
-                <strong className="text-rose-300">{formatCurrency(shortage)}</strong>
-              </div>
             </div>
           </div>
         </div>

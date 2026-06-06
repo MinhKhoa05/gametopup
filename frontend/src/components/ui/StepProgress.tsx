@@ -50,7 +50,7 @@ function StepProgressComponent({ steps, currentStep, className }: StepProgressPr
               ? 'bg-emerald-400/90'
               : stepState === 'active'
                 ? 'bg-cyan-300/75'
-                : 'bg-white/8';
+                : 'bg-slate-300/55';
 
           return (
             <div

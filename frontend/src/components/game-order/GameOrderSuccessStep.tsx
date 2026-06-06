@@ -1,17 +1,20 @@
 import { ArrowRight, BadgeCheck, CheckCircle2, Clock3, Copy, Gift, Gamepad2, Layers3, PackageCheck, UserRound, WalletCards } from 'lucide-react';
 import { Button, EmptyState, IconBox } from '../ui';
+import { useRoute } from '../../hooks/common/route.hooks';
 import { formatCurrency } from '../../lib/format';
 import { classNames } from '../../lib/ui';
 import { useGameOrderStore } from '../../store/game-order.store';
 import type { OrderDetailField, OrderStatusCard } from '../../types/game-order-ui.type';
 
 export function GameOrderSuccessStep() {
+  const { navigate } = useRoute();
   const checkoutPackage = useGameOrderStore((state) => state.checkoutPackage);
   const checkoutGameName = useGameOrderStore((state) => state.checkoutGameName);
   const checkoutOrderId = useGameOrderStore((state) => state.checkoutOrderId);
   const checkoutSuccessAt = useGameOrderStore((state) => state.checkoutSuccessAt);
   const checkoutGameAccountInfo = useGameOrderStore((state) => state.checkoutGameAccountInfo);
   const checkoutQuantity = useGameOrderStore((state) => state.checkoutQuantity);
+  const activeGameId = useGameOrderStore((state) => state.activeGameId);
   const resetWizard = useGameOrderStore((state) => state.resetWizard);
 
   if (!checkoutPackage || !checkoutOrderId || !checkoutGameName) {
@@ -182,7 +185,22 @@ export function GameOrderSuccessStep() {
             <span>Admin sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất. Vui lòng không tạo lại đơn giống nhau.</span>
           </div>
 
-          <Button type="button" variant="accent" className="w-full" onClick={resetWizard}>
+          <Button
+            type="button"
+            variant="accent"
+            className="w-full"
+            onClick={() => {
+              const gameId = activeGameId;
+              resetWizard();
+
+              if (gameId) {
+                navigate({ name: 'games', gameId, step: 1 }, { replace: true });
+                return;
+              }
+
+              navigate({ name: 'games' }, { replace: true });
+            }}
+          >
             <ArrowRight size={18} />
             Tạo đơn mới
           </Button>

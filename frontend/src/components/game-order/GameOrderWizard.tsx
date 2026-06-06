@@ -46,10 +46,11 @@ export function GameOrderWizard({ gameId }: Props) {
   const setStep = useGameOrderStore((state) => state.setStep);
   const resetWizard = useGameOrderStore((state) => state.resetWizard);
   const routeStep = route.name === 'games' ? route.step : undefined;
+  const currentStep = routeStep ?? step;
 
   const game = gameQuery.isPlaceholderData ? null : gameQuery.data ?? null;
   const packages = packagesQuery.isPlaceholderData ? [] : packagesQuery.data ?? [];
-  const isFirstStep = step === 1;
+  const isFirstStep = currentStep === 1;
 
   useEffect(() => {
     if (activeGameId !== gameId) {
@@ -60,28 +61,17 @@ export function GameOrderWizard({ gameId }: Props) {
 
   useEffect(() => {
     if (activeGameId !== gameId || routeStep === undefined) {
+      if (activeGameId === gameId && routeStep === undefined) {
+        navigate({ name: 'games', gameId, step }, { replace: true });
+      }
+
       return;
     }
 
     if (routeStep !== step) {
       setStep(routeStep);
     }
-  }, [activeGameId, gameId, routeStep, setStep, step]);
-
-  useEffect(() => {
-    if (activeGameId !== gameId) {
-      return;
-    }
-
-    if (routeStep === undefined) {
-      navigate({ name: 'games', gameId, step }, { replace: true });
-      return;
-    }
-
-    if (routeStep !== step) {
-      navigate({ name: 'games', gameId, step });
-    }
-  }, [activeGameId, gameId, navigate, routeStep, step]);
+  }, [activeGameId, gameId, navigate, routeStep, setStep, step]);
 
   useEffect(() => {
     if (packagesQuery.isPlaceholderData) {
@@ -119,7 +109,7 @@ export function GameOrderWizard({ gameId }: Props) {
       </div>
 
       <div className="gt-surface p-5 sm:p-6">
-        <StepProgress currentStep={step} steps={ORDER_STEPS} />
+        <StepProgress currentStep={currentStep} steps={ORDER_STEPS} />
         <button
           className="mb-4 inline-flex items-center gap-2 border-0 bg-transparent p-0 text-sm font-bold text-slate-400 hover:text-cyan-50"
           type="button"
@@ -129,7 +119,7 @@ export function GameOrderWizard({ gameId }: Props) {
               return;
             }
 
-            setStep((step - 1) as 1 | 2 | 3);
+            navigate({ name: 'games', gameId, step: (currentStep - 1) as 1 | 2 | 3 });
           }}
         >
           <ArrowLeft size={15} />
@@ -137,8 +127,15 @@ export function GameOrderWizard({ gameId }: Props) {
         </button>
 
         <div>
-          {step === 1 && <GameOrderPackageStep game={game} packages={packages} isLoading={packagesQuery.isPending && !packagesQuery.data} user={user} />}
-          {step === 2 && (
+          {currentStep === 1 && (
+            <GameOrderPackageStep
+              game={game}
+              packages={packages}
+              isLoading={packagesQuery.isPending && !packagesQuery.data}
+              user={user}
+            />
+          )}
+          {currentStep === 2 && (
             <GameOrderReviewStep
               game={game}
               user={user}
@@ -146,7 +143,7 @@ export function GameOrderWizard({ gameId }: Props) {
               walletLoading={walletQuery.isPending && !walletQuery.data}
             />
           )}
-          {step === 3 && <GameOrderSuccessStep />}
+          {currentStep === 3 && <GameOrderSuccessStep />}
         </div>
       </div>
     </div>
