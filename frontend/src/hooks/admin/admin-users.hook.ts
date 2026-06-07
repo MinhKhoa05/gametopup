@@ -2,7 +2,7 @@ import { FormEvent, useMemo, useState } from 'react';
 import { userRoleLabel } from '../../lib/labels';
 import { normalizeRoleValue } from '../../lib/roles';
 import type { User } from '../../types';
-import { useAdminUserMutations, useAdminUsersQuery } from '../../services/admin';
+import { useAdminUserMutations, useAdminUsersQuery } from '../../services/admin/admin-users.service';
 
 export function useAdminUsersSection() {
   const usersQuery = useAdminUsersQuery();

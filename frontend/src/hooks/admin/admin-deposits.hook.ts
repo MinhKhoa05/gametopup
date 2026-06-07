@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getDepositRequestStatus } from '../../helpers/wallet-activity.helpers';
 import type { AdminDepositRequest } from '../../types';
-import { useAdminDepositRequestMutations, useAdminDepositRequestsQuery } from '../../services/admin';
+import { useAdminDepositRequestMutations, useAdminDepositRequestsQuery } from '../../services/admin/admin-deposits.service';
 
 export function useAdminDepositRequestsSection() {
   const requestsQuery = useAdminDepositRequestsQuery();
@@ -107,11 +107,7 @@ export function useAdminDepositRequestsPanel({
     setQuery('');
   }
 
-  async function reviewRequest(
-    action: 'approve' | 'reject',
-    request: AdminDepositRequest,
-    note = reviewNote,
-  ) {
+  async function reviewRequest(action: 'approve' | 'reject', request: AdminDepositRequest, note = reviewNote) {
     const payload = {
       note: note.trim() || undefined,
       requestId: request.id,

@@ -1,6 +1,6 @@
 import { ChevronRight, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
-import { ActionCard, Badge, Button, IconBox, SearchBar } from '../components/ui';
+import { ActionCard, Badge, Button, IconBox, ImageField, SearchBar } from '../components/ui';
 import { GameGrid } from '../components/games/GameGrid';
 import { AuthForm } from '../components/auth/AuthForm';
 import { useAuthSession } from '../hooks/auth.hooks';
@@ -82,7 +82,7 @@ export function HomePage() {
                   className="group flex w-full flex-col items-center justify-start gap-2 text-center text-[0.72rem] font-semibold text-slate-300 transition-transform duration-200 md:w-[96px] md:flex-none md:text-sm"
                   onClick={() => navigate({ name: 'games', gameId: game.id, step: 1 })}
                 >
-                  <img
+                  <ImageField
                     src={pickImage(game)}
                     alt={game.name}
                     className="aspect-square w-full rounded-2xl border border-transparent bg-ink-lighter object-cover transition-all duration-200 group-hover:-translate-y-1 group-hover:border-cyan md:h-[72px] md:w-[72px] md:rounded-3xl"

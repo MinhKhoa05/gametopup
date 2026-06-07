@@ -32,6 +32,32 @@ namespace GameTopUp.BLL.UseCases
             return await _packageService.CreatePackageAsync(request);
         }
 
+        public async Task<GamePackage> UpdatePackageWithImageAsync(long id, UpdateGamePackageRequest request, IFormFile? image)
+        {
+            var existingPackage = await _packageService.GetPackageByIdOrThrowAsync(id);
+
+            if (image != null && image.Length > 0)
+            {
+                var storedImage = await _imageStorageService.UploadAsync(image, "game-packages");
+                request.ImageUrl = storedImage.Url;
+                request.ImageRelativePath = storedImage.RelativePath;
+            }
+            else
+            {
+                request.ImageUrl ??= existingPackage.ImageUrl;
+                request.ImageRelativePath ??= existingPackage.ImageRelativePath;
+            }
+
+            var package = await _packageService.UpdatePackageAsync(id, request);
+
+            if (!string.IsNullOrWhiteSpace(request.ImageRelativePath) && request.ImageRelativePath != existingPackage.ImageRelativePath)
+            {
+                await _imageStorageService.DeleteAsync(existingPackage.ImageRelativePath);
+            }
+
+            return package;
+        }
+
         public async Task<GamePackage> UpdatePackageAsync(long id, UpdateGamePackageRequest request)
         {
             var existingPackage = await _packageService.GetPackageByIdOrThrowAsync(id);

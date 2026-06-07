@@ -2,7 +2,7 @@ import { CheckCircle2, CircleSlash, Send, TriangleAlert } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../lib/format';
 import { statusLabel } from '../../lib/labels';
 import type { Order, User } from '../../types';
-import { useAdminOrdersPanel } from '../../hooks/admin/admin-orders.hooks';
+import { useAdminOrdersPanel } from '../../hooks/admin/admin-orders.hook';
 import { AdminSkeleton } from './AdminShared';
 import { Badge, Button, EmptyState, IconBox, RecordRow, SearchBar, SectionHeading } from '../ui';
 

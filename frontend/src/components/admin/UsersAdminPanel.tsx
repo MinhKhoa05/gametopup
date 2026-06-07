@@ -3,7 +3,7 @@ import { formatDate } from '../../lib/format';
 import { userRoleLabel } from '../../lib/labels';
 import { classNames } from '../../lib/ui';
 import type { User } from '../../types';
-import { useAdminUsersPanel } from '../../hooks/admin/admin-users.hooks';
+import { useAdminUsersPanel } from '../../hooks/admin/admin-users.hook';
 import { AdminSkeleton } from './AdminShared';
 import { Badge, Button, EmptyState, Field, FormActions, IconBox, RecordRow, SearchBar, SectionHeading, ToggleField } from '../ui';
 

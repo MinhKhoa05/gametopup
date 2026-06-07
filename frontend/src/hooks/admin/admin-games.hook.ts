@@ -2,7 +2,7 @@ import { FormEvent, useMemo, useState } from 'react';
 import type { Game } from '../../types';
 import { filterByQuery } from '../../lib/search';
 import { useGamesQuery } from '../../services/games';
-import { useAdminGameMutations } from '../../services/admin';
+import { useAdminGameMutations } from '../../services/admin/admin-games.service';
 
 export function useAdminGamesSection() {
   const gamesQuery = useGamesQuery();
@@ -22,12 +22,12 @@ export function useAdminGamesSection() {
     removeGame: async (id: number) => {
       await gameMutations.remove.mutateAsync({ id });
     },
-    updateGame: async (payload: { id: number; name: string; imageUrl: string; isActive: boolean }) => {
+    updateGame: async (payload: { id: number; imageFile: File | null; isActive: boolean; name: string }) => {
       await gameMutations.update.mutateAsync({
         id: payload.id,
         payload: {
           name: payload.name,
-          imageUrl: payload.imageUrl,
+          imageFile: payload.imageFile,
           isActive: payload.isActive,
         },
       });
@@ -36,7 +36,6 @@ export function useAdminGamesSection() {
 }
 
 const emptyGameForm = {
-  imageUrl: '',
   isActive: true,
   name: '',
 };
@@ -48,28 +47,36 @@ export function useAdminGamesPanel({
   onUpdateGame,
 }: {
   games: Game[];
-  onCreateGame: (payload: { name: string; imageUrl: string; isActive: boolean }) => Promise<void>;
+  onCreateGame: (payload: { imageFile: File | null; isActive: boolean; name: string }) => Promise<void>;
   onDeleteGame: (id: number) => Promise<void>;
-  onUpdateGame: (payload: { id: number; name: string; imageUrl: string; isActive: boolean }) => Promise<void>;
+  onUpdateGame: (payload: { id: number; imageFile: File | null; isActive: boolean; name: string }) => Promise<void>;
 }) {
   const [editing, setEditing] = useState<Game | null>(null);
   const [form, setForm] = useState(emptyGameForm);
   const [query, setQuery] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
   const filteredGames = useMemo(() => filterByQuery(games, query, (game) => game.name), [games, query]);
 
   function startEdit(game: Game) {
     setEditing(game);
-    setForm({ imageUrl: game.imageUrl ?? '', isActive: game.isActive, name: game.name });
+    setForm({ isActive: game.isActive, name: game.name });
+    setImageFile(null);
   }
 
   function resetForm() {
     setEditing(null);
     setForm(emptyGameForm);
+    setImageFile(null);
   }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    const payload = { ...form, name: form.name.trim(), imageUrl: form.imageUrl.trim() };
+    if (!editing && !imageFile) {
+      return;
+    }
+
+    const payload = { ...form, imageFile, name: form.name.trim() };
     await (editing ? onUpdateGame({ id: editing.id, ...payload }) : onCreateGame(payload));
     resetForm();
   }
@@ -83,10 +90,12 @@ export function useAdminGamesPanel({
     editing,
     filteredGames,
     form,
+    imageFile,
     query,
     remove,
     resetForm,
     setForm,
+    setImageFile,
     setQuery,
     startEdit,
     submit,

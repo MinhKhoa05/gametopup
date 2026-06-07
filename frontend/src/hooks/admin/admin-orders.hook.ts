@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { statusLabel } from '../../lib/labels';
 import type { Order } from '../../types';
-import { useAdminOrderMutations, useAdminOrdersQuery } from '../../services/admin';
+import { useAdminOrderMutations, useAdminOrdersQuery } from '../../services/admin/admin-orders.service';
 
 export function useAdminOrdersSection() {
   const ordersQuery = useAdminOrdersQuery();
@@ -35,7 +35,7 @@ const FILTERS: Array<{ key: OrderFilter; label: string }> = [
   { key: 'paid', label: 'Đã thanh toán' },
   { key: 'processing', label: 'Đang xử lý' },
   { key: 'completed', label: 'Hoàn thành' },
-  { key: 'cancelled', label: 'Đã huỷ' },
+  { key: 'cancelled', label: 'Đã hủy' },
 ];
 
 export function useAdminOrdersPanel(orders: Order[]) {

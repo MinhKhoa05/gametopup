@@ -14,9 +14,6 @@ const apiBaseUrl = configuredBaseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '')
 export const api = axios.create({
   baseURL: apiBaseUrl,
   withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 type AuthRetryConfig = AxiosRequestConfig & {
@@ -25,6 +22,21 @@ type AuthRetryConfig = AxiosRequestConfig & {
 };
 
 let refreshRequest: Promise<void> | null = null;
+
+api.interceptors.request.use((config) => {
+  if (config.data instanceof FormData) {
+    if (config.headers) {
+      delete config.headers['Content-Type'];
+    }
+    return config;
+  }
+
+  if (config.headers && !config.headers['Content-Type']) {
+    config.headers['Content-Type'] = 'application/json';
+  }
+
+  return config;
+});
 
 async function refreshSession() {
   if (refreshRequest) {

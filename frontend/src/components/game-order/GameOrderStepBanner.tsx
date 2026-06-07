@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ImageField } from '../ui';
 
 type GameOrderStepBannerProps = {
   afterTitle?: ReactNode;
@@ -12,7 +13,7 @@ export function GameOrderStepBanner({ afterTitle, eyebrow, imageAlt, imageSrc, t
   return (
     <div className="flex items-center gap-4 border-b gt-divider pb-5">
       <div className="h-[92px] w-[92px] flex-none overflow-hidden rounded-[14px] border gt-divider bg-slate-900">
-        <img src={imageSrc} alt={imageAlt} className="h-full w-full object-cover" />
+        <ImageField src={imageSrc} alt={imageAlt} className="h-full w-full object-cover" />
       </div>
       <div className="min-w-0">
         <p className="gt-eyebrow">{eyebrow}</p>

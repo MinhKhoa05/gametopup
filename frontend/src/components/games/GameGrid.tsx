@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { pickImage, classNames } from '../../lib/ui';
+import { classNames, pickImage } from '../../lib/ui';
 import { Game } from '../../types';
-import { IconBox } from '../ui';
+import { IconBox, ImageField } from '../ui';
 
 export function GameGrid({
   games,
@@ -54,7 +54,7 @@ export function GameGrid({
               className="gt-interactive group flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-ink-light p-0 text-left"
             >
               <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
-                <img src={pickImage(game)} alt={game.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <ImageField src={pickImage(game)} alt={game.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 {renderBadges ? <div className="absolute right-2 top-2 flex flex-col items-end gap-2">{renderBadges(game)}</div> : null}
               </div>
               <div className="flex flex-1 flex-col p-4">

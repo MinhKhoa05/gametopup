@@ -4,7 +4,7 @@ import { getDepositRequestStatus } from '../../helpers/wallet-activity.helpers';
 import { formatCurrency, formatDate } from '../../lib/format';
 import { classNames } from '../../lib/ui';
 import type { AdminDepositRequest } from '../../types';
-import { useAdminDepositRequestsPanel } from '../../hooks/admin/admin-deposits.hooks';
+import { useAdminDepositRequestsPanel } from '../../hooks/admin/admin-deposits.hook';
 import { AdminSkeleton } from './AdminShared';
 import { Badge, Button, EmptyState, IconBox, RecordRow, SearchBar, SectionHeading } from '../ui';
 

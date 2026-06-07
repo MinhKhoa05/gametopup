@@ -9,16 +9,16 @@ import {
   OrdersAdminPanel,
   PackagesAdminPanel,
   UsersAdminPanel,
-} from '../../components/admin';
-import { BrandLogo } from '../../components/layout/BrandLogo';
-import { Badge, Button, EmptyState, IconBox } from '../../components/ui';
-import { useAdminPage } from '../../hooks/admin/admin-page.hooks';
-import { useMediaQuery } from '../../hooks/common/use-media-query.hooks';
-import { isAdminUser } from '../../lib/roles';
-import { SITE } from '../../config/site';
-import type { User } from '../../types';
-import type { AdminSection } from '../../components/admin/AdminSidebar';
-import { classNames } from '../../lib/ui';
+} from '../components/admin';
+import { BrandLogo } from '../components/layout/BrandLogo';
+import { Badge, Button, EmptyState, IconBox } from '../components/ui';
+import { useAdminPage } from '../hooks/admin/admin-page.hook';
+import { useMediaQuery } from '../hooks/common/use-media-query.hooks';
+import { isAdminUser } from '../lib/roles';
+import { SITE } from '../config/site';
+import type { User } from '../types';
+import type { AdminSection } from '../components/admin/AdminSidebar';
+import { classNames } from '../lib/ui';
 
 const sectionMeta = {
   dashboard: {

@@ -1,8 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import type { AdminGamePackage, Game } from '../../types';
 import { filterByName } from '../../components/admin/admin.utils';
-import { pickImage } from '../../lib/ui';
-import { useAdminPackageMutations, useAdminPackagesQuery } from '../../services/admin';
+import { useAdminPackageMutations, useAdminPackagesQuery } from '../../services/admin/admin-packages.service';
 
 export function useAdminPackagesSection() {
   const packagesQuery = useAdminPackagesQuery();
@@ -24,7 +23,7 @@ export function useAdminPackagesSection() {
     },
     updatePackage: async (payload: {
       id: number;
-      imageUrl: string;
+      imageFile: File | null;
       importPrice: number;
       isActive: boolean;
       name: string;
@@ -35,7 +34,7 @@ export function useAdminPackagesSection() {
       await packageMutations.update.mutateAsync({
         id: payload.id,
         payload: {
-          imageUrl: payload.imageUrl,
+          imageFile: payload.imageFile,
           importPrice: payload.importPrice,
           isActive: payload.isActive,
           name: payload.name,
@@ -50,7 +49,6 @@ export function useAdminPackagesSection() {
 
 const emptyPackageForm = {
   gameId: 0,
-  imageUrl: '',
   importPrice: 0,
   isActive: true,
   name: '',
@@ -70,7 +68,7 @@ export function useAdminPackagesPanel({
   packages: AdminGamePackage[];
   onCreatePackage: (payload: {
     gameId: number;
-    imageUrl: string;
+    imageFile: File | null;
     importPrice: number;
     isActive: boolean;
     name: string;
@@ -82,7 +80,7 @@ export function useAdminPackagesPanel({
   onUpdatePackage: (
     payload: {
       id: number;
-      imageUrl: string;
+      imageFile: File | null;
       importPrice: number;
       isActive: boolean;
       name: string;
@@ -96,6 +94,7 @@ export function useAdminPackagesPanel({
   const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
   const [form, setForm] = useState(emptyPackageForm);
   const [query, setQuery] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (games.length === 0) {
@@ -117,15 +116,12 @@ export function useAdminPackagesPanel({
 
   const selectedGamePackages = useMemo(() => packages.filter((item) => item.gameId === selectedGameId), [packages, selectedGameId]);
   const scopedPackages = useMemo(() => filterByName(selectedGamePackages, query), [selectedGamePackages, query]);
-  const selectedGame = selectedGameId ? games.find((game) => game.id === selectedGameId) ?? null : null;
-  const previewSrc = form.imageUrl.trim() || (editing ? pickImage(editing) : selectedGame ? pickImage(selectedGame) : '');
 
   function startEdit(item: AdminGamePackage) {
     setEditing(item);
     setSelectedGameId(item.gameId);
     setForm({
       gameId: item.gameId,
-      imageUrl: item.imageUrl ?? '',
       importPrice: item.importPrice,
       isActive: item.isActive,
       name: item.name,
@@ -133,6 +129,7 @@ export function useAdminPackagesPanel({
       salePrice: item.salePrice,
       stockQuantity: item.stockQuantity,
     });
+    setImageFile(null);
   }
 
   function resetForm() {
@@ -141,20 +138,25 @@ export function useAdminPackagesPanel({
       ...emptyPackageForm,
       gameId: selectedGameId ?? games[0]?.id ?? 0,
     });
+    setImageFile(null);
   }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (!editing && !imageFile) {
+      return;
+    }
+
     const payload = {
       ...form,
       gameId: form.gameId || selectedGameId || games[0]?.id || 0,
-      imageUrl: form.imageUrl.trim(),
+      imageFile,
       name: form.name.trim(),
     };
     await (editing
       ? onUpdatePackage({
           id: editing.id,
-          imageUrl: payload.imageUrl,
+          imageFile: payload.imageFile,
           importPrice: payload.importPrice,
           isActive: payload.isActive,
           name: payload.name,
@@ -173,14 +175,15 @@ export function useAdminPackagesPanel({
 
   return {
     editing,
+    imageFile,
     form,
-    previewSrc,
     query,
     remove,
     resetForm,
     scopedPackages,
     selectedGameId,
     setForm,
+    setImageFile,
     setQuery,
     setSelectedGameId,
     startEdit,

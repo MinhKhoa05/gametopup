@@ -1,7 +1,7 @@
 import { AuthGate } from '../auth/AuthGate';
 import { GameOrderWizard } from '../game-order';
 import { AccountPage } from '../../pages/AccountPage';
-import { AdminPage } from '../../pages/admin/AdminPage';
+import { AdminPage } from '../../pages/AdminPage';
 import { AuthPage } from '../../pages/AuthPage';
 import { GamesPage } from '../../pages/GamesPage';
 import { HomePage } from '../../pages/HomePage';

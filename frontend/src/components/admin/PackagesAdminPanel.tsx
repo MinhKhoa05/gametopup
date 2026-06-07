@@ -1,8 +1,19 @@
 import { CheckCircle2, Edit3, Plus, Save, Trash2, X } from 'lucide-react';
 import { formatCurrency } from '../../lib/format';
 import type { AdminGamePackage, Game } from '../../types';
-import { useAdminPackagesPanel } from '../../hooks/admin/admin-packages.hooks';
-import { Badge, Button, EmptyState, Field, FormActions, RecordRow, SearchBar, SectionHeading, ToggleField } from '../ui';
+import { useAdminPackagesPanel } from '../../hooks/admin/admin-packages.hook';
+import {
+  Badge,
+  Button,
+  EmptyState,
+  Field,
+  FormActions,
+  ImageField,
+  RecordRow,
+  SearchBar,
+  SectionHeading,
+  ToggleField,
+} from '../ui';
 import { classNames, pickImage } from '../../lib/ui';
 import { AdminSkeleton } from './AdminShared';
 import { gameName } from './admin.utils';
@@ -22,7 +33,7 @@ export function PackagesAdminPanel({
   loading: boolean;
   onCreatePackage: (payload: {
     gameId: number;
-    imageUrl: string;
+    imageFile: File | null;
     importPrice: number;
     isActive: boolean;
     name: string;
@@ -33,7 +44,7 @@ export function PackagesAdminPanel({
   onUpdatePackage: (
     payload: {
       id: number;
-      imageUrl: string;
+      imageFile: File | null;
       importPrice: number;
       isActive: boolean;
       name: string;
@@ -46,13 +57,14 @@ export function PackagesAdminPanel({
 }) {
   const {
     editing,
-    previewSrc,
+    imageFile,
     query,
     remove,
     resetForm,
     scopedPackages,
     selectedGameId,
     setForm,
+    setImageFile,
     setQuery,
     setSelectedGameId,
     startEdit,
@@ -65,7 +77,9 @@ export function PackagesAdminPanel({
     onDeletePackage,
     onUpdatePackage,
   });
+
   const profit = (item: AdminGamePackage) => item.salePrice - item.importPrice;
+  const selectedGame = selectedGameId ? games.find((game) => game.id === selectedGameId) ?? null : null;
 
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(380px,0.82fr)]">
@@ -86,7 +100,7 @@ export function PackagesAdminPanel({
                 if (!editing) setForm((current) => ({ ...current, gameId: game.id }));
               }}
             >
-              <img className="h-10 w-10 rounded-xl bg-cyan/10 object-cover" src={pickImage(game)} alt="" />
+              <ImageField className="h-10 w-10 overflow-hidden rounded-xl bg-cyan/10" src={pickImage(game)} alt="" />
               <span className="max-h-10 overflow-hidden whitespace-normal text-[0.98rem] font-bold leading-[1.2]">{game.name}</span>
             </button>
           ))}
@@ -112,7 +126,7 @@ export function PackagesAdminPanel({
                   highlighted={isEditing}
                   key={item.id}
                 >
-                  <img className="h-12 w-12 rounded-xl bg-cyan/10 object-cover max-[700px]:h-[54px] max-[700px]:w-[54px]" src={pickImage(item)} alt="" />
+                  <ImageField className="h-12 w-12 overflow-hidden rounded-xl bg-cyan/10 max-[700px]:h-[54px] max-[700px]:w-[54px]" src={pickImage(item)} alt="" />
                   <div>
                     <strong>{item.name}</strong>
                     <small>
@@ -159,10 +173,12 @@ export function PackagesAdminPanel({
 
         <div className="mb-4 grid gap-3">
           <Field label="Tên gói" onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Nhập tên gói" required value={form.name} />
-          <Field label="Ảnh gói" onChange={(event) => setForm({ ...form, imageUrl: event.target.value })} placeholder="https://..." value={form.imageUrl} />
-          <div className="grid min-h-44 place-items-center overflow-hidden rounded-2xl border border-dashed border-slate-400/20 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.12),transparent_55%),rgba(15,23,42,0.72)]">
-            {previewSrc ? <img className="h-44 w-full object-cover" src={previewSrc} alt="Xem trước ảnh gói" /> : <span className="font-extrabold text-slate-400">Chưa có ảnh</span>}
-          </div>
+          <ImageField
+            className="min-h-44 w-full overflow-hidden"
+            onChange={setImageFile}
+            src={editing?.imageUrl ?? ''}
+            alt={editing?.name || selectedGame?.name || form.name || 'Xem trước ảnh gói'}
+          />
         </div>
 
         <div className="mb-4 grid gap-3 md:grid-cols-2">
@@ -207,7 +223,7 @@ export function PackagesAdminPanel({
         <ToggleField checked={form.isActive} label="Cho phép bán gói này" onChange={(isActive) => setForm({ ...form, isActive })} />
 
         <FormActions
-          disabled={busy || games.length === 0}
+          disabled={busy || games.length === 0 || (!editing && !imageFile)}
           onCancel={editing ? resetForm : undefined}
           submitIcon={editing ? <Save size={17} /> : <Plus size={17} />}
           submitLabel={editing ? 'Lưu gói' : 'Tạo gói'}

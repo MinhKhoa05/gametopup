@@ -1,7 +1,18 @@
 import { CheckCircle2, Edit3, Plus, Save, Trash2, X } from 'lucide-react';
 import type { Game } from '../../types';
-import { useAdminGamesPanel } from '../../hooks/admin/admin-games.hooks';
-import { Badge, Button, EmptyState, Field, FormActions, RecordRow, SearchBar, SectionHeading, ToggleField } from '../ui';
+import { useAdminGamesPanel } from '../../hooks/admin/admin-games.hook';
+import {
+  Badge,
+  Button,
+  EmptyState,
+  Field,
+  FormActions,
+  ImageField,
+  RecordRow,
+  SearchBar,
+  SectionHeading,
+  ToggleField,
+} from '../ui';
 import { pickImage } from '../../lib/ui';
 import { AdminSkeleton } from './AdminShared';
 
@@ -16,11 +27,24 @@ export function GamesAdminPanel({
   busy: boolean;
   games: Game[];
   loading: boolean;
-  onCreateGame: (payload: { name: string; imageUrl: string; isActive: boolean }) => Promise<void>;
-  onUpdateGame: (payload: { id: number; name: string; imageUrl: string; isActive: boolean }) => Promise<void>;
+  onCreateGame: (payload: { imageFile: File | null; isActive: boolean; name: string }) => Promise<void>;
+  onUpdateGame: (payload: { id: number; imageFile: File | null; isActive: boolean; name: string }) => Promise<void>;
   onDeleteGame: (id: number) => Promise<void>;
 }) {
-  const { editing, filteredGames, form, query, remove, resetForm, setForm, setQuery, startEdit, submit } = useAdminGamesPanel({
+  const {
+    editing,
+    filteredGames,
+    form,
+    imageFile,
+    query,
+    remove,
+    resetForm,
+    setForm,
+    setImageFile,
+    setQuery,
+    startEdit,
+    submit,
+  } = useAdminGamesPanel({
     games,
     onCreateGame,
     onDeleteGame,
@@ -40,7 +64,7 @@ export function GamesAdminPanel({
           <div className="grid gap-2.5">
             {filteredGames.map((game) => (
               <RecordRow className="grid-cols-[auto_minmax(0,1fr)_auto_auto]" key={game.id}>
-                <img className="h-12 w-12 rounded-xl bg-cyan/10 object-cover max-[700px]:h-[54px] max-[700px]:w-[54px]" src={pickImage(game)} alt="" />
+                <ImageField className="h-12 w-12 overflow-hidden rounded-xl bg-cyan/10 max-[700px]:h-[54px] max-[700px]:w-[54px]" src={pickImage(game)} alt="" />
                 <div>
                   <strong>{game.name}</strong>
                   <small>{game.isActive ? 'Đang hiển thị' : 'Đang ẩn'}</small>
@@ -70,14 +94,15 @@ export function GamesAdminPanel({
       <form className="gt-surface sticky top-24" onSubmit={submit}>
         <SectionHeading title={editing ? 'Cập nhật game' : 'Tạo game'} />
         <Field label="Tên game" onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Nhập tên game" required value={form.name} />
-        <Field label="Ảnh đại diện" onChange={(event) => setForm({ ...form, imageUrl: event.target.value })} placeholder="https://..." value={form.imageUrl} />
-        <ToggleField
-          checked={form.isActive}
-          label="Hiển thị game trong danh mục"
-          onChange={(isActive) => setForm({ ...form, isActive })}
+        <ImageField
+          className="min-h-44 w-full overflow-hidden"
+          onChange={setImageFile}
+          src={editing?.imageUrl ?? ''}
+          alt={editing?.name || form.name || 'Xem trước ảnh game'}
         />
+        <ToggleField checked={form.isActive} label="Hiển thị game trong danh mục" onChange={(isActive) => setForm({ ...form, isActive })} />
         <FormActions
-          disabled={busy}
+          disabled={busy || (!editing && !imageFile)}
           onCancel={editing ? resetForm : undefined}
           submitIcon={editing ? <Save size={17} /> : <Plus size={17} />}
           submitLabel={editing ? 'Lưu game' : 'Tạo game'}

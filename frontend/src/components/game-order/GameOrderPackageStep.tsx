@@ -1,7 +1,7 @@
 import type { ChangeEvent, FormEvent } from 'react';
 import { memo, useCallback } from 'react';
 import { ShieldCheck, ShoppingCart } from 'lucide-react';
-import { Button, EmptyState, Field } from '../ui';
+import { Button, EmptyState, Field, ImageField } from '../ui';
 import { formatCurrency } from '../../lib/format';
 import { classNames, pickImage } from '../../lib/ui';
 import { useRoute } from '../../hooks/common/route.hooks';
@@ -140,7 +140,7 @@ const PackageCard = memo(function PackageCard({
         </span>
       )}
       <div className="mb-2.5 aspect-[1/0.82] overflow-hidden rounded-md bg-slate-950/65">
-        <img src={pickImage(packageItem)} alt={packageItem.name} className="h-full w-full object-cover" />
+        <ImageField src={pickImage(packageItem)} alt={packageItem.name} className="h-full w-full object-cover" />
       </div>
       <strong className="flex min-h-10 items-center justify-center text-[0.95rem] font-black leading-[1.25] text-white">{packageItem.name}</strong>
       <small className="mb-2 block text-[0.72rem] font-extrabold text-slate-400">Còn {packageItem.stockQuantity} suất</small>

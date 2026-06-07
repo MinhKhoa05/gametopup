@@ -1,17 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRoute } from '../common/route.hooks';
-import { useAdminMetrics } from './admin-metrics.hooks';
-import { useAdminDepositRequestsSection } from './admin-deposits.hooks';
-import { useAdminGamesSection } from './admin-games.hooks';
-import { useAdminOrdersSection } from './admin-orders.hooks';
-import { useAdminPackagesSection } from './admin-packages.hooks';
-import { useAdminUsersSection } from './admin-users.hooks';
-import {
-  adminDepositRequestsQueryKey,
-  adminOrdersQueryKey,
-  adminPackagesQueryKey,
-  adminUsersQueryKey,
-} from '../../services/admin';
+import { useAdminMetrics } from './admin-metrics.hook';
+import { useAdminDepositRequestsSection } from './admin-deposits.hook';
+import { useAdminGamesSection } from './admin-games.hook';
+import { useAdminOrdersSection } from './admin-orders.hook';
+import { useAdminPackagesSection } from './admin-packages.hook';
+import { useAdminUsersSection } from './admin-users.hook';
+import { adminDepositRequestsQueryKey, adminOrdersQueryKey, adminPackagesQueryKey, adminUsersQueryKey } from '../../services/admin/keys';
 import { depositRequestsQueryKey, transactionsQueryKey, walletQueryKey } from '../../services/wallet';
 import { GAMES_QUERY_KEY } from '../../services/games';
 import type { User } from '../../types';

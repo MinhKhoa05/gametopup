@@ -48,7 +48,6 @@ namespace GameTopUp.API.Controllers
         public async Task<IActionResult> CreateGameWithImage([FromForm] CreateGameRequest request, [FromForm] IFormFile image)
         {
             var game = await _gameUseCase.CreateGameWithImageAsync(request, image);
-
             return ApiCreated(game, "Tạo Game mới kèm ảnh thành công.");
         }
 
@@ -58,6 +57,16 @@ namespace GameTopUp.API.Controllers
         {
             var game = await _gameUseCase.UpdateGameAsync(id, request);
             return ApiOk(game, "Cập nhật thông tin Game thành công.");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}/with-image")]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(5 * 1024 * 1024)]
+        public async Task<IActionResult> UpdateGameWithImage(long id, [FromForm] UpdateGameRequest request, [FromForm] IFormFile? image)
+        {
+            var game = await _gameUseCase.UpdateGameWithImageAsync(id, request, image);
+            return ApiOk(game, "Cập nhật game kèm ảnh thành công.");
         }
 
         [Authorize(Roles = "Admin")]

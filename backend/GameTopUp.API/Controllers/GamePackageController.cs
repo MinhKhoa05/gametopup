@@ -55,7 +55,6 @@ namespace GameTopUp.API.Controllers
         public async Task<IActionResult> CreatePackageWithImage([FromForm] CreateGamePackageRequest request, [FromForm] IFormFile image)
         {
             var package = await _packageUseCase.CreatePackageWithImageAsync(request, image);
-
             return ApiCreated(package, "Tạo gói nạp kèm ảnh thành công.");
         }
 
@@ -65,6 +64,16 @@ namespace GameTopUp.API.Controllers
         {
             var package = await _packageUseCase.UpdatePackageAsync(id, request);
             return ApiOk(package, "Cập nhật thông tin gói nạp thành công.");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}/with-image")]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(5 * 1024 * 1024)]
+        public async Task<IActionResult> UpdatePackageWithImage(long id, [FromForm] UpdateGamePackageRequest request, [FromForm] IFormFile? image)
+        {
+            var package = await _packageUseCase.UpdatePackageWithImageAsync(id, request, image);
+            return ApiOk(package, "Cập nhật gói nạp kèm ảnh thành công.");
         }
 
         [Authorize(Roles = "Admin")]

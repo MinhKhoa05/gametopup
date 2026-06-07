@@ -4,6 +4,7 @@ export { Button } from './Button';
 export { FormActions } from './FormActions';
 export { EmptyState } from './EmptyState';
 export { Field, inputClassName } from './Field';
+export { ImageField } from './ImageField';
 export { IconBox } from './IconBox';
 export { RecordRow } from './RecordRow';
 export { SearchBar } from './SearchBar';
