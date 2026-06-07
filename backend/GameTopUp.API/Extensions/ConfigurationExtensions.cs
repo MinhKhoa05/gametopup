@@ -8,7 +8,6 @@ namespace GameTopUp.API.Extensions
             ApplyJwt(configuration);
             ApplyCors(configuration);
             ApplyVietQr(configuration);
-            ApplyCloudinary(configuration);
         }
 
         private static void ApplyDatabase(IConfiguration configuration)
@@ -44,15 +43,6 @@ namespace GameTopUp.API.Extensions
             SetFromEnv(configuration, "VietQr:AccountName", "VIETQR_ACCOUNT_NAME");
             configuration["VietQr:Template"] =
                 Environment.GetEnvironmentVariable("VIETQR_TEMPLATE") ?? configuration["VietQr:Template"] ?? "compact2";
-        }
-
-        private static void ApplyCloudinary(IConfiguration configuration)
-        {
-            SetFromEnv(configuration, "Cloudinary:CloudName", "CLOUDINARY_CLOUD_NAME");
-            SetFromEnv(configuration, "Cloudinary:ApiKey", "CLOUDINARY_API_KEY");
-            SetFromEnv(configuration, "Cloudinary:ApiSecret", "CLOUDINARY_API_SECRET");
-            configuration["Cloudinary:Folder"] =
-                Environment.GetEnvironmentVariable("CLOUDINARY_FOLDER") ?? configuration["Cloudinary:Folder"] ?? "gametopup";
         }
 
         private static void SetFromEnv(IConfiguration configuration, string key, string envName)

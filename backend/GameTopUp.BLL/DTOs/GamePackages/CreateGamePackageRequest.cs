@@ -7,23 +7,23 @@ namespace GameTopUp.BLL.DTOs.GamePackages
         [Required]
         public string Name { get; set; } = null!;
         public string ImageUrl { get; set; } = string.Empty;
-        public string? ImagePublicId { get; set; }
-        
+        public string? ImageRelativePath { get; set; }
+
         [Required]
         public long GameId { get; set; }
-        
+
         [Range(0, double.MaxValue)]
         public decimal SalePrice { get; set; }
-        
+
         [Range(0, double.MaxValue)]
         public decimal OriginalPrice { get; set; }
-        
+
         [Range(0, double.MaxValue)]
         public decimal ImportPrice { get; set; }
-        
+
         [Range(0, int.MaxValue)]
         public int StockQuantity { get; set; }
-        
+
         public bool IsActive { get; set; } = true;
     }
 }

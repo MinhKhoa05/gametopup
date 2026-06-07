@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS games (
     id BIGINT SIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     image_url TEXT,
+    image_relative_path TEXT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -44,7 +45,7 @@ CREATE TABLE IF NOT EXISTS game_packages (
     id BIGINT SIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     image_url TEXT,
-    image_public_id VARCHAR(255) NULL,
+    image_relative_path TEXT NULL,
     game_id BIGINT SIGNED NOT NULL,
     sale_price DECIMAL(18, 2) NOT NULL,
     original_price DECIMAL(18, 2) NOT NULL,

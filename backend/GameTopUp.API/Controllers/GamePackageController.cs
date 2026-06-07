@@ -1,8 +1,8 @@
+using GameTopUp.BLL.DTOs.GamePackages;
+using GameTopUp.BLL.Services;
+using GameTopUp.BLL.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using GameTopUp.BLL.DTOs.GamePackages;
-using GameTopUp.BLL.Exceptions;
-using GameTopUp.BLL.Services;
 
 namespace GameTopUp.API.Controllers
 {
@@ -11,10 +11,12 @@ namespace GameTopUp.API.Controllers
     public class GamePackageController : ApiControllerBase
     {
         private readonly GamePackageService _packageService;
+        private readonly GamePackageUseCase _packageUseCase;
 
-        public GamePackageController(GamePackageService packageService)
+        public GamePackageController(GamePackageService packageService, GamePackageUseCase packageUseCase)
         {
             _packageService = packageService;
+            _packageUseCase = packageUseCase;
         }
 
         [HttpGet]
@@ -50,22 +52,9 @@ namespace GameTopUp.API.Controllers
         [HttpPost("with-image")]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(5 * 1024 * 1024)]
-        public async Task<IActionResult> CreatePackageWithImage(
-            [FromForm] CreateGamePackageRequest request,
-            [FromForm] IFormFile image)
+        public async Task<IActionResult> CreatePackageWithImage([FromForm] CreateGamePackageRequest request, [FromForm] IFormFile image)
         {
-            if (image == null)
-            {
-                throw new BusinessException(ErrorCode.ImageRequired);
-            }
-
-            await using var imageStream = image.OpenReadStream();
-            var package = await _packageService.CreatePackageWithImageAsync(
-                request,
-                imageStream,
-                image.FileName,
-                image.ContentType,
-                image.Length);
+            var package = await _packageUseCase.CreatePackageWithImageAsync(request, image);
 
             return ApiCreated(package, "Tạo gói nạp kèm ảnh thành công.");
         }
@@ -74,7 +63,7 @@ namespace GameTopUp.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePackage(long id, [FromBody] UpdateGamePackageRequest request)
         {
-            var package = await _packageService.UpdatePackageAsync(id, request);
+            var package = await _packageUseCase.UpdatePackageAsync(id, request);
             return ApiOk(package, "Cập nhật thông tin gói nạp thành công.");
         }
 
@@ -82,9 +71,8 @@ namespace GameTopUp.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePackage(long id)
         {
-            await _packageService.DeletePackageAsync(id);
+            await _packageUseCase.DeletePackageAsync(id);
             return ApiOk(null, "Xóa gói nạp thành công.");
         }
     }
 }
-

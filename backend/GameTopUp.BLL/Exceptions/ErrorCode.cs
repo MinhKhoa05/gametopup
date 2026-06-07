@@ -146,11 +146,6 @@ namespace GameTopUp.BLL.Exceptions
         [Display(Name = "Vui lòng chọn file ảnh.")]
         ImageRequired,
 
-        [Display(Name = "Chưa cấu hình Cloudinary.")]
-        CloudinarySettingsMissing,
-
-        [Display(Name = "Upload Cloudinary thất bại.")]
-        CloudinaryUploadFailed,
     }
 
     public static class ErrorCodeExtensions

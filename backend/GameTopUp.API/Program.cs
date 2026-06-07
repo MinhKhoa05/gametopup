@@ -81,7 +81,7 @@ builder.Services
     .AddRepositories()
     .AddBusinessServices()
     .AddUseCases()
-    .AddExternalServices();
+    .AddCommonServices();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -99,6 +99,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowReactApp");
+app.UseStaticFiles();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();

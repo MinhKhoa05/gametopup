@@ -1,5 +1,5 @@
-using GameTopUp.BLL.ExternalServices;
 using GameTopUp.BLL.Interfaces;
+using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Options;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Auth;
@@ -24,7 +24,6 @@ namespace GameTopUp.API.Extensions
         {
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
             services.Configure<VietQrSettings>(configuration.GetSection("VietQr"));
-            services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
 
             return services;
         }
@@ -75,15 +74,17 @@ namespace GameTopUp.API.Extensions
         public static IServiceCollection AddUseCases(this IServiceCollection services)
         {
             services.AddScoped<AuthUseCase>();
+            services.AddScoped<GameUseCase>();
+            services.AddScoped<GamePackageUseCase>();
             services.AddScoped<OrderUseCase>();
             services.AddScoped<WalletUseCase>();
 
             return services;
         }
 
-        public static IServiceCollection AddExternalServices(this IServiceCollection services)
+        public static IServiceCollection AddCommonServices(this IServiceCollection services)
         {
-            services.AddHttpClient<ICloudinaryUploader, CloudinaryUploader>();
+            services.AddScoped<IImageStorageService, LocalImageStorageService>();
 
             return services;
         }

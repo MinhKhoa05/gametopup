@@ -11,6 +11,7 @@ namespace GameTopUp.DAL.Entities
 
         public string Name { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty;
+        public string? ImageRelativePath { get; set; }
         public bool IsActive { get; set; }
 
         public DateTime CreatedAt { get; set; }
@@ -20,7 +21,7 @@ namespace GameTopUp.DAL.Entities
         {
         }
 
-        public static Game Create(string name, string imageUrl = "")
+        public static Game Create(string name, string imageUrl = "", string? imageRelativePath = null)
         {
             var now = DateTime.UtcNow;
 
@@ -28,6 +29,7 @@ namespace GameTopUp.DAL.Entities
             {
                 Name = name.Trim(),
                 ImageUrl = imageUrl,
+                ImageRelativePath = imageRelativePath,
                 IsActive = true,
                 CreatedAt = now,
                 UpdatedAt = now

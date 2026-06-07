@@ -10,7 +10,7 @@ namespace GameTopUp.DAL.Entities
         public long Id { get; set; }
         public string Name { get; set; } = null!;
         public string ImageUrl { get; set; } = string.Empty;
-        public string? ImagePublicId { get; set; }
+        public string? ImageRelativePath { get; set; }
         public long GameId { get; set; }
 
         public decimal SalePrice { get; set; }
@@ -42,10 +42,8 @@ namespace GameTopUp.DAL.Entities
                 OriginalPrice = originalPrice,
                 ImportPrice = importPrice,
                 StockQuantity = stockQuantity,
-
                 ImageUrl = string.Empty,
-                ImagePublicId = null,
-
+                ImageRelativePath = null,
                 IsActive = true,
                 CreatedAt = now,
                 UpdatedAt = now

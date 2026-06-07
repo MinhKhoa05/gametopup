@@ -1,7 +1,7 @@
 using GameTopUp.BLL.DTOs.Games;
-using GameTopUp.DAL.Interfaces.Games;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces.Games;
 using Mapster;
 
 namespace GameTopUp.BLL.Services
@@ -28,9 +28,8 @@ namespace GameTopUp.BLL.Services
 
         public async Task<Game> CreateGameAsync(CreateGameRequest request)
         {
-            var game = Game.Create(request.Name, request.ImageUrl);
+            var game = Game.Create(request.Name, request.ImageUrl, request.ImageRelativePath);
             game.IsActive = request.IsActive;
-            
             game.Id = await _gameRepo.CreateAsync(game);
             return game;
         }
@@ -45,10 +44,8 @@ namespace GameTopUp.BLL.Services
 
         public async Task DeleteGameAsync(long id)
         {
-            // Kiểm tra tồn tại trước khi xóa để đưa ra lỗi nghiệp vụ rõ ràng
             await GetGameByIdAsync(id);
             await _gameRepo.DeleteAsync(id);
         }
     }
 }
-

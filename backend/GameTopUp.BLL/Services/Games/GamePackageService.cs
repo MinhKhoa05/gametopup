@@ -1,9 +1,7 @@
 using GameTopUp.BLL.DTOs.GamePackages;
-using GameTopUp.DAL.Interfaces.Games;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.BLL.Interfaces;
-using GameTopUp.BLL.Utils;
 using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces.Games;
 using Mapster;
 
 namespace GameTopUp.BLL.Services
@@ -12,16 +10,11 @@ namespace GameTopUp.BLL.Services
     {
         private readonly IGamePackageRepository _packageRepo;
         private readonly IGameRepository _gameRepo;
-        private readonly ICloudinaryUploader _cloudinaryUploader;
 
-        public GamePackageService(
-            IGamePackageRepository packageRepo,
-            IGameRepository gameRepo,
-            ICloudinaryUploader cloudinaryUploader)
+        public GamePackageService(IGamePackageRepository packageRepo, IGameRepository gameRepo)
         {
             _packageRepo = packageRepo;
             _gameRepo = gameRepo;
-            _cloudinaryUploader = cloudinaryUploader;
         }
 
         public async Task<List<GamePackage>> GetAllPackagesAsync()
@@ -41,6 +34,7 @@ namespace GameTopUp.BLL.Services
             {
                 throw new NotFoundException(ErrorCode.GamePackageNotFound);
             }
+
             return package;
         }
 
@@ -56,35 +50,7 @@ namespace GameTopUp.BLL.Services
                 request.ImportPrice,
                 request.StockQuantity);
             package.ImageUrl = request.ImageUrl;
-            package.ImagePublicId = request.ImagePublicId;
-            package.IsActive = request.IsActive;
-            package.Id = await _packageRepo.CreateAsync(package);
-            return package;
-        }
-
-        public async Task<GamePackage> CreatePackageWithImageAsync(
-            CreateGamePackageRequest request,
-            Stream imageStream,
-            string fileName,
-            string contentType,
-            long fileLength)
-        {
-            ImageFileValidator.Validate(fileName, contentType, fileLength);
-            await ValidateGameForPackageAsync(request.GameId);
-
-            var upload = await _cloudinaryUploader.UploadImageAsync(imageStream, fileName, contentType);
-            request.ImageUrl = upload.SecureUrl;
-            request.ImagePublicId = upload.PublicId;
-
-            var package = GamePackage.Create(
-                request.Name,
-                request.GameId,
-                request.SalePrice,
-                request.OriginalPrice,
-                request.ImportPrice,
-                request.StockQuantity);
-            package.ImageUrl = request.ImageUrl;
-            package.ImagePublicId = request.ImagePublicId;
+            package.ImageRelativePath = request.ImageRelativePath;
             package.IsActive = request.IsActive;
             package.Id = await _packageRepo.CreateAsync(package);
             return package;
@@ -107,7 +73,6 @@ namespace GameTopUp.BLL.Services
         public async Task IncreaseStockAsync(long id, int quantity)
         {
             ValidateStockQuantity(quantity);
-
             await _packageRepo.IncreaseStockAsync(id, quantity);
         }
 
@@ -116,7 +81,10 @@ namespace GameTopUp.BLL.Services
             ValidateStockQuantity(quantity);
 
             var affectedRows = await _packageRepo.DecreaseStockAsync(id, quantity);
-            if (affectedRows == 0) throw new BusinessException(ErrorCode.InsufficientStock);
+            if (affectedRows == 0)
+            {
+                throw new BusinessException(ErrorCode.InsufficientStock);
+            }
         }
 
         public async Task<GamePackage> GetAvailablePackageAsync(long id, int quantity)
@@ -148,7 +116,5 @@ namespace GameTopUp.BLL.Services
         {
             if (quantity <= 0) throw new BusinessException(ErrorCode.StockQuantityMustBePositive);
         }
-
     }
 }
-
