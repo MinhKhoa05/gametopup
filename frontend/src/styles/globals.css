@@ -23,7 +23,11 @@ body,
 body {
   margin: 0;
   min-width: 320px;
-  background: var(--color-ink);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.08), transparent 26%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 22%),
+    linear-gradient(180deg, #040816 0%, var(--color-ink) 42%, #040816 100%);
+  background-attachment: fixed;
   color: #f1f5f9;
   -webkit-font-smoothing: antialiased;
 }

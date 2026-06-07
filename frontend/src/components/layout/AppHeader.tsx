@@ -30,8 +30,7 @@ export function AppHeader() {
   const hasKnownSession = hasLogin || !isAuthPending;
   const user = auth.user;
   const displayName = userDisplayName(user) || 'Khách';
-  const adminUser = isAdminUser(user);
-  const baseMenuItems = adminUser ? HEADER_ACCOUNT_MENU_ADMIN_ITEMS : HEADER_ACCOUNT_MENU_USER_ITEMS;
+  const baseMenuItems = isAdminUser(user) ? HEADER_ACCOUNT_MENU_ADMIN_ITEMS : HEADER_ACCOUNT_MENU_USER_ITEMS;
   const menuItems = buildHeaderAccountMenuItems(baseMenuItems, auth.handleLogout, navigate);
   const visibleNavItems = getVisibleHeaderNavItems(HEADER_NAV_ITEMS, hasLogin);
 
@@ -120,8 +119,6 @@ export function AppHeader() {
 
                 <HeaderAccountMenu
                   triggerLabel={displayName}
-                  infoLabel={displayName}
-                  infoBadge={adminUser ? 'Quản trị viên' : 'Tài khoản cá nhân'}
                   items={menuItems}
                 />
               </>

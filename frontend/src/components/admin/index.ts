@@ -1,8 +1,10 @@
 export { AdminHeader } from './AdminHeader';
+export { AdminSidebar } from './AdminSidebar';
 export { AdminSkeleton } from './AdminShared';
 export { DashboardPanel } from './DashboardPanel';
 export { DepositRequestsAdminPanel } from './DepositRequestsAdminPanel';
 export { GamesAdminPanel } from './GamesAdminPanel';
 export { OrdersAdminPanel } from './OrdersAdminPanel';
 export { PackagesAdminPanel } from './PackagesAdminPanel';
+export { SidebarNavItem } from './SidebarNavItem';
 export { UsersAdminPanel } from './UsersAdminPanel';

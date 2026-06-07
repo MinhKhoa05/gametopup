@@ -1,22 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, ShieldCheck, UserRound } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { classNames } from '../../lib/ui';
-import { Badge, IconBox } from '../ui';
 import type { HeaderAccountMenuItem } from '../../types/layout.type';
 
 export function HeaderAccountMenu({
-  infoLabel,
-  infoBadge,
   items,
   triggerLabel,
 }: {
-  infoLabel: string;
-  infoBadge: string;
   items: HeaderAccountMenuItem[];
   triggerLabel: string;
 }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const initials = getInitials(triggerLabel);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -35,28 +31,30 @@ export function HeaderAccountMenu({
         type="button"
         aria-expanded={open}
         className={classNames(
-          'gt-interactive inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2',
+          'gt-interactive inline-flex min-h-10 items-center gap-2 rounded-2xl border px-2.5 py-2',
           open
             ? 'border-cyan/25 bg-cyan/10 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.12),0_0_18px_rgba(34,211,238,0.12)]'
-            : 'border-white/10 bg-white/5 text-white',
+            : 'border-white/10 bg-white/[0.04] text-white',
         )}
         onClick={() => setOpen((value) => !value)}
       >
-        <IconBox size="sm" className="h-6 w-6 rounded-full">
-          <UserRound size={14} />
-        </IconBox>
-        <span className="hidden text-sm font-semibold text-white sm:block">{triggerLabel}</span>
-        <ChevronDown size={14} className="hidden text-slate-400 transition-transform duration-200 sm:block" />
+        <span className="inline-flex size-7 items-center justify-center rounded-full border border-cyan/15 bg-cyan/10 text-[0.68rem] font-black uppercase tracking-[0.12em] text-cyan-50">
+          {initials}
+        </span>
+        <span className="hidden max-w-[140px] truncate text-sm font-semibold text-white sm:block">{triggerLabel}</span>
+        <ChevronDown size={14} className="text-slate-400 transition-transform duration-200" />
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-white/10 bg-white/5 py-2 shadow-[0_20px_48px_rgba(2,6,23,0.45),0_0_0_1px_rgba(34,211,238,0.06)_inset]">
-          <div className="grid gap-1 border-b border-white/10 bg-cyan/10 px-3 py-3">
-            <div className="min-w-0 grid gap-1">
-              <span className="text-base font-bold leading-tight text-white">{infoLabel}</span>
-              <Badge variant="success" icon={<ShieldCheck size={14} />}>
-                {infoBadge}
-              </Badge>
+        <div className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-white/10 bg-[#091224]/95 py-2 shadow-[0_24px_56px_rgba(2,6,23,0.42)] backdrop-blur-xl">
+          <div className="border-b border-white/10 px-3 py-3">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex size-9 items-center justify-center rounded-full border border-cyan/15 bg-cyan/10 text-sm font-black uppercase tracking-[0.12em] text-cyan-50">
+                {initials}
+              </span>
+              <div className="min-w-0">
+                <span className="block truncate text-sm font-semibold leading-tight text-white">{triggerLabel}</span>
+              </div>
             </div>
           </div>
 
@@ -85,4 +83,19 @@ export function HeaderAccountMenu({
       )}
     </div>
   );
+}
+
+function getInitials(value: string) {
+  const parts = value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length === 0) {
+    return 'MK';
+  }
+
+  const first = parts[0]?.[0] ?? '';
+  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? '' : parts[0]?.[1] ?? '';
+  return `${first}${last}`.toUpperCase() || 'MK';
 }

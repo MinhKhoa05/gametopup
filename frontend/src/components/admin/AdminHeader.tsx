@@ -1,101 +1,127 @@
-import type { ReactNode } from 'react';
-import { ArrowLeft, Boxes, Gamepad2, LayoutDashboard, LogOut, ReceiptText, RefreshCw, ShieldCheck, Users, WalletCards } from 'lucide-react';
-import type { Route } from '../../lib/routes';
+import { useState } from 'react';
+import { Bell, Home, LogOut, Menu, RefreshCw } from 'lucide-react';
 import { useRoute } from '../../hooks/common/route.hooks';
-import { Badge, Button, IconBox, SectionHeading } from '../ui';
-
-const sectionMeta: Record<
-  NonNullable<Extract<Route, { name: 'admin' }>['section']>,
-  { description: string; icon: ReactNode; label: string }
-> = {
-  dashboard: {
-    label: 'Tổng quan',
-    description: 'Theo dõi doanh thu, đơn hàng và số liệu hệ thống theo thời gian thực.',
-    icon: <LayoutDashboard size={18} />,
-  },
-  games: {
-    label: 'Quản lý game',
-    description: 'Cập nhật danh sách game, trạng thái hoạt động và thông tin hiển thị.',
-    icon: <Gamepad2 size={18} />,
-  },
-  packages: {
-    label: 'Gói nạp',
-    description: 'Quản lý các gói nạp theo từng game và kiểm soát trạng thái hiển thị.',
-    icon: <Boxes size={18} />,
-  },
-  orders: {
-    label: 'Đơn hàng',
-    description: 'Kiểm tra, xử lý và theo dõi các đơn hàng gần đây.',
-    icon: <ReceiptText size={18} />,
-  },
-  deposits: {
-    label: 'Nạp tiền',
-    description: 'Duyệt hoặc từ chối các yêu cầu nạp tiền đã được khách hàng xác nhận.',
-    icon: <WalletCards size={18} />,
-  },
-  users: {
-    label: 'Người dùng',
-    description: 'Quản lý người dùng, trạng thái hoạt động và quyền truy cập.',
-    icon: <Users size={18} />,
-  },
-};
+import { SITE } from '../../config/site';
+import { BrandLogo } from '../layout/BrandLogo';
+import { SearchBar } from '../ui';
+import type { HeaderAccountMenuItem } from '../../types/layout.type';
+import type { User } from '../../types';
+import { HeaderAccountMenu } from '../layout/HeaderAccountMenu';
 
 export function AdminHeader({
   loading,
   onLogout,
   onRefresh,
-  route,
+  onToggleSidebar,
+  variant = 'desktop',
+  user,
 }: {
   loading: boolean;
   onLogout: () => void;
   onRefresh: () => void;
-  route: Extract<Route, { name: 'admin' }>;
+  onToggleSidebar: () => void;
+  variant?: 'desktop' | 'mobile';
+  user: User | null;
 }) {
   const { navigate } = useRoute();
-  const section = route.section ?? 'dashboard';
-  const meta = sectionMeta[section];
+  const [searchValue, setSearchValue] = useState('');
+  const displayName = user?.displayName?.trim() || 'Minh Khoa';
+
+  const accountMenuItems: HeaderAccountMenuItem[] = [
+    {
+      label: 'Về site',
+      icon: <Home size={16} />,
+      onClick: () => navigate({ name: 'home' }),
+    },
+    {
+      label: 'Đăng xuất',
+      icon: <LogOut size={16} />,
+      onClick: onLogout,
+      className: 'logout',
+    },
+  ];
+
+  if (variant === 'mobile') {
+    return (
+      <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
+        <button
+          type="button"
+          aria-label="Đóng hoặc mở sidebar"
+          className="gt-interactive inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] text-slate-100 shadow-[0_10px_24px_rgba(2,6,23,0.18)] transition-colors hover:border-cyan/20 hover:bg-[linear-gradient(180deg,rgba(34,211,238,0.14),rgba(34,211,238,0.06))] hover:text-white"
+          onClick={onToggleSidebar}
+        >
+          <Menu size={16} strokeWidth={2.4} />
+        </button>
+
+        <div className="min-w-0">
+          <BrandLogo
+            adminDot
+            onClick={() => navigate({ name: 'admin', section: 'dashboard' })}
+            size="sm"
+            subtitle="Quản lý và vận hành dịch vụ"
+            title={`${SITE.name} Admin`}
+          />
+        </div>
+
+        <div className="ml-auto flex flex-none items-center gap-2">
+          <button
+            type="button"
+            className="gt-interactive relative inline-flex size-10 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+            title="Thông báo"
+          >
+            <Bell size={17} />
+            <span className="absolute right-2 top-2 size-2 rounded-full bg-cyan shadow-[0_0_0_4px_rgba(34,211,238,0.18)]" />
+          </button>
+
+          <HeaderAccountMenu items={accountMenuItems} triggerLabel={displayName} />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="mx-auto w-full max-w-[1560px] px-4 pt-5 sm:px-6 lg:px-8">
-      <div className="gt-surface grid gap-5 border-cyan/10">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <SectionHeading
-            eyebrow="Admin"
-            title={
-              <span className="inline-flex items-center gap-2">
-                <IconBox size="sm" className="h-8 w-8 rounded-xl">
-                  {meta.icon}
-                </IconBox>
-                {meta.label}
-              </span>
-            }
-            description={meta.description}
-          />
+    <div className="flex w-full items-center justify-between gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-2 lg:max-w-[720px] xl:max-w-[920px]">
+        <button
+          type="button"
+          aria-label="Đóng hoặc mở sidebar"
+          className="gt-interactive hidden size-10 shrink-0 items-center justify-center rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] text-slate-100 shadow-[0_10px_24px_rgba(2,6,23,0.18)] transition-colors hover:border-cyan/20 hover:bg-[linear-gradient(180deg,rgba(34,211,238,0.14),rgba(34,211,238,0.06))] hover:text-white lg:inline-flex"
+          onClick={onToggleSidebar}
+        >
+          <Menu size={16} strokeWidth={2.4} />
+        </button>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Badge className="gap-2 uppercase tracking-[0.12em]" variant={loading ? 'accent' : 'default'} icon={<ShieldCheck size={14} />}>
-              {loading ? 'Đang đồng bộ' : 'Sẵn sàng'}
-            </Badge>
+        <SearchBar
+          dense
+          ariaLabel="Tìm kiếm nhanh"
+          className="min-w-0 flex-1"
+          onChange={setSearchValue}
+          placeholder="Tìm kiếm nhanh..."
+          size={16}
+          value={searchValue}
+        />
+      </div>
 
-            <Button onClick={() => navigate({ name: 'home' })}>
-              <ArrowLeft size={16} />
-              Về site
-            </Button>
+      <div className="ml-auto flex flex-none items-center gap-2">
+        <button
+          type="button"
+          className="gt-interactive inline-flex size-10 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+          onClick={onRefresh}
+          title="Làm mới"
+        >
+          <RefreshCw size={17} className={loading ? 'animate-spin' : ''} />
+        </button>
 
-            <Button variant={loading ? 'accent' : 'default'} onClick={onRefresh}>
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-              Làm mới
-            </Button>
+        <button
+          type="button"
+          className="gt-interactive relative inline-flex size-10 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+          title="Thông báo"
+        >
+          <Bell size={17} />
+          <span className="absolute right-2 top-2 size-2 rounded-full bg-cyan shadow-[0_0_0_4px_rgba(34,211,238,0.18)]" />
+        </button>
 
-            <Button
-              className="border-rose-400/25 bg-rose-500/10 text-rose-200 hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-white"
-              onClick={onLogout}
-            >
-              <LogOut size={16} />
-              Đăng xuất
-            </Button>
-          </div>
-        </div>
+        <HeaderAccountMenu items={accountMenuItems} triggerLabel={displayName} />
       </div>
     </div>
   );
