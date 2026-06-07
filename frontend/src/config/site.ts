@@ -95,12 +95,13 @@ export function getFooterCopyright() {
   return `© ${SITE.copyrightYear} ${SITE.name}. All rights reserved.`;
 }
 
-export type AdminSection = 'dashboard' | 'games' | 'packages' | 'orders' | 'users';
+export type AdminSection = 'dashboard' | 'games' | 'packages' | 'orders' | 'deposits' | 'users';
 
 export const ADMIN_HEADER_SUBTITLES: Record<AdminSection, string> = {
   dashboard: 'Tổng quan',
   games: 'Quản lý game',
   packages: 'Quản lý gói nạp',
   orders: 'Quản lý đơn hàng',
+  deposits: 'Quản lý nạp tiền',
   users: 'Quản lý người dùng',
 } as const;

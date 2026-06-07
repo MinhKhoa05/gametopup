@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ArrowLeft, Boxes, Gamepad2, LayoutDashboard, LogOut, ReceiptText, RefreshCw, ShieldCheck, Users } from 'lucide-react';
+import { ArrowLeft, Boxes, Gamepad2, LayoutDashboard, LogOut, ReceiptText, RefreshCw, ShieldCheck, Users, WalletCards } from 'lucide-react';
 import type { Route } from '../../lib/routes';
 import { useRoute } from '../../hooks/common/route.hooks';
 import { Badge, Button, IconBox, SectionHeading } from '../ui';
@@ -27,6 +27,11 @@ const sectionMeta: Record<
     label: 'Đơn hàng',
     description: 'Kiểm tra, xử lý và theo dõi các đơn hàng gần đây.',
     icon: <ReceiptText size={18} />,
+  },
+  deposits: {
+    label: 'Nạp tiền',
+    description: 'Duyệt hoặc từ chối các yêu cầu nạp tiền đã được khách hàng xác nhận.',
+    icon: <WalletCards size={18} />,
   },
   users: {
     label: 'Người dùng',

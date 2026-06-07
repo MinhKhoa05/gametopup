@@ -7,7 +7,7 @@ export type Route =
   | { name: 'wallet' }
   | { name: 'orders' }
   | { name: 'account' }
-  | { name: 'admin'; section?: 'dashboard' | 'games' | 'packages' | 'orders' | 'users' };
+  | { name: 'admin'; section?: 'dashboard' | 'games' | 'packages' | 'orders' | 'deposits' | 'users' };
 
 function parseGameOrderStep(value: string | undefined): GameOrderStep | undefined {
   if (value === '1' || value === '2' || value === '3') {
@@ -38,7 +38,7 @@ export function parseRoute(pathname = window.location.pathname): Route {
   if (segments[0] === 'account') return { name: 'account' };
   if (segments[0] === 'admin') {
     const section = segments[1];
-    if (section === 'games' || section === 'packages' || section === 'orders' || section === 'users') {
+    if (section === 'games' || section === 'packages' || section === 'orders' || section === 'deposits' || section === 'users') {
       return { name: 'admin', section };
     }
     return { name: 'admin', section: 'dashboard' };

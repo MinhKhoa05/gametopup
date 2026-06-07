@@ -1,15 +1,18 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRoute } from '../common/route.hooks';
 import { useAdminMetrics } from './admin-metrics.hooks';
+import { useAdminDepositRequestsSection } from './admin-deposits.hooks';
 import { useAdminGamesSection } from './admin-games.hooks';
 import { useAdminOrdersSection } from './admin-orders.hooks';
 import { useAdminPackagesSection } from './admin-packages.hooks';
 import { useAdminUsersSection } from './admin-users.hooks';
 import {
+  adminDepositRequestsQueryKey,
   adminOrdersQueryKey,
   adminPackagesQueryKey,
   adminUsersQueryKey,
 } from '../../services/admin';
+import { depositRequestsQueryKey, transactionsQueryKey, walletQueryKey } from '../../services/wallet';
 import { GAMES_QUERY_KEY } from '../../services/games';
 import type { User } from '../../types';
 
@@ -18,6 +21,7 @@ export function useAdminPage({ user }: { user: User | null }) {
   const adminRoute = route.name === 'admin' ? route : { name: 'admin' as const, section: 'dashboard' as const };
   const queryClient = useQueryClient();
   const gamesSection = useAdminGamesSection();
+  const depositsSection = useAdminDepositRequestsSection();
   const packagesSection = useAdminPackagesSection();
   const ordersSection = useAdminOrdersSection();
   const usersSection = useAdminUsersSection();
@@ -27,15 +31,19 @@ export function useAdminPage({ user }: { user: User | null }) {
     packages: packagesSection.packages,
     users: usersSection.users,
   });
-  const loading = gamesSection.loading || packagesSection.loading || ordersSection.loading || usersSection.loading;
-  const busy = gamesSection.busy || packagesSection.busy || ordersSection.busy || usersSection.busy;
+  const loading = gamesSection.loading || depositsSection.loading || packagesSection.loading || ordersSection.loading || usersSection.loading;
+  const busy = gamesSection.busy || depositsSection.busy || packagesSection.busy || ordersSection.busy || usersSection.busy;
 
   const refreshAll = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: GAMES_QUERY_KEY }),
+      queryClient.invalidateQueries({ queryKey: adminDepositRequestsQueryKey }),
       queryClient.invalidateQueries({ queryKey: adminPackagesQueryKey }),
       queryClient.invalidateQueries({ queryKey: adminOrdersQueryKey }),
       queryClient.invalidateQueries({ queryKey: adminUsersQueryKey }),
+      queryClient.invalidateQueries({ queryKey: depositRequestsQueryKey }),
+      queryClient.invalidateQueries({ queryKey: walletQueryKey }),
+      queryClient.invalidateQueries({ queryKey: transactionsQueryKey }),
     ]);
   };
 
@@ -47,6 +55,9 @@ export function useAdminPage({ user }: { user: User | null }) {
     cancelOrder: ordersSection.cancelOrder,
     completeOrder: ordersSection.completeOrder,
     createGame: gamesSection.createGame,
+    depositRequests: depositsSection.requests,
+    approveDepositRequest: depositsSection.approveRequest,
+    rejectDepositRequest: depositsSection.rejectRequest,
     createPackage: packagesSection.createPackage,
     games: gamesSection.games,
     loading,

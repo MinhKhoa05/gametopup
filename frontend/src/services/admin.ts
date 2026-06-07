@@ -2,7 +2,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { toast } from 'sonner';
 import { api, type ApiResponse } from '../lib/api';
 import { GAMES_QUERY_KEY } from './games';
-import type { AdminGamePackage, Game, GamePackage, Order, User } from '../types';
+import { depositRequestsQueryKey, transactionsQueryKey, walletQueryKey } from './wallet';
+import type { AdminDepositRequest, AdminGamePackage, Game, GamePackage, Order, User } from '../types';
 
 export type GamePayload = Pick<Game, 'name' | 'imageUrl' | 'isActive'>;
 export type GamePackagePayload = Omit<AdminGamePackage, 'id'>;
@@ -16,6 +17,7 @@ export type UpdateUserPayload = {
 
 export const adminPackagesQueryKey = ['admin-packages'] as const;
 export const adminOrdersQueryKey = ['admin-orders'] as const;
+export const adminDepositRequestsQueryKey = ['admin-deposit-requests'] as const;
 export const adminUsersQueryKey = ['admin-users'] as const;
 
 // ==========================================
@@ -59,6 +61,11 @@ export async function getAdminOrders() {
   return response.data.data;
 }
 
+export async function getAdminDepositRequests() {
+  const response = await api.get<ApiResponse<AdminDepositRequest[]>>('/api/wallet/deposit-requests');
+  return response.data.data;
+}
+
 export async function pickOrder(payload: { orderId: number }) {
   await api.post<ApiResponse<void>>(`/api/orders/${payload.orderId}/pick`);
 }
@@ -69,6 +76,18 @@ export async function completeOrder(payload: { orderId: number }) {
 
 export async function cancelOrder(payload: { orderId: number }) {
   await api.post<ApiResponse<void>>(`/api/orders/${payload.orderId}/cancel`);
+}
+
+export async function approveDepositRequest(payload: { note?: string; requestId: number }) {
+  const body = payload.note?.trim() ? { note: payload.note.trim() } : {};
+  const response = await api.post<ApiResponse<AdminDepositRequest>>(`/api/wallet/deposit-requests/${payload.requestId}/approve`, body);
+  return response.data.data;
+}
+
+export async function rejectDepositRequest(payload: { note?: string; requestId: number }) {
+  const body = payload.note?.trim() ? { note: payload.note.trim() } : {};
+  const response = await api.post<ApiResponse<AdminDepositRequest>>(`/api/wallet/deposit-requests/${payload.requestId}/reject`, body);
+  return response.data.data;
 }
 
 export async function getAdminUsers(page = 1, pageSize = 200) {
@@ -132,6 +151,15 @@ export function useAdminOrdersQuery() {
     queryFn: getAdminOrders,
     placeholderData: keepPreviousData,
     staleTime: ADMIN_ORDERS_STALE_TIME,
+  });
+}
+
+export function useAdminDepositRequestsQuery() {
+  return useQuery({
+    queryKey: adminDepositRequestsQueryKey,
+    queryFn: getAdminDepositRequests,
+    placeholderData: keepPreviousData,
+    staleTime: ADMIN_DATA_STALE_TIME,
   });
 }
 
@@ -206,6 +234,29 @@ export function useAdminOrderMutations() {
   });
 
   return { pick, complete, cancel };
+}
+
+export function useAdminDepositRequestMutations() {
+  const queryKeys = [
+    adminDepositRequestsQueryKey,
+    depositRequestsQueryKey,
+    walletQueryKey,
+    transactionsQueryKey,
+  ] as const;
+
+  const approve = useAdminMutation({
+    mutationFn: approveDepositRequest,
+    successMessage: 'Đã duyệt yêu cầu nạp tiền.',
+    queryKeys,
+  });
+
+  const reject = useAdminMutation({
+    mutationFn: rejectDepositRequest,
+    successMessage: 'Đã từ chối yêu cầu nạp tiền.',
+    queryKeys,
+  });
+
+  return { approve, reject };
 }
 
 export function useAdminUserMutations() {

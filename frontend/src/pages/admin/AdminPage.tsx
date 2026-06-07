@@ -1,9 +1,17 @@
-import { Boxes, Gamepad2, LayoutDashboard, ReceiptText, Users } from 'lucide-react';
+import { Boxes, Gamepad2, LayoutDashboard, ReceiptText, Users, WalletCards } from 'lucide-react';
 import { isAdminUser } from '../../lib/roles';
 import { classNames } from '../../lib/ui';
 import { EmptyState, IconBox } from '../../components/ui';
 import { User } from '../../types';
-import { AdminHeader, DashboardPanel, GamesAdminPanel, OrdersAdminPanel, PackagesAdminPanel, UsersAdminPanel } from '../../components/admin';
+import {
+  AdminHeader,
+  DashboardPanel,
+  DepositRequestsAdminPanel,
+  GamesAdminPanel,
+  OrdersAdminPanel,
+  PackagesAdminPanel,
+  UsersAdminPanel,
+} from '../../components/admin';
 import { useAdminPage } from '../../hooks/admin/admin-page.hooks';
 
 export function AdminPage({
@@ -108,6 +116,16 @@ export function AdminPage({
                 />
               )}
 
+              {adminPage.section === 'deposits' && (
+                <DepositRequestsAdminPanel
+                  busy={adminPage.busy}
+                  loading={adminPage.loading}
+                  onApproveRequest={adminPage.approveDepositRequest}
+                  onRejectRequest={adminPage.rejectDepositRequest}
+                  requests={adminPage.depositRequests}
+                />
+              )}
+
               {adminPage.section === 'users' && (
                 <UsersAdminPanel
                   busy={adminPage.busy}
@@ -131,5 +149,6 @@ const adminNavItems = [
   { section: 'games', icon: <Gamepad2 size={18} />, label: 'Quản lý game' },
   { section: 'packages', icon: <Boxes size={18} />, label: 'Gói nạp' },
   { section: 'orders', icon: <ReceiptText size={18} />, label: 'Đơn hàng' },
+  { section: 'deposits', icon: <WalletCards size={18} />, label: 'Nạp tiền' },
   { section: 'users', icon: <Users size={18} />, label: 'Người dùng' },
 ] as const;
