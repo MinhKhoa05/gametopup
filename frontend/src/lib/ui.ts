@@ -29,8 +29,17 @@ const gameImages: Record<string, string> = {
     'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1000&q=80',
 };
 
+export function resolveImageUrl(url?: string | null) {
+  if (!url) return '';
+  if (url.startsWith('/')) {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, '').replace(/\/$/, '') || 'http://localhost:5000';
+    return `${baseUrl}${url}`;
+  }
+  return url;
+}
+
 export function pickImage(item: { name: string; imageUrl?: string }) {
-  if (item.imageUrl && !item.imageUrl.includes('example.com')) return item.imageUrl;
+  if (item.imageUrl && !item.imageUrl.includes('example.com')) return resolveImageUrl(item.imageUrl);
 
   const normalizedName = item.name
     .toLowerCase()

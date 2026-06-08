@@ -13,7 +13,7 @@ import {
   SectionHeading,
   ToggleField,
 } from '@/components/ui';
-import { pickImage } from '@/lib/ui';
+import { pickImage, resolveImageUrl } from '@/lib/ui';
 import { AdminSkeleton } from './AdminShared';
 
 export function GamesAdminPanel({
@@ -97,7 +97,7 @@ export function GamesAdminPanel({
         <ImageField
           className="min-h-44 w-full overflow-hidden"
           onChange={setImageFile}
-          src={editing?.imageUrl ?? ''}
+          src={resolveImageUrl(editing?.imageUrl) || ''}
           alt={editing?.name || form.name || 'Xem trước ảnh game'}
         />
         <ToggleField checked={form.isActive} label="Hiển thị game trong danh mục" onChange={(isActive) => setForm({ ...form, isActive })} />

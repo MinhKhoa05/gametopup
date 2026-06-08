@@ -19,6 +19,7 @@ appsettings.*.json
 /coveragereport/
 /coverage/
 /TestResults/
+uploads/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

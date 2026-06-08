@@ -14,7 +14,7 @@ import {
   SectionHeading,
   ToggleField,
 } from '@/components/ui';
-import { classNames, pickImage } from '@/lib/ui';
+import { classNames, pickImage, resolveImageUrl } from '@/lib/ui';
 import { AdminSkeleton } from './AdminShared';
 import { gameName } from './admin.utils';
 
@@ -176,7 +176,7 @@ export function PackagesAdminPanel({
           <ImageField
             className="min-h-44 w-full overflow-hidden"
             onChange={setImageFile}
-            src={editing?.imageUrl ?? ''}
+            src={resolveImageUrl(editing?.imageUrl) || ''}
             alt={editing?.name || selectedGame?.name || form.name || 'Xem trước ảnh gói'}
           />
         </div>
