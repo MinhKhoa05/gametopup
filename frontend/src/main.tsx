@@ -5,7 +5,7 @@ import { persistQueryClientRestore, persistQueryClientSubscribe } from '@tanstac
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
-import { Button } from './components/ui';
+import { Button } from '@/components/ui';
 import { queryClient } from './lib/queryClient';
 import './styles/globals.css';
 import './styles/topup.css';

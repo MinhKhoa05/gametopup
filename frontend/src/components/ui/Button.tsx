@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react';
-import { classNames } from '../../lib/ui';
+import { classNames } from '@/lib/ui';
 
 export type ButtonVariant = 'default' | 'accent' | 'outline';
 export type ButtonSize = 'sm' | 'md' | 'icon';

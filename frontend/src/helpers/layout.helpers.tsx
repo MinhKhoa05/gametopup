@@ -1,6 +1,6 @@
 import { LayoutDashboard, LogOut, Receipt, UserRound, WalletCards } from 'lucide-react';
-import type { HeaderAccountMenuItem } from '../types/layout.type';
-import type { Route } from '../lib/routes';
+import type { HeaderAccountMenuItem } from '@/shared/types/layout.types';
+import type { Route } from '@/lib/routes';
 
 export function getMenuIcon(routeName?: string) {
   if (routeName === 'account') return <UserRound size={16} />;

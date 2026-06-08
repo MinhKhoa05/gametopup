@@ -1,6 +1,6 @@
 import { Facebook, Headset, Mail, MessageCircleMore, ShieldCheck, Zap } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
-import { useRoute } from '../../hooks/common/route.hooks';
+import { useRoute } from '@/hooks/common/route.hooks';
 import {
   FOOTER_CONTACT_LINKS,
   FOOTER_DEVELOPER_LINKS,
@@ -8,7 +8,7 @@ import {
   FOOTER_SUPPORT_POINTS,
   getFooterCopyright,
   SITE,
-} from '../../config/site';
+} from '@/config/site';
 
 const contactIcons = {
   mail: <Mail size={20} />,

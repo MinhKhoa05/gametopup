@@ -1,4 +1,4 @@
-import { User } from '../types';
+import { User } from '@/features/user/user.types';
 import { normalizeRoleValue } from './roles';
 
 export function userDisplayName(user: User | null) {

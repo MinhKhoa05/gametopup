@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Button } from './Button';
-import { classNames } from '../../lib/ui';
+import { classNames } from '@/lib/ui';
 
 type FormActionsProps = {
   cancelLabel?: string;

@@ -1,14 +1,14 @@
-import { AuthGate } from '../auth/AuthGate';
-import { GameOrderWizard } from '../game-order';
-import { AccountPage } from '../../pages/AccountPage';
-import { AdminPage } from '../../pages/AdminPage';
-import { AuthPage } from '../../pages/AuthPage';
-import { GamesPage } from '../../pages/GamesPage';
-import { HomePage } from '../../pages/HomePage';
-import { OrdersPage } from '../../pages/OrdersPage';
-import { WalletPage } from '../../pages/WalletPage';
-import type { Route } from '../../lib/routes';
-import type { User } from '../../types';
+import { AuthGate } from '@/features/auth/components/AuthGate';
+import { GameOrderWizard } from '@/features/topup/components/GameOrderWizard';
+import { AccountPage } from '@/features/user/pages/AccountPage';
+import { AdminPage } from '@/features/admin/pages/AdminPage';
+import { AuthPage } from '@/features/auth/pages/AuthPage';
+import { GamesPage } from '@/features/games/pages/GamesPage';
+import { HomePage } from '@/features/games/pages/HomePage';
+import { OrdersPage } from '@/features/orders/pages/OrdersPage';
+import { WalletPage } from '@/features/wallet/pages/WalletPage';
+import type { Route } from '@/lib/routes';
+import type { User } from '@/features/user/user.types';
 
 type AppRoutesProps = {
   isAdminRoute: boolean;

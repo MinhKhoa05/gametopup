@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { classNames } from '../../lib/ui';
+import { classNames } from '@/lib/ui';
 
 export function SectionHeading({
   action,

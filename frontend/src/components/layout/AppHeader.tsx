@@ -2,21 +2,21 @@ import { useState } from 'react';
 import { Bell, UserRound, WalletCards } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { HeaderAccountMenu } from './HeaderAccountMenu';
-import { Button, IconBox, SearchBar } from '../ui';
-import { userDisplayName } from '../../lib/labels';
-import { classNames } from '../../lib/ui';
+import { Button, IconBox, SearchBar } from '@/components/ui';
+import { userDisplayName } from '@/lib/labels';
+import { classNames } from '@/lib/ui';
 import {
   HEADER_ACCOUNT_MENU_ADMIN_ITEMS,
   HEADER_ACCOUNT_MENU_USER_ITEMS,
   HEADER_NAV_ITEMS,
   SITE,
-} from '../../config/site';
-import { formatCurrency } from '../../lib/format';
-import { isAdminUser } from '../../lib/roles';
-import { useRoute } from '../../hooks/common/route.hooks';
-import { useAuthSession } from '../../hooks/auth.hooks';
-import { useUserOrders } from '../../hooks/orders.hooks';
-import { buildHeaderAccountMenuItems, getVisibleHeaderNavItems } from '../../helpers/layout.helpers';
+} from '@/config/site';
+import { formatCurrency } from '@/lib/format';
+import { isAdminUser } from '@/lib/roles';
+import { useRoute } from '@/hooks/common/route.hooks';
+import { useAuthSession } from '@/features/auth/hooks/auth.hooks';
+import { useUserOrders } from '@/features/orders/hooks/orders.hooks';
+import { buildHeaderAccountMenuItems, getVisibleHeaderNavItems } from '@/helpers/layout.helpers';
 
 export function AppHeader() {
   const { route, navigate } = useRoute();

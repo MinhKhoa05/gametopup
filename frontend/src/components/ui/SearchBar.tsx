@@ -1,6 +1,6 @@
 import type { ChangeEvent, KeyboardEventHandler } from 'react';
 import { Search } from 'lucide-react';
-import { classNames } from '../../lib/ui';
+import { classNames } from '@/lib/ui';
 import { inputClassName as inputBaseClassName } from './Field';
 
 export function SearchBar({

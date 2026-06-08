@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ImgHTMLAttributes } from 'react';
 import { ImageOff } from 'lucide-react';
-import { DEFAULT_IMAGE_SRC, classNames } from '../../lib/ui';
+import { DEFAULT_IMAGE_SRC, classNames } from '@/lib/ui';
 
 type ImageFieldProps = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'onChange'> & {
   accept?: string;

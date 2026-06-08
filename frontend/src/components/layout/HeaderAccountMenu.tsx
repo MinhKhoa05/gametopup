@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { classNames } from '../../lib/ui';
-import type { HeaderAccountMenuItem } from '../../types/layout.type';
+import { classNames } from '@/lib/ui';
+import type { HeaderAccountMenuItem } from '@/shared/types/layout.types';
 
 export function HeaderAccountMenu({
   items,

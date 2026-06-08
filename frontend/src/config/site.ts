@@ -1,4 +1,4 @@
-import type { Route } from '../lib/routes';
+import type { Route } from '@/lib/routes';
 
 export const SITE = {
   name: 'GameTopUp',

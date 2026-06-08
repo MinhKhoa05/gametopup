@@ -1,5 +1,5 @@
 import type { HTMLAttributes } from 'react';
-import { classNames } from '../../lib/ui';
+import { classNames } from '@/lib/ui';
 
 export type IconBoxSize = 'sm' | 'md' | 'lg';
 

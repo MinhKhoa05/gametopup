@@ -1,9 +1,9 @@
 import { ReactNode } from 'react';
 import { Gamepad2, Home, LogIn, PackageCheck, UserRound, WalletCards } from 'lucide-react';
-import { Route } from '../../lib/routes';
-import { classNames } from '../../lib/ui';
-import { BOTTOM_NAV_ITEMS } from '../../config/site';
-import { useRoute } from '../../hooks/common/route.hooks';
+import { Route } from '@/lib/routes';
+import { classNames } from '@/lib/ui';
+import { BOTTOM_NAV_ITEMS } from '@/config/site';
+import { useRoute } from '@/hooks/common/route.hooks';
 
 const bottomNavIcons: Record<Route['name'], ReactNode> = {
   home: <Home size={20} />,

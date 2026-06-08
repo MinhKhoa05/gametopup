@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { memo } from 'react';
 import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { classNames } from '../../lib/ui';
+import { classNames } from '@/lib/ui';
 
 export type StepProgressState = 'done' | 'active' | 'pending';
 

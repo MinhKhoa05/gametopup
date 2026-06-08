@@ -1,6 +1,6 @@
 import { ArrowDownLeft, ArrowUpRight, CheckCircle2, Clock3, CreditCard, Send, XCircle } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { DepositRequestStatus } from '../types/wallet-ui.type';
+import type { DepositRequestStatus } from '@/features/wallet/wallet.types';
 
 const transactionLabelByType: Record<number, string> = {
   1: 'Nạp tiền',

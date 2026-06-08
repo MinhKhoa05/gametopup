@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { classNames } from '../../lib/ui';
+import { classNames } from '@/lib/ui';
 import { IconBox } from './IconBox';
 
 export function StatCard({

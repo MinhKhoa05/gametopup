@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useLocation, useNavigate as useRouterNavigate } from 'react-router-dom';
-import { parseRoute, Route, routePath } from '../../lib/routes';
+import { parseRoute, Route, routePath } from '@/lib/routes';
 
 export function useRoute() {
   const location = useLocation();

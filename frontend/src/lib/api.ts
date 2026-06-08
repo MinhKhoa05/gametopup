@@ -1,12 +1,8 @@
+import type { ApiResponse } from '@/shared/types/api.types';
+export type { ApiResponse };
 import axios, { AxiosRequestConfig } from 'axios';
-import { useAuthStore } from '../store/auth.store';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
-export type ApiResponse<T = unknown> = {
-  success: boolean;
-  message: string;
-  data: T;
-  errorCode?: string;
-};
 
 const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 const apiBaseUrl = configuredBaseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');

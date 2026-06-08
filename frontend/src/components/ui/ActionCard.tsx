@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { classNames } from '../../lib/ui';
+import { classNames } from '@/lib/ui';
 
 type ActionCardProps = {
   title: ReactNode;

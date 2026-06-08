@@ -5,12 +5,12 @@ import { AppLayout } from './components/layout/AppLayout';
 import { AppFooter } from './components/layout/AppFooter';
 import { AppHeader } from './components/layout/AppHeader';
 import { BottomNav } from './components/layout/BottomNav';
-import { useAuthSession } from './hooks/auth.hooks';
+import { useAuthSession } from '@/features/auth/hooks/auth.hooks';
 import { useRoute } from './hooks/common/route.hooks';
-import { AUTH_USER_QUERY_KEY } from './services/auth';
+import { AUTH_USER_QUERY_KEY } from '@/features/auth/api/auth';
 import { queryClient } from './lib/queryClient';
-import { useAuthStore } from './store/auth.store';
-import { useGameOrderStore } from './store/game-order.store';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useGameOrderStore } from '@/features/topup/store/topup.store';
 
 export function App() {
   const { route, navigate } = useRoute();

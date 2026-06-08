@@ -1,5 +1,5 @@
 import type { InputHTMLAttributes } from 'react';
-import { classNames } from '../../lib/ui';
+import { classNames } from '@/lib/ui';
 
 export const inputClassName =
   'w-full min-h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-base text-slate-200 outline-none ' +

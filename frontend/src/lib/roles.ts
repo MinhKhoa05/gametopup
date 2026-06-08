@@ -1,4 +1,4 @@
-import { User } from '../types';
+import { User } from '@/features/user/user.types';
 
 export function isAdminUser(user: User | null) {
   const role = normalizeRoleValue(user?.role);

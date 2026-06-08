@@ -1,6 +1,6 @@
 import { Gamepad2 } from 'lucide-react';
-import { classNames } from '../../lib/ui';
-import { IconBox } from '../ui';
+import { classNames } from '@/lib/ui';
+import { IconBox } from '@/components/ui';
 
 export function BrandLogo({
   className,

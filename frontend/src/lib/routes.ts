@@ -1,4 +1,4 @@
-import type { GameOrderStep } from '../types';
+import type { GameOrderStep } from '@/features/topup/topup.types';
 
 export type Route =
   | { name: 'home' }

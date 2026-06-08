@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { classNames } from '../../lib/ui';
+import { classNames } from '@/lib/ui';
 
 export type BadgeVariant = 'default' | 'accent' | 'success' | 'warning' | 'danger';
 export type BadgeSize = 'sm' | 'md';
