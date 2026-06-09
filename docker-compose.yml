@@ -1,78 +1,62 @@
-version: "3.9"
-
 services:
-  # Database Service
   db:
     image: mariadb:11
     container_name: game_topup_db
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
-      # Map .env variables to MariaDB expected variables
-      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${DB_NAME}
-      MARIADB_USER: ${DB_USER}
+      MARIADB_ROOT_PASSWORD: gametopup_root
+      MARIADB_DATABASE: game_topup_db
+      MARIADB_USER: game_topup_user
       MARIADB_PASSWORD: ${DB_PASSWORD}
     ports:
-      # Maps host's DB_PORT (3307) to container's 3306
-      - "${DB_PORT:-3307}:3306"
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
       - ./backend/Database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
       - ./backend/Database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD}"]
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-pgametopup_root"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
-    networks:
-      - gametopup_network
 
-  # API Service
   api:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: game_topup_api
     restart: unless-stopped
-    env_file:
-      - .env
     volumes:
       - ./uploads:/app/wwwroot/uploads
-    ports:
-      - "${API_PORT_EXTERNAL:-5000}:8080"
     environment:
-      - ASPNETCORE_URLS=http://+:8080
-      # Docker-specific networking (Overrides .env values)
-      - DB_HOST=db
-      - DB_PORT=3306
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_KEY: ${JWT_KEY}
+      VIETQR_BANK_ID: ${VIETQR_BANK_ID}
+      VIETQR_ACCOUNT_NO: ${VIETQR_ACCOUNT_NO}
+      VIETQR_ACCOUNT_NAME: ${VIETQR_ACCOUNT_NAME}
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - gametopup_network
+    ports:
+      - "5000:8080"
 
-  # Frontend Service
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5000/api}
+        VITE_API_BASE_URL: http://localhost:5000/api
     container_name: game_topup_frontend
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT_EXTERNAL:-3000}:80"
+      - "3000:80"
     depends_on:
       - api
-    networks:
-      - gametopup_network
-
-networks:
-  gametopup_network:
-    driver: bridge
 
 volumes:
   db_data:

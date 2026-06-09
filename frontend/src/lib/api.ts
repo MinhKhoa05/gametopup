@@ -3,9 +3,7 @@ export type { ApiResponse };
 import axios, { AxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
-
-const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
-const apiBaseUrl = configuredBaseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
 
 export const api = axios.create({
   baseURL: apiBaseUrl,

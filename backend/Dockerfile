@@ -1,23 +1,23 @@
 # Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copy csproj & restore
-COPY *.sln .
+COPY *.sln ./
 COPY GameTopUp.DAL/*.csproj ./GameTopUp.DAL/
 COPY GameTopUp.BLL/*.csproj ./GameTopUp.BLL/
 COPY GameTopUp.API/*.csproj ./GameTopUp.API/
-COPY GameTopUp.Tests/*.csproj ./GameTopUp.Tests/
-RUN dotnet restore
 
-# Copy source code & build
+RUN dotnet restore GameTopUp.API/GameTopUp.API.csproj
+
 COPY . .
-WORKDIR /app/GameTopUp.API
-RUN dotnet publish -c Release -o /app/publish
 
-# Stage 2: Runtime nhẹ
+RUN dotnet publish GameTopUp.API/GameTopUp.API.csproj -c Release -o /app/publish
+
+# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
 WORKDIR /app
+
 COPY --from=build /app/publish .
+
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "GameTopUp.API.dll"]

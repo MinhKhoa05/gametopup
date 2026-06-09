@@ -1,33 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
-using dotenv.net;
 using GameTopUp.API.Extensions;
 using GameTopUp.API.Filters;
 using GameTopUp.API.Middlewares;
 using GameTopUp.BLL.Config;
 
-// Load .env file
-var envPath = Path.Combine(Directory.GetCurrentDirectory(), "..", ".env");
-if (!File.Exists(envPath)) envPath = ".env"; // Try current dir for Docker
-DotEnv.Load(new DotEnvOptions(envFilePaths: new[] { envPath }));
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.ApplyEnvironmentOverrides();
-
-// ================= CORS CONFIGURATION =================
-var originFromConfig = builder.Configuration["AllowedOrigins"];
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowReactApp",
-        policy =>
-        {
-            policy.WithOrigins(originFromConfig ?? "http://localhost:3000")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-        });
-});
 
 // Add services to the container
 builder.Services.AddControllers(options =>
@@ -72,6 +51,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddGameTopUpOptions(builder.Configuration);
+builder.Services.AddGameTopUpCors(builder.Configuration);
 
 // JWT Authentication
 builder.Services.AddJwtAuthentication(builder.Configuration);
@@ -98,7 +78,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowReactApp");
+app.UseCors(ServiceCollectionExtensions.ReactAppCorsPolicy);
 app.UseStaticFiles();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();

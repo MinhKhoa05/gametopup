@@ -20,10 +20,30 @@ namespace GameTopUp.API.Extensions
 {
     public static class ServiceCollectionExtensions
     {
+        internal const string ReactAppCorsPolicy = "AllowReactApp";
+
         public static IServiceCollection AddGameTopUpOptions(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
             services.Configure<VietQrSettings>(configuration.GetSection("VietQr"));
+
+            return services;
+        }
+
+        public static IServiceCollection AddGameTopUpCors(this IServiceCollection services, IConfiguration configuration)
+        {
+            var allowedOrigins = configuration.GetAllowedOrigins();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(ReactAppCorsPolicy, policy =>
+                {
+                    policy.WithOrigins(allowedOrigins)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            });
 
             return services;
         }

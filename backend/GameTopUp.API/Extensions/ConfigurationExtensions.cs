@@ -5,49 +5,48 @@ namespace GameTopUp.API.Extensions
         public static void ApplyEnvironmentOverrides(this IConfiguration configuration)
         {
             ApplyDatabase(configuration);
-            ApplyJwt(configuration);
-            ApplyCors(configuration);
-            ApplyVietQr(configuration);
+            ApplySecrets(configuration);
         }
 
         private static void ApplyDatabase(IConfiguration configuration)
         {
-            var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? configuration["Database:Host"] ?? "127.0.0.1";
-            var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? configuration["Database:Port"] ?? "3307";
-            var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? configuration["Database:Name"] ?? "game_topup_db";
-            var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? configuration["Database:User"] ?? "game_topup_user";
-            var dbPass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? configuration["Database:Password"] ?? "";
+            SetFromEnv(configuration, "Database:Host", "DB_HOST");
+            SetFromEnv(configuration, "Database:Port", "DB_PORT");
+            SetFromEnv(configuration, "Database:Name", "DB_NAME");
+            SetFromEnv(configuration, "Database:User", "DB_USER");
+            SetFromEnv(configuration, "Database:Password", "DB_PASSWORD");
+
+            var dbHost = configuration["Database:Host"];
+            var dbPort = configuration["Database:Port"];
+            var dbName = configuration["Database:Name"];
+            var dbUser = configuration["Database:User"];
+            var dbPass = configuration["Database:Password"];
 
             configuration["ConnectionStrings:Default"] =
                 $"server={dbHost};port={dbPort};database={dbName};user={dbUser};password={dbPass};SslMode=None;";
         }
 
-        private static void ApplyJwt(IConfiguration configuration)
+        private static void ApplySecrets(IConfiguration configuration)
         {
             SetFromEnv(configuration, "Jwt:Key", "JWT_KEY");
-            configuration["Jwt:Issuer"] = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? configuration["Jwt:Issuer"] ?? "GameTopUp";
-            configuration["Jwt:Audience"] = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? configuration["Jwt:Audience"] ?? "GameTopUpUsers";
-            configuration["Jwt:ExpireMinutes"] = Environment.GetEnvironmentVariable("JWT_EXPIRE_MINUTES") ?? configuration["Jwt:ExpireMinutes"] ?? "30";
-        }
-
-        private static void ApplyCors(IConfiguration configuration)
-        {
-            configuration["AllowedOrigins"] =
-                Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? configuration["AllowedOrigins"] ?? "http://localhost:3000";
-        }
-
-        private static void ApplyVietQr(IConfiguration configuration)
-        {
             SetFromEnv(configuration, "VietQr:BankId", "VIETQR_BANK_ID");
             SetFromEnv(configuration, "VietQr:AccountNo", "VIETQR_ACCOUNT_NO");
             SetFromEnv(configuration, "VietQr:AccountName", "VIETQR_ACCOUNT_NAME");
-            configuration["VietQr:Template"] =
-                Environment.GetEnvironmentVariable("VIETQR_TEMPLATE") ?? configuration["VietQr:Template"] ?? "compact2";
+            SetFromEnv(configuration, "VietQr:Template", "VIETQR_TEMPLATE");
+        }
+
+        public static string[] GetAllowedOrigins(this IConfiguration configuration)
+        {
+            return configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()!;
         }
 
         private static void SetFromEnv(IConfiguration configuration, string key, string envName)
         {
-            configuration[key] = Environment.GetEnvironmentVariable(envName) ?? configuration[key];
+            var envValue = Environment.GetEnvironmentVariable(envName);
+            if (!string.IsNullOrWhiteSpace(envValue))
+            {
+                configuration[key] = envValue;
+            }
         }
     }
 }

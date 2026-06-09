@@ -1,3 +1,5 @@
+import { apiBaseUrl } from '@/lib/api';
+
 export function classNames(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
@@ -32,8 +34,7 @@ const gameImages: Record<string, string> = {
 export function resolveImageUrl(url?: string | null) {
   if (!url) return '';
   if (url.startsWith('/')) {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, '').replace(/\/$/, '') || 'http://localhost:5000';
-    return `${baseUrl}${url}`;
+    return `${apiBaseUrl}${url}`;
   }
   return url;
 }

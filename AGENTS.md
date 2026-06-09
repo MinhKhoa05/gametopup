@@ -4,7 +4,7 @@ This file gives AI agents the minimum project-specific context they need for thi
 
 ## Project Snapshot
 
-GameTopUp is a structured replacement for manual chat-based game top-up workflows.
+GameTopUp is a full-stack system for managing intermediary game top-up services, replacing manual chat-based workflows with a structured system for deposits, orders, package availability, and fulfillment.
 
 The repo is built around a few core concerns that matter more than generic framework advice:
 
@@ -35,7 +35,7 @@ The important design pressure here is operational correctness, not clever abstra
 
 - `backend/` contains API, BLL, DAL, and tests.
 - `frontend/` contains the React app and its UI patterns.
-- `PROJECT_BACKGROUND.md` explains the product context and why the system exists.
+- `README.md` and `README.vi.md` explain the product context and local setup.
 
 ## Skill Workflow
 
