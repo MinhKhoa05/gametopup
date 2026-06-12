@@ -1,2 +1,2 @@
-export { DepositRequestList, WalletTransactionList } from './WalletActivityLists';
-export { WalletPanel } from './WalletPanel';
+export { WalletDepositRequestHistory, WalletTransactionHistory } from './WalletHistorySections';
+export { WalletDepositFlowPanel } from './WalletDepositFlowPanel';

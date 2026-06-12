@@ -1,90 +1,126 @@
 # AGENTS.md
 
-This file gives AI agents the minimum project-specific context they need for this repository.
+This file provides the minimum project-specific context needed to work effectively in this repository.
+
+Use available skills for engineering workflow, planning, implementation, testing, review, refactoring, security, and documentation.
+
+Use this file for GameTopUp-specific constraints, priorities, and preferences.
 
 ## Project Snapshot
 
-GameTopUp is a full-stack system for managing intermediary game top-up services, replacing manual chat-based workflows with a structured system for deposits, orders, package availability, and fulfillment.
+GameTopUp is a full-stack system for managing intermediary game top-up services.
 
-The repo is built around a few core concerns that matter more than generic framework advice:
+The repository revolves around several business-critical flows:
 
-- explicit order state transitions
-- wallet and transaction tracking
-- inventory reservation during order placement
-- transaction-safe payment processing
-- admin-managed deposit and order workflows
-- audit-friendly balance tracking with before/after snapshots
+* order state transitions
+* wallet and transaction tracking
+* inventory reservation
+* payment processing
+* deposit workflows
+* audit-friendly balance history
 
-If a change touches those areas, preserve the existing flow and concurrency behavior unless the task explicitly says otherwise.
+If a change touches these areas, preserve existing behavior and consistency guarantees unless the task explicitly requires otherwise.
 
-## What Makes This Repo Different
-
-The important design pressure here is operational correctness, not clever abstraction.
-
-- Backend work should keep transaction boundaries where the orchestration happens.
-- Wallet, order, stock, and payment flows are sensitive to concurrency and should not be simplified in a way that weakens locking or consistency.
-- Frontend work should stay practical and readable, with call sites that make intent obvious.
-- Avoid introducing abstractions just because they seem reusable in theory.
-
-## Tech Stack Snapshot
-
-- Backend: .NET 8, ASP.NET Core Web API, Dapper, Dommel, MariaDB, JWT cookies, BCrypt, Mapster, xUnit
-- Frontend: React, TypeScript, Vite, TanStack Query, Zustand, React Router, Tailwind CSS, Sonner, Lucide Icons
-
-## Project Areas
-
-- `backend/` contains API, BLL, DAL, and tests.
-- `frontend/` contains the React app and its UI patterns.
-- `README.md` and `README.vi.md` explain the product context and local setup.
-
-## Skill Workflow
-
-Before non-trivial work:
-
-1. Inspect the installed skills available in the current environment.
-2. If a local skill directory exists, discover skills from it before starting non-trivial work.
-3. Choose the relevant skill(s) for the task.
-4. Read the matching `SKILL.md` files.
-5. Follow those instructions first, then apply project context from this file.
-
-Do not repeat general guidance here if a skill already explains it well.
-Use this file for project-specific context and differences.
-
-## Repo Rules That Matter Here
+## Technology
 
 ### Backend
 
-- Keep controllers thin.
-- Keep business rules in services.
-- Keep orchestration and transactions in use cases.
-- Keep repositories focused on data access only.
-- Preserve existing response, exception, and transaction patterns.
+- .NET 8
+- ASP.NET Core Web API
+- Dapper
+- Dommel
+- MariaDB
+- JWT Authentication
+- BCrypt
+- Mapster
+- xUnit
 
 ### Frontend
 
-- Prefer simple APIs for fixed-layout components.
-- Use props when a component has a stable structure and few variants.
-- Use composition only when it clearly improves flexibility.
-- Do not keep wrapper components that only rename or lightly wrap another component.
-- If a wrapper is only 1-2 lines, use the base component directly.
-- Prefer call sites that are easy to understand without jumping through abstractions.
+- React
+- TypeScript
+- Vite
+- TanStack Query
+- Zustand
+- React Router
+- Tailwind CSS
 
-### Refactoring
+---
 
-- Preserve behavior first.
-- Remove duplication only when it is real and recurring.
-- Keep changes focused.
-- Prefer the existing codebase style over introducing a new one.
+## What Matters Here
 
-## When To Document More
+Operational correctness matters more than architectural purity.
 
-Use docs or ADRs only for decisions that are expensive to reverse or easy to forget.
+Key constraints:
 
-That includes things like:
+* Transactional flows are consistency-sensitive.
+* Wallet, order, stock, and payment operations must remain traceable and auditable.
+* Locking, state-transition correctness, and data integrity are more important than reducing a few lines of code.
+* Prefer explicit business flow over abstraction unless the abstraction clearly reduces real duplication.
 
-- architecture changes
-- API contract changes
-- data flow or transaction changes
-- major frontend pattern changes
+---
 
-For smaller code changes, keep the code itself readable and avoid documenting the obvious.
+## Project Areas
+
+* `backend/` contains the backend application, data access, and tests.
+* `frontend/` contains the React application.
+* `README.md` and `README.vi.md` provide product context and local setup instructions.
+
+---
+
+## Working Guidelines
+
+Before non-trivial work:
+
+1. Read this file first.
+2. Use the smallest relevant set of available skills.
+3. Preserve project-specific behavior and consistency guarantees.
+4. Verify changes before considering work complete.
+
+---
+
+## Backend Constraints
+
+When modifying wallet, order, inventory, deposit, or payment flows:
+
+* Preserve transaction boundaries.
+* Preserve locking behavior.
+* Preserve audit trails and balance history.
+* Preserve state-transition rules.
+* Prioritize correctness over abstraction.
+
+Do not simplify transactional workflows in ways that weaken consistency guarantees.
+
+---
+
+## Frontend Preferences
+
+* Prefer practical and explicit component APIs.
+* Keep business-related UI flows easy to trace.
+* Favor readability over flexibility when the structure is stable.
+* Avoid abstractions that make business behavior harder to follow.
+
+---
+
+## Refactoring Preferences
+
+* Preserve behavior first.
+* Reduce duplication when it is real and recurring.
+* Prefer explicit code over indirection.
+* Avoid abstractions created primarily for theoretical reuse.
+* Favor maintainability over premature optimization.
+* Keep business-critical flows easy to follow from entry point to persistence.
+
+---
+
+## Documentation
+
+Document decisions that are expensive to reverse or easy to forget, especially:
+
+* architecture changes
+* API contract changes
+* schema changes
+* transaction-flow changes
+* state-transition changes
+
+Prefer readable code over excessive documentation.

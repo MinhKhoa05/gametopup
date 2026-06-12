@@ -1,14 +1,14 @@
 import { useState, type ReactNode } from 'react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { ShieldCheck, Tag, Zap } from 'lucide-react';
-import { useAuthSession } from '@/features/auth/hooks/auth.hooks';
-import type { AuthMode } from '@/features/auth/hooks/auth.hooks';
-import { classNames } from '@/lib/ui';
-import { SITE } from '@/config/site';
 import { AuthForm } from '@/features/auth/components/AuthForm';
+import { useAuthSession, type AuthMode } from '@/features/auth/hooks/useAuthSession';
+import { Badge } from '@/shared/components';
+import { SITE } from '@/app/config/site';
+import { classNames } from '@/shared/lib/classNames';
 
 export function AuthPage() {
-  const { isAuthSubmitting, submitAuth } = useAuthSession();
+  const { isSubmitting, submitAuth } = useAuthSession();
   const [activeMode, setActiveMode] = useState<AuthMode>('login');
   const [direction, setDirection] = useState(1);
 
@@ -21,19 +21,15 @@ export function AuthPage() {
   return (
     <div className="w-full px-4 pb-24 pt-8 sm:px-6 sm:pb-28 sm:pt-10 lg:px-8 lg:pt-12">
       <section className="relative mx-auto w-full max-w-7xl overflow-hidden rounded-[28px] border border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-        <div
-          className={
-            'absolute inset-0 bg-[linear-gradient(100deg,rgba(7,17,31,0.96)_0%,rgba(7,17,31,0.9)_45%,rgba(7,17,31,0.58)_100%),url("https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&w=1600&q=80")] bg-cover bg-center'
-          }
-        />
+        <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(7,17,31,0.96)_0%,rgba(7,17,31,0.9)_45%,rgba(7,17,31,0.58)_100%),url('https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(34,211,238,0.13),transparent_28%),radial-gradient(circle_at_85%_40%,rgba(34,211,238,0.1),transparent_18%)]" />
 
         <div className="relative grid min-h-[600px] w-full lg:grid-cols-[1.45fr_1fr] xl:grid-cols-[1.5fr_0.98fr]">
           <div className="flex flex-col justify-between px-5 py-5 sm:px-8 sm:py-7 lg:px-6 lg:py-8">
             <div className="max-w-[34rem]">
-              <p className="inline-flex rounded-full border border-cyan/20 bg-cyan/10 px-4 py-1 text-[0.7rem] font-bold uppercase tracking-[0.24em] text-cyan-100">
+              <Badge variant="accent" className="uppercase tracking-[0.24em]">
                 Đại lý nạp game uy tín số 1
-              </p>
+              </Badge>
 
               <h1 className="mt-4 text-[clamp(2.1rem,4.4vw,4rem)] font-black leading-[0.92] tracking-tight text-white">
                 Nạp game
@@ -47,21 +43,9 @@ export function AuthPage() {
             </div>
 
             <div className="mt-6 grid max-w-[30rem] gap-3">
-              <FeatureRow
-                icon={<Tag size={18} />}
-                title="Giá rẻ hơn đến 15%"
-                description="Chiết khấu cao hơn so với cổng nạp gốc"
-              />
-              <FeatureRow
-                icon={<ShieldCheck size={18} />}
-                title="An toàn tuyệt đối"
-                description="Bảo mật thông tin - Giao dịch an toàn"
-              />
-              <FeatureRow
-                icon={<Zap size={18} />}
-                title="Xử lý siêu nhanh"
-                description="Nạp thành công chỉ từ 5 - 15 phút"
-              />
+              <FeatureRow icon={<Tag size={18} />} title="Giá rẻ hơn đến 15%" description="Chiết khấu cao hơn so với cổng nạp gốc" />
+              <FeatureRow icon={<ShieldCheck size={18} />} title="An toàn tuyệt đối" description="Bảo mật thông tin - Giao dịch an toàn" />
+              <FeatureRow icon={<Zap size={18} />} title="Xử lý siêu nhanh" description="Nạp thành công chỉ từ 5 - 15 phút" />
             </div>
           </div>
 
@@ -92,7 +76,7 @@ export function AuthPage() {
                   >
                     <AuthForm
                       mode={activeMode}
-                      busy={isAuthSubmitting}
+                      busy={isSubmitting}
                       onSubmitAuth={submitAuth}
                       onSwitchMode={switchMode}
                       className="flex h-full flex-1 flex-col"

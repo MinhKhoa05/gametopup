@@ -1,6 +1,15 @@
+const hasTailwindPostcss = await import('@tailwindcss/postcss')
+  .then(() => true)
+  .catch(() => false);
+
 export default {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
+  plugins: hasTailwindPostcss
+    ? {
+        '@tailwindcss/postcss': {},
+        autoprefixer: {},
+      }
+    : {
+        tailwindcss: {},
+        autoprefixer: {},
+      },
 };

@@ -1,22 +1,30 @@
-import { useEffect } from 'react';
-import { Toaster } from 'sonner';
-import { AppRoutes } from './components/app/AppRoutes';
-import { AppLayout } from './components/layout/AppLayout';
-import { AppFooter } from './components/layout/AppFooter';
-import { AppHeader } from './components/layout/AppHeader';
-import { BottomNav } from './components/layout/BottomNav';
-import { useAuthSession } from '@/features/auth/hooks/auth.hooks';
-import { useRoute } from './hooks/common/route.hooks';
-import { AUTH_USER_QUERY_KEY } from '@/features/auth/api/auth';
-import { queryClient } from './lib/queryClient';
-import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useGameOrderStore } from '@/features/topup/store/topup.store';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { queryClient } from '@/shared/api/queryClient';
+import { AUTH_USER_QUERY_KEY } from '@/features/auth/server';
+import { registerSessionExpiredHandler } from '@/app/session';
+import { AppLayout } from '@/app/components/AppLayout';
+import { BottomNav } from '@/app/components/BottomNav';
+import { SiteHeader } from '@/app/components/SiteHeader';
+import { Footer } from '@/app/site-shell/Footer';
+import { AppRouter } from '@/app/router/AppRouter';
+import { ROUTE_PATHS } from '@/app/router/routes';
 
 export function App() {
-  const { route, navigate } = useRoute();
-  const auth = useAuthSession();
-  const isAdminRoute = route.name === 'admin';
-  const sessionExpiredAt = useAuthStore((state) => state.sessionExpiredAt);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isAdminRoute = location.pathname === ROUTE_PATHS.admin || location.pathname.startsWith(`${ROUTE_PATHS.admin}/`);
+  const [sessionExpiredAt, setSessionExpiredAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    registerSessionExpiredHandler(() => {
+      setSessionExpiredAt(Date.now());
+    });
+
+    return () => {
+      registerSessionExpiredHandler(null);
+    };
+  }, []);
 
   useEffect(() => {
     if (!sessionExpiredAt) {
@@ -25,22 +33,16 @@ export function App() {
 
     queryClient.clear();
     queryClient.setQueryData(AUTH_USER_QUERY_KEY, null);
-    useAuthStore.getState().setGuest();
-    useGameOrderStore.getState().resetWizard();
-    navigate({ name: 'auth' });
-  }, [navigate, sessionExpiredAt]);
+    setSessionExpiredAt(null);
+    navigate(ROUTE_PATHS.auth, {
+      replace: true,
+      state: { from: location.pathname },
+    });
+  }, [location.pathname, navigate, sessionExpiredAt]);
 
   return (
-    <AppLayout
-      isAdminRoute={isAdminRoute}
-      header={<AppHeader />}
-      footer={<AppFooter />}
-      bottomNav={<BottomNav hasLogin={auth.isLoggedIn} />}
-      toast={<Toaster richColors position="top-right" />}
-    >
-      <div className={route.name === 'home' || route.name === 'auth' || isAdminRoute ? '' : 'mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8'}>
-        <AppRoutes isAdminRoute={isAdminRoute} onAdminLogout={auth.handleLogout} route={route} user={auth.user} />
-      </div>
+    <AppLayout isAdminRoute={isAdminRoute} header={<SiteHeader />} footer={<Footer />} bottomNav={<BottomNav />}>
+      <AppRouter />
     </AppLayout>
   );
 }

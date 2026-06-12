@@ -37,19 +37,6 @@
   border-color: var(--gt-border);
 }
 
-/* Empty / rows */
-.gt-record-row {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 12px;
-  align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: var(--gt-radius-sm);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
-  padding: 10px 12px;
-}
-
 /* Effects */
 .gt-interactive {
   transition: var(--gt-transition);

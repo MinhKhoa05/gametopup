@@ -1,1 +1,0 @@
-export const QUICK_AMOUNTS = [100000, 200000, 500000, 1000000] as const;

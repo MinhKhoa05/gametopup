@@ -1,28 +1,23 @@
 import type { ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { classNames, pickImage } from '@/lib/ui';
-import { Game } from '@/features/games/games.types';
-import { IconBox, ImageField } from '@/components/ui';
+import type { Game } from '../types';
+import { ImageBox } from '@/shared/components';
+import { classNames } from '@/shared/lib/classNames';
 
-export function GameGrid({
-  games,
-  onPick,
-  loading = false,
-  skeletonCount = 8,
-  renderBadges,
-  className,
-}: {
+type GameGridProps = {
   className?: string;
   games: Game[];
   loading?: boolean;
   onPick: (game: Game) => void;
   skeletonCount?: number;
   renderBadges?: (game: Game) => ReactNode;
-}) {
+};
+
+export function GameGrid({ className, games, loading = false, onPick, skeletonCount = 8, renderBadges }: GameGridProps) {
   return (
     <div
       className={classNames(
-        'grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] md:gap-5',
+        'grid grid-cols-3 gap-x-2 gap-y-3 overflow-visible pb-0 sm:grid-cols-4 md:flex md:items-start md:gap-4 md:overflow-x-auto md:pb-3 md:[-ms-overflow-style:none] md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden',
         className,
       )}
     >
@@ -30,43 +25,25 @@ export function GameGrid({
         ? Array.from({ length: skeletonCount }).map((_, index) => (
             <div
               key={`game-skeleton-${index}`}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-ink-light p-0 text-left"
+              className="flex w-full flex-col items-center justify-start gap-2 text-center text-[0.72rem] font-semibold text-slate-300 md:w-[96px] md:flex-none md:text-sm"
               aria-hidden="true"
             >
-              <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
-                <div className="absolute inset-0 animate-pulse bg-[linear-gradient(110deg,rgba(255,255,255,0.03)_8%,rgba(255,255,255,0.12)_18%,rgba(255,255,255,0.03)_33%)] bg-[length:200%_100%]" />
-              </div>
-              <div className="flex flex-1 flex-col p-4">
-                <div className="mb-2 h-5 w-3/4 animate-pulse rounded-full bg-white/8" />
-                <div className="h-4 w-1/2 animate-pulse rounded-full bg-white/6" />
-                <div className="mt-4 flex w-full items-center justify-between">
-                  <div className="h-4 w-20 animate-pulse rounded-full bg-white/8" />
-                  <div className="h-8 w-8 animate-pulse rounded-full bg-white/8" />
-                </div>
-              </div>
+              <div className="aspect-square w-full animate-pulse rounded-2xl bg-white/10 md:h-[72px] md:w-[72px] md:rounded-3xl" />
+              <div className="h-3.5 w-16 animate-pulse rounded-full bg-white/10" />
             </div>
           ))
         : games.map((game) => (
             <button
-              type="button"
               key={game.id}
+              type="button"
+              className="group flex w-full flex-col items-center justify-start gap-2 text-center text-[0.72rem] font-semibold text-slate-300 transition-transform duration-200 md:w-[96px] md:flex-none md:text-sm"
               onClick={() => onPick(game)}
-              className="gt-interactive group flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-ink-light p-0 text-left"
             >
-              <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
-                <ImageField src={pickImage(game)} alt={game.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-transparent bg-ink-lighter object-cover transition-all duration-200 group-hover:-translate-y-1 group-hover:border-cyan md:h-[72px] md:w-[72px] md:rounded-3xl">
+                <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full object-cover" />
                 {renderBadges ? <div className="absolute right-2 top-2 flex flex-col items-end gap-2">{renderBadges(game)}</div> : null}
               </div>
-              <div className="flex flex-1 flex-col p-4">
-                <h3 className="mb-1 text-[1.1rem] font-bold text-white">{game.name}</h3>
-                <span className="text-sm text-slate-400">Nạp nhanh bằng ID</span>
-                <div className="mt-4 flex w-full items-center justify-between">
-                  <span className="text-sm font-bold text-cyan">Nạp game</span>
-                  <IconBox size="sm" circle className="h-8 w-8">
-                    <ChevronRight size={16} />
-                  </IconBox>
-                </div>
-              </div>
+              <span className="leading-tight">{game.name}</span>
             </button>
           ))}
     </div>
