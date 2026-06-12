@@ -1,10 +1,17 @@
-namespace GameTopUp.BLL.Options
+using System.ComponentModel.DataAnnotations;
+
+namespace GameTopUp.BLL.Options;
+
+public sealed class JwtSettings
 {
-    public class JwtSettings
-    {
-        public string Key { get; set; } = null!;
-        public string Issuer { get; set; } = null!;
-        public string Audience { get; set; } = null!;
-        public int ExpireMinutes { get; set; }
-    }
+    [Required]
+    public string Key { get; set; } = string.Empty;
+
+    [Required]
+    public string Issuer { get; set; } = string.Empty;
+
+    [Required]
+    public string Audience { get; set; } = string.Empty;
+
+    public int ExpireMinutes { get; set; } = 30;
 }

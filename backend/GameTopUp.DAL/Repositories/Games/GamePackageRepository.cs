@@ -1,78 +1,40 @@
-using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Database;
+using GameTopUp.DAL.Entities.Games;
 using GameTopUp.DAL.Interfaces.Games;
 
-namespace GameTopUp.DAL.Repositories.Games
+namespace GameTopUp.DAL.Repositories.Games;
+
+public sealed class GamePackageRepository : IGamePackageRepository
 {
-    public class GamePackageRepository : IGamePackageRepository
+    private readonly DatabaseContext _database;
+
+    public GamePackageRepository(DatabaseContext database)
     {
-        private readonly DatabaseContext _database;
-
-        public GamePackageRepository(DatabaseContext database)
-        {
-            _database = database;
-        }
-
-        public async Task<GamePackage?> GetByIdAsync(long id)
-        {
-            return await _database.GetByIdAsync<GamePackage>(id);
-        }
-
-        public async Task<List<GamePackage>> GetAllAsync()
-        {
-            var sql = "SELECT * FROM game_packages";
-            
-            return await _database.QueryAsync<GamePackage>(sql);
-        }
-
-        public async Task<List<GamePackage>> GetByGameIdAsync(long gameId)
-        {
-            // Chỉ lấy các gói nạp đang ở trạng thái hoạt động để hiển thị cho khách hàng.
-            var sql = "SELECT * FROM game_packages WHERE game_id = @GameId AND is_active = 1";
-            
-            return await _database.QueryAsync<GamePackage>(sql, new 
-            { 
-                GameId = gameId 
-            });
-        }
-
-        public async Task<long> CreateAsync(GamePackage gamePackage)
-        {
-            return await _database.InsertAsync<GamePackage, long>(gamePackage);
-        }
-
-        public async Task<bool> UpdateAsync(GamePackage gamePackage)
-        {
-            return await _database.UpdateAsync(gamePackage);
-        }
-
-        public async Task<int> IncreaseStockAsync(long id, int quantity)
-        {
-            var sql = @"UPDATE game_packages 
-                        SET stock_quantity = stock_quantity + @Quantity, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = @Id";
-            
-            return await _database.ExecuteAsync(sql, new { Id = id, Quantity = quantity });
-        }
-
-        public async Task<int> DecreaseStockAsync(long id, int quantity)
-        {
-            var sql = @"UPDATE game_packages 
-                        SET stock_quantity = stock_quantity - @Quantity, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = @Id AND stock_quantity >= @Quantity";
-            
-            return await _database.ExecuteAsync(sql, new { Id = id, Quantity = quantity });
-        }
-
-
-        public async Task<int> DeleteAsync(long id)
-        {
-            var sql = "DELETE FROM game_packages WHERE id = @Id";
-            
-            return await _database.ExecuteAsync(sql, new 
-            { 
-                Id = id 
-            });
-        }
+        _database = database;
     }
+
+    public Task<GamePackage?> GetByIdAsync(long id) => _database.GetByIdAsync<GamePackage>(id);
+
+    public Task<List<GamePackage>> GetAllAsync() => _database.QueryAsync<GamePackage>("SELECT * FROM game_packages ORDER BY created_at DESC");
+
+    public Task<List<GamePackage>> GetByGameIdAsync(long gameId) =>
+        _database.QueryAsync<GamePackage>(
+            "SELECT * FROM game_packages WHERE game_id = @GameId AND is_active = 1 ORDER BY created_at DESC",
+            new { GameId = gameId });
+
+    public Task<long> CreateAsync(GamePackage gamePackage) => _database.InsertAsync<GamePackage, long>(gamePackage);
+
+    public Task<bool> UpdateAsync(GamePackage gamePackage) => _database.UpdateAsync(gamePackage);
+
+    public Task<int> IncreaseStockAsync(long id, int quantity) =>
+        _database.ExecuteAsync(
+            "UPDATE game_packages SET stock_quantity = stock_quantity + @Quantity, updated_at = CURRENT_TIMESTAMP WHERE id = @Id",
+            new { Id = id, Quantity = quantity });
+
+    public Task<int> DecreaseStockAsync(long id, int quantity) =>
+        _database.ExecuteAsync(
+            "UPDATE game_packages SET stock_quantity = stock_quantity - @Quantity, updated_at = CURRENT_TIMESTAMP WHERE id = @Id AND stock_quantity >= @Quantity",
+            new { Id = id, Quantity = quantity });
+
+    public Task<int> DeleteAsync(long id) => _database.ExecuteAsync("DELETE FROM game_packages WHERE id = @Id", new { Id = id });
 }

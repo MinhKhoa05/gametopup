@@ -1,11 +1,10 @@
-namespace GameTopUp.BLL.DTOs.Images
+namespace GameTopUp.BLL.DTOs.Images;
+
+public sealed class ImageStorageResult
 {
-    public class ImageStorageResult
-    {
-        public string Url { get; set; } = null!;
-        public string RelativePath { get; set; } = null!;
-        public string StoredFileName { get; set; } = null!;
-        public long Bytes { get; set; }
-        public string? OriginalFileName { get; set; }
-    }
+    public string Url { get; set; } = string.Empty;
+    public string RelativePath { get; set; } = string.Empty;
+    public string StoredFileName { get; set; } = string.Empty;
+    public long Bytes { get; set; }
+    public string? OriginalFileName { get; set; }
 }

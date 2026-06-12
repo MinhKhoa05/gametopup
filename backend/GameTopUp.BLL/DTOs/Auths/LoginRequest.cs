@@ -1,16 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GameTopUp.BLL.DTOs.Auths
+namespace GameTopUp.BLL.DTOs.Auths;
+
+public sealed class LoginRequest
 {
-    public class LoginRequest
-    {
-        [Required(ErrorMessage = "Email không được để trống")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
 
-        public string Email { get; set; } = null!;
-
-        [Required(ErrorMessage = "Mật khẩu không được để trống")]
-        [MinLength(8, ErrorMessage = "Mật khẩu phải ít nhất 8 ký tự")]
-        public string Password { get; set; } = null!;
-    }
+    [Required]
+    [MinLength(8)]
+    public string Password { get; set; } = string.Empty;
 }

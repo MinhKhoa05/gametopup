@@ -2,16 +2,16 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY *.sln ./
-COPY GameTopUp.DAL/*.csproj ./GameTopUp.DAL/
+COPY GameTopUp.slnx ./
+COPY GameTopUp.Api/*.csproj ./GameTopUp.Api/
 COPY GameTopUp.BLL/*.csproj ./GameTopUp.BLL/
-COPY GameTopUp.API/*.csproj ./GameTopUp.API/
+COPY GameTopUp.DAL/*.csproj ./GameTopUp.DAL/
 
-RUN dotnet restore GameTopUp.API/GameTopUp.API.csproj
+RUN dotnet restore GameTopUp.Api/GameTopUp.Api.csproj
 
 COPY . .
 
-RUN dotnet publish GameTopUp.API/GameTopUp.API.csproj -c Release -o /app/publish
+RUN dotnet publish GameTopUp.Api/GameTopUp.Api.csproj -c Release -o /app/publish
 
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
@@ -20,4 +20,4 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 EXPOSE 8080
-ENTRYPOINT ["dotnet", "GameTopUp.API.dll"]
+ENTRYPOINT ["dotnet", "GameTopUp.Api.dll"]

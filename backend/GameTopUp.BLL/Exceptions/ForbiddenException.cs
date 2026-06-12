@@ -1,11 +1,9 @@
+namespace GameTopUp.BLL.Exceptions;
 
-namespace GameTopUp.BLL.Exceptions
+public sealed class ForbiddenException : BusinessException
 {
-    public class ForbiddenException : BusinessException
+    public ForbiddenException(ErrorCode errorCode = ErrorCode.Forbidden, string? message = null)
+        : base(errorCode, message)
     {
-        public ForbiddenException(ErrorCode errorCode = ErrorCode.Forbidden, string? message = null)
-            : base(errorCode, message)
-        {
-        }
     }
 }

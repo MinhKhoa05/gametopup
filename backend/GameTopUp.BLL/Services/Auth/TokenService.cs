@@ -2,86 +2,59 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using GameTopUp.BLL.DTOs.Auths;
 using GameTopUp.BLL.Options;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
-namespace GameTopUp.BLL.Services.Auth
+namespace GameTopUp.BLL.Services.Auth;
+
+public sealed class TokenService
 {
-    public class TokenService
+    private const int RefreshTokenByteSize = 32;
+    private readonly JwtSettings _jwtSettings;
+    private readonly SymmetricSecurityKey _securityKey;
+    private readonly JwtSecurityTokenHandler _tokenHandler = new();
+
+    public TokenService(IOptions<JwtSettings> jwtOptions)
     {
-        private const int RefreshTokenByteSize = 32;
+        _jwtSettings = jwtOptions.Value;
+        _securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+    }
 
-        private readonly JwtSettings _jwtSettings;
-        private readonly SymmetricSecurityKey _securityKey;
-        private readonly JwtSecurityTokenHandler _tokenHandler = new();
+    public string GenerateAccessToken(TokenPayload payload)
+    {
+        var now = DateTime.UtcNow;
 
-        public TokenService(IOptions<JwtSettings> jwtOptions)
+        var claims = new List<Claim>
         {
-            _jwtSettings = jwtOptions.Value;
+            new(ClaimTypes.NameIdentifier, payload.UserId.ToString()),
+            new(ClaimTypes.Name, payload.DisplayName),
+            new(JwtRegisteredClaimNames.Email, payload.Email),
+            new(ClaimTypes.Role, payload.Role.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+        };
 
-            // Key dùng để ký JWT bằng HMAC SHA256.
-            _securityKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_jwtSettings.Key));
-        }
+        var token = new JwtSecurityToken(
+            issuer: _jwtSettings.Issuer,
+            audience: _jwtSettings.Audience,
+            claims: claims,
+            expires: now.AddMinutes(_jwtSettings.ExpireMinutes),
+            signingCredentials: new SigningCredentials(_securityKey, SecurityAlgorithms.HmacSha256));
 
-        public string GenerateAccessToken(TokenPayload payload)
-        {
-            var now = DateTime.UtcNow;
+        return _tokenHandler.WriteToken(token);
+    }
 
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, payload.UserId.ToString()),
-                new Claim(ClaimTypes.Name, payload.DisplayName ?? string.Empty),
-                new Claim(JwtRegisteredClaimNames.Email, payload.Email ?? string.Empty),
-                new Claim(ClaimTypes.Role, payload.Role ?? string.Empty),
+    public string GenerateRefreshToken()
+    {
+        var randomBytes = new byte[RefreshTokenByteSize];
+        RandomNumberGenerator.Fill(randomBytes);
+        return Convert.ToHexString(randomBytes);
+    }
 
-                // Mỗi token có ID riêng để hỗ trợ revoke/trace.
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-
-                // Thời điểm token được tạo.
-                new Claim(
-                    JwtRegisteredClaimNames.Iat,
-                    DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
-                    ClaimValueTypes.Integer64)
-            };
-
-            var credentials = new SigningCredentials(
-                _securityKey,
-                SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _jwtSettings.Issuer,
-                audience: _jwtSettings.Audience,
-                claims: claims,
-
-                // Access token nên có thời gian sống ngắn.
-                expires: now.AddMinutes(_jwtSettings.ExpireMinutes),
-
-                signingCredentials: credentials
-            );
-
-            return _tokenHandler.WriteToken(token);
-        }
-
-        public string GenerateRefreshToken()
-        {
-            byte[] randomBytes = new byte[RefreshTokenByteSize];
-
-            RandomNumberGenerator.Fill(randomBytes);
-
-            return Convert.ToHexString(randomBytes);
-        }
-
-        public string HashToken(string token)
-        {
-            byte[] tokenBytes = Encoding.UTF8.GetBytes(token);
-
-            // Chỉ lưu hash để tăng bảo mật nếu DB bị lộ.
-            byte[] hashBytes = SHA256.HashData(tokenBytes);
-
-            return Convert.ToHexString(hashBytes);
-        }
+    public string HashToken(string token)
+    {
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
     }
 }

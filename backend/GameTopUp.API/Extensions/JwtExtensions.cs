@@ -1,98 +1,83 @@
 using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using GameTopUp.Api;
+using GameTopUp.Api.Middlewares;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
-namespace GameTopUp.API.Extensions
+namespace GameTopUp.Api.Extensions;
+
+public static class JwtExtensions
 {
-    public static class JwtExtensions
+    public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
-        {
-            var jwtSettings = configuration.GetSection("Jwt").Get<JwtSettings>();
+        var jwtSettings = configuration.GetSection("Jwt").Get<JwtSettings>();
 
-            services.AddAuthentication(options =>
+        services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(options =>
             {
-                // Cấu hình các tham số để xác thực tính hợp lệ của Token.
                 options.TokenValidationParameters = GetTokenValidationParameters(jwtSettings!);
-
-                // Đăng ký các sự kiện tùy chỉnh (ví dụ: lấy Token từ Cookie).
                 options.Events = GetJwtBearerEvents();
             });
 
-            return services;
-        }
+        return services;
+    }
 
-        private static TokenValidationParameters GetTokenValidationParameters(JwtSettings jwtSettings)
+    private static TokenValidationParameters GetTokenValidationParameters(JwtSettings jwtSettings)
+    {
+        return new TokenValidationParameters
         {
-            return new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSettings.Issuer,
-                ValidAudience = jwtSettings.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
-                
-                // ClockSkew = Zero để đảm bảo Token hết hạn ngay lập tức khi đến thời điểm Expire,
-                // tránh việc Token vẫn có hiệu lực thêm vài phút mặc định của Server.
-                ClockSkew = TimeSpan.Zero
-            };
-        }
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+            ClockSkew = TimeSpan.Zero
+        };
+    }
 
-        private static JwtBearerEvents GetJwtBearerEvents()
+    private static JwtBearerEvents GetJwtBearerEvents()
+    {
+        return new JwtBearerEvents
         {
-            return new JwtBearerEvents
+            OnMessageReceived = context =>
             {
-                OnMessageReceived = context =>
+                var token = context.Request.Cookies["accessToken"];
+                if (!string.IsNullOrEmpty(token))
                 {
-                    // Hỗ trợ lấy Token từ cả Header (mặc định) và HttpOnly Cookie.
-                    // Việc dùng Cookie giúp tăng khả năng bảo mật chống tấn công XSS.
-                    var token = context.Request.Cookies["accessToken"];
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        context.Token = token;
-                    }
-                    return Task.CompletedTask;
-                },
-
-                OnChallenge = async context =>
-                {
-                    // Tùy chỉnh phản hồi khi người dùng truy cập tài nguyên yêu cầu đăng nhập nhưng chưa có Token.
-                    context.HandleResponse();
-                    await WriteErrorResponse(context.HttpContext, StatusCodes.Status401Unauthorized, ErrorCode.Unauthorized);
-                },
-
-                OnAuthenticationFailed = async context =>
-                {
-                    // Xử lý khi Token bị sai định dạng, bị sửa đổi hoặc đã hết hạn.
-                    await WriteErrorResponse(context.HttpContext, StatusCodes.Status401Unauthorized, ErrorCode.Unauthorized);
-                },
-
-                OnForbidden = async context =>
-                {
-                    // Xử lý khi người dùng không có quyền truy cập endpoint có phân quyền
-                    await WriteErrorResponse(context.HttpContext, StatusCodes.Status403Forbidden, ErrorCode.Forbidden);
+                    context.Token = token;
                 }
-            };
-        }
 
-        private static async Task WriteErrorResponse(HttpContext context, int statusCode, ErrorCode errorCode)
-        {
-            context.Response.StatusCode = statusCode;
-            context.Response.ContentType = "application/json";
-            
-            // Trả về cấu trúc lỗi thống nhất với ApiResponse của hệ thống.
-            var response = ApiResponse.Fail(errorCode);
-            await context.Response.WriteAsJsonAsync(response);
-        }
+                return Task.CompletedTask;
+            },
+            OnChallenge = async context =>
+            {
+                context.HandleResponse();
+                await WriteErrorResponse(context.HttpContext, StatusCodes.Status401Unauthorized, ErrorCode.Unauthorized);
+            },
+            OnAuthenticationFailed = async context =>
+            {
+                await WriteErrorResponse(context.HttpContext, StatusCodes.Status401Unauthorized, ErrorCode.Unauthorized);
+            },
+            OnForbidden = async context =>
+            {
+                await WriteErrorResponse(context.HttpContext, StatusCodes.Status403Forbidden, ErrorCode.Forbidden);
+            }
+        };
+    }
+
+    private static async Task WriteErrorResponse(HttpContext context, int statusCode, ErrorCode errorCode)
+    {
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/json";
+        var response = ApiResponse.Fail(errorCode);
+        await context.Response.WriteAsJsonAsync(response);
     }
 }
-

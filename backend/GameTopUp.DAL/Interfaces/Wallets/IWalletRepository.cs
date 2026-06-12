@@ -1,12 +1,11 @@
-using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Entities.Wallets;
 
-namespace GameTopUp.DAL.Interfaces.Wallets
+namespace GameTopUp.DAL.Interfaces.Wallets;
+
+public interface IWalletRepository
 {
-    public interface IWalletRepository
-    {
-        Task<Wallet?> GetByUserIdAsync(long userId);
-        Task<Wallet?> GetWithLockByUserIdAsync(long userId);
-        Task UpsertWalletAsync(Wallet wallet);
-        Task<int> UpdateBalanceAsync(long walletId, decimal newBalance);
-    }
+    Task<Wallet?> GetByUserIdAsync(long userId);
+    Task<Wallet?> GetWithLockByUserIdAsync(long userId);
+    Task UpsertWalletAsync(Wallet wallet);
+    Task<int> UpdateBalanceAsync(long walletId, decimal newBalance);
 }

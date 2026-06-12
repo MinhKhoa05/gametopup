@@ -12,8 +12,8 @@ services:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./backend/Database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
-      - ./backend/Database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-pgametopup_root"]
       interval: 10s

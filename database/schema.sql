@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS orders (
     CONSTRAINT fk_order_package FOREIGN KEY (game_package_id) REFERENCES game_packages(id) ON DELETE CASCADE,
     INDEX idx_orders_user_sort (user_id, created_at),
     INDEX idx_orders_status (status),
-    -- Đảm bảo mỗi khách hàng chỉ có tối đa 1 đơn hàng ở trạng thái Pending (1)
+    -- Äáº£m báº£o má»—i khÃ¡ch hÃ ng chá»‰ cÃ³ tá»‘i Ä‘a 1 Ä‘Æ¡n hÃ ng á»Ÿ tráº¡ng thÃ¡i Pending (1)
     UNIQUE INDEX idx_one_pending_per_user (user_id, is_pending)
 ) ENGINE=InnoDB;
 

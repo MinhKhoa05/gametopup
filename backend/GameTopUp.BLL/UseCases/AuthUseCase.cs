@@ -5,159 +5,154 @@ using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.DAL.Database;
-using GameTopUp.DAL.Entities;
-using Mapster;
+using GameTopUp.DAL.Entities.Users;
 
-namespace GameTopUp.BLL.UseCases
+namespace GameTopUp.BLL.UseCases;
+
+public sealed class AuthUseCase
 {
-    public class AuthUseCase
+    private readonly UserService _userService;
+    private readonly TokenService _tokenService;
+    private readonly PasswordService _passwordService;
+    private readonly WalletService _walletService;
+    private readonly RefreshTokenService _refreshTokenService;
+    private readonly DatabaseContext _database;
+
+    private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
+
+    public AuthUseCase(
+        UserService userService,
+        TokenService tokenService,
+        PasswordService passwordService,
+        WalletService walletService,
+        RefreshTokenService refreshTokenService,
+        DatabaseContext database)
     {
-        private readonly UserService _userService;
-        private readonly TokenService _tokenService;
-        private readonly PasswordService _passwordService;
-        private readonly WalletService _walletService;
-        private readonly RefreshTokenService _refreshTokenService;
-        private readonly DatabaseContext _database;
+        _userService = userService;
+        _tokenService = tokenService;
+        _passwordService = passwordService;
+        _walletService = walletService;
+        _refreshTokenService = refreshTokenService;
+        _database = database;
+    }
 
-        private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
+    public async Task RegisterAsync(CreateUserRequest request)
+    {
+        _passwordService.Validate(request.Password);
+        request.Password = _passwordService.Hash(request.Password);
 
-        public AuthUseCase(
-            UserService userService,
-            TokenService tokenService,
-            PasswordService passwordService,
-            WalletService walletService,
-            RefreshTokenService refreshTokenService,
-            DatabaseContext database)
+        await _database.ExecuteInTransactionAsync(async () =>
         {
-            _userService = userService;
-            _tokenService = tokenService;
-            _passwordService = passwordService;
-            _walletService = walletService;
-            _refreshTokenService = refreshTokenService;
-            _database = database;
+            var userId = await _userService.CreateUserAsync(request);
+            await _walletService.CreateWalletAsync(userId);
+        });
+    }
+
+    public async Task<AuthResponseDTO> LoginAsync(LoginRequest request)
+    {
+        var user = await _userService.GetByEmailAsync(request.Email);
+        if (user is null || !_passwordService.Verify(request.Password, user.PasswordHash))
+        {
+            throw new BusinessException(ErrorCode.InvalidCredentials);
         }
 
-        public async Task RegisterAsync(CreateUserRequest request)
+        var tokens = await IssueTokenPairAsync(MapToContext(user));
+        return new AuthResponseDTO
         {
-            _passwordService.Validate(request.Password);
+            AccessToken = tokens.AccessToken,
+            RefreshToken = tokens.RefreshToken,
+            User = MapToResponse(user)
+        };
+    }
 
-            // Hash mật khẩu trước khi lưu vào DB.
-            request.Password = _passwordService.Hash(request.Password);
+    public async Task<AuthResponseDTO> RefreshAsync(string refreshTokenString)
+    {
+        var hash = _tokenService.HashToken(refreshTokenString);
 
-            await _database.ExecuteInTransactionAsync(async () =>
-            {
-                // Tạo user trước.
-                var userId = await _userService.CreateUserAsync(request);
-
-                // Tạo ví trong cùng transaction để đảm bảo đồng bộ dữ liệu.
-                await _walletService.CreateWalletAsync(userId);
-            });
-        }
-
-        public async Task<AuthResponseDTO> LoginAsync(LoginRequest request)
+        return await _database.ExecuteInTransactionAsync(async () =>
         {
-            var user = await _userService.GetByEmailAsync(request.Email);
-
-            // Không tiết lộ email hay password sai để tránh dò tài khoản.
-            if (user == null || !_passwordService.Verify(request.Password, user.PasswordHash))
+            var refreshToken = await _refreshTokenService.RevokeTokenAsync(hash);
+            if (refreshToken is null)
             {
-                throw new BusinessException(ErrorCode.InvalidCredentials);
+                throw new BusinessException(ErrorCode.InvalidRefreshToken);
             }
 
-            // Phát cặp token cho user.
-            var tokens = await IssueTokenPairAsync(user);
+            var user = await _userService.GetByIdOrThrowAsync(refreshToken.UserId);
+            var tokens = await IssueTokenPairAsync(MapToContext(user));
 
-            var response = new AuthResponseDTO
+            return new AuthResponseDTO
             {
                 AccessToken = tokens.AccessToken,
-                RefreshToken = tokens.RefreshToken,
-                User = user.Adapt<UserResponseDTO>()
+                RefreshToken = tokens.RefreshToken
             };
+        });
+    }
 
-            return response;
-        }
-
-        public async Task<AuthResponseDTO> RefreshAsync(string refreshTokenString)
+    public async Task LogoutAsync(string refreshToken)
+    {
+        try
         {
-            // Hash token trước khi validate trong DB.
-            var hash = _tokenService.HashToken(refreshTokenString);
-
-            return await _database.ExecuteInTransactionAsync(async () =>
-            {
-                // Revoke token cũ để tránh reuse token
-                var refreshToken = await _refreshTokenService.RevokeTokenAsync(hash);
-                if (refreshToken == null)
-                {
-                    throw new BusinessException(ErrorCode.InvalidRefreshToken); // Token không hợp lệ hoặc đã bị revoke.
-                }
-
-                // Lấy user để phát cặp token mới
-                var user = await _userService.GetByIdOrThrowAsync(refreshToken.UserId);    
-
-                var tokens = await IssueTokenPairAsync(user);
-
-                var response = new AuthResponseDTO
-                {
-                    AccessToken = tokens.AccessToken,
-                    RefreshToken = tokens.RefreshToken
-                };
-
-                return response;
-            });
+            var hash = _tokenService.HashToken(refreshToken);
+            await _refreshTokenService.RevokeTokenAsync(hash);
         }
-
-        public async Task LogoutAsync(string refreshToken)
+        catch
         {
-            try
-            {
-                // Hash token trước khi revoke.
-                var hash = _tokenService.HashToken(refreshToken);
-
-                // Revoke token để logout, không cần quan tâm revoke thành công hay không
-                await _refreshTokenService.RevokeTokenAsync(hash);
-            } 
-            catch (Exception ex)
-            {
-                // Ghi log lỗi revoke token nhưng không ném exception ra ngoài để tránh ảnh hưởng trải nghiệm người dùng.
-                Console.Error.WriteLine($"Failed to revoke refresh token: {ex.Message}");
-            }
+            // Logout should stay best-effort.
         }
+    }
 
-        public async Task ChangePasswordAsync(UserContext context, PasswordChangeRequest request)
+    public async Task ChangePasswordAsync(UserContext context, PasswordChangeRequest request)
+    {
+        if (request.CurrentPassword == request.NewPassword)
         {
-            // Không cho phép dùng lại mật khẩu cũ.
-            if (request.CurrentPassword == request.NewPassword)
-            {
-                throw new BusinessException(ErrorCode.NewPasswordSameAsCurrent);
-            }
-
-            _passwordService.Validate(request.NewPassword);
-
-            var user = await _userService.GetByIdOrThrowAsync(context.UserId);
-
-            // Kiểm tra mật khẩu hiện tại trước khi đổi.
-            if (!_passwordService.Verify(request.CurrentPassword, user.PasswordHash))
-            {
-                throw new BusinessException(ErrorCode.CurrentPasswordIncorrect);
-            }
-
-            // Hash mật khẩu mới trước khi lưu.
-            var hashedPassword = _passwordService.Hash(request.NewPassword);
-
-            await _userService.UpdatePasswordAsync(context.UserId, hashedPassword);
+            throw new BusinessException(ErrorCode.NewPasswordSameAsCurrent);
         }
 
-        private async Task<(string AccessToken, string RefreshToken)> IssueTokenPairAsync(User user)
+        _passwordService.Validate(request.NewPassword);
+
+        var user = await _userService.GetByIdOrThrowAsync(context.UserId);
+        if (!_passwordService.Verify(request.CurrentPassword, user.PasswordHash))
         {
-            var tokenPayload = TokenPayload.Create(user.Id, user.DisplayName, user.Email, user.Role);
-
-            var accessToken = _tokenService.GenerateAccessToken(tokenPayload);
-            var refreshToken = _tokenService.GenerateRefreshToken();
-            var refreshTokenHash = _tokenService.HashToken(refreshToken);
-
-            await _refreshTokenService.SaveRefreshTokenAsync(user.Id, refreshTokenHash, RefreshTokenLifetime);
-
-            return (accessToken, refreshToken);
+            throw new BusinessException(ErrorCode.CurrentPasswordIncorrect);
         }
+
+        await _userService.UpdatePasswordAsync(context.UserId, _passwordService.Hash(request.NewPassword));
+    }
+
+    private async Task<(string AccessToken, string RefreshToken)> IssueTokenPairAsync(UserContext user)
+    {
+        var tokenPayload = TokenPayload.Create(user);
+        var accessToken = _tokenService.GenerateAccessToken(tokenPayload);
+        var refreshToken = _tokenService.GenerateRefreshToken();
+        var refreshTokenHash = _tokenService.HashToken(refreshToken);
+
+        await _refreshTokenService.SaveRefreshTokenAsync(user.UserId, refreshTokenHash, RefreshTokenLifetime);
+
+        return (accessToken, refreshToken);
+    }
+
+    private static UserContext MapToContext(User user)
+    {
+        return new UserContext
+        {
+            UserId = user.Id,
+            DisplayName = user.DisplayName,
+            Email = user.Email,
+            Role = user.Role
+        };
+    }
+
+    private static UserResponseDTO MapToResponse(User user)
+    {
+        return new UserResponseDTO
+        {
+            Id = user.Id,
+            DisplayName = user.DisplayName,
+            Email = user.Email,
+            Role = user.Role.ToString(),
+            IsActive = user.IsActive,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt
+        };
     }
 }

@@ -1,14 +1,13 @@
-namespace GameTopUp.BLL.DTOs.GamePackages
+namespace GameTopUp.BLL.DTOs.GamePackages;
+
+public sealed class UpdateGamePackageRequest
 {
-    public class UpdateGamePackageRequest
-    {
-        public string? Name { get; set; }
-        public string? ImageUrl { get; set; }
-        public string? ImageRelativePath { get; set; }
-        public decimal? SalePrice { get; set; }
-        public decimal? OriginalPrice { get; set; }
-        public decimal? ImportPrice { get; set; }
-        public int? StockQuantity { get; set; }
-        public bool? IsActive { get; set; }
-    }
+    public string? Name { get; set; }
+    public string? ImageUrl { get; set; }
+    public string? ImageRelativePath { get; set; }
+    public decimal? SalePrice { get; set; }
+    public decimal? OriginalPrice { get; set; }
+    public decimal? ImportPrice { get; set; }
+    public int? StockQuantity { get; set; }
+    public bool? IsActive { get; set; }
 }

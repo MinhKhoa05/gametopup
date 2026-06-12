@@ -1,32 +1,23 @@
-using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Database;
+using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.DAL.Interfaces.Wallets;
 
-namespace GameTopUp.DAL.Repositories.Wallets
+namespace GameTopUp.DAL.Repositories.Wallets;
+
+public sealed class WalletTransactionRepository : IWalletTransactionRepository
 {
-    public class WalletTransactionRepository : IWalletTransactionRepository
+    private readonly DatabaseContext _database;
+
+    public WalletTransactionRepository(DatabaseContext database)
     {
-        private readonly DatabaseContext _database;
-
-        public WalletTransactionRepository(DatabaseContext database)
-        {
-            _database = database;
-        }
-
-        public async Task<List<WalletTransaction>> GetByUserIdAsync(long userId)
-        {
-            // Hiển thị các giao dịch mới nhất lên trên cùng để người dùng dễ kiểm soát chi tiêu.
-            var sql = "SELECT * FROM wallet_transactions WHERE user_id = @UserId ORDER BY created_at DESC";
-            
-            return await _database.QueryAsync<WalletTransaction>(sql, new 
-            { 
-                UserId = userId 
-            });
-        }
-        
-        public async Task<long> CreateAsync(WalletTransaction walletTransaction)
-        {
-            return await _database.InsertAsync<WalletTransaction, long>(walletTransaction);
-        }
+        _database = database;
     }
+
+    public Task<List<WalletTransaction>> GetByUserIdAsync(long userId) =>
+        _database.QueryAsync<WalletTransaction>(
+            "SELECT * FROM wallet_transactions WHERE user_id = @UserId ORDER BY created_at DESC",
+            new { UserId = userId });
+
+    public Task<long> CreateAsync(WalletTransaction walletTransaction) =>
+        _database.InsertAsync<WalletTransaction, long>(walletTransaction);
 }

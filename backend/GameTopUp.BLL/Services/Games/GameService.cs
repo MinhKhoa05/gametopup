@@ -1,51 +1,66 @@
 using GameTopUp.BLL.DTOs.Games;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Entities.Games;
 using GameTopUp.DAL.Interfaces.Games;
-using Mapster;
 
-namespace GameTopUp.BLL.Services
+namespace GameTopUp.BLL.Services.Games;
+
+public sealed class GameService
 {
-    public class GameService
+    private readonly IGameRepository _repository;
+
+    public GameService(IGameRepository repository)
     {
-        private readonly IGameRepository _gameRepo;
+        _repository = repository;
+    }
 
-        public GameService(IGameRepository gameRepo)
+    public Task<List<Game>> GetAllGamesAsync() => _repository.GetAllAsync();
+
+    public async Task<Game> GetGameByIdAsync(long id)
+    {
+        return await _repository.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCode.GameNotFound);
+    }
+
+    public async Task<Game> CreateGameAsync(CreateGameRequest request)
+    {
+        var game = Game.Create(request.Name, request.ImageUrl, request.ImageRelativePath);
+        game.IsActive = request.IsActive;
+        game.Id = await _repository.CreateAsync(game);
+        return game;
+    }
+
+    public async Task<Game> UpdateGameAsync(long id, UpdateGameRequest request)
+    {
+        var game = await GetGameByIdAsync(id);
+
+        if (!string.IsNullOrWhiteSpace(request.Name))
         {
-            _gameRepo = gameRepo;
+            game.Name = request.Name.Trim();
         }
 
-        public async Task<List<Game>> GetAllGamesAsync()
+        if (request.ImageUrl is not null)
         {
-            return await _gameRepo.GetAllAsync();
+            game.ImageUrl = request.ImageUrl;
         }
 
-        public async Task<Game> GetGameByIdAsync(long id)
+        if (request.ImageRelativePath is not null)
         {
-            var game = await _gameRepo.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCode.GameNotFound);
-            return game;
+            game.ImageRelativePath = request.ImageRelativePath;
         }
 
-        public async Task<Game> CreateGameAsync(CreateGameRequest request)
+        if (request.IsActive is not null)
         {
-            var game = Game.Create(request.Name, request.ImageUrl, request.ImageRelativePath);
-            game.IsActive = request.IsActive;
-            game.Id = await _gameRepo.CreateAsync(game);
-            return game;
+            game.IsActive = request.IsActive.Value;
         }
 
-        public async Task<Game> UpdateGameAsync(long id, UpdateGameRequest request)
-        {
-            var game = await GetGameByIdAsync(id);
-            request.Adapt(game);
-            await _gameRepo.UpdateAsync(game);
-            return game;
-        }
+        game.UpdatedAt = DateTime.UtcNow;
+        await _repository.UpdateAsync(game);
+        return game;
+    }
 
-        public async Task DeleteGameAsync(long id)
-        {
-            await GetGameByIdAsync(id);
-            await _gameRepo.DeleteAsync(id);
-        }
+    public async Task DeleteGameAsync(long id)
+    {
+        await GetGameByIdAsync(id);
+        await _repository.DeleteAsync(id);
     }
 }

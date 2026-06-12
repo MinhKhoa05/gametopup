@@ -1,27 +1,23 @@
-using GameTopUp.DAL.Entities;
+using GameTopUp.BLL.Context;
+using GameTopUp.DAL.Entities.Users;
 
-namespace GameTopUp.BLL.DTOs.Auths
+namespace GameTopUp.BLL.DTOs.Auths;
+
+public sealed class TokenPayload
 {
-    public class TokenPayload
+    public long UserId { get; init; }
+    public string DisplayName { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+    public UserRole Role { get; init; }
+
+    public static TokenPayload Create(UserContext userContext)
     {
-        public long UserId { get; set; }
-        public string? DisplayName { get; set; }
-        public string? Email { get; set; }
-        public string? Role { get; set; }
-
-        public TokenPayload()
+        return new TokenPayload
         {
-        }
-
-        public static TokenPayload Create(long userId, string? displayName, string? email, UserRole? role)
-        {
-            return new TokenPayload
-            {
-                UserId = userId,
-                DisplayName = displayName,
-                Email = email,
-                Role = role.ToString()
-            };
-        }
+            UserId = userContext.UserId,
+            DisplayName = userContext.DisplayName,
+            Email = userContext.Email,
+            Role = userContext.Role
+        };
     }
 }

@@ -1,10 +1,9 @@
-namespace GameTopUp.BLL.Exceptions
+namespace GameTopUp.BLL.Exceptions;
+
+public sealed class NotFoundException : BusinessException
 {
-    public class NotFoundException : BusinessException
+    public NotFoundException(ErrorCode errorCode = ErrorCode.NotFound, string? message = null)
+        : base(errorCode, message)
     {
-        public NotFoundException(ErrorCode errorCode = ErrorCode.NotFound, string? message = null)
-            : base(errorCode, message)
-        {
-        }
     }
 }

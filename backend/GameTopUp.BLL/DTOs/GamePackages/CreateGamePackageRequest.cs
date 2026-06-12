@@ -1,29 +1,29 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GameTopUp.BLL.DTOs.GamePackages
+namespace GameTopUp.BLL.DTOs.GamePackages;
+
+public sealed class CreateGamePackageRequest
 {
-    public class CreateGamePackageRequest
-    {
-        [Required]
-        public string Name { get; set; } = null!;
-        public string ImageUrl { get; set; } = string.Empty;
-        public string? ImageRelativePath { get; set; }
+    [Required]
+    public string Name { get; set; } = string.Empty;
 
-        [Required]
-        public long GameId { get; set; }
+    public string ImageUrl { get; set; } = string.Empty;
+    public string? ImageRelativePath { get; set; }
 
-        [Range(0, double.MaxValue)]
-        public decimal SalePrice { get; set; }
+    [Required]
+    public long GameId { get; set; }
 
-        [Range(0, double.MaxValue)]
-        public decimal OriginalPrice { get; set; }
+    [Range(0, double.MaxValue)]
+    public decimal SalePrice { get; set; }
 
-        [Range(0, double.MaxValue)]
-        public decimal ImportPrice { get; set; }
+    [Range(0, double.MaxValue)]
+    public decimal OriginalPrice { get; set; }
 
-        [Range(0, int.MaxValue)]
-        public int StockQuantity { get; set; }
+    [Range(0, double.MaxValue)]
+    public decimal ImportPrice { get; set; }
 
-        public bool IsActive { get; set; } = true;
-    }
+    [Range(0, int.MaxValue)]
+    public int StockQuantity { get; set; }
+
+    public bool IsActive { get; set; } = true;
 }

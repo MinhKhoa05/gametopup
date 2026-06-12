@@ -1,11 +1,10 @@
-using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Entities.Auth;
 
-namespace GameTopUp.DAL.Interfaces.Auth
+namespace GameTopUp.DAL.Interfaces.Auth;
+
+public interface IRefreshTokenRepository
 {
-    public interface IRefreshTokenRepository
-    {
-        Task<RefreshToken?> GetByTokenHashAsync(string tokenHash);
-        Task<long> CreateAsync(RefreshToken refreshToken);
-        Task<bool> RevokeTokenAsync(string tokenHash);
-    }
+    Task<RefreshToken?> GetByTokenHashAsync(string tokenHash);
+    Task<long> CreateAsync(RefreshToken refreshToken);
+    Task<bool> RevokeTokenAsync(string tokenHash);
 }

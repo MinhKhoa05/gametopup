@@ -1,22 +1,12 @@
-using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Entities.Users;
 
-namespace GameTopUp.BLL.Context
+namespace GameTopUp.BLL.Context;
+
+public sealed class UserContext
 {
-    public class UserContext
-    {
-        public long UserId { get; set; }
-        public string DisplayName { get; set; } = string.Empty;
-        public UserRole Role { get; set; } = UserRole.Member;
-
-        public UserContext()
-        {
-        }
-
-        public UserContext(long userId, string displayName, UserRole role)
-        {
-            UserId = userId;
-            DisplayName = displayName;
-            Role = role;
-        }
-    }
+    public long UserId { get; init; }
+    public string DisplayName { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+    public UserRole Role { get; init; } = UserRole.Member;
+    public bool IsAdmin => Role == UserRole.Admin;
 }

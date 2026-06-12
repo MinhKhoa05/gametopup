@@ -1,19 +1,18 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GameTopUp.BLL.DTOs.Users
+namespace GameTopUp.BLL.DTOs.Users;
+
+public sealed class CreateUserRequest
 {
-    public class CreateUserRequest
-    {
-        [Required(ErrorMessage = "Tên hiển thị không được để trống")]
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "Tên hiển thị phải từ 3 -> 50 ký tự")]
-        public string DisplayName { get; set; } = null!;
+    [Required]
+    [StringLength(50, MinimumLength = 3)]
+    public string DisplayName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Email không được để trống")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
-        public string Email { get; set; } = null!;
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Mật khẩu không được để trống")]
-        [MinLength(8, ErrorMessage = "Mật khẩu phải ít nhất 8 ký tự")]
-        public string Password { get; set; } = null!;
-    }
+    [Required]
+    [MinLength(8)]
+    public string Password { get; set; } = string.Empty;
 }

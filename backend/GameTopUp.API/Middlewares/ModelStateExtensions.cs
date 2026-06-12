@@ -1,36 +1,26 @@
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using GameTopUp.Api;
 using GameTopUp.BLL.Exceptions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace GameTopUp.API.Extensions
+namespace GameTopUp.Api.Middlewares;
+
+public static class ModelStateExtensions
 {
-    public static class ModelStateExtensions
+    public static ApiResponse ToApiResponse(this ModelStateDictionary modelState)
     {
-        public static ApiResponse ToApiResponse(this ModelStateDictionary modelState)
+        var firstError = modelState.Values.SelectMany(v => v.Errors).FirstOrDefault();
+        var firstErrorMessage = firstError?.ErrorMessage;
+        if (string.IsNullOrWhiteSpace(firstErrorMessage))
         {
-            // 1. Trích xuất lỗi đầu tiên một cách an toàn (Check cả ErrorMessage lẫn Exception)
-            var firstErrorObj = modelState.Values.SelectMany(v => v.Errors).FirstOrDefault();
-            
-            var firstErrorMessage = firstErrorObj?.ErrorMessage;
-            if (string.IsNullOrEmpty(firstErrorMessage))
-            {
-                firstErrorMessage = firstErrorObj?.Exception?.Message ?? "Dữ liệu gửi lên không hợp lệ.";
-            }
-
-            // 2. Gom toàn bộ danh sách lỗi theo từng ô (Field) để ném vào phần 'data'
-            // Giúp Frontend biết chính xác ô nào lỗi (Ví dụ: Email -> "Email không đúng định dạng")
-            var errorsDetail = modelState
-                .Where(ms => ms.Value!.Errors.Any())
-                .ToDictionary(
-                    kvp => kvp.Key, // Tên thuộc tính bị lỗi (Ví dụ: Email, Password)
-                    kvp => kvp.Value!.Errors.Select(e => !string.IsNullOrEmpty(e.ErrorMessage) ? e.ErrorMessage : e.Exception?.Message).First()
-                );
-
-            // 3. Trả về cấu trúc Fail đồng bộ, đính kèm lỗi chi tiết vào data
-            return ApiResponse.Fail(
-                errorCode: ErrorCode.BadRequest, 
-                message: firstErrorMessage, 
-                data: errorsDetail
-            );
+            firstErrorMessage = firstError?.Exception?.Message ?? "Invalid request payload.";
         }
+
+        var errorsDetail = modelState
+            .Where(entry => entry.Value!.Errors.Any())
+            .ToDictionary(
+                entry => entry.Key,
+                entry => entry.Value!.Errors.Select(error => !string.IsNullOrEmpty(error.ErrorMessage) ? error.ErrorMessage : error.Exception?.Message).First());
+
+        return ApiResponse.Fail(ErrorCode.BadRequest, firstErrorMessage, errorsDetail);
     }
 }

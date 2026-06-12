@@ -1,7 +1,6 @@
-namespace GameTopUp.BLL.DTOs.Wallets
+namespace GameTopUp.BLL.DTOs.Wallets;
+
+public sealed class TransactionResponseDTO
 {
-    public class TransactionResponseDTO
-    {
-        public long TransactionId { get; set; }
-    }
+    public long TransactionId { get; set; }
 }

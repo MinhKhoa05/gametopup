@@ -7,17 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GameTopUp.DAL\GameTopUp.DAL.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
     <PackageReference Include="Mapster" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.24" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\Orders\" />
+    <ProjectReference Include="..\GameTopUp.DAL\GameTopUp.DAL.csproj" />
   </ItemGroup>
 
 </Project>

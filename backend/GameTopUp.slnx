@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="GameTopUp.Api/GameTopUp.Api.csproj" />
+    <Project Path="GameTopUp.BLL/GameTopUp.BLL.csproj" />
+    <Project Path="GameTopUp.DAL/GameTopUp.DAL.csproj" />
+    <Project Path="GameTopUp.Tests/GameTopUp.Tests.csproj" />
+  </Folder>
+</Solution>

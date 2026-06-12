@@ -1,15 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GameTopUp.BLL.DTOs.Auths
-{
-    public class PasswordChangeRequest
-    {
-        [Required(ErrorMessage = "Mật khẩu hiện tại không được để trống")]
-        [MinLength(8, ErrorMessage = "Mật khẩu hiện tại phải ít nhất 8 ký tự")]
-        public string CurrentPassword { get; set; } = null!;
+namespace GameTopUp.BLL.DTOs.Auths;
 
-        [Required(ErrorMessage = "Mật khẩu mới không được để trống")]
-        [MinLength(8, ErrorMessage = "Mật khẩu mới phải ít nhất 8 ký tự")]
-        public string NewPassword { get; set; } = null!;
-    }
+public sealed class PasswordChangeRequest
+{
+    [Required]
+    [MinLength(8)]
+    public string CurrentPassword { get; set; } = string.Empty;
+
+    [Required]
+    [MinLength(8)]
+    public string NewPassword { get; set; } = string.Empty;
 }

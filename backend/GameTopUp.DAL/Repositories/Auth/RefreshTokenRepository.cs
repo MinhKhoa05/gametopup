@@ -1,34 +1,35 @@
-using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Database;
+using GameTopUp.DAL.Entities.Auth;
 using GameTopUp.DAL.Interfaces.Auth;
 
-namespace GameTopUp.DAL.Repositories.Auth
+namespace GameTopUp.DAL.Repositories.Auth;
+
+public sealed class RefreshTokenRepository : IRefreshTokenRepository
 {
-    public class RefreshTokenRepository : IRefreshTokenRepository
+    private readonly DatabaseContext _database;
+
+    public RefreshTokenRepository(DatabaseContext database)
     {
-        private readonly DatabaseContext _database;
+        _database = database;
+    }
 
-        public RefreshTokenRepository(DatabaseContext database)
-        {
-            _database = database;
-        }
+    public Task<RefreshToken?> GetByTokenHashAsync(string tokenHash) =>
+        _database.QueryFirstAsync<RefreshToken>(
+            "SELECT * FROM refresh_tokens WHERE token_hash = @TokenHash",
+            new { TokenHash = tokenHash });
 
-        public async Task<RefreshToken?> GetByTokenHashAsync(string tokenHash)
-        {
-            const string sql = "SELECT * FROM refresh_tokens WHERE token_hash = @TokenHash";
-            return await _database.QueryFirstAsync<RefreshToken>(sql, new { TokenHash = tokenHash });
-        }
+    public Task<long> CreateAsync(RefreshToken refreshToken) =>
+        _database.InsertAsync<RefreshToken, long>(refreshToken);
 
-        public async Task<long> CreateAsync(RefreshToken refreshToken)
-        {
-            return await _database.InsertAsync<RefreshToken, long>(refreshToken);
-        }
+    public Task<bool> RevokeTokenAsync(string tokenHash) =>
+        RevokeInternalAsync(tokenHash);
 
-        public async Task<bool> RevokeTokenAsync(string tokenHash)
-        {
-            const string sql = "UPDATE refresh_tokens SET revoked_at = @Now WHERE token_hash = @TokenHash AND revoked_at IS NULL";
-            var affected = await _database.ExecuteAsync(sql, new { TokenHash = tokenHash, Now = DateTime.UtcNow });
-            return affected > 0;
-        }
+    private async Task<bool> RevokeInternalAsync(string tokenHash)
+    {
+        var affected = await _database.ExecuteAsync(
+            "UPDATE refresh_tokens SET revoked_at = @Now WHERE token_hash = @TokenHash AND revoked_at IS NULL",
+            new { TokenHash = tokenHash, Now = DateTime.UtcNow });
+
+        return affected > 0;
     }
 }

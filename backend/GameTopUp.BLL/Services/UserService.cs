@@ -1,71 +1,127 @@
-using Mapster;
-using GameTopUp.DAL.Interfaces.Users;
+using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Users;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Entities.Users;
+using GameTopUp.DAL.Interfaces.Users;
 
-namespace GameTopUp.BLL.Services
+namespace GameTopUp.BLL.Services;
+
+public sealed class UserService
 {
-    public class UserService
+    private readonly IUserRepository _repository;
+
+    public UserService(IUserRepository repository)
     {
-        private readonly IUserRepository _userRepo;
+        _repository = repository;
+    }
 
-        public UserService(IUserRepository userRepo)
+    public Task<User?> GetByEmailAsync(string email) => _repository.GetByEmailAsync(email);
+
+    public async Task<User> GetByIdOrThrowAsync(long id)
+    {
+        return await _repository.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCode.UserNotFound);
+    }
+
+    public async Task<long> CreateUserAsync(CreateUserRequest request)
+    {
+        if (await _repository.ExistsByEmailAsync(request.Email))
         {
-            _userRepo = userRepo;
+            throw new BusinessException(ErrorCode.EmailExists);
         }
 
-        public async Task<IEnumerable<UserResponseDTO>> GetAllAsync(int page, int pageSize)
+        var user = User.Create(request.DisplayName, request.Email, request.Password);
+        return await _repository.CreateAsync(user);
+    }
+
+    public Task UpdatePasswordAsync(long userId, string newPasswordHash) =>
+        _repository.UpdatePasswordAsync(userId, newPasswordHash);
+
+    public async Task<UserResponseDTO> GetProfileAsync(UserContext actor, long userId)
+    {
+        EnsureCanAccessUser(actor, userId);
+        var user = await GetByIdOrThrowAsync(userId);
+        return MapToResponse(user);
+    }
+
+    public async Task<IEnumerable<UserResponseDTO>> GetAllAsync(int page, int pageSize)
+    {
+        var users = await _repository.GetAllAsync(page, pageSize);
+        return users.Select(MapToResponse);
+    }
+
+    public Task UpdateProfileAsync(UserContext actor, long id, UpdateUserRequest request)
+    {
+        return UpdateProfileInternalAsync(actor, id, request);
+    }
+
+    public Task DeleteAsync(long id)
+    {
+        return DeleteInternalAsync(id);
+    }
+
+    private static UserResponseDTO MapToResponse(User user)
+    {
+        return new UserResponseDTO
         {
-            var users = await _userRepo.GetAllAsync(page, pageSize);
-            return users.Adapt<IEnumerable<UserResponseDTO>>();
+            Id = user.Id,
+            DisplayName = user.DisplayName,
+            Email = user.Email,
+            Role = user.Role.ToString(),
+            IsActive = user.IsActive,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt
+        };
+    }
+
+    private async Task UpdateProfileInternalAsync(UserContext actor, long id, UpdateUserRequest request)
+    {
+        EnsureCanAccessUser(actor, id);
+        var user = await GetByIdOrThrowAsync(id);
+
+        if (!string.IsNullOrWhiteSpace(request.Email)
+            && !string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase)
+            && await _repository.ExistsByEmailAsync(request.Email))
+        {
+            throw new BusinessException(ErrorCode.EmailExists);
         }
 
-        public async Task<User> GetByIdOrThrowAsync(long id)
+        if (!string.IsNullOrWhiteSpace(request.DisplayName))
         {
-            var user = await _userRepo.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCode.UserNotFound);
-            return user;
+            user.DisplayName = request.DisplayName;
         }
 
-        public async Task<long> CreateUserAsync(CreateUserRequest request)
+        if (!string.IsNullOrWhiteSpace(request.Email))
         {
-            var isEmailExists = await _userRepo.ExistsByEmailAsync(request.Email);
-            if (isEmailExists){
-                throw new BusinessException(ErrorCode.EmailExists);
-            }
-
-            var user = User.Create(request.DisplayName, request.Email, request.Password);
-
-            return await _userRepo.CreateAsync(user);
+            user.Email = request.Email;
         }
 
-        public async Task UpdateProfileAsync(long id, UpdateUserRequest request)
+        if (request.Role is not null)
         {
-            var user = await GetByIdOrThrowAsync(id);
-            request.Adapt(user);
-            await _userRepo.UpdateAsync(user);
+            user.Role = request.Role.Value;
         }
 
-        public async Task DeleteAsync(long id)
+        if (request.IsActive is not null)
         {
-            var user = await GetByIdOrThrowAsync(id);
-            await _userRepo.DeleteAsync(id);
+            user.IsActive = request.IsActive.Value;
         }
 
-        public async Task<User?> GetByEmailAsync(string email)
+        user.UpdatedAt = DateTime.UtcNow;
+        await _repository.UpdateAsync(user);
+    }
+
+    private static void EnsureCanAccessUser(UserContext actor, long targetUserId)
+    {
+        if (actor.IsAdmin || actor.UserId == targetUserId)
         {
-            return await _userRepo.GetByEmailAsync(email);
+            return;
         }
 
-        public async Task<UserResponseDTO> GetProfileAsync(long userId)
-        {
-            var user = await GetByIdOrThrowAsync(userId);
-            return user.Adapt<UserResponseDTO>();
-        }
+        throw new ForbiddenException(ErrorCode.Forbidden);
+    }
 
-        public async Task UpdatePasswordAsync(long userId, string newPasswordHash)
-        {
-            await _userRepo.UpdatePasswordAsync(userId, newPasswordHash);
-        }
+    private async Task DeleteInternalAsync(long id)
+    {
+        await GetByIdOrThrowAsync(id);
+        await _repository.DeleteAsync(id);
     }
 }

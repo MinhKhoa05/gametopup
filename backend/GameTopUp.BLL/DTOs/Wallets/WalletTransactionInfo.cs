@@ -1,12 +1,16 @@
-using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Entities.Wallets;
 
-namespace GameTopUp.BLL.DTOs.Wallets
+namespace GameTopUp.BLL.DTOs.Wallets;
+
+public sealed class WalletTransactionInfo
 {
-    public class WalletTransactionInfo
-    {
-        public WalletTransactionType Type { get; set; }
-        public string? Description { get; set; }
-        public int? ReferenceId { get; set; }
-        public bool IsDecreaseBalance { get; set; } = false;
-    }
+    public long Id { get; set; }
+    public long UserId { get; set; }
+    public decimal Amount { get; set; }
+    public decimal BalanceBefore { get; set; }
+    public decimal BalanceAfter { get; set; }
+    public WalletTransactionType Type { get; set; }
+    public string? Description { get; set; }
+    public long? ReferenceId { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

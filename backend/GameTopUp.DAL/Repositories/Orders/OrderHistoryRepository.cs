@@ -1,32 +1,22 @@
-using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Database;
+using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.DAL.Interfaces.Orders;
 
-namespace GameTopUp.DAL.Repositories.Orders
+namespace GameTopUp.DAL.Repositories.Orders;
+
+public sealed class OrderHistoryRepository : IOrderHistoryRepository
 {
-    public class OrderHistoryRepository : IOrderHistoryRepository
+    private readonly DatabaseContext _database;
+
+    public OrderHistoryRepository(DatabaseContext database)
     {
-        private readonly DatabaseContext _database;
-
-        public OrderHistoryRepository(DatabaseContext database)
-        {
-            _database = database;
-        }
-        
-        public async Task<List<OrderHistory>> GetByOrderIdAsync(long orderId)
-        {
-            // Sắp xếp theo thời gian mới nhất lên đầu để dễ dàng theo dõi tiến trình.
-            var sql = "SELECT * FROM order_history WHERE order_id = @OrderId ORDER BY created_at DESC";
-            
-            return await _database.QueryAsync<OrderHistory>(sql, new 
-            { 
-                OrderId = orderId 
-            });
-        }
-
-        public async Task<long> CreateAsync(OrderHistory history)
-        {
-            return await _database.InsertAsync<OrderHistory, long>(history);
-        }
+        _database = database;
     }
+
+    public Task<List<OrderHistory>> GetByOrderIdAsync(long orderId) =>
+        _database.QueryAsync<OrderHistory>(
+            "SELECT * FROM order_history WHERE order_id = @OrderId ORDER BY created_at DESC",
+            new { OrderId = orderId });
+
+    public Task<long> CreateAsync(OrderHistory history) => _database.InsertAsync<OrderHistory, long>(history);
 }

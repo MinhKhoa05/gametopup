@@ -1,44 +1,44 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using GameTopUp.DAL.Entities.Users;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace GameTopUp.Tests.IntegrationTests.Infrastructure
+namespace GameTopUp.Tests.IntegrationTests.Infrastructure;
+
+public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-    // Bypass JWT: Inject danh tính (User/Admin) tùy biến qua Request Headers.
-    public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+    public const string SchemeName = "IntegrationTest";
+
+    public TestAuthHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder)
+        : base(options, logger, encoder)
     {
-        public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options,
-            ILoggerFactory logger, UrlEncoder encoder)
-            : base(options, logger, encoder)
+    }
+
+    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    {
+        var userIdValue = Context.Request.Headers["X-Test-UserId"].FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(userIdValue))
         {
+            return Task.FromResult(AuthenticateResult.NoResult());
         }
 
-        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        var claims = new List<Claim>
         {
-            // Dynamic Identity: Cho phép test case đóng vai nhiều user để kiểm tra Permission.
-            var userId = Context.Request.Headers["X-Test-UserId"].FirstOrDefault();
-            if (string.IsNullOrEmpty(userId))
-            {
-                // Không có header => Xem như ẩn danh (Anonymous)
-                return Task.FromResult(AuthenticateResult.NoResult());
-            }
+            new(ClaimTypes.NameIdentifier, userIdValue),
+            new(ClaimTypes.Name, Context.Request.Headers["X-Test-DisplayName"].FirstOrDefault() ?? "Test User"),
+            new(ClaimTypes.Email, Context.Request.Headers["X-Test-Email"].FirstOrDefault() ?? "test@example.local"),
+            new(ClaimTypes.Role, Context.Request.Headers["X-Test-Role"].FirstOrDefault() ?? UserRole.Member.ToString())
+        };
 
-            var role = Context.Request.Headers["X-Test-Role"].FirstOrDefault() ?? "Member";
-            var displayName = Context.Request.Headers["X-Test-DisplayName"].FirstOrDefault() ?? "TestUser";
+        var identity = new ClaimsIdentity(claims, SchemeName);
+        var principal = new ClaimsPrincipal(identity);
+        var ticket = new AuthenticationTicket(principal, SchemeName);
 
-            var claims = new[] { 
-                new Claim(ClaimTypes.Name, displayName),
-                new Claim(ClaimTypes.Role, role),
-                new Claim(ClaimTypes.NameIdentifier, userId)
-            };
-
-            var identity = new ClaimsIdentity(claims, "Test");
-            var principal = new ClaimsPrincipal(identity);
-            var ticket = new AuthenticationTicket(principal, "Test");
-
-            return Task.FromResult(AuthenticateResult.Success(ticket));
-        }
+        return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 }

@@ -1,45 +1,36 @@
-using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using GameTopUp.Api;
 using GameTopUp.BLL.Context;
-using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Entities.Users;
+using Microsoft.AspNetCore.Mvc;
 
-namespace GameTopUp.API.Controllers
+namespace GameTopUp.Api.Controllers;
+
+[ApiController]
+public abstract class ApiControllerBase : ControllerBase
 {
-    [ApiController]
-    public abstract class ApiControllerBase : ControllerBase
+    protected IActionResult ApiOk(object? data = null, string? message = null) =>
+        Ok(ApiResponse.Ok(data, message));
+
+    protected IActionResult ApiCreated(object? data = null, string? message = null) =>
+        StatusCode(StatusCodes.Status201Created, ApiResponse.Ok(data, message));
+
+    protected UserContext CurrentUser
     {
-        protected UserContext CurrentUser
+        get
         {
-            get
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var displayName = User.FindFirstValue(ClaimTypes.Name) ?? string.Empty;
+            var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
+            var roleClaim = User.FindFirstValue(ClaimTypes.Role) ?? nameof(UserRole.Member);
+
+            return new UserContext
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (userIdClaim == null)
-                {
-                    return null!;
-                }
-
-                var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
-                var role = Enum.TryParse<UserRole>(roleClaim, ignoreCase: true, out var parsedRole)
-                    ? parsedRole
-                    : UserRole.Member;
-
-                return new UserContext
-                {
-                    UserId = long.Parse(userIdClaim.Value),
-                    DisplayName = User.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty,
-                    Role = role
-                };
-            }
-        }
-
-        protected IActionResult ApiOk(object? data = null, string? message = null)
-        {
-            return Ok(ApiResponse.Ok(data, message));
-        }
-
-        protected IActionResult ApiCreated(object? data = null, string? message = null)
-        {
-            return StatusCode(201, ApiResponse.Ok(data, message));
+                UserId = long.TryParse(userIdClaim, out var userId) ? userId : 0,
+                DisplayName = displayName,
+                Email = email,
+                Role = Enum.TryParse<UserRole>(roleClaim, ignoreCase: true, out var role) ? role : UserRole.Member
+            };
         }
     }
 }

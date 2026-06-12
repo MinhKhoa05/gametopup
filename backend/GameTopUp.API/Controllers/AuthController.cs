@@ -1,107 +1,99 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using GameTopUp.Api.Extensions;
 using GameTopUp.BLL.DTOs.Auths;
 using GameTopUp.BLL.DTOs.Users;
-using GameTopUp.BLL.UseCases;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.API.Extensions;
+using GameTopUp.BLL.UseCases;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace GameTopUp.API.Controllers
+namespace GameTopUp.Api.Controllers;
+
+[Route("api/auth")]
+public sealed class AuthController : ApiControllerBase
 {
-    [Route("api/auth")]
-    [ApiController]
-    public class AuthController : ApiControllerBase
+    private readonly AuthUseCase _auth;
+    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
+
+    public AuthController(AuthUseCase auth, IConfiguration configuration, IWebHostEnvironment environment)
     {
-        private readonly AuthUseCase _auth;
-        private readonly IConfiguration _configuration;
-        private readonly IWebHostEnvironment _environment;
+        _auth = auth;
+        _configuration = configuration;
+        _environment = environment;
+    }
 
-        public AuthController(AuthUseCase auth, IConfiguration configuration, IWebHostEnvironment environment)
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(CreateUserRequest request)
+    {
+        await _auth.RegisterAsync(request);
+        return ApiCreated(null, "Registered successfully.");
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginRequest request)
+    {
+        var response = await _auth.LoginAsync(request);
+        SetAuthCookies(response);
+        return ApiOk(response, "Logged in successfully.");
+    }
+
+    [Authorize]
+    [HttpPut("password")]
+    public async Task<IActionResult> ChangePassword(PasswordChangeRequest request)
+    {
+        await _auth.ChangePasswordAsync(CurrentUser, request);
+        return ApiOk(null, "Password changed successfully.");
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh()
+    {
+        var refreshToken = Request.GetRefreshToken();
+        if (string.IsNullOrEmpty(refreshToken))
         {
-            _auth = auth;
-            _configuration = configuration;
-            _environment = environment;
+            throw new BusinessException(ErrorCode.InvalidRefreshToken);
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(CreateUserRequest registerRequest)
+        var response = await _auth.RefreshAsync(refreshToken);
+        SetAuthCookies(response);
+        return ApiOk(response, "Token refreshed successfully.");
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var refreshToken = Request.GetRefreshToken();
+        if (!string.IsNullOrEmpty(refreshToken))
         {
-            await _auth.RegisterAsync(registerRequest);
-            return ApiCreated(null, "Đăng ký tài khoản thành công.");
+            await _auth.LogoutAsync(refreshToken);
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginRequest loginRequest)
-        {
-            var loginResponse = await _auth.LoginAsync(loginRequest);
+        DeleteAuthCookies();
+        return ApiOk(null, "Logged out successfully.");
+    }
 
-            SetAuthCookies(loginResponse);
+    private void SetAuthCookies(AuthResponseDTO authResponse)
+    {
+        var secure = ShouldUseSecureCookies();
+        Response.SetAccessToken(authResponse.AccessToken, GetAccessTokenExpireMinutes(), secure);
+        Response.SetRefreshToken(authResponse.RefreshToken, secure);
+    }
 
-            return ApiOk(loginResponse, "Đăng nhập thành công.");
-        }
+    private void DeleteAuthCookies()
+    {
+        var secure = ShouldUseSecureCookies();
+        Response.DeleteAccessToken(secure);
+        Response.DeleteRefreshToken(secure);
+    }
 
-        [Authorize]
-        [HttpPut("password")]
-        public async Task<IActionResult> ChangePassword(PasswordChangeRequest passwordChangeRequest)
-        {
-            await _auth.ChangePasswordAsync(CurrentUser, passwordChangeRequest);
-            return ApiOk(null, "Đổi mật khẩu thành công.");
-        }
+    private int GetAccessTokenExpireMinutes()
+    {
+        return int.TryParse(_configuration["Jwt:ExpireMinutes"], out var minutes) ? minutes : 30;
+    }
 
-        [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh()
-        {
-            var refreshToken = Request.GetRefreshToken();
-            if (string.IsNullOrEmpty(refreshToken))
-            {
-                throw new BusinessException(ErrorCode.InvalidRefreshToken);
-            }
-
-            var result = await _auth.RefreshAsync(refreshToken);
-
-            SetAuthCookies(result);
-
-            return ApiOk(result, "Làm mới token thành công.");
-        }
-
-        [Authorize]
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
-        {
-            var refreshToken = Request.GetRefreshToken();
-            if (!string.IsNullOrEmpty(refreshToken))
-            {
-                await _auth.LogoutAsync(refreshToken);
-            }
-
-            DeleteAuthCookies();
-
-            return ApiOk(null, "Đăng xuất thành công.");
-        }
-
-        private void SetAuthCookies(AuthResponseDTO authResponse)
-        {
-            var secure = ShouldUseSecureCookies();
-            Response.SetAccessToken(authResponse.AccessToken, GetAccessTokenExpireMinutes(), secure);
-            Response.SetRefreshToken(authResponse.RefreshToken, secure);
-        }
-
-        private void DeleteAuthCookies()
-        {
-            var secure = ShouldUseSecureCookies();
-            Response.DeleteAccessToken(secure);
-            Response.DeleteRefreshToken(secure);
-        }
-
-        private int GetAccessTokenExpireMinutes()
-        {
-            return int.TryParse(_configuration["Jwt:ExpireMinutes"], out var minutes) ? minutes : 30;
-        }
-
-        private bool ShouldUseSecureCookies()
-        {
-            return Request.IsHttps || !_environment.IsDevelopment();
-        }
+    private bool ShouldUseSecureCookies()
+    {
+        return Request.IsHttps || !_environment.IsDevelopment();
     }
 }
-

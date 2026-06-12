@@ -1,16 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GameTopUp.BLL.DTOs.Orders
+namespace GameTopUp.BLL.DTOs.Orders;
+
+public sealed class PlaceOrderRequestDTO
 {
-    public class PlaceOrderRequestDTO
-    {
-        [Required]
-        public long GamePackageId { get; set; }
+    [Required]
+    public long GamePackageId { get; set; }
 
-        [Range(1, 1000)]
-        public int Quantity { get; set; } = 1;
+    [Range(1, 1000)]
+    public int Quantity { get; set; } = 1;
 
-        [Required]
-        public string GameAccountInfo { get; set; } = string.Empty;
-    }
+    [Required]
+    public string GameAccountInfo { get; set; } = string.Empty;
 }

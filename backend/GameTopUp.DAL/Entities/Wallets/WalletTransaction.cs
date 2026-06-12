@@ -1,55 +1,49 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace GameTopUp.DAL.Entities
+namespace GameTopUp.DAL.Entities.Wallets;
+
+[Table("wallet_transactions")]
+public class WalletTransaction
 {
-    [Table("wallet_transactions")]
-    public class WalletTransaction
+    [Key]
+    public long Id { get; set; }
+
+    public long UserId { get; set; }
+
+    public decimal Amount { get; set; }
+
+    public decimal BalanceBefore { get; set; }
+
+    public decimal BalanceAfter { get; set; }
+
+    public WalletTransactionType Type { get; set; }
+
+    public string? Description { get; set; }
+
+    public long? OrderId { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public static WalletTransaction Create(
+        long userId,
+        decimal amount,
+        decimal balanceBefore,
+        decimal balanceAfter,
+        WalletTransactionType type,
+        string? description = null,
+        long? orderId = null)
     {
-        [Key]
-        public long Id { get; set; }
-        public long UserId { get; set; }
-        public decimal Amount { get; set; }
-        public decimal BalanceBefore { get; set; }
-        public decimal BalanceAfter { get; set; }
-        public WalletTransactionType Type { get; set; }
-        public string? Description { get; set; }
-        public long? OrderId { get; set; }
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public WalletTransaction()
+        return new WalletTransaction
         {
-        }
-
-        public static WalletTransaction Create(
-            long userId,
-            decimal amount,
-            decimal balanceBefore,
-            decimal balanceAfter,
-            WalletTransactionType type,
-            string? description = null,
-            long? orderId = null)
-        {
-            return new WalletTransaction
-            {
-                UserId = userId,
-                Amount = amount,
-                BalanceBefore = balanceBefore,
-                BalanceAfter = balanceAfter,
-                Type = type,
-                Description = description,
-                OrderId = orderId,
-                CreatedAt = DateTime.UtcNow
-            };
-        }
-    }
-
-    public enum WalletTransactionType
-    {
-        Deposit = 1,
-        Withdraw = 2,
-        PaidOrder = 3,
-        Refund = 4,
+            UserId = userId,
+            Amount = amount,
+            BalanceBefore = balanceBefore,
+            BalanceAfter = balanceAfter,
+            Type = type,
+            Description = description,
+            OrderId = orderId,
+            CreatedAt = DateTime.UtcNow
+        };
     }
 }
