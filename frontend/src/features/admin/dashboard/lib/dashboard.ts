@@ -15,12 +15,12 @@ export function buildRevenueSeries(orders: Order[]) {
   }
 
   for (const order of orders) {
-    if (order.status === 5) continue;
+    if (order.status === 4) continue;
 
     const iso = toLocalIsoDate(order.createdAt);
     if (!valuesByDay.has(iso)) continue;
 
-    valuesByDay.set(iso, (valuesByDay.get(iso) ?? 0) + (order.total ?? order.unitPrice * order.quantity));
+    valuesByDay.set(iso, (valuesByDay.get(iso) ?? 0) + (order.total ?? order.unitPrice));
   }
 
   return days.map((day) => ({ ...day, value: valuesByDay.get(day.iso) ?? 0 }));

@@ -8,18 +8,15 @@ export function OrderCard({
   busy,
   order,
   onCancel,
-  onPay,
   onBrowseGames,
 }: {
   busy: boolean;
   onBrowseGames: () => void;
   onCancel: () => void;
-  onPay: () => void;
   order: Order;
 }) {
-  const total = order.total ?? order.unitPrice * order.quantity;
+  const total = order.total ?? order.unitPrice;
   const statusMeta = getOrderStatusMeta(order.status, getOrderStatusIcon(order.status));
-  const canPay = order.status === 1;
   const canCancel = order.status === 1 || order.status === 2;
 
   return (
@@ -27,9 +24,7 @@ export function OrderCard({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <strong className="block text-lg font-black text-white">Đơn hàng #{order.id}</strong>
-          <p className="mt-1 text-sm text-slate-300">
-            Gói #{order.gamePackageId} · Số lượng: {order.quantity}
-          </p>
+          <p className="mt-1 text-sm text-slate-300">Gói #{order.gamePackageId}</p>
           <p className="mt-1 text-sm text-slate-300">Tài khoản: {order.gameAccountInfo}</p>
         </div>
         <Badge variant={statusMeta.variant} icon={statusMeta.icon}>
@@ -44,17 +39,10 @@ export function OrderCard({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {canPay ? (
-          <Button variant="accent" onClick={onPay} disabled={busy}>
-            <ShoppingCart size={16} />
-            {busy ? 'Đang xử lý...' : 'Thanh toán'}
-          </Button>
-        ) : (
-          <Button variant="secondary" onClick={onBrowseGames} disabled={busy}>
-            <ShoppingCart size={16} />
-            Mua lại
-          </Button>
-        )}
+        <Button variant="secondary" onClick={onBrowseGames} disabled={busy}>
+          <ShoppingCart size={16} />
+          Mua lại
+        </Button>
 
         {canCancel ? (
           <Button variant="secondary" onClick={onCancel} disabled={busy}>
@@ -71,9 +59,8 @@ function getOrderStatusIcon(status: number) {
   const icons = {
     1: <Clock size={14} />,
     2: <RefreshCcw size={14} />,
-    3: <RefreshCcw size={14} />,
-    4: <CheckCircle2 size={14} />,
-    5: <XCircle size={14} />,
+    3: <CheckCircle2 size={14} />,
+    4: <XCircle size={14} />,
   } as const;
 
   return icons[status as keyof typeof icons] ?? <Clock size={14} />;

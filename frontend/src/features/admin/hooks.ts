@@ -38,23 +38,23 @@ export function useAdminMetrics({
   orders,
   users,
 }: {
-  games: Game[];  
+  games: Game[];
   packages: GamePackage[];
   orders: Order[];
   users: User[];
 }) {
   const metrics = useMemo(() => {
-    const paidRevenue = orders
-      .filter((order) => order.status !== 5)
-      .reduce((sum, order) => sum + (order.total ?? order.unitPrice * order.quantity), 0);
+    const revenue = orders
+      .filter((order) => order.status !== 4)
+      .reduce((sum, order) => sum + (order.total ?? order.unitPrice), 0);
 
     return {
       activeGames: games.filter((game) => game.isActive).length,
       totalPackages: packages.length,
       disabledPackages: packages.filter((item) => !item.isActive).length,
       ordersToday: orders.filter((order) => isToday(order.createdAt)).length,
-      paidRevenue,
-      pendingOrders: orders.filter((order) => order.status === 1 || order.status === 2 || order.status === 3).length,
+      revenue,
+      pendingOrders: orders.filter((order) => order.status === 1 || order.status === 2).length,
       totalUsers: users.length,
       activeUsers: users.filter((user) => user.isActive !== false).length,
     };

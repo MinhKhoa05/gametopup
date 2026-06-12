@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { cancelOrder, getMyOrders, payOrder, placeOrder } from './api';
+import { cancelOrder, getMyOrders, purchaseOrder } from './api';
 import { walletKeys } from '@/features/wallet/server';
-import type { CancelOrderInput, PayOrderInput, PlaceOrderInput } from './types';
+import type { CancelOrderInput, PurchaseOrderInput } from './types';
 
 export const orderKeys = {
   all: ['orders'] as const,
@@ -16,27 +16,15 @@ export function useMyOrdersQuery() {
   });
 }
 
-export function usePlaceOrderMutation() {
+export function usePurchaseOrderMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: PlaceOrderInput) => placeOrder(payload),
-    onSuccess() {
-      queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      toast.success('Đã tạo đơn hàng. Vui lòng thanh toán để hoàn tất đơn hàng.');
-    },
-  });
-}
-
-export function usePayOrderMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (payload: PayOrderInput) => payOrder(payload),
+    mutationFn: (payload: PurchaseOrderInput) => purchaseOrder(payload),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       queryClient.invalidateQueries({ queryKey: walletKeys.all });
-      toast.success('Đã thanh toán đơn hàng.');
+      toast.success('Đã mua gói thành công.');
     },
   });
 }

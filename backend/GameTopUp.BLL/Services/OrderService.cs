@@ -38,40 +38,26 @@ public sealed class OrderService
 
     public Task<Order> GetWithLockByIdOrThrowAsync(long orderId) => GetByIdOrThrowAsync(orderId, withLock: true);
 
-    public async Task<long> CreateOrderAsync(UserContext context, GamePackage package, int quantity, string gameAccountInfo)
+    public async Task<long> CreateOrderAsync(UserContext context, GamePackage package, string gameAccountInfo)
     {
-        if (await _orderRepository.HasPendingOrderAsync(context.UserId))
-        {
-            throw new BusinessException(ErrorCode.PendingOrderExists);
-        }
+        var order = Order.Create(context.UserId, package.Id, package.SalePrice, gameAccountInfo, OrderStatus.Pending);
 
-        var order = Order.Create(context.UserId, package.Id, package.SalePrice, quantity, gameAccountInfo);
+        var newOrderId = await _orderRepository.CreateAsync(order);
+        order.Id = newOrderId;
 
-        try
-        {
-            var newOrderId = await _orderRepository.CreateAsync(order);
-            order.Id = newOrderId;
+        await _orderHistoryRepository.CreateAsync(
+            OrderHistory.Create(
+                newOrderId,
+                OrderStatus.Pending,
+                OrderStatus.Pending,
+                context.UserId,
+                "Order created in pending state."));
 
-            await _orderHistoryRepository.CreateAsync(
-                OrderHistory.Create(
-                    newOrderId,
-                    order.Status,
-                    order.Status,
-                    context.UserId,
-                    "Order created and waiting for payment."));
-
-            return newOrderId;
-        }
-        catch (Exception ex) when (IsDuplicateError(ex))
-        {
-            throw new BusinessException(ErrorCode.PendingOrderExists);
-        }
+        return newOrderId;
     }
 
     public async Task<OrderChangeResult> PickOrderAsync(Order order, UserContext admin)
     {
-        var fromStatus = order.Status;
-
         if (order.Status == OrderStatus.Processing && order.AssignedTo == admin.UserId)
         {
             return OrderChangeResult.Unchanged(order);
@@ -82,7 +68,12 @@ public sealed class OrderService
             throw new BusinessException(ErrorCode.OrderAlreadyAssigned);
         }
 
-        EnsureTransition(fromStatus, OrderStatus.Processing);
+        if (order.Status != OrderStatus.Pending)
+        {
+            throw new BusinessException(ErrorCode.OrderNotReadyForPick);
+        }
+
+        var fromStatus = order.Status;
         order.MarkProcessing(admin.UserId);
 
         await SaveChangeAsync(order, fromStatus, $"Admin {admin.DisplayName} picked the order.", admin);
@@ -98,8 +89,11 @@ public sealed class OrderService
             return OrderChangeResult.Unchanged(order);
         }
 
-        EnsureTransition(fromStatus, OrderStatus.Completed);
-
+        if (order.Status != OrderStatus.Processing)
+        {
+            throw new BusinessException(ErrorCode.OrderStatusInvalidToComplete);
+        }
+        
         if (order.AssignedTo != admin.UserId)
         {
             throw new BusinessException(ErrorCode.CannotModifyOthersOrder);
@@ -122,75 +116,31 @@ public sealed class OrderService
             throw new BusinessException(ErrorCode.CompletedOrderCannotBeCancelled);
         }
 
-        var isOwner = order.UserId == actor.UserId;
-        var isAssignedAdmin = order.AssignedTo == actor.UserId;
-        if (!isOwner && !isAssignedAdmin)
+        if (actor.UserId == order.UserId)
+        {
+            if (order.Status != OrderStatus.Pending)
+            {
+                throw new ForbiddenException(ErrorCode.ProcessingOrderCannotBeCancelled);
+            }
+        }
+        else if (actor.IsAdmin)
+        {
+            var canCancelPendingOrder = order.Status == OrderStatus.Pending;
+            var canCancelProcessingOrder = order.Status == OrderStatus.Processing && order.AssignedTo == actor.UserId;
+
+            if (!canCancelPendingOrder && !canCancelProcessingOrder)
+            {
+                throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
+            }
+        }
+        else
         {
             throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
-        }
-
-        if (order.Status == OrderStatus.Processing && isOwner)
-        {
-            throw new ForbiddenException(ErrorCode.ProcessingOrderCannotBeCancelled);
         }
 
         var fromStatus = order.Status;
         order.MarkCancelled();
         await SaveChangeAsync(order, fromStatus, BuildCancelNote(reason), actor);
-        return OrderChangeResult.ChangedStatus(order, fromStatus);
-    }
-
-    public bool ValidateForPayment(Order order, UserContext user)
-    {
-        if (order.UserId != user.UserId)
-        {
-            throw new BusinessException(ErrorCode.PaymentForbidden);
-        }
-
-        if (order.Status == OrderStatus.Paid)
-        {
-            return false;
-        }
-
-        EnsureTransition(order.Status, OrderStatus.Paid);
-        return true;
-    }
-
-    public async Task<OrderChangeResult> MarkAsPaidAsync(Order order, UserContext user)
-    {
-        if (order.UserId != user.UserId)
-        {
-            throw new BusinessException(ErrorCode.PaymentForbidden);
-        }
-
-        return await UpdateStatusAsync(order, OrderStatus.Paid, "Order paid successfully.", user);
-    }
-
-    private async Task<OrderChangeResult> UpdateStatusAsync(Order order, OrderStatus toStatus, string note, UserContext actor)
-    {
-        var fromStatus = order.Status;
-        if (!TryValidateTransition(fromStatus, toStatus))
-        {
-            return OrderChangeResult.Unchanged(order);
-        }
-
-        if (toStatus == OrderStatus.Paid)
-        {
-            order.MarkPaid();
-        }
-        else if (toStatus == OrderStatus.Completed)
-        {
-            order.MarkCompleted();
-        }
-        else if (toStatus == OrderStatus.Cancelled)
-        {
-            order.MarkCancelled();
-        }
-        else
-        {
-            order.UpdateStatus(toStatus);
-        }
-        await SaveChangeAsync(order, fromStatus, note, actor);
         return OrderChangeResult.ChangedStatus(order, fromStatus);
     }
 
@@ -208,51 +158,9 @@ public sealed class OrderService
                 actor.IsAdmin));
     }
 
-    private static void EnsureTransition(OrderStatus fromStatus, OrderStatus toStatus)
-    {
-        if (!TryValidateTransition(fromStatus, toStatus))
-        {
-            throw new BusinessException(GetTransitionError(toStatus));
-        }
-    }
-
-    private static bool TryValidateTransition(OrderStatus fromStatus, OrderStatus toStatus)
-    {
-        if (fromStatus == toStatus)
-        {
-            return false;
-        }
-
-        return toStatus switch
-        {
-            OrderStatus.Paid => fromStatus == OrderStatus.Pending,
-            OrderStatus.Processing => fromStatus == OrderStatus.Paid,
-            OrderStatus.Completed => fromStatus == OrderStatus.Processing,
-            OrderStatus.Cancelled => fromStatus != OrderStatus.Completed,
-            _ => false
-        };
-    }
-
-    private static ErrorCode GetTransitionError(OrderStatus toStatus)
-    {
-        return toStatus switch
-        {
-            OrderStatus.Paid => ErrorCode.OrderNotPendingPayment,
-            OrderStatus.Processing => ErrorCode.OrderMustBePaidToPick,
-            OrderStatus.Completed => ErrorCode.OrderStatusInvalidToComplete,
-            OrderStatus.Cancelled => ErrorCode.CompletedOrderCannotBeCancelled,
-            _ => ErrorCode.BadRequest
-        };
-    }
-
     private static string BuildCancelNote(string? reason)
     {
         return "Order cancelled." + (string.IsNullOrWhiteSpace(reason) ? string.Empty : $" Reason: {reason}");
     }
 
-    private static bool IsDuplicateError(Exception ex)
-    {
-        return ex.Message.Contains("Duplicate", StringComparison.OrdinalIgnoreCase)
-            || ex.Message.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase);
-    }
 }

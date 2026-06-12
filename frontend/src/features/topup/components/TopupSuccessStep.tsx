@@ -18,7 +18,7 @@ export function TopupSuccessStep({ checkoutDraft, checkoutResult, packageItem, g
     return <EmptyState>Không tìm thấy đơn hàng.</EmptyState>;
   }
 
-  const checkoutTotal = packageItem.salePrice * checkoutDraft.quantity;
+  const checkoutTotal = packageItem.salePrice;
   const successTime = checkoutResult.successAt
     ? new Intl.DateTimeFormat('vi-VN', {
         day: '2-digit',
@@ -63,7 +63,6 @@ export function TopupSuccessStep({ checkoutDraft, checkoutResult, packageItem, g
     { icon: <BadgeCheck size={14} />, label: 'Game', value: game.name },
     { icon: <BadgeCheck size={14} />, label: 'Gói nạp', value: packageItem.name },
     { icon: <BadgeCheck size={14} />, label: 'UID / Server / Tên nhân vật', value: checkoutDraft.gameAccountInfo },
-    { icon: <BadgeCheck size={14} />, label: 'Số lượng', value: String(checkoutDraft.quantity) },
   ];
 
   const paymentRows = [

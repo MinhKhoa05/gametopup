@@ -1,7 +1,6 @@
 export type TopupCheckoutDraft = {
   gameAccountInfo: string;
   packageId: number;
-  quantity: number;
 };
 
 export type TopupCheckoutResult = {
@@ -9,4 +8,4 @@ export type TopupCheckoutResult = {
   successAt: string;
 };
 
-export type TopupOrderStep = 1 | 2 | 3;
+export type TopupOrderStep = 1 | 2;

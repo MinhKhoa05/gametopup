@@ -4,6 +4,6 @@ public enum WalletTransactionType
 {
     Deposit = 1,
     Withdraw = 2,
-    PaidOrder = 3,
+    PurchaseOrder = 3,
     Refund = 4
 }

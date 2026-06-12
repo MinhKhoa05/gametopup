@@ -30,7 +30,7 @@ const WALLET_TRANSACTION_META: Record<
   3: {
     decrease: true,
     icon: <Send size={16} />,
-    label: 'Thanh toán',
+    label: 'Mua gói',
     iconClassName: 'border-emerald-400/15 bg-emerald-400/10 text-emerald-300',
   },
   4: {

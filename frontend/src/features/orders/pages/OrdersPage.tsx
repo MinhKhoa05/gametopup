@@ -2,14 +2,13 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { EmptyState, SearchBar } from '@/shared/components';
-import { useCancelOrderMutation, useMyOrdersQuery, usePayOrderMutation } from '@/features/orders/server';
+import { useCancelOrderMutation, useMyOrdersQuery } from '@/features/orders/server';
 import { OrderCard } from '@/features/orders/components/OrderCard';
 import { routes } from '@/app/router/routes';
 
 export function OrdersPage() {
   const navigate = useNavigate();
   const ordersQuery = useMyOrdersQuery();
-  const payOrderMutation = usePayOrderMutation();
   const cancelOrderMutation = useCancelOrderMutation();
   const [workingOrderId, setWorkingOrderId] = useState<number | null>(null);
   const [query, setQuery] = useState('');
@@ -26,16 +25,6 @@ export function OrdersPage() {
       return String(order.id).includes(keyword) || String(order.gamePackageId).includes(keyword) || order.gameAccountInfo.toLowerCase().includes(keyword);
     });
   }, [orders, query]);
-
-  async function handlePay(orderId: number) {
-    setWorkingOrderId(orderId);
-
-    try {
-      await payOrderMutation.mutateAsync({ orderId });
-    } finally {
-      setWorkingOrderId(null);
-    }
-  }
 
   async function handleCancel(orderId: number) {
     setWorkingOrderId(orderId);
@@ -82,7 +71,6 @@ export function OrdersPage() {
               order={order}
               onBrowseGames={() => navigate(routes.games())}
               onCancel={() => void handleCancel(order.id)}
-              onPay={() => void handlePay(order.id)}
             />
           ))}
         </div>

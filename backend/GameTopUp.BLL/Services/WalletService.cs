@@ -41,9 +41,9 @@ public sealed class WalletService
         return await CreditAsync(userId, amount, WalletTransactionType.Deposit, $"Approve VietQR deposit #{depositCode}: {amount:N0} VND");
     }
 
-    public async Task PayOrderAsync(long userId, long orderId, decimal amount)
+    public async Task ChargeOrderAsync(long userId, long orderId, decimal amount)
     {
-        await DebitAsync(userId, amount, WalletTransactionType.PaidOrder, $"Pay order #{orderId}", orderId);
+        await DebitAsync(userId, amount, WalletTransactionType.PurchaseOrder, $"Purchase order #{orderId}", orderId);
     }
 
     public async Task RefundOrderAsync(long userId, long orderId, decimal amount, string? reason = null)

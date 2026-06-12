@@ -80,14 +80,11 @@ public enum ErrorCode
     [Display(Name = "Approved requests cannot be rejected.")]
     ApprovedDepositCannotBeRejected,
 
-    [Display(Name = "A pending order already exists.")]
-    PendingOrderExists,
-
     [Display(Name = "Order already assigned.")]
     OrderAlreadyAssigned,
 
-    [Display(Name = "Order must be paid before picking it up.")]
-    OrderMustBePaidToPick,
+    [Display(Name = "Order is not ready to be picked.")]
+    OrderNotReadyForPick,
 
     [Display(Name = "Order status is invalid for completion.")]
     OrderStatusInvalidToComplete,
@@ -101,17 +98,14 @@ public enum ErrorCode
     [Display(Name = "Processing order cannot be cancelled.")]
     ProcessingOrderCannotBeCancelled,
 
-    [Display(Name = "You are not allowed to pay this order.")]
-    PaymentForbidden,
-
-    [Display(Name = "Order is not pending payment.")]
-    OrderNotPendingPayment,
-
     [Display(Name = "Stock quantity must be greater than 0.")]
     StockQuantityMustBePositive,
 
     [Display(Name = "Insufficient stock.")]
     InsufficientStock,
+
+    [Display(Name = "Package is out of stock.")]
+    PackageOutOfStock,
 
     [Display(Name = "Game package is inactive.")]
     GamePackageInactive,

@@ -35,13 +35,4 @@ public sealed class OrderRepository : IOrderRepository
             new { UserId = userId, Status = status });
 
     public Task<long> CreateAsync(Order order) => _database.InsertAsync<Order, long>(order);
-
-    public async Task<bool> HasPendingOrderAsync(long userId)
-    {
-        var count = await _database.ExecuteScalarAsync<int>(
-            "SELECT COUNT(1) FROM orders WHERE user_id = @UserId AND is_pending = 1",
-            new { UserId = userId });
-
-        return count > 0;
-    }
 }

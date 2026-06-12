@@ -43,29 +43,29 @@ public class GamePackageServiceTests
     }
 
     [Fact]
-    public async Task GetAvailablePackageAsync_ShouldThrow_WhenStockIsInsufficient()
+    public async Task ReservePackageAsync_ShouldThrow_WhenStockIsInsufficient()
     {
         _packageRepository
-            .Setup(repo => repo.GetByIdAsync(5))
-            .ReturnsAsync(new GamePackage { Id = 5, IsActive = true, StockQuantity = 2 });
+            .Setup(repo => repo.DecreaseStockAsync(5, 1))
+            .ReturnsAsync(0);
 
-        var act = async () => await _service.GetAvailablePackageAsync(5, 3);
+        var act = async () => await _service.ReservePackageAsync(5);
 
         await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.InsufficientStock);
+            .Where(ex => ex.ErrorCode == ErrorCode.PackageOutOfStock);
     }
 
     [Fact]
-    public async Task DecreaseStockAsync_ShouldThrow_WhenRepositoryCannotDecreaseStock()
+    public async Task RestorePackageAsync_ShouldThrow_WhenPackageDoesNotExist()
     {
         _packageRepository
-            .Setup(repo => repo.DecreaseStockAsync(5, 3))
+            .Setup(repo => repo.IncreaseStockAsync(5, 1))
             .ReturnsAsync(0);
 
-        var act = async () => await _service.DecreaseStockAsync(5, 3);
+        var act = async () => await _service.RestorePackageAsync(5);
 
-        await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.InsufficientStock);
+        await act.Should().ThrowAsync<NotFoundException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.GamePackageNotFound);
     }
 
     [Fact]
@@ -84,16 +84,4 @@ public class GamePackageServiceTests
             .Where(ex => ex.ErrorCode == ErrorCode.StockQuantityMustBePositive);
     }
 
-    [Fact]
-    public async Task IncreaseStockAsync_ShouldThrow_WhenPackageDoesNotExist()
-    {
-        _packageRepository
-            .Setup(repo => repo.IncreaseStockAsync(5, 3))
-            .ReturnsAsync(0);
-
-        var act = async () => await _service.IncreaseStockAsync(5, 3);
-
-        await act.Should().ThrowAsync<NotFoundException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.GamePackageNotFound);
-    }
 }

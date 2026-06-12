@@ -6,14 +6,13 @@ import { toast } from 'sonner';
 import { useGamesQuery } from '@/features/games/server';
 import { useGamePackagesQuery } from '@/features/packages/server';
 import { useWalletBalanceQuery } from '@/features/wallet/server';
-import { usePayOrderMutation, usePlaceOrderMutation } from '@/features/orders/server';
+import { usePurchaseOrderMutation } from '@/features/orders/server';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import type { Game } from '@/features/games/types';
 import type { TopupCheckoutDraft, TopupCheckoutResult, TopupOrderStep } from '@/features/topup/types';
 import { TopupAccountStep } from '@/features/topup/components/TopupAccountStep';
 import { TopupBreadcrumb, TopupPageSkeleton, TopupStepProgress } from '@/features/topup/components/TopupLayout';
 import { TopupPackageStep } from '@/features/topup/components/TopupPackageStep';
-import { TopupReviewStep } from '@/features/topup/components/TopupReviewStep';
 import { TopupSuccessStep } from '@/features/topup/components/TopupSuccessStep';
 import { routes } from '@/app/router/routes';
 
@@ -21,14 +20,12 @@ type TopupDraftState = {
   checkoutDraft: TopupCheckoutDraft | null;
   checkoutResult: TopupCheckoutResult | null;
   gameAccountInfo: string;
-  quantity: string;
   selectedPackageId: number | null;
 };
 
 type TopupDraftAction =
   | { type: 'reset' }
   | { type: 'set-account'; value: string }
-  | { type: 'set-quantity'; value: string }
   | { type: 'set-package'; value: number | null }
   | { type: 'set-draft'; value: TopupCheckoutDraft }
   | { type: 'set-result'; value: TopupCheckoutResult };
@@ -37,7 +34,6 @@ const initialDraftState: TopupDraftState = {
   checkoutDraft: null,
   checkoutResult: null,
   gameAccountInfo: '',
-  quantity: '1',
   selectedPackageId: null,
 };
 
@@ -47,8 +43,6 @@ function draftReducer(state: TopupDraftState, action: TopupDraftAction): TopupDr
       return initialDraftState;
     case 'set-account':
       return { ...state, gameAccountInfo: action.value };
-    case 'set-quantity':
-      return { ...state, quantity: action.value };
     case 'set-package':
       return { ...state, selectedPackageId: action.value };
     case 'set-draft':
@@ -65,14 +59,13 @@ export function TopupPage() {
   const { gameId: gameIdParam, step: stepParam } = useParams<{ gameId?: string; step?: string }>();
   const auth = useAuthSession();
   const gamesQuery = useGamesQuery();
-  const placeOrderMutation = usePlaceOrderMutation();
-  const payOrderMutation = usePayOrderMutation();
+  const purchaseOrderMutation = usePurchaseOrderMutation();
   const walletQuery = useWalletBalanceQuery(auth.status === 'authenticated');
   const [draftState, dispatch] = useReducer(draftReducer, initialDraftState);
 
   const topupGameId = Number(gameIdParam);
   const currentStepValue = Number(stepParam);
-  const currentStep: TopupOrderStep = currentStepValue === 1 || currentStepValue === 2 || currentStepValue === 3 ? currentStepValue : 1;
+  const currentStep: TopupOrderStep = currentStepValue === 2 ? 2 : 1;
   const hasValidGameId = Number.isFinite(topupGameId) && topupGameId > 0;
 
   const game = useMemo(() => {
@@ -120,16 +113,30 @@ export function TopupPage() {
   }
 
   const selectedPackage = packages.find((item) => item.id === draftState.selectedPackageId) ?? null;
-  const checkoutDraft = draftState.checkoutDraft;
-  const reviewPackage = checkoutDraft ? packages.find((item) => item.id === checkoutDraft.packageId) ?? null : selectedPackage;
-  const parsedQuantity = Number.parseInt(draftState.quantity, 10);
-  const safeQuantity = Number.isFinite(parsedQuantity) && parsedQuantity > 0 ? parsedQuantity : 1;
   const walletBalance = walletQuery.data ?? 0;
   const walletLoading = walletQuery.isPending && !walletQuery.data;
-  const busy = placeOrderMutation.isPending || payOrderMutation.isPending;
+  const busy = purchaseOrderMutation.isPending;
 
-  const onContinue = () => {
-    if (!selectedPackage || !draftState.gameAccountInfo.trim()) {
+  const onPurchase = () => {
+    if (!selectedPackage || !draftState.gameAccountInfo.trim() || walletLoading) {
+      return;
+    }
+
+    const checkoutTotal = selectedPackage.salePrice;
+    const shortage = Math.max(0, checkoutTotal - walletBalance);
+    if (shortage > 0) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      [
+        `Bạn muốn mua gói "${selectedPackage.name}" với giá ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedPackage.salePrice)}?`,
+        `Tài khoản nhận hàng: ${draftState.gameAccountInfo.trim()}`,
+        'Đơn hàng sẽ được tạo và trừ ví ngay lập tức.',
+      ].join('\n\n'),
+    );
+
+    if (!confirmed) {
       return;
     }
 
@@ -138,37 +145,16 @@ export function TopupPage() {
       value: {
         gameAccountInfo: draftState.gameAccountInfo.trim(),
         packageId: selectedPackage.id,
-        quantity: safeQuantity,
       },
     });
-    navigate(routes.topup(game.id, 2));
-  };
-
-  const onConfirm = () => {
-    if (!reviewPackage || !auth.user || !game) {
-      return;
-    }
 
     void (async () => {
       try {
-        const checkoutDraft = draftState.checkoutDraft ?? {
+        const orderId = await purchaseOrderMutation.mutateAsync({
+          gamePackageId: selectedPackage.id,
           gameAccountInfo: draftState.gameAccountInfo.trim(),
-          packageId: reviewPackage.id,
-          quantity: safeQuantity,
-        };
-        const checkoutTotal = reviewPackage.salePrice * checkoutDraft.quantity;
-        const shortage = Math.max(0, checkoutTotal - walletBalance);
-        if (shortage > 0) {
-          return;
-        }
-
-        const orderId = await placeOrderMutation.mutateAsync({
-          gamePackageId: reviewPackage.id,
-          quantity: checkoutDraft.quantity,
-          gameAccountInfo: checkoutDraft.gameAccountInfo,
         });
 
-        await payOrderMutation.mutateAsync({ orderId });
         dispatch({
           type: 'set-result',
           value: {
@@ -176,10 +162,10 @@ export function TopupPage() {
             successAt: new Date().toISOString(),
           },
         });
-        navigate(routes.topup(game.id, 3));
+        navigate(routes.topup(game.id, 2));
       } catch (error) {
         console.error(error);
-        toast.error('Không thể hoàn tất thanh toán. Vui lòng thử lại.');
+        toast.error('Không thể hoàn tất mua gói. Vui lòng thử lại.');
       }
     })();
   };
@@ -223,39 +209,24 @@ export function TopupPage() {
               selectedPackageId={draftState.selectedPackageId}
             />
             <TopupAccountStep
+              busy={busy}
               gameAccountInfo={draftState.gameAccountInfo}
               isAuthenticated={auth.status === 'authenticated'}
-              quantity={draftState.quantity}
+              walletBalance={walletBalance}
+              walletLoading={walletLoading}
               selectedPackage={selectedPackage}
-              onContinue={onContinue}
+              onPurchase={onPurchase}
               onGameAccountInfoChange={(value) => dispatch({ type: 'set-account', value })}
-              onQuantityChange={(value) => dispatch({ type: 'set-quantity', value })}
             />
           </div>
         )}
 
         {currentStep === 2 && (
-          <TopupReviewStep
-            busy={busy}
-            game={game}
-            gameAccountInfo={draftState.checkoutDraft?.gameAccountInfo ?? draftState.gameAccountInfo}
-            packageItem={reviewPackage}
-            quantity={draftState.checkoutDraft?.quantity ?? safeQuantity}
-            isAuthenticated={auth.status === 'authenticated'}
-            walletBalance={walletBalance}
-            walletLoading={walletLoading}
-            onAddFunds={() => navigate(routes.wallet())}
-            onBack={() => navigate(routes.topup(game.id, 1))}
-            onConfirm={onConfirm}
-          />
-        )}
-
-        {currentStep === 3 && (
           <TopupSuccessStep
             checkoutDraft={draftState.checkoutDraft}
             checkoutResult={draftState.checkoutResult}
             game={game}
-            packageItem={reviewPackage}
+            packageItem={selectedPackage}
             onCreateNewOrder={onCreateNewOrder}
           />
         )}

@@ -13,9 +13,8 @@ public class Order
     public string GameAccountInfo { get; set; } = string.Empty;
     public long GamePackageId { get; set; }
     public decimal UnitPrice { get; set; }
-    public int Quantity { get; set; }
     [NotMapped]
-    public decimal Total => UnitPrice * Quantity;
+    public decimal Total => UnitPrice;
     public long? AssignedTo { get; set; }
     public DateTime? AssignedAt { get; set; }
     public OrderStatus Status { get; set; }
@@ -26,8 +25,8 @@ public class Order
         long userId,
         long gamePackageId,
         decimal unitPrice,
-        int quantity,
-        string gameAccountInfo)
+        string gameAccountInfo,
+        OrderStatus status = OrderStatus.Pending)
     {
         var now = DateTime.UtcNow;
 
@@ -36,9 +35,8 @@ public class Order
             UserId = userId,
             GamePackageId = gamePackageId,
             UnitPrice = unitPrice,
-            Quantity = quantity,
             GameAccountInfo = gameAccountInfo,
-            Status = OrderStatus.Pending,
+            Status = status,
             CreatedAt = now,
             UpdatedAt = now
         };
@@ -56,11 +54,6 @@ public class Order
             AssignedTo = assignedTo;
             AssignedAt = now;
         }
-    }
-
-    public void MarkPaid()
-    {
-        UpdateStatus(OrderStatus.Paid);
     }
 
     public void MarkProcessing(long adminUserId)

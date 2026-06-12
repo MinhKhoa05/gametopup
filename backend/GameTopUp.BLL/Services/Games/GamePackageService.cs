@@ -25,6 +25,24 @@ public sealed class GamePackageService
         return await _packageRepository.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCode.GamePackageNotFound);
     }
 
+    public async Task ReservePackageAsync(long packageId)
+    {
+        var affectedRows = await _packageRepository.DecreaseStockAsync(packageId, 1);
+        if (affectedRows == 0)
+        {
+            throw new BusinessException(ErrorCode.PackageOutOfStock);
+        }
+    }
+
+    public async Task RestorePackageAsync(long packageId)
+    {
+        var affectedRows = await _packageRepository.IncreaseStockAsync(packageId, 1);
+        if (affectedRows == 0)
+        {
+            throw new NotFoundException(ErrorCode.GamePackageNotFound);
+        }
+    }
+
     public async Task<GamePackage> CreatePackageAsync(CreateGamePackageRequest request)
     {
         await ValidateGameForPackageAsync(request.GameId);
@@ -104,46 +122,6 @@ public sealed class GamePackageService
         await _packageRepository.DeleteAsync(id);
     }
 
-    public async Task IncreaseStockAsync(long id, int quantity)
-    {
-        ValidateStockQuantity(quantity);
-
-        var affectedRows = await _packageRepository.IncreaseStockAsync(id, quantity);
-        if (affectedRows == 0)
-        {
-            throw new NotFoundException(ErrorCode.GamePackageNotFound);
-        }
-    }
-
-    public async Task DecreaseStockAsync(long id, int quantity)
-    {
-        ValidateStockQuantity(quantity);
-
-        var affectedRows = await _packageRepository.DecreaseStockAsync(id, quantity);
-        if (affectedRows == 0)
-        {
-            throw new BusinessException(ErrorCode.InsufficientStock);
-        }
-    }
-
-    public async Task<GamePackage> GetAvailablePackageAsync(long id, int quantity)
-    {
-        ValidateStockQuantity(quantity);
-
-        var package = await GetPackageByIdOrThrowAsync(id);
-        if (!package.IsActive)
-        {
-            throw new BusinessException(ErrorCode.GamePackageInactive);
-        }
-
-        if (package.StockQuantity < quantity)
-        {
-            throw new BusinessException(ErrorCode.InsufficientStock);
-        }
-
-        return package;
-    }
-
     private async Task ValidateGameForPackageAsync(long gameId)
     {
         var game = await _gameRepository.GetByIdAsync(gameId);
@@ -155,14 +133,6 @@ public sealed class GamePackageService
         if (!game.IsActive)
         {
             throw new BusinessException(ErrorCode.InactiveGameCannotAddPackage);
-        }
-    }
-
-    private static void ValidateStockQuantity(int quantity)
-    {
-        if (quantity <= 0)
-        {
-            throw new BusinessException(ErrorCode.StockQuantityMustBePositive);
         }
     }
 }

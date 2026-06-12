@@ -137,7 +137,6 @@ public static partial class TestDatabaseExtensions
         this CustomWebApplicationFactory factory,
         long userId,
         long packageId,
-        int quantity = 1,
         string? gameAccountInfo = null,
         OrderStatus status = OrderStatus.Pending,
         Action<Order>? customize = null)
@@ -147,7 +146,6 @@ public static partial class TestDatabaseExtensions
             userId,
             packageId,
             100m,
-            quantity,
             gameAccountInfo ?? $"account-{unique}");
 
         order.Status = status;

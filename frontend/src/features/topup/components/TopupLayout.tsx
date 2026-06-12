@@ -5,8 +5,7 @@ import { classNames } from '@/shared/lib/classNames';
 
 export const TOPUP_ORDER_STEPS: readonly ProgressStep[] = [
   { icon: <span className="text-sm font-black tabular-nums">1</span>, title: 'Chọn gói & nhập thông tin' },
-  { icon: <span className="text-sm font-black tabular-nums">2</span>, title: 'Thanh toán' },
-  { icon: <span className="text-sm font-black tabular-nums">3</span>, title: 'Đặt hàng thành công' },
+  { icon: <span className="text-sm font-black tabular-nums">2</span>, title: 'Đặt hàng thành công' },
 ] as const;
 
 export function TopupBreadcrumb({ gameName }: { gameName: string }) {
@@ -22,7 +21,7 @@ export function TopupBreadcrumb({ gameName }: { gameName: string }) {
   );
 }
 
-export function TopupStepProgress({ currentStep }: { currentStep: 1 | 2 | 3 }) {
+export function TopupStepProgress({ currentStep }: { currentStep: 1 | 2 }) {
   return <StepProgress currentStep={currentStep} steps={TOPUP_ORDER_STEPS} className="max-w-[640px]" />;
 }
 
@@ -154,13 +153,13 @@ export function TopupPageSkeleton() {
         <div className="h-4 w-24 animate-pulse rounded-full bg-white/10" />
       </div>
       <div className="gt-surface p-5 sm:p-6">
-        <div className="mx-auto mb-5 grid w-full max-w-[640px] grid-cols-3 gap-2.5 sm:gap-4" aria-hidden="true">
-          {Array.from({ length: 3 }).map((_, index) => (
+        <div className="mx-auto mb-5 grid w-full max-w-[640px] grid-cols-2 gap-2.5 sm:gap-4" aria-hidden="true">
+          {Array.from({ length: 2 }).map((_, index) => (
             <div
               key={`step-skeleton-${index}`}
               className={classNames(
                 'relative flex flex-col items-center gap-1.5 text-center text-slate-500',
-                index < 2 &&
+                index === 0 &&
                   "after:absolute after:top-[13px] after:left-[calc(50%+24px)] after:right-[calc(-50%+24px)] after:h-0.5 after:rounded-full after:bg-white/6 after:content-['']",
               )}
             >
@@ -196,10 +195,9 @@ export function TopupPageSkeleton() {
             <div className="gt-panel gt-panel-soft rounded-lg p-4">
               <div className="mb-4 h-5 w-40 animate-pulse rounded-full bg-white/10" />
               <div className="grid gap-3">
-                {Array.from({ length: 4 }).map((_, index) => (
+                {Array.from({ length: 3 }).map((_, index) => (
                   <div key={`field-skeleton-${index}`} className="h-12 rounded-xl bg-white/6" aria-hidden="true" />
                 ))}
-                <div className="h-11 rounded-xl bg-white/8" />
                 <div className="h-12 rounded-xl bg-white/8" />
               </div>
             </div>

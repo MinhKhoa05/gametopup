@@ -1,4 +1,4 @@
-import { CheckCircle2, CircleSlash, Clock3, Send, SquareDashed, TriangleAlert, XCircle } from 'lucide-react';
+import { CheckCircle2, CircleSlash, Clock3, Send, TriangleAlert, XCircle } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
 import type { Order } from '@/features/orders/types';
 import type { User } from '@/features/auth/types';
@@ -7,11 +7,11 @@ import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { getOrderStatusMeta as getSharedOrderStatusMeta } from '@/features/orders/lib/orderStatus';
 
 type OrdersAdminPanelState = {
-  filters: Array<{ key: 'all' | 'pending' | 'paid' | 'processing' | 'completed' | 'cancelled'; label: string }>;
-  filter: 'all' | 'pending' | 'paid' | 'processing' | 'completed' | 'cancelled';
+  filters: Array<{ key: 'all' | 'pending' | 'processing' | 'completed' | 'cancelled'; label: string }>;
+  filter: 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
   filteredOrders: Order[];
   query: string;
-  setFilter: (value: 'all' | 'pending' | 'paid' | 'processing' | 'completed' | 'cancelled') => void;
+  setFilter: (value: 'all' | 'pending' | 'processing' | 'completed' | 'cancelled') => void;
   setQuery: (value: string) => void;
 };
 
@@ -50,9 +50,10 @@ export function OrdersAdminPanel({
           title="Bộ lọc đơn hàng"
           action={
             <div className="flex flex-wrap gap-2">
-              <Badge variant="warning">Chờ thanh toán {summary.pending}</Badge>
-              <Badge variant="accent">Đã thanh toán {summary.paid}</Badge>
-              <Badge variant="success">Hoàn thành {summary.completed}</Badge>
+              <Badge variant="warning">Chờ xử lý {summary.pending}</Badge>
+              <Badge variant="accent">Đang xử lý {summary.processing}</Badge>
+              <Badge variant="success">Thành công {summary.completed}</Badge>
+              <Badge variant="danger">Đã hủy {summary.cancelled}</Badge>
             </div>
           }
         />
@@ -83,7 +84,7 @@ export function OrdersAdminPanel({
             {state.filteredOrders.map((order) => {
               const isActive = order.id === selectedOrder?.id;
               const statusMeta = getOrderStatusMeta(order.status);
-              const total = order.unitPrice * order.quantity;
+              const total = order.total ?? order.unitPrice;
 
               return (
                 <button
@@ -99,7 +100,7 @@ export function OrdersAdminPanel({
                     <div className="min-w-0">
                       <strong className="block truncate text-sm font-bold text-white">Đơn #{order.id}</strong>
                       <small className="block truncate text-xs text-slate-400">
-                        User #{order.userId} · Gói #{order.gamePackageId} · SL {order.quantity}
+                        User #{order.userId} · Gói #{order.gamePackageId}
                       </small>
                       <small className="block truncate text-xs text-slate-500">
                         {order.gameAccountInfo}
@@ -144,7 +145,7 @@ export function OrdersAdminPanel({
               </div>
 
               <div className="mt-3 grid gap-1.5 text-sm leading-6 text-slate-200">
-                <span className="font-semibold text-white">{formatCurrency(selectedOrder.unitPrice * selectedOrder.quantity)}</span>
+                <span className="font-semibold text-white">{formatCurrency(selectedOrder.total ?? selectedOrder.unitPrice)}</span>
                 <span className="break-words text-slate-200">{selectedOrder.gameAccountInfo}</span>
               </div>
             </div>
@@ -152,7 +153,6 @@ export function OrdersAdminPanel({
             <div className="grid gap-2 rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-slate-200">
               <DetailRow label="User" value={`#${selectedOrder.userId}`} />
               <DetailRow label="Gói" value={`#${selectedOrder.gamePackageId}`} />
-              <DetailRow label="Số lượng" value={String(selectedOrder.quantity)} />
               <DetailRow label="Tài khoản game" value={selectedOrder.gameAccountInfo} />
               <DetailRow label="Giao cho" value={selectedOrder.assignedTo ? `#${selectedOrder.assignedTo}` : 'Chưa phân công'} />
               <DetailRow label="Tạo lúc" value={formatDate(selectedOrder.createdAt)} />
@@ -161,11 +161,11 @@ export function OrdersAdminPanel({
             </div>
 
             <div className="grid gap-2 text-sm leading-6 text-slate-200">
-              {selectedOrder.assignedTo && currentUser?.id && selectedOrder.assignedTo !== currentUser.id && selectedOrder.status === 3 ? (
+              {selectedOrder.assignedTo && currentUser?.id && selectedOrder.assignedTo !== currentUser.id && selectedOrder.status === 2 ? (
                 <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">Đơn này đang được admin khác xử lý. Mình chỉ xem được trạng thái, không nhận thao tác.</div>
               ) : null}
 
-              {selectedOrder.status === 3 && selectedOrder.assignedTo === currentUser?.id ? (
+              {selectedOrder.status === 2 && selectedOrder.assignedTo === currentUser?.id ? (
                 <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">Đơn này đang ở tay mình, có thể hoàn thành hoặc huỷ nếu cần.</div>
               ) : null}
 
@@ -201,24 +201,23 @@ function summarizeOrders(orders: Order[]) {
   return orders.reduce(
     (result, order) => {
       result.total += 1;
-      result.value += order.unitPrice * order.quantity;
+      result.value += order.total ?? order.unitPrice;
       if (order.status === 1) result.pending += 1;
-      if (order.status === 2) result.paid += 1;
-      if (order.status === 3) result.processing += 1;
-      if (order.status === 4) result.completed += 1;
-      if (order.status === 5) result.cancelled += 1;
+      if (order.status === 2) result.processing += 1;
+      if (order.status === 3) result.completed += 1;
+      if (order.status === 4) result.cancelled += 1;
       return result;
     },
-    { total: 0, value: 0, pending: 0, paid: 0, processing: 0, completed: 0, cancelled: 0 },
+    { total: 0, value: 0, pending: 0, processing: 0, completed: 0, cancelled: 0 },
   );
 }
 
 function canPick(order: Order) {
-  return order.status === 2;
+  return order.status === 1;
 }
 
 function canAct(order: Order, currentAdminId: number | null) {
-  return order.status === 3 && order.assignedTo === currentAdminId;
+  return order.status === 2 && order.assignedTo === currentAdminId;
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -241,9 +240,8 @@ function getOrderStatusIcon(status: number) {
   const icons = {
     1: <Clock3 size={14} />,
     2: <Send size={14} />,
-    3: <SquareDashed size={14} />,
-    4: <CheckCircle2 size={14} />,
-    5: <XCircle size={14} />,
+    3: <CheckCircle2 size={14} />,
+    4: <XCircle size={14} />,
   } as const;
 
   return icons[status as keyof typeof icons] ?? <TriangleAlert size={14} />;

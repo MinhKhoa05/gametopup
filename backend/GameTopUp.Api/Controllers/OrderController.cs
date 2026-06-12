@@ -20,18 +20,11 @@ public sealed class OrderController : ApiControllerBase
         _orderService = orderService;
     }
 
-    [HttpPost("place")]
-    public async Task<IActionResult> PlaceOrder([FromBody] PlaceOrderRequestDTO request)
+    [HttpPost("purchase")]
+    public async Task<IActionResult> PurchaseOrder([FromBody] PurchaseOrderRequestDTO request)
     {
-        var orderId = await _orderUseCase.PlaceOrderAsync(CurrentUser, request);
-        return ApiCreated(orderId, "Order placed successfully.");
-    }
-
-    [HttpPost("{orderId}/pay")]
-    public async Task<IActionResult> PayOrder(long orderId)
-    {
-        var result = await _orderUseCase.PayOrderAsync(orderId, CurrentUser);
-        return ApiOk(result, "Order paid successfully.");
+        var orderId = await _orderUseCase.PurchaseOrderAsync(CurrentUser, request);
+        return ApiCreated(orderId, "Order purchased successfully.");
     }
 
     [HttpGet("me")]

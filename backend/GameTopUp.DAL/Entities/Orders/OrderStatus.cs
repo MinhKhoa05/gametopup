@@ -3,8 +3,7 @@ namespace GameTopUp.DAL.Entities.Orders;
 public enum OrderStatus
 {
     Pending = 1,
-    Paid = 2,
-    Processing = 3,
-    Completed = 4,
-    Cancelled = 5
+    Processing = 2,
+    Completed = 3,
+    Cancelled = 4
 }

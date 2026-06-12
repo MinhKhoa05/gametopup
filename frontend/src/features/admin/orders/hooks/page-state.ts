@@ -1,23 +1,21 @@
 import { useMemo, useState } from 'react';
 import type { Order } from '@/features/orders/types';
 
-type OrderFilter = 'all' | 'pending' | 'paid' | 'processing' | 'completed' | 'cancelled';
+type OrderFilter = 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
 
 const ORDER_FILTER_OPTIONS: Array<{ key: OrderFilter; label: string }> = [
   { key: 'all', label: 'Tất cả' },
-  { key: 'pending', label: 'Chờ thanh toán' },
-  { key: 'paid', label: 'Đã thanh toán' },
+  { key: 'pending', label: 'Chờ xử lý' },
   { key: 'processing', label: 'Đang xử lý' },
-  { key: 'completed', label: 'Hoàn thành' },
+  { key: 'completed', label: 'Thành công' },
   { key: 'cancelled', label: 'Đã hủy' },
 ];
 
 const ORDER_STATUS_LABEL_BY_STATUS: Record<number, string> = {
-  1: 'Chờ thanh toán',
-  2: 'Đã thanh toán',
-  3: 'Đang xử lý',
-  4: 'Hoàn thành',
-  5: 'Đã hủy',
+  1: 'Chờ xử lý',
+  2: 'Đang xử lý',
+  3: 'Thành công',
+  4: 'Đã hủy',
 };
 
 export function useAdminOrdersPageState(orders: Order[]) {
@@ -31,10 +29,9 @@ export function useAdminOrdersPageState(orders: Order[]) {
       const matchesFilter =
         filter === 'all' ||
         (filter === 'pending' && order.status === 1) ||
-        (filter === 'paid' && order.status === 2) ||
-        (filter === 'processing' && order.status === 3) ||
-        (filter === 'completed' && order.status === 4) ||
-        (filter === 'cancelled' && order.status === 5);
+        (filter === 'processing' && order.status === 2) ||
+        (filter === 'completed' && order.status === 3) ||
+        (filter === 'cancelled' && order.status === 4);
 
       if (!matchesFilter) return false;
       if (!normalizedQuery) return true;

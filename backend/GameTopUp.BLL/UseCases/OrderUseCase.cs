@@ -1,5 +1,6 @@
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Orders;
+using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Games;
 using GameTopUp.DAL.Database;
@@ -26,35 +27,28 @@ public sealed class OrderUseCase
         _database = database;
     }
 
-    public async Task<long> PlaceOrderAsync(UserContext context, PlaceOrderRequestDTO request)
+    public async Task<long> PurchaseOrderAsync(UserContext context, PurchaseOrderRequestDTO request)
     {
         return await _database.ExecuteInTransactionAsync(async () =>
         {
-            var package = await _packageService.GetAvailablePackageAsync(request.GamePackageId, request.Quantity);
-            await _packageService.DecreaseStockAsync(package.Id, request.Quantity);
-            return await _orderService.CreateOrderAsync(context, package, request.Quantity, request.GameAccountInfo);
-        });
-    }
-
-    public async Task<OrderActionResponseDTO> PayOrderAsync(long orderId, UserContext context)
-    {
-        return await _database.ExecuteInTransactionAsync(async () =>
-        {
-            var order = await _orderService.GetWithLockByIdOrThrowAsync(orderId);
-            if (order.Status == OrderStatus.Paid)
+            var gameAccountInfo = request.GameAccountInfo.Trim();
+            if (string.IsNullOrWhiteSpace(gameAccountInfo))
             {
-                return MapToActionResponse(OrderChangeResult.Unchanged(order));
+                throw new BusinessException(ErrorCode.BadRequest);
             }
 
-            if (!_orderService.ValidateForPayment(order, context))
+            var package = await _packageService.GetPackageByIdOrThrowAsync(request.GamePackageId);
+            if (!package.IsActive)
             {
-                return MapToActionResponse(OrderChangeResult.Unchanged(order));
+                throw new BusinessException(ErrorCode.GamePackageInactive);
             }
 
-            await _walletService.PayOrderAsync(order.UserId, order.Id, order.Total);
-            var result = await _orderService.MarkAsPaidAsync(order, context);
+            var orderId = await _orderService.CreateOrderAsync(context, package, gameAccountInfo);
 
-            return MapToActionResponse(result);
+            await _walletService.ChargeOrderAsync(context.UserId, orderId, package.SalePrice);
+            await _packageService.ReservePackageAsync(package.Id);
+
+            return orderId;
         });
     }
 
@@ -90,12 +84,8 @@ public sealed class OrderUseCase
                 return MapToActionResponse(result);
             }
 
-            await _packageService.IncreaseStockAsync(order.GamePackageId, order.Quantity);
-
-            if (result.FromStatus is OrderStatus.Paid or OrderStatus.Processing)
-            {
-                await _walletService.RefundOrderAsync(order.UserId, order.Id, order.Total, reason);
-            }
+            await _packageService.RestorePackageAsync(order.GamePackageId);
+            await _walletService.RefundOrderAsync(order.UserId, order.Id, order.Total, reason);
 
             return MapToActionResponse(result);
         });
@@ -107,7 +97,7 @@ public sealed class OrderUseCase
         {
             OrderId = result.Order.Id,
             FromStatus = result.FromStatus,
-            ToStatus = result.ToStatus,
+            ToStatus = result.Order.Status,
             Changed = result.Changed,
             AssignTo = result.Order.AssignedTo,
             AssignAt = result.Order.AssignedAt,

@@ -29,7 +29,7 @@ type AdminCatalogMetrics = {
   activeGames: number;
   activeUsers: number;
   disabledPackages: number;
-  paidRevenue: number;
+  revenue: number;
   pendingOrders: number;
   totalPackages: number;
   totalUsers: number;
@@ -61,7 +61,7 @@ export function DashboardPanel({
         <StatCard icon={<Gamepad2 size={18} />} iconClassName="border-cyan-400/15 bg-cyan-500/10 text-cyan-100" label="Game" supporting="100% active" value={`${metrics.activeGames} / ${games.length}`} />
         <StatCard icon={<ShoppingCart size={18} />} iconClassName="border-violet-400/15 bg-violet-500/10 text-violet-100" label="Đơn hàng" supporting="Tổng đơn hệ thống" value={orders.length.toString()} />
         <StatCard icon={<Clock3 size={18} />} iconClassName="border-amber-400/15 bg-amber-500/10 text-amber-100" label="Đơn đang chờ" supporting="Cần xử lý" value={metrics.pendingOrders.toString()} />
-        <StatCard icon={<CircleDollarSign size={18} />} iconClassName="border-emerald-400/15 bg-emerald-500/10 text-emerald-100" label="Doanh thu" supporting="Tổng đã ghi nhận" value={formatCurrency(metrics.paidRevenue)} />
+        <StatCard icon={<CircleDollarSign size={18} />} iconClassName="border-emerald-400/15 bg-emerald-500/10 text-emerald-100" label="Doanh thu" supporting="Tổng đã ghi nhận" value={formatCurrency(metrics.revenue)} />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.78fr)]">
@@ -80,7 +80,7 @@ export function DashboardPanel({
 
           <div className="mt-4 grid gap-3">
             <div className="flex flex-wrap items-end gap-3">
-              <strong className="text-[clamp(1.9rem,3vw,3rem)] font-black leading-[1] tracking-[-0.04em] text-white">{formatCurrency(metrics.paidRevenue)}</strong>
+              <strong className="text-[clamp(1.9rem,3vw,3rem)] font-black leading-[1] tracking-[-0.04em] text-white">{formatCurrency(metrics.revenue)}</strong>
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-300">
                 <ArrowUpRight size={16} />
                 23% so với 7 ngày trước
@@ -132,7 +132,7 @@ export function DashboardPanel({
                       <Badge variant={statusMeta.variant} icon={statusMeta.icon}>
                         {statusMeta.label}
                       </Badge>
-                      <b className="text-sm text-white">{formatCurrency(order.total ?? order.unitPrice * order.quantity)}</b>
+                      <b className="text-sm text-white">{formatCurrency(order.total ?? order.unitPrice)}</b>
                     </div>
                   </RecordRow>
                   );

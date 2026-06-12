@@ -10,5 +10,4 @@ public interface IOrderRepository
     Task<bool> UpdateAsync(Order order);
     Task<List<Order>> GetByUserIdAsync(long userId, OrderStatus? status = null);
     Task<long> CreateAsync(Order order);
-    Task<bool> HasPendingOrderAsync(long userId);
 }

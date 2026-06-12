@@ -7,19 +7,17 @@ export type OrderStatusMeta = {
 };
 
 const ORDER_STATUS_LABEL_BY_STATUS = {
-  1: 'Chờ thanh toán',
-  2: 'Đã thanh toán',
-  3: 'Đang xử lý',
-  4: 'Hoàn thành',
-  5: 'Đã hủy',
+  1: 'Chờ xử lý',
+  2: 'Đang xử lý',
+  3: 'Thành công',
+  4: 'Đã hủy',
 } as const;
 
 const ORDER_STATUS_VARIANT_BY_STATUS = {
   1: 'warning',
   2: 'accent',
-  3: 'warning',
-  4: 'success',
-  5: 'danger',
+  3: 'success',
+  4: 'danger',
 } as const;
 
 export function getOrderStatusMeta(status: number, icon?: ReactNode): OrderStatusMeta {
