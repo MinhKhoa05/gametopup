@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.Common;
 using Dapper;
 using Dommel;
+using MySqlConnector;
 
 namespace GameTopUp.DAL.Database;
 
@@ -56,30 +57,43 @@ public sealed class DatabaseContext : IAsyncDisposable, IDisposable
 
     public async Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> action)
     {
+        const int maxAttempts = 3;
+
         if (_transaction != null)
         {
             return await action();
         }
 
         await EnsureOpenAsync();
-        await using var transaction = await _connection.BeginTransactionAsync();
-        _transaction = transaction;
 
-        try
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            var result = await action();
-            await transaction.CommitAsync();
-            return result;
+            await using var transaction = await _connection.BeginTransactionAsync();
+            _transaction = transaction;
+
+            try
+            {
+                var result = await action();
+                await transaction.CommitAsync();
+                return result;
+            }
+            catch (MySqlException ex) when (IsTransientTransactionError(ex) && attempt < maxAttempts)
+            {
+                await transaction.RollbackAsync();
+                await Task.Delay(TimeSpan.FromMilliseconds(25 * attempt));
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+            finally
+            {
+                _transaction = null;
+            }
         }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
-        finally
-        {
-            _transaction = null;
-        }
+
+        throw new InvalidOperationException("Transaction retry loop exited unexpectedly.");
     }
 
     public async Task ExecuteInTransactionAsync(Func<Task> action)
@@ -101,6 +115,11 @@ public sealed class DatabaseContext : IAsyncDisposable, IDisposable
     {
         _transaction?.Dispose();
         _connection.Dispose();
+    }
+
+    private static bool IsTransientTransactionError(MySqlException exception)
+    {
+        return exception.Number is 1205 or 1213;
     }
 }
 

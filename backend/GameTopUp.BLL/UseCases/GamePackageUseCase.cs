@@ -35,6 +35,8 @@ public sealed class GamePackageUseCase
     public async Task<GamePackage> UpdatePackageWithImageAsync(long id, UpdateGamePackageRequest request, IFormFile? image)
     {
         var existingPackage = await _packageService.GetPackageByIdOrThrowAsync(id);
+        var previousImageUrl = existingPackage.ImageUrl;
+        var previousImageRelativePath = existingPackage.ImageRelativePath;
 
         if (image is not null && image.Length > 0)
         {
@@ -50,9 +52,9 @@ public sealed class GamePackageUseCase
 
         var updated = await _packageService.UpdatePackageAsync(id, request);
 
-        if (!string.IsNullOrWhiteSpace(request.ImageUrl) && request.ImageUrl != existingPackage.ImageUrl)
+        if (!string.IsNullOrWhiteSpace(request.ImageUrl) && request.ImageUrl != previousImageUrl)
         {
-            await _imageStorageService.DeleteAsync(existingPackage.ImageRelativePath);
+            await _imageStorageService.DeleteAsync(previousImageRelativePath);
         }
 
         return updated;
@@ -61,11 +63,13 @@ public sealed class GamePackageUseCase
     public async Task<GamePackage> UpdatePackageAsync(long id, UpdateGamePackageRequest request)
     {
         var existingPackage = await _packageService.GetPackageByIdOrThrowAsync(id);
+        var previousImageUrl = existingPackage.ImageUrl;
+        var previousImageRelativePath = existingPackage.ImageRelativePath;
         var updated = await _packageService.UpdatePackageAsync(id, request);
 
-        if (!string.IsNullOrWhiteSpace(request.ImageUrl) && request.ImageUrl != existingPackage.ImageUrl)
+        if (!string.IsNullOrWhiteSpace(request.ImageUrl) && request.ImageUrl != previousImageUrl)
         {
-            await _imageStorageService.DeleteAsync(existingPackage.ImageRelativePath);
+            await _imageStorageService.DeleteAsync(previousImageRelativePath);
         }
 
         return updated;

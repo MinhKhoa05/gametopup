@@ -45,6 +45,8 @@ public sealed class GlobalExceptionMiddleware
             NotFoundException => HttpStatusCode.NotFound,
             UnauthorizedAccessException => HttpStatusCode.Unauthorized,
             ForbiddenException => HttpStatusCode.Forbidden,
+            BusinessException businessException when businessException.ErrorCode is ErrorCode.Unauthorized or ErrorCode.InvalidRefreshToken
+                => HttpStatusCode.Unauthorized,
             BusinessException => HttpStatusCode.BadRequest,
             _ => HttpStatusCode.InternalServerError
         };

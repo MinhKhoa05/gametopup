@@ -1,4 +1,5 @@
 using GameTopUp.BLL.DTOs.Orders;
+using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Entities.Orders;
@@ -45,6 +46,7 @@ public sealed class OrderController : ApiControllerBase
     [HttpGet("{orderId}/history")]
     public async Task<IActionResult> GetOrderHistories(long orderId)
     {
+        await EnsureCanAccessOrderAsync(orderId);
         var histories = await _orderService.GetHistoriesAsync(orderId);
         return ApiOk(histories);
     }
@@ -52,6 +54,7 @@ public sealed class OrderController : ApiControllerBase
     [HttpGet("{orderId}")]
     public async Task<IActionResult> GetOrderById(long orderId)
     {
+        await EnsureCanAccessOrderAsync(orderId);
         var order = await _orderService.GetByIdOrThrowAsync(orderId);
         return ApiOk(order);
     }
@@ -77,5 +80,14 @@ public sealed class OrderController : ApiControllerBase
     {
         var result = await _orderUseCase.CancelOrderAsync(orderId, CurrentUser);
         return ApiOk(result, "Order cancelled successfully.");
+    }
+
+    private async Task EnsureCanAccessOrderAsync(long orderId)
+    {
+        var order = await _orderService.GetByIdOrThrowAsync(orderId);
+        if (!CurrentUser.IsAdmin && order.UserId != CurrentUser.UserId)
+        {
+            throw new ForbiddenException(ErrorCode.Forbidden);
+        }
     }
 }
