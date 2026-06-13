@@ -7,10 +7,12 @@ import {
   Gamepad2,
   Heart,
   Search,
+  Star,
 } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
+import { SITE_IMAGES } from '@/app/config/site';
 import { routes } from '@/app/router/routes';
-import { Badge, Button, IconBox, TrustSection } from '@/shared/components';
+import { Badge, Button, IconBox, ImageBox, PageHero, TrustSection } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { useGamesQuery } from '../server';
 import { GameGrid } from '../components/GameGrid';
@@ -103,8 +105,8 @@ export function GamesPage() {
       <BackgroundDecor />
 
       <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-9">
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-5 lg:gap-7">
-          <HeaderSection />
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4 lg:gap-5">
+          <GameHeaderSection />
 
           <SearchSection
             query={query}
@@ -183,28 +185,89 @@ export function GamesPage() {
 
 function HeaderSection() {
   return (
-    <section className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-5">
-      <div className="flex items-start gap-4">
-        <IconBox size="lg" className="h-[62px] w-[62px] rounded-[18px] border-cyan/20 bg-cyan/10 text-cyan-50">
-          <Gamepad2 size={31} strokeWidth={1.8} />
-        </IconBox>
-        <div className="pt-0.5">
-          <h1 className="m-0 text-[clamp(2.25rem,3.5vw,3.25rem)] font-black leading-[0.92] tracking-[-0.04em] text-white">
-            Kho game
-          </h1>
-          <p className="mt-2 max-w-2xl text-[0.96rem] leading-7 text-slate-400">
-            Khám phá và nạp ngay cho tựa game yêu thích của bạn.
-          </p>
+    <section className="gt-surface relative overflow-hidden rounded-[18px] border border-cyan/10 bg-[linear-gradient(180deg,rgba(7,16,31,0.88),rgba(4,10,22,0.96))] px-5 py-6 shadow-[0_12px_30px_rgba(2,6,23,0.18)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.03] [background-image:linear-gradient(rgba(255,255,255,0.22)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:72px_72px]" />
+      <div className="pointer-events-none absolute left-[42%] top-1/2 h-[19rem] w-[19rem] -translate-y-1/2 rounded-full bg-cyan/12 blur-[112px] lg:left-[46%] lg:h-[24rem] lg:w-[24rem]" />
+      <div className="pointer-events-none absolute left-[8%] top-[12%] h-28 w-28 rounded-full bg-cyan/12 blur-[72px] mix-blend-screen" />
+      <div className="pointer-events-none absolute inset-x-[18%] bottom-[10%] h-12 rounded-full bg-cyan/10 blur-[42px] mix-blend-screen" />
+
+      <div className="relative grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.78fr)] lg:gap-8">
+        <div className="grid gap-5 pt-2 lg:pt-4">
+          <div className="flex items-center justify-between gap-4">
+            <Badge variant="accent" className="w-fit rounded-full border-cyan/20 bg-cyan/10 px-3 py-1 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">
+              KHO GAME
+            </Badge>
+          </div>
+
+          <div className="flex items-start gap-4">
+            <IconBox size="lg" className="h-[62px] w-[62px] rounded-[18px] border-cyan/20 bg-cyan/10 text-cyan-50">
+              <Gamepad2 size={31} strokeWidth={1.8} />
+            </IconBox>
+            <div className="grid gap-3 pt-0.5">
+              <h1 className="m-0 whitespace-nowrap text-[clamp(2.45rem,3.25vw,3.7rem)] font-black leading-[0.92] tracking-[-0.05em] text-white">
+                Kho game
+              </h1>
+              <p className="mt-2 max-w-2xl text-[0.96rem] leading-7 text-slate-400">
+                Khám phá và nạp ngay cho tựa game yêu thích của bạn.
+              </p>
+              <Button variant="outline" className="w-fit rounded-[14px] px-4 text-sm font-medium text-white">
+                <Heart size={16} />
+                Yêu thích
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative flex min-h-[220px] items-center justify-center overflow-visible lg:min-h-[260px]">
+          <div className="pointer-events-none absolute left-[50%] top-[52%] h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan/18 blur-[100px]" />
+          <div className="pointer-events-none absolute left-[12%] top-[18%] h-24 w-24 rounded-full bg-cyan/18 blur-[70px] mix-blend-screen" />
+          <div className="pointer-events-none absolute right-[14%] top-[10%] h-16 w-16 rounded-full bg-blue-400/10 blur-[42px] mix-blend-screen" />
+          <div className="pointer-events-none absolute left-[16%] top-[44%] h-px w-[62%] bg-gradient-to-r from-cyan/0 via-cyan/32 to-cyan/0" />
+
+          <ImageBox
+            src={SITE_IMAGES.games.heroIllustration}
+            alt="Minh họa game GameTopUp"
+            className="relative z-10 w-full max-w-[420px] object-contain object-center drop-shadow-[0_0_44px_rgba(34,211,238,0.2)]"
+            decoding="async"
+            loading="eager"
+          />
         </div>
       </div>
-
-      <div />
-
-      <Button variant="outline" className="rounded-[14px] px-4 text-sm font-medium text-white">
-        <Heart size={16} />
-        Yêu thích
-      </Button>
     </section>
+  );
+}
+
+function GameHeaderSection() {
+  return (
+    <PageHero
+      icon={
+        <IconBox size="lg" className="h-[68px] w-[68px] rounded-[20px] border-cyan/18 bg-cyan/10 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.06)]">
+          <Gamepad2 size={36} strokeWidth={1.8} />
+        </IconBox>
+      }
+      title="Kho game"
+      description="Khám phá và nạp ngay cho tựa game yêu thích của bạn."
+      illustration={
+        <ImageBox
+          src={SITE_IMAGES.games.heroIllustration}
+          alt="Minh họa game GameTopUp"
+          className="relative z-10 w-full max-w-[330px] -translate-y-1 object-contain object-center drop-shadow-[0_0_30px_rgba(34,211,238,0.14)] lg:max-w-[320px]"
+          decoding="async"
+          loading="eager"
+        />
+      }
+    >
+      <div className="absolute bottom-4 left-5 z-20 flex flex-wrap gap-2 sm:bottom-5 sm:left-6 lg:bottom-5 lg:left-7">
+        <Button variant="outline" className="w-fit rounded-[14px] px-4 text-sm font-medium text-white">
+          <Heart size={16} />
+          Yêu thích
+        </Button>
+        <Button variant="secondary" className="w-fit rounded-[14px] px-4 text-sm font-medium text-white">
+          <Star size={16} />
+          Nổi bật
+        </Button>
+      </div>
+    </PageHero>
   );
 }
 
@@ -229,7 +292,7 @@ function SearchSection({
 }) {
   return (
     <section className="gt-surface rounded-[18px] border border-white/10 p-4 shadow-[0_12px_26px_rgba(2,6,23,0.12)] sm:p-5">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.9fr)_repeat(3,minmax(0,1fr))]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.7fr)_repeat(3,minmax(0,1fr))]">
         <SearchField value={query} onChange={onQueryChange} />
 
         <SelectField

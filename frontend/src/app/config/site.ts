@@ -36,6 +36,12 @@ export const SITE_IMAGES = {
     heroIllustration: '/assets/hero-illustration.png',
     walletIllustration: '/assets/wallet-illustration.png',
   },
+  games: {
+    heroIllustration: '/assets/game-illustration.png',
+  },
+  orders: {
+    heroIllustration: '/assets/order-illustration.png',
+  },
 } as const;
 
 export const SITE = {

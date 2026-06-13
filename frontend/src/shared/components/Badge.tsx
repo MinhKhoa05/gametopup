@@ -15,11 +15,11 @@ type BadgeProps = {
 
 export function Badge({ children, className, icon, size = 'sm', title, variant = 'default' }: BadgeProps) {
   const variantClasses: Record<BadgeVariant, string> = {
-    accent: 'border-cyan/25 bg-cyan/10 text-cyan-50',
-    success: 'border-emerald-400/25 bg-emerald-400/10 text-emerald-200',
-    warning: 'border-amber-400/25 bg-amber-400/10 text-amber-200',
-    danger: 'border-rose-400/25 bg-rose-400/10 text-rose-200',
-    default: 'border-white/12 bg-[rgba(255,255,255,0.05)] text-slate-300',
+    accent: 'border-cyan-300/45 bg-cyan-400/20 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.08),0_8px_18px_rgba(34,211,238,0.12)]',
+    success: 'border-emerald-300/45 bg-emerald-500/20 text-emerald-50 shadow-[0_0_0_1px_rgba(34,197,94,0.08),0_8px_18px_rgba(34,197,94,0.12)]',
+    warning: 'border-amber-300/45 bg-amber-500/20 text-amber-50 shadow-[0_0_0_1px_rgba(245,158,11,0.08),0_8px_18px_rgba(245,158,11,0.12)]',
+    danger: 'border-rose-300/45 bg-rose-500/20 text-rose-50 shadow-[0_0_0_1px_rgba(239,68,68,0.08),0_8px_18px_rgba(239,68,68,0.12)]',
+    default: 'border-white/14 bg-[rgba(255,255,255,0.07)] text-slate-200',
   };
 
   const sizeClasses: Record<BadgeSize, string> = {

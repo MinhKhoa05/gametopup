@@ -6,6 +6,7 @@ export { Field } from './Field';
 export { FormActions } from './FormActions';
 export { ImageBox, ImagePicker } from './image';
 export { IconBox } from './IconBox';
+export { PageHero } from './PageHero';
 export { TrustSection } from './TrustSection';
 export { RecordRow } from './RecordRow';
 export { StatCard } from './StatCard';
