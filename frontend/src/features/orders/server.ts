@@ -9,10 +9,11 @@ export const orderKeys = {
   myOrders: ['orders', 'me'] as const,
 };
 
-export function useMyOrdersQuery() {
+export function useMyOrdersQuery(enabled = true) {
   return useQuery({
     queryKey: orderKeys.myOrders,
     queryFn: getMyOrders,
+    enabled,
   });
 }
 

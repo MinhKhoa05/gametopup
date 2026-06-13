@@ -9,7 +9,7 @@ export function AppPageContainer({
   children: ReactNode;
 }) {
   return (
-    <div className={classNames('mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8', className)} {...props}>
+    <div className={classNames('mx-auto w-full max-w-[1480px] px-4 sm:px-6 lg:px-8', className)} {...props}>
       {children}
     </div>
   );

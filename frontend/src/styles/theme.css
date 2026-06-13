@@ -3,28 +3,31 @@
   --gt-cyan: #22d3ee;
   --gt-cyan-100: #cffafe;
   --gt-cyan-text: #a5f3fc;
+  --bg-main: #020617;
+  --bg-surface: #07101f;
+  --bg-card: #0b1324;
+  --bg-card-hover: #0f1d33;
 
   /* Surface */
-  --gt-surface: rgba(255, 255, 255, 0.03);
+  --gt-surface: rgba(7, 16, 31, 0.86);
 
   /* Border */
-  --gt-border: rgba(255, 255, 255, 0.08);
+  --gt-border: rgba(148, 163, 184, 0.12);
 
   /* Accent States */
-  --gt-cyan-surface: rgba(34, 211, 238, 0.1);
-  --gt-cyan-border: rgba(34, 211, 238, 0.25);
-  --gt-cyan-shadow: rgba(34, 211, 238, 0.15);
+  --gt-cyan-surface: rgba(34, 211, 238, 0.12);
+  --gt-cyan-border: rgba(34, 211, 238, 0.28);
+  --gt-cyan-shadow: rgba(34, 211, 238, 0.18);
 
   /* Layout */
   --gt-radius-sm: 12px;
-  --gt-radius-md: 16px;
+  --gt-radius-md: 20px;
 
   /* Motion */
   --gt-transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Special */
   --gt-record-bg: rgba(255, 255, 255, 0.035);
-
   --gt-hero-start: rgba(13, 31, 54, 0.84);
   --gt-hero-end: rgba(7, 17, 31, 0.96);
 }

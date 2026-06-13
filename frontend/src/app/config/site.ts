@@ -49,8 +49,9 @@ export const SITE = {
 
 export const HEADER_NAV_ITEMS = [
   { label: 'Trang chủ', href: routes.home() },
-  { label: 'Kho game', href: routes.games() },
+  { label: 'Nạp game', href: routes.games() },
   { label: 'Lịch sử đơn', href: routes.orders() },
+  { label: 'Nạp ví', href: routes.wallet() },
 ] as const;
 
 export const HEADER_ACCOUNT_MENU_USER_ITEMS: HeaderAccountMenuItemConfig[] = [

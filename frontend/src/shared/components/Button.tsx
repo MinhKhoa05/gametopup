@@ -11,7 +11,7 @@ type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size'> & {
 };
 
 const BASE_CLASS =
-  'inline-flex items-center justify-center rounded-xl border font-bold outline-none transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex items-center justify-center rounded-[14px] border font-bold outline-none transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50';
 
 const sizeClasses: Record<ButtonSize, string> = {
   sm: 'min-h-9 gap-2 px-3 text-sm',
@@ -21,16 +21,16 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'border-cyan/25 bg-gradient-to-r from-cyan-100 via-cyan to-cyan-200 text-slate-950 shadow-[0_4px_14px_rgba(34,211,238,0.18)] hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(45,212,238,0.18)]',
+    'border-cyan/30 bg-cyan-400 text-slate-950 shadow-[0_8px_22px_rgba(34,211,238,0.16)] hover:-translate-y-0.5 hover:bg-cyan-300 hover:shadow-[0_12px_28px_rgba(34,211,238,0.22)]',
   secondary:
-    'border-cyan/25 bg-transparent text-cyan-50 hover:-translate-y-0.5 hover:bg-cyan/10 hover:text-cyan-50 hover:shadow-[0_8px_24px_rgba(34,211,238,0.10)]',
-  ghost: 'border-transparent bg-transparent text-slate-100 hover:-translate-y-0.5 hover:bg-cyan/10 hover:text-cyan-50',
+    'border-cyan/25 bg-[rgba(7,16,31,0.72)] text-cyan-50 hover:-translate-y-0.5 hover:border-cyan/40 hover:bg-[rgba(15,29,51,0.9)] hover:text-cyan-50 hover:shadow-[0_10px_24px_rgba(34,211,238,0.08)]',
+  ghost: 'border-transparent bg-transparent text-slate-100 hover:-translate-y-0.5 hover:bg-white/5 hover:text-white',
   outline:
-    'border-white/10 bg-transparent text-slate-100 hover:-translate-y-0.5 hover:bg-white/5 hover:text-white hover:shadow-[0_8px_24px_rgba(2,6,23,0.12)]',
+    'border-white/10 bg-[rgba(7,16,31,0.72)] text-slate-100 hover:-translate-y-0.5 hover:border-cyan/25 hover:bg-[rgba(15,29,51,0.9)] hover:text-white hover:shadow-[0_10px_24px_rgba(2,6,23,0.12)]',
   default:
-    'border-cyan/25 bg-transparent text-cyan-50 hover:-translate-y-0.5 hover:bg-cyan/10 hover:text-cyan-50 hover:shadow-[0_8px_24px_rgba(34,211,238,0.10)]',
+    'border-cyan/25 bg-[rgba(7,16,31,0.72)] text-cyan-50 hover:-translate-y-0.5 hover:border-cyan/40 hover:bg-[rgba(15,29,51,0.9)] hover:text-cyan-50 hover:shadow-[0_10px_24px_rgba(34,211,238,0.08)]',
   accent:
-    'border-cyan/25 bg-gradient-to-r from-cyan-100 via-cyan to-cyan-200 text-slate-950 shadow-[0_4px_14px_rgba(34,211,238,0.18)] hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(45,212,238,0.18)]',
+    'border-cyan/30 bg-cyan-400 text-slate-950 shadow-[0_8px_22px_rgba(34,211,238,0.16)] hover:-translate-y-0.5 hover:bg-cyan-300 hover:shadow-[0_12px_28px_rgba(34,211,238,0.22)]',
 };
 
 export function Button({
