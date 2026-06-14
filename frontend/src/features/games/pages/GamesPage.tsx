@@ -1,23 +1,13 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Gamepad2,
-  Heart,
-  Search,
-  Star,
-} from 'lucide-react';
+import { ChevronDown, Gamepad2, Heart, Search, Sparkles, Star } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
-import { SITE_IMAGES } from '@/app/config/site';
 import { routes } from '@/app/router/routes';
-import { Badge, Button, IconBox, ImageBox, PageHero, TrustSection } from '@/shared/components';
-import { classNames } from '@/shared/lib/classNames';
-import { useGamesQuery } from '../server';
-import { GameGrid } from '../components/GameGrid';
+import type { Game } from '@/features/games/types';
+import { useGamesQuery } from '@/features/games/server';
 import {
   buildFeaturedGameIds,
+  getGamePlatformLabel,
   getGameTopupLabel,
   matchesCategory,
   matchesPlatform,
@@ -25,9 +15,9 @@ import {
   type CatalogCategoryFilter,
   type CatalogPlatformFilter,
   type CatalogSortKey,
-} from '../lib/catalog';
-
-const PAGE_SIZE = 10;
+} from '@/features/games/lib/catalog';
+import { Badge, Button, IconBox, ImageBox, EmptyState } from '@/shared/components';
+import { classNames } from '@/shared/lib/classNames';
 
 const PLATFORM_OPTIONS: Array<{ value: CatalogPlatformFilter; label: string }> = [
   { value: 'all', label: 'Nền tảng: Tất cả' },
@@ -42,7 +32,7 @@ const CATEGORY_OPTIONS: Array<{ value: CatalogCategoryFilter; label: string }> =
   { value: 'mobile', label: 'Danh mục: Mobile' },
   { value: 'pc', label: 'Danh mục: PC' },
   { value: 'console', label: 'Danh mục: Console' },
-  { value: 'international', label: 'Danh mục: Phiên bản quốc tế' },
+  { value: 'international', label: 'Danh mục: Quốc tế' },
 ];
 
 const SORT_OPTIONS: Array<{ value: CatalogSortKey; label: string }> = [
@@ -51,14 +41,16 @@ const SORT_OPTIONS: Array<{ value: CatalogSortKey; label: string }> = [
   { value: 'name', label: 'Sắp xếp: Tên A-Z' },
 ];
 
-const CATEGORY_CHIPS: Array<{ value: CatalogCategoryFilter; label: string }> = [
+const QUICK_TAGS: Array<{ value: CatalogCategoryFilter; label: string }> = [
   { value: 'all', label: 'Tất cả' },
-  { value: 'featured', label: '🔥 Nổi bật' },
+  { value: 'featured', label: 'Nổi bật' },
   { value: 'mobile', label: 'Mobile' },
   { value: 'pc', label: 'PC' },
   { value: 'console', label: 'Console' },
-  { value: 'international', label: 'Phiên bản quốc tế' },
 ];
+
+const PANEL_CLASS =
+  'rounded-[26px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(22,27,34,0.95),rgba(18,24,34,0.98))] shadow-[0_16px_38px_rgba(2,6,23,0.18)]';
 
 export function GamesPage() {
   const navigate = useNavigate();
@@ -71,23 +63,14 @@ export function GamesPage() {
   const [platformFilter, setPlatformFilter] = useState<CatalogPlatformFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<CatalogCategoryFilter>('all');
   const [sortKey, setSortKey] = useState<CatalogSortKey>('featured');
-  const [page, setPage] = useState(1);
 
   const filteredGames = useMemo(() => {
     const keyword = query.trim().toLowerCase();
 
     const matched = games.filter((game) => {
-      if (!matchesPlatform(game, platformFilter)) {
-        return false;
-      }
-
-      if (!matchesCategory(game, categoryFilter, featuredGameIds)) {
-        return false;
-      }
-
-      if (!keyword) {
-        return true;
-      }
+      if (!matchesPlatform(game, platformFilter)) return false;
+      if (!matchesCategory(game, categoryFilter, featuredGameIds)) return false;
+      if (!keyword) return true;
 
       const searchable = `${game.name} ${getGameTopupLabel(game)}`.toLowerCase();
       return searchable.includes(keyword);
@@ -96,236 +79,114 @@ export function GamesPage() {
     return sortCatalogGames(matched, sortKey, featuredGameIds);
   }, [categoryFilter, featuredGameIds, games, platformFilter, query, sortKey]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredGames.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
-  const pageItems = filteredGames.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const activeCount = filteredGames.length;
 
   return (
     <div className="relative isolate overflow-hidden">
       <BackgroundDecor />
 
-      <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-9">
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4 lg:gap-5">
-          <GameHeaderSection />
+      <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
+        <div className="grid gap-6">
+          <header className={PANEL_CLASS}>
+            <div className="grid gap-5 px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
+              <div className="flex items-start gap-4">
+                <IconBox size="lg" className="h-[62px] w-[62px] rounded-[18px] border-cyan/20 bg-cyan/10 text-cyan-50">
+                  <Gamepad2 size={30} strokeWidth={1.8} />
+                </IconBox>
+                <div className="grid gap-2">
+                  <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">KHO GAME</p>
+                  <h1 className="m-0 text-[clamp(2.3rem,3.3vw,3.6rem)] font-black leading-[0.96] tracking-[-0.06em] text-white text-balance">
+                    Kho game
+                  </h1>
+                  <p className="max-w-3xl text-[0.98rem] leading-7 text-slate-400">
+                    Khám phá và nạp ngay cho tựa game yêu thích của bạn.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </header>
 
-          <SearchSection
-            query={query}
-            onQueryChange={setQuery}
-            platformFilter={platformFilter}
-            onPlatformFilterChange={setPlatformFilter}
-            categoryFilter={categoryFilter}
-            onCategoryFilterChange={setCategoryFilter}
-            sortKey={sortKey}
-            onSortKeyChange={setSortKey}
-          />
+          <section className={PANEL_CLASS}>
+            <div className="grid gap-4 px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
+                <SearchField value={query} onChange={setQuery} />
+                <SelectField value={platformFilter} onChange={(value) => setPlatformFilter(value as CatalogPlatformFilter)}>
+                  {PLATFORM_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField value={categoryFilter} onChange={(value) => setCategoryFilter(value as CatalogCategoryFilter)}>
+                  {CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField value={sortKey} onChange={(value) => setSortKey(value as CatalogSortKey)}>
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </SelectField>
+              </div>
 
-          <section className="grid gap-4">
-            <div className="flex flex-wrap items-center gap-3">
-              {CATEGORY_CHIPS.map((chip) => {
-                const isActive = chip.value === categoryFilter;
+              <div className="flex flex-wrap items-center gap-3">
+                {QUICK_TAGS.map((tag) => {
+                  const active = tag.value === categoryFilter;
 
-                return (
-                  <button
-                    key={chip.value}
-                    type="button"
-                    className={classNames(
-                      'inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200',
-                      isActive
-                        ? 'border-cyan/35 bg-cyan/12 text-cyan-100 shadow-[0_0_0_1px_rgba(34,211,238,0.08)]'
-                        : 'border-white/10 bg-white/5 text-slate-300 hover:-translate-y-px hover:border-cyan/20 hover:bg-cyan/10 hover:text-cyan-50',
-                    )}
-                    onClick={() => setCategoryFilter(chip.value)}
-                  >
-                    {chip.label}
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={tag.value}
+                      type="button"
+                      className={classNames(
+                        'inline-flex min-h-10 items-center rounded-full border px-4 text-sm font-semibold transition-all duration-200',
+                        active
+                          ? 'border-cyan/35 bg-cyan/12 text-cyan-100 shadow-[0_0_0_1px_rgba(34,211,238,0.08)]'
+                          : 'border-white/10 bg-white/[0.04] text-slate-300 hover:-translate-y-px hover:border-cyan/20 hover:bg-cyan/10 hover:text-cyan-50',
+                      )}
+                      onClick={() => setCategoryFilter(tag.value)}
+                    >
+                      {tag.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </section>
 
           {gamesQuery.isPending && !games.length ? (
-            <GameGrid
-              games={[]}
-              loading
-              skeletonCount={10}
-              onPick={() => undefined}
-            />
-          ) : filteredGames.length ? (
+            <GameCatalogGrid loading />
+          ) : activeCount ? (
             <>
-              <GameGrid
-                games={pageItems}
-                onPick={(game) => navigate(routes.topup(game.id, 1))}
-              />
-
-              {totalPages > 1 ? (
-                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
-              ) : null}
+              <section className="grid gap-3">
+                <div className="flex items-center justify-between gap-4">
+                  <h2 className="m-0 text-[1.25rem] font-black tracking-[-0.03em] text-white">Lưới game</h2>
+                  <span className="text-sm text-slate-400 gt-tabular">{activeCount} game</span>
+                </div>
+                <GameCatalogGrid games={filteredGames} onPick={(game) => navigate(routes.topup(game.id, 1))} />
+              </section>
             </>
           ) : (
             <EmptyState
-              title="Không tìm thấy trò chơi phù hợp."
-              description="Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm."
+              title="Không tìm thấy trò chơi phù hợp"
+              description="Thử đổi bộ lọc, bỏ từ khóa hoặc chuyển sang nhóm game khác."
               actionLabel="Đặt lại bộ lọc"
               onAction={() => {
                 setQuery('');
                 setPlatformFilter('all');
                 setCategoryFilter('all');
                 setSortKey('featured');
-                setPage(1);
               }}
+              variant="spacious"
+              className="mx-auto w-full max-w-2xl"
             />
           )}
-
-          <TrustSection />
         </div>
       </AppPageContainer>
     </div>
-  );
-}
-
-function HeaderSection() {
-  return (
-    <section className="gt-surface relative overflow-hidden rounded-[18px] border border-cyan/10 bg-[linear-gradient(180deg,rgba(7,16,31,0.88),rgba(4,10,22,0.96))] px-5 py-6 shadow-[0_12px_30px_rgba(2,6,23,0.18)] sm:px-6 sm:py-7 lg:px-7 lg:py-8">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.03] [background-image:linear-gradient(rgba(255,255,255,0.22)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:72px_72px]" />
-      <div className="pointer-events-none absolute left-[42%] top-1/2 h-[19rem] w-[19rem] -translate-y-1/2 rounded-full bg-cyan/12 blur-[112px] lg:left-[46%] lg:h-[24rem] lg:w-[24rem]" />
-      <div className="pointer-events-none absolute left-[8%] top-[12%] h-28 w-28 rounded-full bg-cyan/12 blur-[72px] mix-blend-screen" />
-      <div className="pointer-events-none absolute inset-x-[18%] bottom-[10%] h-12 rounded-full bg-cyan/10 blur-[42px] mix-blend-screen" />
-
-      <div className="relative grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.78fr)] lg:gap-8">
-        <div className="grid gap-5 pt-2 lg:pt-4">
-          <div className="flex items-center justify-between gap-4">
-            <Badge variant="accent" className="w-fit rounded-full border-cyan/20 bg-cyan/10 px-3 py-1 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">
-              KHO GAME
-            </Badge>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <IconBox size="lg" className="h-[62px] w-[62px] rounded-[18px] border-cyan/20 bg-cyan/10 text-cyan-50">
-              <Gamepad2 size={31} strokeWidth={1.8} />
-            </IconBox>
-            <div className="grid gap-3 pt-0.5">
-              <h1 className="m-0 whitespace-nowrap text-[clamp(2.45rem,3.25vw,3.7rem)] font-black leading-[0.92] tracking-[-0.05em] text-white">
-                Kho game
-              </h1>
-              <p className="mt-2 max-w-2xl text-[0.96rem] leading-7 text-slate-400">
-                Khám phá và nạp ngay cho tựa game yêu thích của bạn.
-              </p>
-              <Button variant="outline" className="w-fit rounded-[14px] px-4 text-sm font-medium text-white">
-                <Heart size={16} />
-                Yêu thích
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative flex min-h-[220px] items-center justify-center overflow-visible lg:min-h-[260px]">
-          <div className="pointer-events-none absolute left-[50%] top-[52%] h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan/18 blur-[100px]" />
-          <div className="pointer-events-none absolute left-[12%] top-[18%] h-24 w-24 rounded-full bg-cyan/18 blur-[70px] mix-blend-screen" />
-          <div className="pointer-events-none absolute right-[14%] top-[10%] h-16 w-16 rounded-full bg-blue-400/10 blur-[42px] mix-blend-screen" />
-          <div className="pointer-events-none absolute left-[16%] top-[44%] h-px w-[62%] bg-gradient-to-r from-cyan/0 via-cyan/32 to-cyan/0" />
-
-          <ImageBox
-            src={SITE_IMAGES.games.heroIllustration}
-            alt="Minh họa game GameTopUp"
-            className="relative z-10 w-full max-w-[420px] object-contain object-center drop-shadow-[0_0_44px_rgba(34,211,238,0.2)]"
-            decoding="async"
-            loading="eager"
-          />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function GameHeaderSection() {
-  return (
-    <PageHero
-      icon={
-        <IconBox size="lg" className="h-[68px] w-[68px] rounded-[20px] border-cyan/18 bg-cyan/10 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.06)]">
-          <Gamepad2 size={36} strokeWidth={1.8} />
-        </IconBox>
-      }
-      title="Kho game"
-      description="Khám phá và nạp ngay cho tựa game yêu thích của bạn."
-      illustration={
-        <ImageBox
-          src={SITE_IMAGES.games.heroIllustration}
-          alt="Minh họa game GameTopUp"
-          className="relative z-10 w-full max-w-[330px] -translate-y-1 object-contain object-center drop-shadow-[0_0_30px_rgba(34,211,238,0.14)] lg:max-w-[320px]"
-          decoding="async"
-          loading="eager"
-        />
-      }
-    >
-      <div className="absolute bottom-4 left-5 z-20 flex flex-wrap gap-2 sm:bottom-5 sm:left-6 lg:bottom-5 lg:left-7">
-        <Button variant="outline" className="w-fit rounded-[14px] px-4 text-sm font-medium text-white">
-          <Heart size={16} />
-          Yêu thích
-        </Button>
-        <Button variant="secondary" className="w-fit rounded-[14px] px-4 text-sm font-medium text-white">
-          <Star size={16} />
-          Nổi bật
-        </Button>
-      </div>
-    </PageHero>
-  );
-}
-
-function SearchSection({
-  query,
-  onQueryChange,
-  platformFilter,
-  onPlatformFilterChange,
-  categoryFilter,
-  onCategoryFilterChange,
-  sortKey,
-  onSortKeyChange,
-}: {
-  query: string;
-  onQueryChange: (value: string) => void;
-  platformFilter: CatalogPlatformFilter;
-  onPlatformFilterChange: (value: CatalogPlatformFilter) => void;
-  categoryFilter: CatalogCategoryFilter;
-  onCategoryFilterChange: (value: CatalogCategoryFilter) => void;
-  sortKey: CatalogSortKey;
-  onSortKeyChange: (value: CatalogSortKey) => void;
-}) {
-  return (
-    <section className="gt-surface rounded-[18px] border border-white/10 p-4 shadow-[0_12px_26px_rgba(2,6,23,0.12)] sm:p-5">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.7fr)_repeat(3,minmax(0,1fr))]">
-        <SearchField value={query} onChange={onQueryChange} />
-
-        <SelectField
-          value={platformFilter}
-          onChange={(value) => onPlatformFilterChange(value as CatalogPlatformFilter)}
-        >
-          {PLATFORM_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </SelectField>
-
-        <SelectField
-          value={categoryFilter}
-          onChange={(value) => onCategoryFilterChange(value as CatalogCategoryFilter)}
-        >
-          {CATEGORY_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </SelectField>
-
-        <SelectField value={sortKey} onChange={(value) => onSortKeyChange(value as CatalogSortKey)}>
-          {SORT_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </SelectField>
-      </div>
-    </section>
   );
 }
 
@@ -337,8 +198,8 @@ function SearchField({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="flex min-h-14 items-center gap-3 rounded-[14px] border border-white/10 bg-white/5 px-4 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 focus-within:border-cyan/70 focus-within:bg-cyan/10 focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]">
-      <Search size={18} className="shrink-0 text-slate-300" />
+    <label className="flex min-h-14 items-center gap-3 rounded-[18px] border border-white/10 bg-[rgba(7,16,31,0.72)] px-4 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 focus-within:border-cyan/60 focus-within:bg-[rgba(10,24,44,0.92)] focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]">
+      <Search size={18} className="shrink-0 text-slate-400" />
       <input
         className="w-full border-0 bg-transparent p-0 text-sm text-white outline-none placeholder:text-slate-500 focus:ring-0"
         placeholder="Tìm kiếm game..."
@@ -359,7 +220,7 @@ function SelectField({
   value: string;
 }) {
   return (
-    <label className="relative flex min-h-14 items-center rounded-[14px] border border-white/10 bg-white/5 px-4 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 focus-within:border-cyan/70 focus-within:bg-cyan/10 focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]">
+    <label className="relative flex min-h-14 items-center rounded-[18px] border border-white/10 bg-[rgba(7,16,31,0.72)] px-4 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 focus-within:border-cyan/60 focus-within:bg-[rgba(10,24,44,0.92)] focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]">
       <select
         className="w-full appearance-none border-0 bg-transparent p-0 pr-7 text-sm font-medium text-white outline-none focus:ring-0"
         value={value}
@@ -367,125 +228,8 @@ function SelectField({
       >
         {children}
       </select>
-      <ChevronDown size={16} className="pointer-events-none absolute right-4 text-slate-400" />
+      <ChevronDown size={16} className="pointer-events-none absolute right-4 text-slate-500" />
     </label>
-  );
-}
-
-function EmptyState({
-  title,
-  description,
-  actionLabel,
-  onAction,
-}: {
-  title: string;
-  description: string;
-  actionLabel: string;
-  onAction: () => void;
-}) {
-  return (
-    <section className="gt-surface grid gap-4 rounded-[18px] border border-white/10 p-6">
-      <div className="grid gap-2">
-        <h2 className="m-0 text-[1.3rem] font-black tracking-[-0.03em] text-white">{title}</h2>
-        <p className="m-0 text-sm leading-7 text-slate-400">{description}</p>
-      </div>
-
-      <Button variant="primary" className="w-fit rounded-[14px] px-5 text-sm font-bold" onClick={onAction}>
-        {actionLabel}
-      </Button>
-    </section>
-  );
-}
-
-function Pagination({
-  currentPage,
-  onPageChange,
-  totalPages,
-}: {
-  currentPage: number;
-  onPageChange: (page: number) => void;
-  totalPages: number;
-}) {
-  const pages = getPaginationPages(currentPage, totalPages);
-
-  return (
-    <nav className="flex items-center justify-center gap-2" aria-label="Phân trang kho game">
-      <IconPagerButton label="Trang trước" disabled={currentPage <= 1} onClick={() => onPageChange(Math.max(1, currentPage - 1))}>
-        <ChevronLeft size={16} />
-      </IconPagerButton>
-
-      {pages.map((page, index) =>
-        page === 'ellipsis' ? (
-          <span key={`ellipsis-${index}`} className="inline-flex h-10 min-w-10 items-center justify-center px-2 text-sm font-bold text-slate-500">
-            ...
-          </span>
-        ) : (
-          (() => {
-            const pageNumber = page as number;
-
-            return (
-              <PageNumberButton key={pageNumber} active={pageNumber === currentPage} onClick={() => onPageChange(pageNumber)}>
-                {pageNumber}
-              </PageNumberButton>
-            );
-          })()
-        ),
-      )}
-
-      <IconPagerButton label="Trang sau" disabled={currentPage >= totalPages} onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}>
-        <ChevronRight size={16} />
-      </IconPagerButton>
-    </nav>
-  );
-}
-
-function IconPagerButton({
-  children,
-  disabled,
-  label,
-  onClick,
-}: {
-  children: ReactNode;
-  disabled?: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      disabled={disabled}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-white/10 bg-white/5 text-slate-300 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}
-
-function PageNumberButton({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-current={active ? 'page' : undefined}
-      className={classNames(
-        'inline-flex h-10 min-w-10 items-center justify-center rounded-[10px] border px-3 text-sm font-bold transition-all duration-200',
-        active
-          ? 'border-cyan-400/40 bg-cyan text-slate-950 shadow-[0_8px_20px_rgba(34,211,238,0.18)]'
-          : 'border-white/10 bg-white/5 text-slate-300 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 hover:text-cyan-50',
-      )}
-      onClick={onClick}
-    >
-      {children}
-    </button>
   );
 }
 
@@ -493,23 +237,95 @@ function BackgroundDecor() {
   return (
     <>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.1),transparent_26%),radial-gradient(circle_at_top_right,rgba(34,211,238,0.05),transparent_18%),radial-gradient(circle_at_50%_-10%,rgba(15,118,110,0.14),transparent_34%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.25)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.25)_1px,transparent_1px)] [background-size:64px_64px]" />
+      <div className="pointer-events-none absolute inset-0 gt-page-grid opacity-[0.05]" />
     </>
   );
 }
 
-function getPaginationPages(currentPage: number, totalPages: number) {
-  if (totalPages <= 5) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
-  }
+function GameCatalogGrid({
+  games = [],
+  loading = false,
+  onPick,
+}: {
+  games?: Game[];
+  loading?: boolean;
+  onPick?: (game: Game) => void;
+}) {
+  const skeletonCount = 8;
 
-  if (currentPage <= 3) {
-    return [1, 2, 3, 'ellipsis', totalPages];
-  }
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+      {loading
+        ? Array.from({ length: skeletonCount }).map((_, index) => <GameCardSkeleton key={index} />)
+        : games.map((game) => <GameCard key={game.id} game={game} onPick={() => onPick?.(game)} />)}
+    </div>
+  );
+}
 
-  if (currentPage >= totalPages - 2) {
-    return [1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages];
-  }
+function GameCard({
+  game,
+  onPick,
+}: {
+  game: Game;
+  onPick?: () => void;
+}) {
+  const platformLabel = getGamePlatformLabel(game);
+  const topupLabel = getGameTopupLabel(game);
 
-  return [1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages];
+  return (
+    <article className="group grid h-full gap-3 rounded-[22px] border border-white/[0.08] bg-[rgba(22,27,34,0.9)] p-3 transition-all duration-200 hover:-translate-y-1 hover:border-cyan/25 hover:bg-[rgba(24,32,44,0.98)] hover:shadow-[0_18px_36px_rgba(2,6,23,0.2)]">
+      <div className="relative overflow-hidden rounded-[18px] bg-slate-950">
+        <div className="relative h-[220px] overflow-hidden">
+          <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.02)_0%,rgba(2,6,23,0.12)_42%,rgba(2,6,23,0.82)_100%)]" />
+          <div className="absolute inset-0 ring-1 ring-inset ring-white/[0.03] transition-colors group-hover:ring-cyan/20" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2 px-1">
+        <Badge variant="accent" className="w-fit rounded-full px-2.5 py-1 text-[0.72rem] font-bold">
+          {platformLabel}
+        </Badge>
+        <button
+          type="button"
+          aria-label="Yêu thích"
+          className="inline-flex size-8 items-center justify-center justify-self-end rounded-full border border-white/10 bg-transparent text-slate-300 transition-colors hover:border-cyan/25 hover:bg-cyan/10 hover:text-cyan-50"
+        >
+          <Heart size={16} />
+        </button>
+        <div className="col-span-2 grid gap-0.5">
+          <h3 className="m-0 text-base font-black text-white">{game.name}</h3>
+          <p className="m-0 text-sm leading-6 text-slate-400">Nạp {topupLabel}</p>
+        </div>
+      </div>
+
+      <Button
+        variant="primary"
+        className="translate-y-3 justify-center rounded-[14px] px-4 text-sm font-bold opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"
+        onClick={onPick}
+      >
+        Nạp ngay
+        <Sparkles size={16} />
+      </Button>
+    </article>
+  );
+}
+
+function GameCardSkeleton() {
+  return (
+    <article className="grid gap-3 rounded-[22px] border border-white/[0.08] bg-[rgba(22,27,34,0.9)] p-3" aria-hidden="true">
+      <div className="relative overflow-hidden rounded-[18px] bg-slate-950">
+        <div className="h-[220px] animate-pulse bg-white/6" />
+      </div>
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2 px-1">
+        <div className="h-6 w-14 animate-pulse rounded-full bg-white/10" />
+        <div className="size-8 animate-pulse rounded-full bg-white/10 justify-self-end" />
+        <div className="col-span-2 grid gap-2">
+          <div className="h-4 w-28 animate-pulse rounded-full bg-white/10" />
+          <div className="h-3.5 w-20 animate-pulse rounded-full bg-white/10" />
+        </div>
+      </div>
+      <div className="h-11 w-full animate-pulse rounded-[14px] bg-white/10" />
+    </article>
+  );
 }

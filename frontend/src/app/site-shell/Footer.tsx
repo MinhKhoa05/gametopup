@@ -1,8 +1,11 @@
-import { Facebook, Headset, Mail, MessageCircleMore, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { Facebook, Mail, MessageCircleMore, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { SITE } from '@/app/config/site';
+import { SITE, FOOTER_CONTACT_LINKS, FOOTER_DEVELOPER_LINKS } from '@/app/config/site';
 import { routes } from '@/app/router/routes';
+import { classNames } from '@/shared/lib/classNames';
 import { BrandLogo } from './BrandLogo';
+
+type FooterVariant = 'full' | 'minimal';
 
 const FOOTER_LINKS = {
   about: [
@@ -23,73 +26,92 @@ const FOOTER_LINKS = {
   ],
 } as const;
 
-const FOOTER_SOCIALS = [
-  { label: 'Email', href: `mailto:${SITE.contact.email}`, icon: <Mail size={18} /> },
-  { label: 'Facebook', href: SITE.contact.facebook, icon: <Facebook size={18} /> },
-  { label: 'Chat', href: SITE.contact.zalo, icon: <MessageCircleMore size={18} /> },
-  { label: 'Security', href: routes.home(), icon: <ShieldCheck size={18} /> },
-] as const;
-
-export function Footer() {
+export function Footer({ variant = 'full' }: { variant?: FooterVariant }) {
   const navigate = useNavigate();
+  const isMinimal = variant === 'minimal';
+
+  const shellClassName = classNames(
+    'mt-auto border-t border-white/10 bg-[linear-gradient(180deg,rgba(4,10,22,0.08),rgba(4,10,22,0.96))]',
+    'pt-12 sm:pt-14',
+    isMinimal ? 'pb-[calc(3rem+env(safe-area-inset-bottom,0px))]' : 'pb-[calc(4rem+env(safe-area-inset-bottom,0px))]',
+  );
 
   return (
-    <footer className="mt-auto border-t border-white/10 bg-[linear-gradient(180deg,rgba(4,10,22,0.08),rgba(4,10,22,0.96))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] pt-6 md:pb-0">
+    <footer className={shellClassName}>
       <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-6 border-b border-white/10 pb-5 lg:grid-cols-[minmax(300px,1fr)_minmax(160px,0.48fr)_minmax(160px,0.48fr)_minmax(160px,0.48fr)_minmax(360px,1.25fr)] lg:gap-10">
+        <div
+          className={classNames(
+            'grid gap-8 border-b border-white/10 pb-8 lg:gap-10',
+            isMinimal
+              ? 'lg:grid-cols-[minmax(300px,1fr)_minmax(160px,0.52fr)_minmax(160px,0.52fr)_minmax(160px,0.52fr)]'
+              : 'lg:grid-cols-[minmax(300px,1fr)_minmax(160px,0.48fr)_minmax(160px,0.48fr)_minmax(160px,0.48fr)_minmax(360px,1.25fr)]',
+          )}
+        >
           <div className="grid max-w-[320px] gap-2">
             <BrandLogo className="w-fit" onClick={() => navigate(routes.home())} title={SITE.name} subtitle={SITE.tagline} />
-            <p className="max-w-[28ch] text-sm leading-6 text-slate-400 [text-wrap:balance]">Đại lý nạp game trung gian - Giá tốt - Xử lý nhanh - Hỗ trợ 24/7</p>
+            <p className="max-w-[28ch] text-sm leading-6 text-slate-400 [text-wrap:balance]">{SITE.footerDescription}</p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              {FOOTER_SOCIALS.slice(0, 4).map((social) => (
-                <a
-                  key={social.label}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/30 hover:bg-cyan/10 hover:text-cyan-50"
-                  href={social.href}
-                  aria-label={social.label}
-                  target={social.label === 'Email' ? undefined : '_blank'}
-                  rel={social.label === 'Email' ? undefined : 'noreferrer'}
-                >
-                  {social.icon}
-                </a>
-              ))}
+              {FOOTER_CONTACT_LINKS.map((social) => {
+                const Icon = getSocialIcon(social.label);
+                return (
+                  <a
+                    key={social.label}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/40 hover:bg-cyan/10 hover:text-cyan-50"
+                    href={social.href}
+                    aria-label={social.ariaLabel}
+                    target={social.external ? '_blank' : undefined}
+                    rel={social.external ? 'noreferrer' : undefined}
+                  >
+                    <Icon size={18} />
+                  </a>
+                );
+              })}
             </div>
           </div>
 
           <FooterLinkColumn title="Về chúng tôi" links={FOOTER_LINKS.about} onNavigate={navigate} />
-          <FooterLinkColumn title="Hướng dẫn" links={FOOTER_LINKS.guide} onNavigate={navigate} />
-          <FooterLinkColumn title="Hỗ trợ" links={FOOTER_LINKS.support} onNavigate={navigate} />
 
-          <div className="grid w-full max-w-none gap-3 lg:justify-self-start lg:pl-6 xl:pl-8">
-            <h3 className="text-lg font-black text-white">Nhận thông báo</h3>
-            <p className="max-w-[36ch] text-sm leading-6 text-slate-400 [text-wrap:balance]">Nhận tin khuyến mãi và cập nhật về game, gói nạp và các chương trình nổi bật.</p>
+          {isMinimal ? (
+            <>
+              <FooterLinkColumn title="Hướng dẫn" links={FOOTER_LINKS.guide} onNavigate={navigate} />
+              <FooterLinkColumn title="Hỗ trợ" links={FOOTER_LINKS.support} onNavigate={navigate} />
+            </>
+          ) : (
+            <>
+              <FooterLinkColumn title="Hướng dẫn" links={FOOTER_LINKS.guide} onNavigate={navigate} />
+              <FooterLinkColumn title="Hỗ trợ" links={FOOTER_LINKS.support} onNavigate={navigate} />
 
-            <label className="flex h-10 items-center gap-3 rounded-[14px] border border-white/10 bg-[rgba(7,16,31,0.78)] px-4 text-slate-300 transition-all duration-200 hover:border-cyan/25 hover:bg-[rgba(15,29,51,0.92)] focus-within:border-cyan/60 focus-within:bg-[rgba(15,29,51,0.92)]">
-              <input
-                type="email"
-                className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-slate-100 outline-none placeholder:text-slate-500"
-                placeholder="Nhập email của bạn"
-                aria-label="Nhập email của bạn"
-              />
-              <span className="inline-flex size-7 items-center justify-center rounded-full bg-cyan-400 text-slate-950">
-                <Zap size={15} />
-              </span>
-            </label>
-          </div>
+              <div className="grid w-full max-w-none gap-3 lg:justify-self-start lg:pl-6 xl:pl-8">
+                <h3 className="text-lg font-black text-white">Nhận thông báo</h3>
+                <p className="max-w-[36ch] text-sm leading-6 text-slate-400 [text-wrap:balance]">Nhận tin khuyến mãi và cập nhật về game, gói nạp và các chương trình nổi bật.</p>
+
+                <label className="flex h-10 items-center gap-3 rounded-[14px] border border-white/10 bg-[rgba(7,16,31,0.78)] px-4 text-slate-300 transition-all duration-200 hover:border-cyan/25 hover:bg-[rgba(15,29,51,0.92)] focus-within:border-cyan/60 focus-within:bg-[rgba(15,29,51,0.92)]">
+                  <input
+                    type="email"
+                    className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-slate-100 outline-none placeholder:text-slate-500"
+                    placeholder="Nhập email của bạn"
+                    aria-label="Nhập email của bạn"
+                  />
+                  <span className="inline-flex size-7 items-center justify-center rounded-full bg-cyan-400 text-slate-950">
+                    <Zap size={15} />
+                  </span>
+                </label>
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-1.5 py-3.5 text-center text-sm text-slate-500 lg:flex-row lg:text-left">
+        <div className="flex flex-col items-center justify-between gap-2 py-6 text-center text-sm text-slate-500 lg:flex-row lg:text-left">
           <span>© {SITE.copyrightYear} {SITE.name}. All rights reserved.</span>
           <span className="flex flex-wrap items-center justify-center gap-2">
             <span className="text-slate-400">Developed by {SITE.developerName}</span>
             <Sparkles size={14} className="text-cyan-300" />
-            <a className="text-cyan-300 transition-colors hover:text-cyan-100" href={SITE.contact.github} target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-            <a className="text-cyan-300 transition-colors hover:text-cyan-100" href={SITE.contact.linkedin} target="_blank" rel="noreferrer">
-              LinkedIn
-            </a>
+            {FOOTER_DEVELOPER_LINKS.map((link) => (
+              <a key={link.label} className="text-cyan-300 transition-colors hover:text-cyan-100" href={link.href} target="_blank" rel="noreferrer">
+                {link.label}
+              </a>
+            ))}
           </span>
         </div>
       </div>
@@ -114,7 +136,7 @@ function FooterLinkColumn({
           <button
             key={link.label}
             type="button"
-            className="w-fit border-0 bg-transparent p-0 text-left text-sm leading-6 text-slate-400 transition-colors hover:text-cyan-100"
+            className="w-fit border-0 bg-transparent p-0 text-left text-sm leading-6 text-slate-400 transition-colors hover:text-white"
             onClick={() => onNavigate(link.href)}
           >
             {link.label}
@@ -123,4 +145,17 @@ function FooterLinkColumn({
       </div>
     </div>
   );
+}
+
+function getSocialIcon(label: string) {
+  switch (label) {
+    case 'Email':
+      return Mail;
+    case 'Facebook':
+      return Facebook;
+    case 'Zalo':
+      return MessageCircleMore;
+    default:
+      return ShieldCheck;
+  }
 }

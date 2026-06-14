@@ -14,6 +14,7 @@ export function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const isAdminRoute = location.pathname === ROUTE_PATHS.admin || location.pathname.startsWith(`${ROUTE_PATHS.admin}/`);
+  const footerVariant = location.pathname === ROUTE_PATHS.home ? 'full' : 'minimal';
   const [sessionExpiredAt, setSessionExpiredAt] = useState<number | null>(null);
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export function App() {
   }, [location.pathname, navigate, sessionExpiredAt]);
 
   return (
-    <AppLayout isAdminRoute={isAdminRoute} header={<SiteHeader />} footer={<Footer />} bottomNav={<BottomNav />}>
+    <AppLayout isAdminRoute={isAdminRoute} header={<SiteHeader />} footer={<Footer variant={footerVariant} />} bottomNav={<BottomNav />}>
       <AppRouter />
     </AppLayout>
   );

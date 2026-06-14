@@ -14,7 +14,7 @@ type GameGridProps = {
 
 export function GameGrid({ className, games, loading = false, onPick, skeletonCount = 10 }: GameGridProps) {
   return (
-    <div className={classNames('grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5', className)}>
+    <div className={classNames('grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4', className)}>
       {loading
         ? Array.from({ length: skeletonCount }).map((_, index) => <GameCardSkeleton key={`game-skeleton-${index}`} />)
         : games.map((game) => (
@@ -35,15 +35,16 @@ function GameCard({
   const topupLabel = getGameTopupLabel(game);
 
   return (
-    <article className="group grid h-full gap-2.5 rounded-[16px] border border-white/10 bg-[rgba(7,16,31,0.86)] p-3 transition-all duration-200 hover:-translate-y-1 hover:border-cyan/25 hover:bg-[rgba(15,29,51,0.96)] hover:shadow-[0_16px_30px_rgba(2,6,23,0.18)]">
-      <div className="relative overflow-hidden rounded-[14px] border border-white/5 bg-slate-950">
-        <div className="relative h-[208px] overflow-hidden">
+    <article className="group grid h-full gap-3 rounded-[22px] border border-white/[0.08] bg-[rgba(22,27,34,0.9)] p-3 transition-all duration-200 hover:-translate-y-1 hover:border-cyan/25 hover:bg-[rgba(24,32,44,0.98)] hover:shadow-[0_18px_36px_rgba(2,6,23,0.2)]">
+      <div className="relative overflow-hidden rounded-[18px] bg-slate-950">
+        <div className="relative h-[220px] overflow-hidden">
           <ImageBox
             src={game.imageUrl}
             alt={game.name}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.02)_0%,rgba(2,6,23,0.08)_42%,rgba(2,6,23,0.8)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.02)_0%,rgba(2,6,23,0.12)_42%,rgba(2,6,23,0.82)_100%)]" />
+          <div className="absolute inset-0 ring-1 ring-inset ring-white/[0.03] transition-colors group-hover:ring-cyan/20" />
         </div>
       </div>
 
@@ -64,19 +65,25 @@ function GameCard({
         </div>
       </div>
 
-      <Button variant="outline" className="mt-auto w-full rounded-[12px] px-4 text-sm font-bold text-cyan-200 hover:text-cyan-50" onClick={() => onPick(game)}>
-        Nạp ngay
-        <Sparkles size={16} />
-      </Button>
+      <div className="mt-auto grid overflow-hidden">
+        <Button
+          variant="primary"
+          className="translate-y-3 justify-center rounded-[14px] px-4 text-sm font-bold opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"
+          onClick={() => onPick(game)}
+        >
+          Nạp ngay
+          <Sparkles size={16} />
+        </Button>
+      </div>
     </article>
   );
 }
 
 function GameCardSkeleton() {
   return (
-    <article className="grid gap-2.5 rounded-[16px] border border-white/10 bg-[rgba(7,16,31,0.86)] p-3" aria-hidden="true">
-      <div className="relative overflow-hidden rounded-[14px] border border-white/5 bg-slate-950">
-        <div className="h-[208px] animate-pulse bg-white/6" />
+    <article className="grid gap-3 rounded-[22px] border border-white/[0.08] bg-[rgba(22,27,34,0.9)] p-3" aria-hidden="true">
+      <div className="relative overflow-hidden rounded-[18px] bg-slate-950">
+        <div className="h-[220px] animate-pulse bg-white/6" />
       </div>
 
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2 px-1">
