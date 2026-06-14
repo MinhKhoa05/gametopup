@@ -4,6 +4,7 @@ import { queryClient } from '@/shared/api/queryClient';
 import { AUTH_USER_QUERY_KEY } from '@/features/auth/server';
 import { registerSessionExpiredHandler } from '@/app/session';
 import { AppLayout } from '@/app/components/AppLayout';
+import { AuthHeader } from '@/app/components/AuthHeader';
 import { BottomNav } from '@/app/components/BottomNav';
 import { SiteHeader } from '@/app/components/SiteHeader';
 import { Footer } from '@/app/site-shell/Footer';
@@ -14,6 +15,10 @@ export function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const isAdminRoute = location.pathname === ROUTE_PATHS.admin || location.pathname.startsWith(`${ROUTE_PATHS.admin}/`);
+  const isAuthRoute =
+    location.pathname === ROUTE_PATHS.login ||
+    location.pathname === ROUTE_PATHS.register ||
+    location.pathname === ROUTE_PATHS.authLegacy;
   const footerVariant = location.pathname === ROUTE_PATHS.home ? 'full' : 'minimal';
   const [sessionExpiredAt, setSessionExpiredAt] = useState<number | null>(null);
 
@@ -35,14 +40,21 @@ export function App() {
     queryClient.clear();
     queryClient.setQueryData(AUTH_USER_QUERY_KEY, null);
     setSessionExpiredAt(null);
-    navigate(ROUTE_PATHS.auth, {
+    navigate(ROUTE_PATHS.login, {
       replace: true,
       state: { from: location.pathname },
     });
   }, [location.pathname, navigate, sessionExpiredAt]);
 
   return (
-    <AppLayout isAdminRoute={isAdminRoute} header={<SiteHeader />} footer={<Footer variant={footerVariant} />} bottomNav={<BottomNav />}>
+    <AppLayout
+      isAdminRoute={isAdminRoute}
+      isAuthRoute={isAuthRoute}
+      header={<SiteHeader />}
+      authHeader={<AuthHeader />}
+      footer={<Footer variant={footerVariant} />}
+      bottomNav={<BottomNav />}
+    >
       <AppRouter />
     </AppLayout>
   );

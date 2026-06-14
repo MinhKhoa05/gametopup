@@ -3,7 +3,8 @@ import { ROUTE_PATHS } from './routes';
 import { HomePage } from '@/features/home/pages/HomePage';
 import { GamesPage } from '@/features/games/pages/GamesPage';
 import { TopupPage } from '@/features/topup/pages/TopupPage';
-import { AuthPage } from '@/features/auth/pages/AuthPage';
+import { LoginPage } from '@/features/auth/pages/LoginPage';
+import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { WalletPage } from '@/features/wallet/pages/WalletPage';
 import { OrdersPage } from '@/features/orders/pages/OrdersPage';
 import { ProfilePage } from '@/features/profile/pages/ProfilePage';
@@ -20,7 +21,9 @@ export function AppRouter() {
   return (
     <Routes>
       <Route path={ROUTE_PATHS.home} element={<HomePage />} />
-      <Route path={ROUTE_PATHS.auth} element={<AuthPage />} />
+      <Route path={ROUTE_PATHS.login} element={<LoginPage />} />
+      <Route path={ROUTE_PATHS.register} element={<RegisterPage />} />
+      <Route path={ROUTE_PATHS.authLegacy} element={<Navigate to={ROUTE_PATHS.login} replace />} />
       <Route path={ROUTE_PATHS.games} element={<GamesPage />} />
       <Route path={ROUTE_PATHS.gameDetail} element={<GamesPage />} />
       <Route path={ROUTE_PATHS.topupLegacy} element={<TopupPage />} />

@@ -1,9 +1,10 @@
-import { Facebook, Mail, MessageCircleMore, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { Facebook, Mail, MessageCircleMore, ShieldCheck, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { SITE, FOOTER_CONTACT_LINKS, FOOTER_DEVELOPER_LINKS } from '@/app/config/site';
+import { SITE, FOOTER_CONTACT_LINKS } from '@/app/config/site';
 import { routes } from '@/app/router/routes';
 import { classNames } from '@/shared/lib/classNames';
 import { BrandLogo } from './BrandLogo';
+import { SiteCredits } from './SiteCredits';
 
 type FooterVariant = 'full' | 'minimal';
 
@@ -84,7 +85,9 @@ export function Footer({ variant = 'full' }: { variant?: FooterVariant }) {
 
               <div className="grid w-full max-w-none gap-3 lg:justify-self-start lg:pl-6 xl:pl-8">
                 <h3 className="text-lg font-black text-white">Nhận thông báo</h3>
-                <p className="max-w-[36ch] text-sm leading-6 text-slate-400 [text-wrap:balance]">Nhận tin khuyến mãi và cập nhật về game, gói nạp và các chương trình nổi bật.</p>
+                <p className="max-w-[36ch] text-sm leading-6 text-slate-400 [text-wrap:balance]">
+                  Nhận tin khuyến mãi và cập nhật về game, gói nạp và các chương trình nổi bật.
+                </p>
 
                 <label className="flex h-10 items-center gap-3 rounded-[14px] border border-white/10 bg-[rgba(7,16,31,0.78)] px-4 text-slate-300 transition-all duration-200 hover:border-cyan/25 hover:bg-[rgba(15,29,51,0.92)] focus-within:border-cyan/60 focus-within:bg-[rgba(15,29,51,0.92)]">
                   <input
@@ -102,18 +105,7 @@ export function Footer({ variant = 'full' }: { variant?: FooterVariant }) {
           )}
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-2 py-6 text-center text-sm text-slate-500 lg:flex-row lg:text-left">
-          <span>© {SITE.copyrightYear} {SITE.name}. All rights reserved.</span>
-          <span className="flex flex-wrap items-center justify-center gap-2">
-            <span className="text-slate-400">Developed by {SITE.developerName}</span>
-            <Sparkles size={14} className="text-cyan-300" />
-            {FOOTER_DEVELOPER_LINKS.map((link) => (
-              <a key={link.label} className="text-cyan-300 transition-colors hover:text-cyan-100" href={link.href} target="_blank" rel="noreferrer">
-                {link.label}
-              </a>
-            ))}
-          </span>
-        </div>
+        <SiteCredits />
       </div>
     </footer>
   );

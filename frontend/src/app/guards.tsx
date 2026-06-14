@@ -16,7 +16,7 @@ export function RequireAuth({ children }: GuardProps) {
   }
 
   if (auth.status !== 'authenticated') {
-    return <Navigate to={ROUTE_PATHS.auth} replace state={{ from: location.pathname }} />;
+    return <Navigate to={ROUTE_PATHS.login} replace state={{ from: location.pathname }} />;
   }
 
   return children;

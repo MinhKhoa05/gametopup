@@ -36,7 +36,7 @@ export function BottomNav() {
             )}
             onClick={() => {
               if (tab.requiresAuth && !hasSession) {
-                navigate(routes.auth());
+                navigate(routes.login());
                 return;
               }
 

@@ -5,7 +5,10 @@ export type AdminSection = (typeof ADMIN_SECTIONS)[number];
 
 export const ROUTE_PATHS = {
   home: '/',
-  auth: '/auth',
+  auth: '/login',
+  authLegacy: '/auth',
+  login: '/login',
+  register: '/register',
   games: '/games',
   gameDetail: '/games/:gameId',
   topupLegacy: '/topup/:gameId',
@@ -21,6 +24,8 @@ export const ROUTE_PATHS = {
 export const routes = {
   home: () => ROUTE_PATHS.home,
   auth: () => ROUTE_PATHS.auth,
+  login: () => ROUTE_PATHS.login,
+  register: () => ROUTE_PATHS.register,
   games: () => ROUTE_PATHS.games,
   gameDetail: (gameId: number) => generatePath(ROUTE_PATHS.gameDetail, { gameId: String(gameId) }),
   topup: (gameId: number, step = 1) => generatePath(ROUTE_PATHS.topup, { gameId: String(gameId), step: String(step) }),

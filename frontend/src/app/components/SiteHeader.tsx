@@ -122,7 +122,7 @@ export function SiteHeader() {
                 <HeaderAccountMenu triggerLabel={auth.userDisplayName} items={menuItems} />
               </>
             ) : (
-              <Button type="button" variant="primary" size="md" className="min-h-11 rounded-2xl px-4 text-sm font-bold text-slate-950 shadow-[0_8px_22px_rgba(34,211,238,0.2)]" onClick={() => navigate(routes.auth())}>
+              <Button type="button" variant="primary" size="md" className="min-h-11 rounded-2xl px-4 text-sm font-bold text-slate-950 shadow-[0_8px_22px_rgba(34,211,238,0.2)]" onClick={() => navigate(routes.login())}>
                 <UserRound size={17} />
                 <span className="hidden sm:inline">Đăng nhập</span>
               </Button>
@@ -132,7 +132,7 @@ export function SiteHeader() {
           <button
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 hover:text-white sm:hidden"
-            onClick={() => navigate(routes.auth())}
+            onClick={() => navigate(routes.login())}
           >
             <UserRound size={18} />
           </button>

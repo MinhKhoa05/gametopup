@@ -1,23 +1,23 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, UserRound } from 'lucide-react';
 import { Button, Field } from '@/shared/components';
-import { classNames } from '@/shared/lib/classNames';
 import type { AuthMode } from '../hooks/useAuthSession';
 import type { AuthFormData } from '../types';
 
 type AuthFormProps = {
   mode: AuthMode;
   busy: boolean;
-  initialEmail?: string;
   onSubmitAuth: (mode: AuthMode, form: AuthFormData) => Promise<unknown>;
-  onSwitchMode?: (mode: AuthMode) => void;
-  className?: string;
+  switchHref: string;
+  switchLabel: string;
+  switchPrompt: string;
 };
 
-export function AuthForm({ busy, className, initialEmail = '', mode, onSubmitAuth, onSwitchMode }: AuthFormProps) {
+export function AuthForm({ busy, mode, onSubmitAuth, switchHref, switchLabel, switchPrompt }: AuthFormProps) {
   const [form, setForm] = useState<AuthFormData>({
     displayName: '',
-    email: initialEmail,
+    email: '',
     password: '',
   });
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -29,7 +29,7 @@ export function AuthForm({ busy, className, initialEmail = '', mode, onSubmitAut
 
   return (
     <form
-      className={classNames('auth-form', className)}
+      className="grid gap-4"
       onSubmit={async (event) => {
         event.preventDefault();
 
@@ -55,6 +55,7 @@ export function AuthForm({ busy, className, initialEmail = '', mode, onSubmitAut
           placeholder="Nguyễn Văn A"
           autoComplete="name"
           trailing={<UserRound size={18} />}
+          required
         />
       ) : null}
 
@@ -66,6 +67,7 @@ export function AuthForm({ busy, className, initialEmail = '', mode, onSubmitAut
         type="email"
         autoComplete="email"
         trailing={<Mail size={18} />}
+        required
       />
 
       <Field
@@ -85,6 +87,7 @@ export function AuthForm({ busy, className, initialEmail = '', mode, onSubmitAut
             {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
           </button>
         }
+        required
       />
 
       {isRegister ? (
@@ -96,6 +99,7 @@ export function AuthForm({ busy, className, initialEmail = '', mode, onSubmitAut
           type={passwordType}
           autoComplete="new-password"
           trailing={<Lock size={18} />}
+          required
         />
       ) : null}
 
@@ -105,60 +109,12 @@ export function AuthForm({ busy, className, initialEmail = '', mode, onSubmitAut
         {busy ? 'Đang xử lý...' : isRegister ? 'Đăng ký' : 'Đăng nhập'}
       </Button>
 
-      {!isRegister ? (
-        <div className="grid gap-3.5 rounded-2xl pt-1">
-          <div className="flex items-center gap-3 text-[0.82rem] text-slate-400">
-            <span className="h-px flex-1 bg-white/8" aria-hidden="true" />
-            <span className="whitespace-nowrap">Hoặc đăng nhập với</span>
-            <span className="h-px flex-1 bg-white/8" aria-hidden="true" />
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled
-              className="h-11 justify-center gap-2 px-4 text-[0.93rem] font-semibold"
-              title="Tính năng đang được phát triển"
-            >
-              <span className="inline-flex items-center gap-2">
-                <span className="grid size-6 place-items-center rounded-full bg-[#4285F4]/15 text-[0.92rem] font-black text-[#4285F4]">
-                  G
-                </span>
-                Google
-              </span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              disabled
-              className="h-11 justify-center gap-2 px-4 text-[0.93rem] font-semibold"
-              title="Tính năng đang được phát triển"
-            >
-              <span className="inline-flex items-center gap-2">
-                <span className="grid size-6 place-items-center rounded-full bg-[#1877F2]/15 text-[0.92rem] font-black text-[#1877F2]">
-                  f
-                </span>
-                Facebook
-              </span>
-            </Button>
-          </div>
-        </div>
-      ) : null}
-
-      {onSwitchMode ? (
-        <div className="pt-1 text-center text-[0.88rem] text-slate-400">
-          {isRegister ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'}{' '}
-          <button
-            type="button"
-            onClick={() => onSwitchMode(isRegister ? 'login' : 'register')}
-            className="font-bold text-cyan transition-colors hover:text-cyan-50"
-          >
-            {isRegister ? 'Đăng nhập' : 'Đăng ký ngay'}
-          </button>
-        </div>
-      ) : null}
+      <p className="text-center text-sm text-slate-400">
+        {switchPrompt}{' '}
+        <Link to={switchHref} className="font-semibold text-cyan-200 transition-colors hover:text-cyan-50">
+          {switchLabel}
+        </Link>
+      </p>
     </form>
   );
 }
