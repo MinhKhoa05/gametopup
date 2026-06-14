@@ -1,5 +1,12 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowDownLeft,
   ArrowRight,
@@ -17,59 +24,75 @@ import {
   ReceiptText,
   ShieldCheck,
   WalletCards,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { AppPageContainer } from '@/app/components/AppPageContainer';
-import { routes } from '@/app/router/routes';
-import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
+} from "lucide-react";
+import { toast } from "sonner";
+import { AppPageContainer } from "@/app/components/AppPageContainer";
+import { routes } from "@/app/router/routes";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import {
   useConfirmDepositTransferMutation,
   useCreateDepositRequestMutation,
   useMyDepositRequestsQuery,
   useWalletBalanceQuery,
   useWalletTransactionsQuery,
-} from '@/features/wallet/server';
-import { Badge, EmptyState, IconBox, PageHero, TrustSection } from '@/shared/components';
-import { classNames } from '@/shared/lib/classNames';
-import { formatCurrency } from '@/shared/lib/format';
-import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
-import type { DepositRequest, WalletTransaction, WalletTransactionType } from '@/features/wallet/types';
+} from "@/features/wallet/server";
+import {
+  Badge,
+  EmptyState,
+  IconBox,
+  PageHero,
+  TrustSection,
+} from "@/shared/components";
+import { classNames } from "@/shared/lib/classNames";
+import { formatCurrency } from "@/shared/lib/format";
+import { getDepositRequestStatus } from "@/features/wallet/lib/deposit-request-status";
+import type {
+  DepositRequest,
+  WalletTransaction,
+  WalletTransactionType,
+} from "@/features/wallet/types";
 
-const QUICK_AMOUNTS = [50000, 100000, 200000, 500000, 1000000, 2000000] as const;
+const QUICK_AMOUNTS = [
+  50000, 100000, 200000, 500000, 1000000, 2000000,
+] as const;
 
 const HERO_BADGES = [
   {
     icon: <ShieldCheck size={12} />,
-    label: 'Thanh toán an toàn',
+    label: "Thanh toán an toàn",
   },
   {
     icon: <Clock3 size={12} />,
-    label: 'Xử lý nhanh',
+    label: "Xử lý nhanh",
   },
   {
     icon: <Headset size={12} />,
-    label: 'Hỗ trợ 24/7',
+    label: "Hỗ trợ 24/7",
   },
 ] as const;
 
 const REQUEST_FILTERS = [
-  { label: 'Tất cả', value: 'all' },
-  { label: 'Đang chờ', value: 'pending' },
-  { label: 'Đã duyệt', value: 'approved' },
-  { label: 'Từ chối', value: 'rejected' },
+  { label: "Tất cả", value: "all" },
+  { label: "Đang chờ", value: "pending" },
+  { label: "Đã duyệt", value: "approved" },
+  { label: "Từ chối", value: "rejected" },
 ] as const;
 
-type RequestFilterValue = (typeof REQUEST_FILTERS)[number]['value'];
+type RequestFilterValue = (typeof REQUEST_FILTERS)[number]["value"];
 
 const PANEL_CLASS =
-  'rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(7,16,31,0.94),rgba(4,10,22,0.98))] shadow-[0_16px_38px_rgba(2,6,23,0.18)]';
+  "rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(7,16,31,0.94),rgba(4,10,22,0.98))] shadow-[0_16px_38px_rgba(2,6,23,0.18)]";
 
 export function WalletPage() {
   const navigate = useNavigate();
   const auth = useAuthSession();
-  const balanceQuery = useWalletBalanceQuery(auth.status === 'authenticated');
-  const transactionsQuery = useWalletTransactionsQuery(auth.status === 'authenticated');
-  const depositRequestsQuery = useMyDepositRequestsQuery(auth.status === 'authenticated');
+  const balanceQuery = useWalletBalanceQuery(auth.status === "authenticated");
+  const transactionsQuery = useWalletTransactionsQuery(
+    auth.status === "authenticated",
+  );
+  const depositRequestsQuery = useMyDepositRequestsQuery(
+    auth.status === "authenticated",
+  );
   const createDepositRequestMutation = useCreateDepositRequestMutation();
   const confirmDepositTransferMutation = useConfirmDepositTransferMutation();
 
@@ -77,7 +100,7 @@ export function WalletPage() {
   const [amountError, setAmountError] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [activeRequestId, setActiveRequestId] = useState<number | null>(null);
-  const [requestFilter, setRequestFilter] = useState<RequestFilterValue>('all');
+  const [requestFilter, setRequestFilter] = useState<RequestFilterValue>("all");
   const [showAllRequests, setShowAllRequests] = useState(false);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
 
@@ -85,10 +108,19 @@ export function WalletPage() {
   const transactions = transactionsQuery.data ?? [];
   const depositRequests = depositRequestsQuery.data ?? [];
 
-  const activeRequest = depositRequests.find((request) => request.id === activeRequestId) ?? depositRequests[0] ?? null;
-  const activeRequestStatus = activeRequest ? getDepositRequestStatus(activeRequest.status) : null;
-  const bankName = activeRequest ? resolveBankDisplayName(activeRequest.bankId) : '';
-  const bankLogoLabel = activeRequest ? resolveBankLogoLabel(activeRequest.bankId) : '';
+  const activeRequest =
+    depositRequests.find((request) => request.id === activeRequestId) ??
+    depositRequests[0] ??
+    null;
+  const activeRequestStatus = activeRequest
+    ? getDepositRequestStatus(activeRequest.status)
+    : null;
+  const bankName = activeRequest
+    ? resolveBankDisplayName(activeRequest.bankId)
+    : "";
+  const bankLogoLabel = activeRequest
+    ? resolveBankLogoLabel(activeRequest.bankId)
+    : "";
 
   const stats = useMemo(() => {
     const totalDeposited = transactions.reduce((sum, transaction) => {
@@ -98,26 +130,28 @@ export function WalletPage() {
     return {
       balance,
       totalDeposited,
-      pendingRequests: depositRequests.filter((request) => request.status === 1 || request.status === 2).length,
+      pendingRequests: depositRequests.filter(
+        (request) => request.status === 1 || request.status === 2,
+      ).length,
       transactionCount: transactions.length,
     };
   }, [balance, depositRequests, transactions]);
 
   const filteredRequests = useMemo(() => {
-    if (requestFilter === 'all') {
+    if (requestFilter === "all") {
       return depositRequests;
     }
 
     return depositRequests.filter((request) => {
-      if (requestFilter === 'pending') {
+      if (requestFilter === "pending") {
         return request.status === 1 || request.status === 2;
       }
 
-      if (requestFilter === 'approved') {
+      if (requestFilter === "approved") {
         return request.status === 3;
       }
 
-      if (requestFilter === 'rejected') {
+      if (requestFilter === "rejected") {
         return request.status === 4;
       }
 
@@ -125,8 +159,12 @@ export function WalletPage() {
     });
   }, [depositRequests, requestFilter]);
 
-  const visibleRequests = showAllRequests ? filteredRequests : filteredRequests.slice(0, 5);
-  const visibleTransactions = showAllTransactions ? transactions : transactions.slice(0, 5);
+  const visibleRequests = showAllRequests
+    ? filteredRequests
+    : filteredRequests.slice(0, 5);
+  const visibleTransactions = showAllTransactions
+    ? transactions
+    : transactions.slice(0, 5);
 
   useEffect(() => {
     if (!copiedKey) {
@@ -143,7 +181,10 @@ export function WalletPage() {
       return;
     }
 
-    if (!activeRequestId || !depositRequests.some((request) => request.id === activeRequestId)) {
+    if (
+      !activeRequestId ||
+      !depositRequests.some((request) => request.id === activeRequestId)
+    ) {
       setActiveRequestId(depositRequests[0].id);
     }
   }, [activeRequestId, depositRequests]);
@@ -154,11 +195,13 @@ export function WalletPage() {
 
     const parsedAmount = Number.parseInt(amount, 10);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setAmountError('Vui lÃ²ng nháº­p sá»‘ tiá»n há»£p lá»‡.');
+      setAmountError("Vui lòng nhập số tiền hợp lệ.");
       return;
     }
 
-    const request = await createDepositRequestMutation.mutateAsync({ amount: parsedAmount });
+    const request = await createDepositRequestMutation.mutateAsync({
+      amount: parsedAmount,
+    });
     setActiveRequestId(request.id);
     setShowAllRequests(true);
   }
@@ -168,7 +211,9 @@ export function WalletPage() {
       return;
     }
 
-    const request = await confirmDepositTransferMutation.mutateAsync({ requestId: activeRequest.id });
+    const request = await confirmDepositTransferMutation.mutateAsync({
+      requestId: activeRequest.id,
+    });
     setActiveRequestId(request.id);
   }
 
@@ -180,12 +225,12 @@ export function WalletPage() {
   }
 
   function handleAmountChange(event: ChangeEvent<HTMLInputElement>) {
-    const next = event.target.value.replace(/\D/g, '');
+    const next = event.target.value.replace(/\D/g, "");
     setAmount(next);
     setAmountError(null);
   }
 
-  if (auth.status === 'checking' && !auth.user) {
+  if (auth.status === "checking" && !auth.user) {
     return <WalletLoadingState />;
   }
 
@@ -198,9 +243,9 @@ export function WalletPage() {
             <WalletCards size={24} />
           </IconBox>
         }
-        title="Báº¡n chÆ°a Ä‘Äƒng nháº­p"
-        description="Vui lÃ²ng Ä‘Äƒng nháº­p Ä‘á»ƒ quáº£n lÃ½ vÃ­ vÃ  náº¡p tiá»n."
-        actionLabel="ÄÄƒng nháº­p ngay"
+        title="Bạn chưa đăng nhập"
+        description="Vui lòng đăng nhập để quản lý ví và nạp tiền."
+        actionLabel="Đăng nhập ngay"
         onAction={() => navigate(routes.auth())}
       />
     );
@@ -242,9 +287,11 @@ export function WalletPage() {
             <WalletHistoryCard
               id="wallet-requests"
               type="request"
-              title="Danh sÃ¡ch yÃªu cáº§u náº¡p"
-              actionLabel={showAllRequests ? 'Thu gá»n yÃªu cáº§u' : 'Xem táº¥t cáº£ yÃªu cáº§u'}
-              emptyLabel="ChÆ°a cÃ³ yÃªu cáº§u náº¡p nÃ o."
+              title="Danh sách yêu cầu nạp"
+              actionLabel={
+                showAllRequests ? "Thu gọn yêu cầu" : "Xem tất cả yêu cầu"
+              }
+              emptyLabel="Chưa có yêu cầu nạp nào."
               isLoading={depositRequestsQuery.isPending}
               filterValue={requestFilter}
               items={visibleRequests}
@@ -252,16 +299,22 @@ export function WalletPage() {
               onFilterChange={setRequestFilter}
               onViewDetail={(requestId) => {
                 setActiveRequestId(requestId);
-                document.getElementById('wallet-payment-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document
+                  .getElementById("wallet-payment-panel")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
             />
 
             <WalletHistoryCard
               id="wallet-transactions"
               type="transaction"
-              title="Lá»‹ch sá»­ giao dá»‹ch"
-              actionLabel={showAllTransactions ? 'Thu gá»n giao dá»‹ch' : 'Xem táº¥t cáº£ giao dá»‹ch'}
-              emptyLabel="ChÆ°a cÃ³ giao dá»‹ch phÃ¹ há»£p."
+              title="Lịch sử giao dịch"
+              actionLabel={
+                showAllTransactions
+                  ? "Thu gọn giao dịch"
+                  : "Xem tất cả giao dịch"
+              }
+              emptyLabel="Chưa có giao dịch phù hợp."
               isLoading={transactionsQuery.isPending}
               items={visibleTransactions}
               onAction={() => setShowAllTransactions((value) => !value)}
@@ -277,17 +330,24 @@ export function WalletPage() {
   );
 
   function handleQuickAction(action: QuickActionTarget) {
-    if (action === 'support') {
+    if (action === "support") {
       navigate(routes.profile());
       return;
     }
 
-    const targetId = action === 'deposit' ? 'wallet-deposit-form' : action === 'requests' ? 'wallet-requests' : 'wallet-transactions';
-    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const targetId =
+      action === "deposit"
+        ? "wallet-deposit-form"
+        : action === "requests"
+          ? "wallet-requests"
+          : "wallet-transactions";
+    document
+      .getElementById(targetId)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
 
-type QuickActionTarget = 'deposit' | 'transactions' | 'requests' | 'support';
+type QuickActionTarget = "deposit" | "transactions" | "requests" | "support";
 
 function WalletHeroSection() {
   return (
@@ -307,16 +367,19 @@ function WalletHeroSection() {
         </div>
       }
       icon={
-        <IconBox size="lg" className="h-[68px] w-[68px] rounded-[20px] border-cyan/18 bg-cyan/10 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.06)]">
+        <IconBox
+          size="lg"
+          className="h-[68px] w-[68px] rounded-[20px] border-cyan/18 bg-cyan/10 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.06)]"
+        >
           <WalletCards size={36} strokeWidth={1.8} />
         </IconBox>
       }
-      title="Náº¡p vÃ­"
-      description="Quáº£n lÃ½ sá»‘ dÆ°, táº¡o yÃªu cáº§u náº¡p tiá»n vÃ  theo dÃµi lá»‹ch sá»­ giao dá»‹ch cá»§a báº¡n."
+      title="Nạp ví"
+      description="Quản lý số dư hiện tại, tạo yêu cầu nạp tiền và theo dõi lịch sử giao dịch của bạn."
       illustration={
         <img
           src="/assets/wallet-illustration.png"
-          alt="Minh há»a vÃ­ GameTopUp"
+          alt="Minh họa ví GameTopUp"
           className="relative z-10 w-full max-w-[320px] -translate-y-1 object-contain object-center drop-shadow-[0_0_30px_rgba(34,211,238,0.14)] lg:max-w-[300px]"
         />
       }
@@ -324,13 +387,42 @@ function WalletHeroSection() {
   );
 }
 
-function WalletStatsRow({ stats }: { stats: { balance: number; totalDeposited: number; pendingRequests: number; transactionCount: number } }) {
+function WalletStatsRow({
+  stats,
+}: {
+  stats: {
+    balance: number;
+    totalDeposited: number;
+    pendingRequests: number;
+    transactionCount: number;
+  };
+}) {
   return (
     <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-      <WalletStatCard icon={<WalletCards size={20} />} iconClassName="border-cyan-400/15 bg-cyan-400/10 text-cyan-50" label="Sá»‘ dÆ° hiá»‡n táº¡i" value={formatCurrency(stats.balance)} />
-      <WalletStatCard icon={<ArrowRight size={20} />} iconClassName="border-emerald-400/15 bg-emerald-400/10 text-emerald-300" label="Tá»•ng Ä‘Ã£ náº¡p" value={formatCurrency(stats.totalDeposited)} />
-      <WalletStatCard icon={<Clock3 size={20} />} iconClassName="border-amber-400/15 bg-amber-400/10 text-amber-300" label="YÃªu cáº§u Ä‘ang chá»" value={`${stats.pendingRequests} yÃªu cáº§u`} />
-      <WalletStatCard icon={<ReceiptText size={20} />} iconClassName="border-sky-400/15 bg-sky-400/10 text-sky-200" label="Giao dá»‹ch gáº§n Ä‘Ã¢y" value={`${stats.transactionCount} giao dá»‹ch`} />
+      <WalletStatCard
+        icon={<WalletCards size={20} />}
+        iconClassName="border-cyan-400/15 bg-cyan-400/10 text-cyan-50"
+        label="Số dư hiện tại"
+        value={formatCurrency(stats.balance)}
+      />
+      <WalletStatCard
+        icon={<ArrowRight size={20} />}
+        iconClassName="border-emerald-400/15 bg-emerald-400/10 text-emerald-300"
+        label="Tổng đã nạp"
+        value={formatCurrency(stats.totalDeposited)}
+      />
+      <WalletStatCard
+        icon={<Clock3 size={20} />}
+        iconClassName="border-amber-400/15 bg-amber-400/10 text-amber-300"
+        label="Yêu cầu đang chờ"
+        value={`${stats.pendingRequests} yêu cầu`}
+      />
+      <WalletStatCard
+        icon={<ReceiptText size={20} />}
+        iconClassName="border-sky-400/15 bg-sky-400/10 text-sky-200"
+        label="Giao dịch gần đây"
+        value={`${stats.transactionCount} giao dịch`}
+      />
     </section>
   );
 }
@@ -350,24 +442,36 @@ function WalletDepositForm({
   onQuickPick: (value: number) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
-  const formattedAmount = amount ? new Intl.NumberFormat('vi-VN').format(Number(amount)) : '';
+  const formattedAmount = amount
+    ? new Intl.NumberFormat("vi-VN").format(Number(amount))
+    : "";
 
   return (
-    <section className={classNames(PANEL_CLASS, 'grid gap-4 p-4 sm:p-5')} id="wallet-deposit-form">
+    <section
+      className={classNames(PANEL_CLASS, "grid gap-4 p-4 sm:p-5")}
+      id="wallet-deposit-form"
+    >
       <div className="grid gap-1.5">
         <div className="inline-flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-full border border-cyan/20 bg-cyan/10 text-[0.72rem] font-bold text-cyan-100">1</span>
-          <h2 className="m-0 max-w-[18ch] text-[1.12rem] font-black leading-[1.42] tracking-[-0.03em] text-white sm:text-[1.2rem]">
+          <span className="grid size-7 place-items-center rounded-full border border-cyan/20 bg-cyan/10 text-[0.72rem] font-bold text-cyan-100">
+            1
+          </span>
+          <h2 className="m-0 max-w-[18ch] text-[1.08rem] font-semibold leading-[1.2] tracking-[-0.03em] text-white sm:text-[1.1rem]">
             Tạo yêu cầu nạp tiền
-        </h2>
+          </h2>
         </div>
-        <p className="m-0 max-w-2xl text-[0.74rem] leading-6 text-slate-400">Nháº­p sá»‘ tiá»n báº¡n muá»‘n náº¡p vÃ o vÃ­.</p>
+        <p className="m-0 max-w-2xl text-[0.88rem] leading-6 text-slate-500">
+          Nhập số tiền bạn muốn nạp vào ví.
+        </p>
       </div>
 
       <form className="grid gap-5" onSubmit={onSubmit}>
         <div className="grid gap-2.5">
-          <label htmlFor="wallet-deposit-amount" className="text-sm font-semibold text-slate-200">
-            Sá»‘ tiá»n náº¡p
+          <label
+            htmlFor="wallet-deposit-amount"
+            className="text-sm font-semibold text-slate-200"
+          >
+            Số tiền nạp
           </label>
           <div className="relative">
             <input
@@ -379,9 +483,13 @@ function WalletDepositForm({
               placeholder="50.000"
               className="h-14 w-full rounded-[18px] border border-white/10 bg-[rgba(7,14,27,0.9)] px-4 pr-12 text-[1rem] font-semibold tracking-[0.01em] text-white outline-none transition-all duration-200 placeholder:text-slate-500 hover:border-cyan-300/30 hover:bg-[rgba(9,17,32,0.94)] focus:border-cyan-300/55 focus:bg-[rgba(9,17,32,0.98)] focus:shadow-[0_0_0_4px_rgba(34,211,238,0.08)]"
             />
-            <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-[0.95rem] font-semibold text-slate-400">đ</span>
+            <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-[0.95rem] font-semibold text-slate-400">
+              đ
+            </span>
           </div>
-          {amountError ? <p className="m-0 text-sm text-rose-300">{amountError}</p> : null}
+          {amountError ? (
+            <p className="m-0 text-sm text-rose-300">{amountError}</p>
+          ) : null}
         </div>
 
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
@@ -394,10 +502,10 @@ function WalletDepositForm({
                 type="button"
                 onClick={() => onQuickPick(value)}
                 className={classNames(
-                  'min-h-12 rounded-[14px] border px-3 py-3 text-sm font-semibold transition-all duration-200',
+                  "min-h-12 rounded-[14px] border px-3 py-3 text-sm font-semibold transition-all duration-200",
                   isSelected
-                    ? 'border-cyan-300/75 bg-cyan-400/12 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.16),0_0_22px_rgba(34,211,238,0.16)]'
-                    : 'border-white/10 bg-white/4 text-slate-300 hover:border-cyan-300/35 hover:bg-white/7 hover:text-white hover:shadow-[0_0_0_4px_rgba(34,211,238,0.04)]',
+                    ? "border-cyan-300/75 bg-cyan-400/12 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.16),0_0_22px_rgba(34,211,238,0.16)]"
+                    : "border-white/10 bg-white/4 text-slate-300 hover:border-cyan-300/35 hover:bg-white/7 hover:text-white hover:shadow-[0_0_0_4px_rgba(34,211,238,0.04)]",
                 )}
               >
                 {formatCurrency(value)}
@@ -411,7 +519,9 @@ function WalletDepositForm({
             <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full border border-cyan-400/20 bg-cyan-400/10 text-cyan-50">
               <Info size={16} />
             </span>
-            <p className="text-sm leading-6 text-slate-100">Khoản tiền sẽ được cộng vào số dư sau khi giao dịch được xác nhận.</p>
+            <p className="text-sm leading-6 text-slate-100">
+              Khoản tiền sẽ được cộng vào số dư sau khi giao dịch được xác nhận.
+            </p>
           </div>
         </div>
 
@@ -448,149 +558,119 @@ function WalletPaymentCard({
   const accountNo = activeRequest?.accountNo ?? '';
   const accountName = activeRequest?.accountName ?? '';
 
-  function renderInfoRow(label: string, value: ReactNode, copyKey: string, onCopyValue: string, highlighted?: boolean) {
-    return (
-      <div
-        className={classNames(
-          'grid grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border px-4 py-3.5',
-          highlighted ? 'border-cyan-400/25 bg-cyan-400/10 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.08)]' : 'border-white/12 bg-white/[0.03]',
-        )}
-      >
-        <span className="text-[0.82rem] font-medium text-slate-300">{label}</span>
-        <div className="min-w-0 justify-self-end text-right">{value}</div>
-        <button
-          type="button"
-          aria-label={`Sao ch�p ${label}`}
-          title={`Sao ch�p ${label}`}
-          onClick={() => void onCopy(copyKey, onCopyValue)}
-          className={classNames(
-            'inline-flex size-9 items-center justify-center rounded-[12px] border transition-all duration-200',
-            copiedKey === copyKey
-              ? 'border-emerald-400/30 bg-emerald-400/12 text-emerald-200'
-              : 'border-white/12 bg-white/[0.04] text-slate-200 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:bg-cyan-400/10 hover:text-cyan-50',
-          )}
-        >
-          <Copy size={14} />
-        </button>
-      </div>
-    );
-  }
-
   return (
     <section
-      className="grid gap-5 rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(5,11,22,0.76),rgba(3,8,17,0.94))] px-4 py-5 shadow-[0_18px_42px_rgba(2,6,23,0.14)] sm:px-5 sm:py-6 lg:px-6 lg:py-6"
+      className="grid gap-5 rounded-[18px] border border-cyan-300/10 bg-[linear-gradient(180deg,rgba(5,12,25,0.78),rgba(4,10,20,0.92))] p-5 shadow-[0_12px_30px_rgba(2,6,23,0.18)] sm:p-6"
       id="wallet-payment-panel"
     >
       <div className="grid gap-1.5">
-        <div className="inline-flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-full border border-cyan/20 bg-cyan/10 text-[0.72rem] font-bold text-cyan-100">2</span>
-          <p className="m-0 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-cyan-100">Thông tin thanh toán</p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="grid size-6 place-items-center rounded-full border border-cyan-300/20 bg-cyan-400/10 text-[0.72rem] font-bold text-cyan-100 sm:size-6">
+              2
+            </span>
+            <p className="m-0 text-[1.15rem] font-semibold tracking-[-0.03em] text-slate-100 sm:text-[1.18rem]">Thông tin thanh toán</p>
+          </div>
+          {status ? (
+            <span
+              className={classNames(
+                'inline-flex items-center rounded-full border px-2.5 py-1 text-[0.8rem] font-bold',
+                getStatusBadgeClass(status.badgeVariant),
+              )}
+            >
+              {status.label}
+            </span>
+          ) : null}
         </div>
-        <h2 className="m-0 max-w-[12ch] text-[clamp(1.9rem,2.8vw,2.8rem)] font-black leading-[0.92] tracking-[-0.05em] text-white">
-          Quét mã QR hoặc
-          <br />
-          chuyển khoản theo
-          <br />
-          thông tin bên dưới
-        </h2>
-        <p className="m-0 max-w-[54ch] text-[0.9rem] leading-6 text-slate-400">
-          Chuyển đúng số tiền và đúng nội dung hệ thống cấp để yêu cầu được xử lý nhanh hơn.
-        </p>
+        <p className="m-0 max-w-2xl text-[0.88rem] leading-6 text-slate-500">Quét mã QR hoặc chuyển khoản theo thông tin bên dưới.</p>
       </div>
 
       {activeRequest ? (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)]">
-          <article className="grid gap-4 rounded-[26px] border border-cyan/12 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.14),transparent_42%),linear-gradient(180deg,rgba(9,14,30,0.92),rgba(8,13,28,0.98))] p-4 sm:p-5">
-            <div className="flex items-center justify-between gap-3">
-              <p className="m-0 text-[0.64rem] font-black uppercase tracking-[0.22em] text-cyan-100">Mã QR chuyển khoản</p>
-              <span className="inline-flex items-center rounded-full border border-cyan/15 bg-cyan/10 px-2.5 py-1 text-[0.62rem] font-bold tracking-[0.16em] text-cyan-100">
-                VietQR
-              </span>
-            </div>
-
-            <div className="flex justify-center">
-              <div className="flex w-full max-w-[252px] items-center justify-center rounded-[20px] border border-white/10 bg-white px-3 py-3">
-                {activeRequest.qrImageUrl ? (
-                  <img src={activeRequest.qrImageUrl} alt="Mã QR chuyển khoản" className="max-h-[235px] w-full max-w-[225px] object-contain" />
-                ) : (
-                  <div className="grid place-items-center gap-2 py-6 text-center text-slate-400">
-                    <span className="grid size-14 place-items-center rounded-2xl border border-cyan/15 bg-cyan/10 text-cyan-100">
-                      <QrCode size={24} />
-                    </span>
-                    <span className="text-sm">Không có mã QR</span>
-                  </div>
-                )}
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] lg:items-start">
+          <article className="grid gap-3">
+            <div className="flex justify-center lg:justify-start">
+              <div className="grid w-full gap-3 rounded-[18px] border border-cyan-300/24 bg-transparent px-4 py-4 shadow-[0_0_0_1px_rgba(34,211,238,0.16),0_0_18px_rgba(34,211,238,0.22),0_0_34px_rgba(34,211,238,0.08),inset_0_0_0_1px_rgba(255,255,255,0.02)]">
+                <div className="mx-auto grid aspect-square w-full max-w-[214px] place-items-center rounded-[14px] border border-white/10 bg-white p-2.5 shadow-[0_0_0_1px_rgba(255,255,255,0.03)] sm:max-w-[224px]">
+                  {activeRequest.qrImageUrl ? (
+                    <img src={activeRequest.qrImageUrl} alt="Mã QR chuyển khoản" className="h-auto w-full object-contain" />
+                  ) : (
+                    <div className="grid aspect-square w-full place-items-center text-slate-400">
+                      <QrCode size={28} />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="rounded-[14px] border border-amber-400/20 bg-[#20190d] px-4 py-3 text-[0.76rem] leading-6 text-amber-100">
-              <div className="flex items-start gap-2.5">
-                <span className="mt-0.5 grid size-4 shrink-0 place-items-center text-amber-300">
-                  <Info size={14} />
+            <div className="rounded-[10px] border border-amber-500/15 bg-[#1b1408] px-3 py-2 text-[0.72rem] leading-5 text-amber-100">
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 text-amber-300">
+                  <Info size={12} />
                 </span>
-                <p>Vui lòng chuyển đúng nội dung hệ thống cấp để yêu cầu được nhận diện nhanh hơn.</p>
+                <span>Vui lòng chuyển đúng số tiền và nội dung để hệ thống dễ dàng đối soát và xác nhận giao dịch.</span>
               </div>
             </div>
           </article>
 
-          <article className="grid gap-3 rounded-[26px] border border-white/10 bg-[rgba(255,255,255,0.02)] px-4 py-4 sm:px-5 sm:py-5">
-            <div className="flex items-center justify-between gap-3">
-              <p className="m-0 text-[0.64rem] font-black uppercase tracking-[0.22em] text-cyan-100">Trạng thái</p>
-              {status ? <span className={classNames('inline-flex items-center rounded-full border px-3 py-1 text-[0.68rem] font-bold', getStatusBadgeClass(status.badgeVariant))}>{status.label}</span> : null}
-            </div>
-
-            <div className="grid gap-3">
-              {renderInfoRow(
-                'Ng�n h�ng',
-                <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1">
-                  <span className="grid size-7 place-items-center rounded-full bg-emerald-400 text-[0.62rem] font-black leading-none text-slate-950">
+          <article className="grid gap-3 pt-1">
+            <WalletPaymentRow
+              label="Ngân hàng"
+              value={
+                <div className="inline-flex items-center gap-2">
+                  <span className="grid size-6 place-items-center rounded-full bg-cyan-400/10 text-[0.62rem] font-black tracking-[0.02em] text-cyan-100">
                     {bankLogoLabel}
                   </span>
-                  <strong className="truncate text-[0.8rem] font-black text-white">{bankName}</strong>
-                </span>,
-                'bank',
-                bankName,
-              )}
+                  <span className="text-[0.98rem] font-semibold tracking-[-0.01em] text-slate-100">{bankName || '---'}</span>
+                </div>
+              }
+            />
 
-              {renderInfoRow(
-                'S? t�i kho?n',
-                <span className="font-mono text-[0.82rem] font-black tracking-[-0.02em] text-white">{accountNo || '---'}</span>,
-                'account',
-                accountNo,
-              )}
+            <WalletPaymentRow
+              label="Số tài khoản"
+              value={accountNo || '---'}
+              copyKey="account"
+              copiedKey={copiedKey}
+              onCopy={() => void onCopy('account', accountNo)}
+            />
 
-              {renderInfoRow(
-                'Ch? t�i kho?n',
-                <span className="text-[0.82rem] font-semibold text-white">{accountName || '---'}</span>,
-                'name',
-                accountName,
-              )}
+            <WalletPaymentRow
+              label="Chủ tài khoản"
+              value={accountName || '---'}
+              copyKey="name"
+              copiedKey={copiedKey}
+              onCopy={() => void onCopy('name', accountName)}
+              valueClassName="whitespace-nowrap"
+            />
 
-              {renderInfoRow(
-                'N?i dung chuy?n kho?n',
-                <span className="inline-flex max-w-full items-center rounded-[12px] border border-cyan-300/20 bg-cyan-400/10 px-3 py-1.5 font-mono text-[0.82rem] font-black tracking-[0.08em] text-cyan-50">
-                  {transferContent || '---'}
-                </span>,
-                'content',
-                transferContent,
-                true,
-              )}
-            </div>
+            <WalletPaymentRow
+              label="Số tiền"
+              value={formatCurrency(activeRequest.amount)}
+              copyKey="amount"
+              copiedKey={copiedKey}
+              onCopy={() => void onCopy('amount', formatCurrency(activeRequest.amount))}
+              valueClassName="text-emerald-300 font-semibold"
+            />
 
-            <div className="rounded-[18px] border border-cyan/15 bg-cyan/8 p-4">
-              <button
-                type="button"
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[16px] border border-cyan/30 bg-cyan-400 px-5 text-[0.88rem] font-bold text-slate-950 shadow-[0_10px_24px_rgba(34,211,238,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-cyan-300 disabled:translate-y-0 disabled:opacity-60"
-                onClick={onConfirm}
-                disabled={busy}
-              >
-                <CheckCircle2 size={18} />
-                Tôi đã chuyển khoản
-              </button>
-              <p className="mt-3 text-center text-[0.74rem] leading-6 text-slate-400">
-                Sau khi chuyển khoản xong, bấm nút xác nhận để hệ thống ghi nhận yêu cầu.
-              </p>
-            </div>
+            <WalletPaymentRow
+              label="Nội dung chuyển khoản"
+              value={transferContent || '---'}
+              copyKey="content"
+              copiedKey={copiedKey}
+              onCopy={() => void onCopy('content', transferContent)}
+              highlighted
+            />
+
+            <button
+              type="button"
+              className="mt-1 inline-flex min-h-11 items-center justify-center rounded-[8px] bg-cyan-400 px-4 text-[0.98rem] font-semibold text-slate-950 transition-colors hover:bg-cyan-300 disabled:opacity-60"
+              onClick={onConfirm}
+              disabled={busy}
+            >
+              <CheckCircle2 size={16} className="mr-2" />
+              Tôi đã chuyển khoản
+            </button>
+
+            <p className="pt-1 text-center text-[0.88rem] leading-5 text-slate-500">Hệ thống tự xác minh trong 1-5 phút.</p>
           </article>
         </div>
       ) : (
@@ -609,6 +689,55 @@ function WalletPaymentCard({
     </section>
   );
 }
+
+function WalletPaymentRow({
+  label,
+  value,
+  copyKey,
+  copiedKey,
+  highlighted,
+  valueClassName,
+  onCopy,
+}: {
+  label: string;
+  value: ReactNode;
+  copyKey?: string;
+  copiedKey?: string | null;
+  highlighted?: boolean;
+  valueClassName?: string;
+  onCopy?: () => void;
+}) {
+  return (
+    <div
+      className={classNames(
+        'grid grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] items-center gap-3 py-1.5',
+        highlighted ? 'rounded-[8px] bg-cyan-400/5 px-0.5' : '',
+      )}
+    >
+      <span className="min-w-0 text-[0.84rem] leading-5 text-slate-400">{label}</span>
+      <div className="flex min-w-0 items-center justify-end gap-2">
+        <div className={classNames('min-w-0 text-right', valueClassName)}>{value}</div>
+        {copyKey && onCopy ? (
+          <button
+            type="button"
+            aria-label={'Sao chép ' + label}
+            title={'Sao chép ' + label}
+            onClick={onCopy}
+            className={classNames(
+              'inline-flex size-7 shrink-0 items-center justify-center rounded-[6px] border transition-colors',
+              copiedKey === copyKey
+                ? 'border-cyan-300/30 bg-cyan-400/10 text-cyan-100'
+              : 'border-cyan-300/15 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10 hover:text-cyan-50',
+            )}
+          >
+            <Copy size={12} />
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function WalletHistoryCard({
   actionLabel,
   emptyLabel,
@@ -632,13 +761,15 @@ function WalletHistoryCard({
   onFilterChange?: (value: RequestFilterValue) => void;
   onViewDetail?: (requestId: number) => void;
   title: string;
-  type: 'request' | 'transaction';
+  type: "request" | "transaction";
 }) {
   return (
-    <section id={id} className={classNames(PANEL_CLASS, 'grid gap-4')}>
+    <section id={id} className={classNames(PANEL_CLASS, "grid gap-4")}>
       <div className="flex items-start justify-between gap-4 px-5 pt-5 sm:px-6 sm:pt-6">
         <div className="grid gap-1">
-          <h3 className="m-0 text-[1.25rem] font-black tracking-[-0.03em] text-white sm:text-[1.35rem]">{title}</h3>
+          <h3 className="m-0 text-[1.25rem] font-black tracking-[-0.03em] text-white sm:text-[1.35rem]">
+            {title}
+          </h3>
         </div>
         <button
           type="button"
@@ -651,17 +782,17 @@ function WalletHistoryCard({
       </div>
 
       <div className="px-5 pb-5 sm:px-6 sm:pb-6">
-        {type === 'request' ? (
+        {type === "request" ? (
           <div className="mb-4 flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {REQUEST_FILTERS.map((item) => (
               <button
                 key={item.value}
                 type="button"
                 className={classNames(
-                  'inline-flex min-h-10 shrink-0 items-center rounded-full border px-4 text-sm font-bold transition-all duration-200',
+                  "inline-flex min-h-10 shrink-0 items-center rounded-full border px-4 text-sm font-bold transition-all duration-200",
                   filterValue === item.value
-                    ? 'border-cyan/35 bg-cyan-400/15 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.08)]'
-                    : 'border-white/10 bg-white/[0.035] text-slate-300 hover:border-cyan/25 hover:bg-cyan/10 hover:text-cyan-50',
+                    ? "border-cyan/35 bg-cyan-400/15 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.08)]"
+                    : "border-white/10 bg-white/[0.035] text-slate-300 hover:border-cyan/25 hover:bg-cyan/10 hover:text-cyan-50",
                 )}
                 onClick={() => onFilterChange?.(item.value)}
               >
@@ -677,14 +808,19 @@ function WalletHistoryCard({
           <div className="overflow-hidden rounded-[22px] border border-white/8 bg-[rgba(255,255,255,0.025)]">
             <div className="divide-y divide-white/[0.06]">
               {items.map((item) =>
-                type === 'request' ? (
+                type === "request" ? (
                   <DepositHistoryRow
                     key={(item as DepositRequest).id}
                     request={item as DepositRequest}
-                    onViewDetail={() => onViewDetail?.((item as DepositRequest).id)}
+                    onViewDetail={() =>
+                      onViewDetail?.((item as DepositRequest).id)
+                    }
                   />
                 ) : (
-                  <TransactionHistoryRow key={(item as WalletTransaction).id} transaction={item as WalletTransaction} />
+                  <TransactionHistoryRow
+                    key={(item as WalletTransaction).id}
+                    transaction={item as WalletTransaction}
+                  />
                 ),
               )}
             </div>
@@ -699,19 +835,45 @@ function WalletHistoryCard({
   );
 }
 
-function WalletQuickActions({ onAction }: { onAction: (action: QuickActionTarget) => void }) {
+function WalletQuickActions({
+  onAction,
+}: {
+  onAction: (action: QuickActionTarget) => void;
+}) {
   const actions = [
-    { label: 'Nạp tiền', description: 'Tạo yêu cầu nạp tiền vào ví của bạn.', icon: <WalletCards size={22} />, action: 'deposit' as const },
-    { label: 'Lịch sử giao dịch', description: 'Xem lịch sử nạp tiền và chi tiêu.', icon: <History size={22} />, action: 'transactions' as const },
-    { label: 'Yêu cầu nạp', description: 'Quản lý các yêu cầu nạp tiền của bạn.', icon: <ReceiptText size={22} />, action: 'requests' as const },
-    { label: 'Hỗ trợ', description: 'Liên hệ hỗ trợ khi bạn cần giúp đỡ.', icon: <Headset size={22} />, action: 'support' as const },
+    {
+      label: "Nạp tiền",
+      description: "Tạo yêu cầu nạp tiền vào ví của bạn.",
+      icon: <WalletCards size={22} />,
+      action: "deposit" as const,
+    },
+    {
+      label: "Lịch sử giao dịch",
+      description: "Xem lịch sử nạp tiền và chi tiêu.",
+      icon: <History size={22} />,
+      action: "transactions" as const,
+    },
+    {
+      label: "Yêu cầu nạp",
+      description: "Quản lý các yêu cầu nạp tiền của bạn.",
+      icon: <ReceiptText size={22} />,
+      action: "requests" as const,
+    },
+    {
+      label: "Hỗ trợ",
+      description: "Liên hệ hỗ trợ khi bạn cần giúp đỡ.",
+      icon: <Headset size={22} />,
+      action: "support" as const,
+    },
   ] as const;
 
   return (
     <section className={PANEL_CLASS}>
       <div className="flex items-end justify-between gap-4 px-5 pt-5 sm:px-6 sm:pt-6">
         <div className="grid gap-1">
-          <h2 className="m-0 text-[1.5rem] font-black tracking-[-0.03em] text-white sm:text-[1.7rem]">Thao tác nhanh</h2>
+          <h2 className="m-0 text-[1.5rem] font-black tracking-[-0.03em] text-white sm:text-[1.7rem]">
+            Thao tác nhanh
+          </h2>
         </div>
       </div>
 
@@ -748,12 +910,21 @@ function WalletQuickActionCard({
       onClick={onClick}
     >
       <div className="flex items-start justify-between gap-3">
-        <span className="grid size-11 place-items-center rounded-[16px] border border-cyan/15 bg-cyan/10 text-cyan-50">{icon}</span>
-        <ArrowRight size={18} className="mt-1 text-slate-500 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-cyan-200" />
+        <span className="grid size-11 place-items-center rounded-[16px] border border-cyan/15 bg-cyan/10 text-cyan-50">
+          {icon}
+        </span>
+        <ArrowRight
+          size={18}
+          className="mt-1 text-slate-500 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-cyan-200"
+        />
       </div>
       <div className="grid gap-1">
-        <strong className="text-[0.98rem] font-black text-white">{label}</strong>
-        <span className="max-w-[22ch] text-[0.9rem] leading-6 text-slate-400">{description}</span>
+        <strong className="text-[0.98rem] font-black text-white">
+          {label}
+        </strong>
+        <span className="max-w-[22ch] text-[0.9rem] leading-6 text-slate-400">
+          {description}
+        </span>
       </div>
     </button>
   );
@@ -772,32 +943,69 @@ function WalletStatCard({
 }) {
   return (
     <article className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-[22px] border border-white/10 bg-[rgba(255,255,255,0.03)] p-4 shadow-[0_12px_28px_rgba(2,6,23,0.14)]">
-      <span className={classNames('grid size-11 place-items-center rounded-[16px] border', iconClassName)}>{icon}</span>
+      <span
+        className={classNames(
+          "grid size-11 place-items-center rounded-[16px] border",
+          iconClassName,
+        )}
+      >
+        {icon}
+      </span>
       <div className="grid gap-1">
-        <span className="text-[0.9rem] font-semibold text-slate-400">{label}</span>
-        <strong className="text-[clamp(1.2rem,1.65vw,1.55rem)] font-black tracking-[-0.04em] text-white tabular-nums">{value}</strong>
+        <span className="text-[0.9rem] font-semibold text-slate-400">
+          {label}
+        </span>
+        <strong className="text-[clamp(1.2rem,1.65vw,1.55rem)] font-black tracking-[-0.04em] text-white tabular-nums">
+          {value}
+        </strong>
       </div>
     </article>
   );
 }
 
-function DepositHistoryRow({ onViewDetail, request }: { onViewDetail?: () => void; request: DepositRequest }) {
+function DepositHistoryRow({
+  onViewDetail,
+  request,
+}: {
+  onViewDetail?: () => void;
+  request: DepositRequest;
+}) {
   const status = getDepositRequestStatus(request.status);
 
   return (
     <div className="grid gap-3 px-4 py-4 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
       <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3">
-        <span className={classNames('grid size-11 place-items-center rounded-[16px] border', status.iconClassName)}>{status.icon}</span>
+        <span
+          className={classNames(
+            "grid size-11 place-items-center rounded-[16px] border",
+            status.iconClassName,
+          )}
+        >
+          {status.icon}
+        </span>
         <div className="min-w-0">
-          <strong className="block text-[0.98rem] font-black tracking-[-0.02em] text-white">{formatCurrency(request.amount)}</strong>
-          <span className="mt-0.5 block break-words font-mono text-xs font-semibold text-slate-400">#{request.code}</span>
+          <strong className="block text-[0.98rem] font-black tracking-[-0.02em] text-white">
+            {formatCurrency(request.amount)}
+          </strong>
+          <span className="mt-0.5 block break-words font-mono text-xs font-semibold text-slate-400">
+            #{request.code}
+          </span>
         </div>
       </div>
 
-      <div className="hidden text-sm leading-6 text-slate-300 lg:block">{formatShortDateTime(request.createdAt)}</div>
+      <div className="hidden text-sm leading-6 text-slate-300 lg:block">
+        {formatShortDateTime(request.createdAt)}
+      </div>
 
       <div className="grid justify-items-start gap-2 lg:justify-items-end">
-        <span className={classNames('inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold', getStatusBadgeClass(status.badgeVariant))}>{status.label}</span>
+        <span
+          className={classNames(
+            "inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold",
+            getStatusBadgeClass(status.badgeVariant),
+          )}
+        >
+          {status.label}
+        </span>
         <button
           type="button"
           className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-bold text-slate-100 transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan/25 hover:bg-cyan/10 hover:text-cyan-50"
@@ -810,30 +1018,53 @@ function DepositHistoryRow({ onViewDetail, request }: { onViewDetail?: () => voi
   );
 }
 
-function TransactionHistoryRow({ transaction }: { transaction: WalletTransaction }) {
+function TransactionHistoryRow({
+  transaction,
+}: {
+  transaction: WalletTransaction;
+}) {
   const meta = getWalletTransactionMeta(transaction.type);
-  const amountPrefix = meta.decrease ? '-' : '+';
-  const amountClassName = meta.decrease ? 'text-rose-300' : 'text-emerald-300';
+  const amountPrefix = meta.decrease ? "-" : "+";
+  const amountClassName = meta.decrease ? "text-rose-300" : "text-emerald-300";
 
   return (
     <div className="grid gap-3 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
       <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3">
-        <span className={classNames('grid size-11 place-items-center rounded-[16px] border', meta.iconClassName)}>{meta.icon}</span>
+        <span
+          className={classNames(
+            "grid size-11 place-items-center rounded-[16px] border",
+            meta.iconClassName,
+          )}
+        >
+          {meta.icon}
+        </span>
         <div className="min-w-0">
-          <strong className="block text-[0.98rem] font-black tracking-[-0.02em] text-white">{meta.label}</strong>
-          <span className="mt-0.5 block break-words text-sm leading-6 text-slate-300">{transaction.description || `Giao dịch ví #${transaction.id}`}</span>
+          <strong className="block text-[0.98rem] font-black tracking-[-0.02em] text-white">
+            {meta.label}
+          </strong>
+          <span className="mt-0.5 block break-words text-sm leading-6 text-slate-300">
+            {transaction.description || `Giao dịch ví #${transaction.id}`}
+          </span>
           <span className="mt-1 block text-xs font-medium text-slate-500">
-            Số dư trước: {formatCurrency(transaction.balanceBefore)} · Số dư sau: {formatCurrency(transaction.balanceAfter)}
+            Số dư trước: {formatCurrency(transaction.balanceBefore)} · Số dư
+            sau: {formatCurrency(transaction.balanceAfter)}
           </span>
         </div>
       </div>
 
       <div className="grid justify-items-start gap-2 sm:justify-items-end">
-        <strong className={classNames('text-lg font-black tabular-nums tracking-[-0.02em]', amountClassName)}>
+        <strong
+          className={classNames(
+            "text-lg font-black tabular-nums tracking-[-0.02em]",
+            amountClassName,
+          )}
+        >
           {amountPrefix}
           {formatCurrency(transaction.amount)}
         </strong>
-        <span className="text-xs font-medium text-slate-500">{formatShortDateTime(transaction.createdAt)}</span>
+        <span className="text-xs font-medium text-slate-500">
+          {formatShortDateTime(transaction.createdAt)}
+        </span>
       </div>
     </div>
   );
@@ -855,7 +1086,10 @@ function WalletLoadingState() {
         <div className="h-[420px] animate-pulse rounded-[30px] border border-white/10 bg-white/[0.03]" />
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="h-[116px] animate-pulse rounded-[22px] border border-white/10 bg-white/[0.03]" />
+            <div
+              key={index}
+              className="h-[116px] animate-pulse rounded-[22px] border border-white/10 bg-white/[0.03]"
+            />
           ))}
         </div>
         <div className="grid gap-6 xl:grid-cols-2">
@@ -872,7 +1106,10 @@ function WalletHistorySkeleton() {
   return (
     <div className="grid gap-3">
       {Array.from({ length: 5 }).map((_, index) => (
-        <div key={index} className="grid gap-3 rounded-[22px] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <div
+          key={index}
+          className="grid gap-3 rounded-[22px] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+        >
           <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3">
             <div className="size-11 animate-pulse rounded-[16px] bg-white/[0.06]" />
             <div className="grid gap-2">
@@ -892,30 +1129,33 @@ function WalletHistorySkeleton() {
 }
 
 function getWalletTransactionMeta(type: WalletTransactionType) {
-  const meta: Record<WalletTransactionType, { decrease: boolean; icon: ReactNode; label: string; iconClassName: string }> = {
+  const meta: Record<
+    WalletTransactionType,
+    { decrease: boolean; icon: ReactNode; label: string; iconClassName: string }
+  > = {
     1: {
       decrease: false,
       icon: <ArrowDownLeft size={16} />,
-      label: 'Nạp ví',
-      iconClassName: 'border-emerald-400/15 bg-emerald-400/10 text-emerald-300',
+      label: "Nạp ví",
+      iconClassName: "border-emerald-400/15 bg-emerald-400/10 text-emerald-300",
     },
     2: {
       decrease: true,
       icon: <ArrowUpRight size={16} />,
-      label: 'Rút tiền',
-      iconClassName: 'border-rose-400/15 bg-rose-400/10 text-rose-300',
+      label: "Rút tiền",
+      iconClassName: "border-rose-400/15 bg-rose-400/10 text-rose-300",
     },
     3: {
       decrease: true,
       icon: <CreditCard size={16} />,
-      label: 'Thanh toán đơn hàng',
-      iconClassName: 'border-amber-400/15 bg-amber-400/10 text-amber-300',
+      label: "Thanh toán đơn hàng",
+      iconClassName: "border-amber-400/15 bg-amber-400/10 text-amber-300",
     },
     4: {
       decrease: false,
       icon: <CheckCircle2 size={16} />,
-      label: 'Hoàn tiền',
-      iconClassName: 'border-sky-400/15 bg-sky-400/10 text-sky-200',
+      label: "Hoàn tiền",
+      iconClassName: "border-sky-400/15 bg-sky-400/10 text-sky-200",
     },
   };
 
@@ -925,73 +1165,75 @@ function getWalletTransactionMeta(type: WalletTransactionType) {
 function resolveBankDisplayName(bankId?: string): string {
   const normalized = bankId?.trim().toLowerCase();
   if (!normalized) {
-    return 'Ngân hàng liên kết';
+    return "Ngân hàng liên kết";
   }
 
-  if (normalized === 'vcb' || normalized === 'vietcombank') {
-    return 'Vietcombank';
+  if (normalized === "vcb" || normalized === "vietcombank") {
+    return "Vietcombank";
   }
 
-  return bankId ?? 'Ngân hàng liên kết';
+  return bankId ?? "Ngân hàng liên kết";
 }
 
 function resolveBankLogoLabel(bankId?: string) {
   const normalized = bankId?.trim().toLowerCase();
   if (!normalized) {
-    return 'NH';
+    return "NH";
   }
 
-  if (normalized === 'vcb' || normalized === 'vietcombank') {
-    return 'VCB';
+  if (normalized === "vcb" || normalized === "vietcombank") {
+    return "VCB";
   }
 
   return normalized.slice(0, 3).toUpperCase();
 }
 
-function getStatusBadgeClass(variant: ReturnType<typeof getDepositRequestStatus>['badgeVariant']) {
-  if (variant === 'success') {
-    return 'border-emerald-400/25 bg-emerald-400/10 text-emerald-200';
+function getStatusBadgeClass(
+  variant: ReturnType<typeof getDepositRequestStatus>["badgeVariant"],
+) {
+  if (variant === "success") {
+    return "border-emerald-400/25 bg-emerald-400/10 text-emerald-200";
   }
 
-  if (variant === 'danger') {
-    return 'border-rose-400/25 bg-rose-400/10 text-rose-200';
+  if (variant === "danger") {
+    return "border-rose-400/25 bg-rose-400/10 text-rose-200";
   }
 
-  if (variant === 'accent') {
-    return 'border-cyan-400/30 bg-cyan-400/10 text-cyan-50';
+  if (variant === "accent") {
+    return "border-cyan-400/30 bg-cyan-400/10 text-cyan-50";
   }
 
-  return 'border-amber-400/30 bg-amber-400/10 text-amber-200';
+  return "border-amber-400/30 bg-amber-400/10 text-amber-200";
 }
 
 function formatShortDateTime(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return '--';
+    return "--";
   }
 
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: false,
   }).format(date);
 }
 
 async function copyValue(value: string) {
   if (!value.trim()) {
-    toast.error('Không có nội dung để sao chép.');
+    toast.error("Không có nội dung để sao chép.");
     return false;
   }
 
   try {
     await navigator.clipboard.writeText(value);
-    toast.success('Đã sao chép.');
+    toast.success("Đã sao chép.");
     return true;
   } catch {
-    toast.error('Không thể sao chép lúc này.');
+    toast.error("Không thể sao chép lúc này.");
     return false;
   }
 }

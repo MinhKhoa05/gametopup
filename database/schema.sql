@@ -115,7 +115,6 @@ CREATE TABLE IF NOT EXISTS wallet_deposit_requests (
     amount DECIMAL(18, 2) NOT NULL,
     code VARCHAR(64) NOT NULL UNIQUE,
     transfer_content VARCHAR(128) NOT NULL,
-    qr_image_url TEXT NOT NULL,
     status INT NOT NULL, -- 1: Pending, 2: UserConfirmed, 3: Approved, 4: Rejected
     user_confirmed_at DATETIME NULL,
     reviewed_by BIGINT SIGNED NULL,

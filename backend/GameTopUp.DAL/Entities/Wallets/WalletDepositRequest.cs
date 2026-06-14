@@ -17,8 +17,6 @@ public class WalletDepositRequest
 
     public string TransferContent { get; set; } = string.Empty;
 
-    public string QrImageUrl { get; set; } = string.Empty;
-
     public WalletDepositRequestStatus Status { get; set; } = WalletDepositRequestStatus.Pending;
 
     public DateTime? UserConfirmedAt { get; set; }
@@ -37,8 +35,7 @@ public class WalletDepositRequest
         long userId,
         decimal amount,
         string code,
-        string transferContent,
-        string qrImageUrl)
+        string transferContent)
     {
         var now = DateTime.UtcNow;
 
@@ -48,7 +45,6 @@ public class WalletDepositRequest
             Amount = amount,
             Code = code,
             TransferContent = transferContent,
-            QrImageUrl = qrImageUrl,
             Status = WalletDepositRequestStatus.Pending,
             CreatedAt = now,
             UpdatedAt = now

@@ -49,10 +49,14 @@ public class WalletDepositRequestServiceTests
         var response = await _service.CreateAsync(new UserContext { UserId = 7 }, 100000m);
 
         response.Id.Should().Be(123);
-        response.Code.Should().StartWith("GTU7");
-        response.TransferContent.Should().StartWith("NAP GTU7");
+        response.Code.Should().MatchRegex(@"^GTU-\d{4}-\d{5}$");
+        response.TransferContent.Should().Be(response.Code);
+        response.QrImageUrl.Should().Contain("-compact2.png");
+        response.QrImageUrl.Should().NotContain("?");
         created.Should().NotBeNull();
         created!.Amount.Should().Be(100000m);
+        created.Code.Should().MatchRegex(@"^GTU-\d{4}-\d{5}$");
+        created.TransferContent.Should().Be(created.Code);
         created.Status.Should().Be(WalletDepositRequestStatus.Pending);
     }
 
@@ -76,8 +80,9 @@ public class WalletDepositRequestServiceTests
         var response = await service.CreateAsync(new UserContext { UserId = 7 }, 100000m);
 
         response.QrImageUrl.Should().Contain("-compact2.png");
+        response.QrImageUrl.Should().NotContain("?");
         created.Should().NotBeNull();
-        created!.QrImageUrl.Should().Contain("-compact2.png");
+        created!.Status.Should().Be(WalletDepositRequestStatus.Pending);
     }
 
     [Theory]
@@ -108,7 +113,7 @@ public class WalletDepositRequestServiceTests
     public async Task ConfirmTransferAsync_ShouldThrow_WhenRequestBelongsToAnotherUser()
     {
         _repository.Setup(repo => repo.GetWithLockByIdAsync(5))
-            .ReturnsAsync(WalletDepositRequest.Create(9, 100000m, "GTU9", "NAP GTU9", "https://qr.test"));
+            .ReturnsAsync(WalletDepositRequest.Create(9, 100000m, "GTU-1406-40734", "GTU-1406-40734"));
 
         var act = async () => await _service.ConfirmTransferAsync(5, new UserContext { UserId = 7 });
 
@@ -119,7 +124,7 @@ public class WalletDepositRequestServiceTests
     [Fact]
     public async Task ConfirmTransferAsync_ShouldBeIdempotent_WhenRequestWasAlreadyConfirmed()
     {
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7", "NAP GTU7", "https://qr.test");
+        var request = WalletDepositRequest.Create(7, 100000m, "GTU-1406-40734", "GTU-1406-40734");
         request.MarkUserConfirmed(DateTime.UtcNow);
         _repository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
@@ -133,7 +138,7 @@ public class WalletDepositRequestServiceTests
     [Fact]
     public async Task ConfirmTransferAsync_ShouldThrow_WhenRequestIsNotPending()
     {
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7", "NAP GTU7", "https://qr.test");
+        var request = WalletDepositRequest.Create(7, 100000m, "GTU-1406-40734", "GTU-1406-40734");
         request.Status = WalletDepositRequestStatus.Approved;
         _repository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
@@ -159,7 +164,7 @@ public class WalletDepositRequestServiceTests
     [Fact]
     public async Task MarkApprovedAsync_ShouldBeIdempotent_WhenAlreadyApproved()
     {
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7", "NAP GTU7", "https://qr.test");
+        var request = WalletDepositRequest.Create(7, 100000m, "GTU-1406-40734", "GTU-1406-40734");
         request.Status = WalletDepositRequestStatus.Approved;
 
         await _service.MarkApprovedAsync(request, new UserContext { UserId = 1, Role = GameTopUp.DAL.Entities.Users.UserRole.Admin });
@@ -170,7 +175,7 @@ public class WalletDepositRequestServiceTests
     [Fact]
     public async Task MarkApprovedAsync_ShouldThrow_WhenRequestWasNotConfirmedByUser()
     {
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7", "NAP GTU7", "https://qr.test");
+        var request = WalletDepositRequest.Create(7, 100000m, "GTU-1406-40734", "GTU-1406-40734");
 
         var act = async () => await _service.MarkApprovedAsync(request, new UserContext { UserId = 1, Role = GameTopUp.DAL.Entities.Users.UserRole.Admin });
 
@@ -181,7 +186,7 @@ public class WalletDepositRequestServiceTests
     [Fact]
     public async Task MarkRejectedAsync_ShouldBeIdempotent_WhenAlreadyRejected()
     {
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7", "NAP GTU7", "https://qr.test");
+        var request = WalletDepositRequest.Create(7, 100000m, "GTU-1406-40734", "GTU-1406-40734");
         request.Status = WalletDepositRequestStatus.Rejected;
 
         await _service.MarkRejectedAsync(request, new UserContext { UserId = 1, Role = GameTopUp.DAL.Entities.Users.UserRole.Admin });
@@ -192,7 +197,7 @@ public class WalletDepositRequestServiceTests
     [Fact]
     public async Task MarkRejectedAsync_ShouldThrow_WhenRequestWasAlreadyApproved()
     {
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7", "NAP GTU7", "https://qr.test");
+        var request = WalletDepositRequest.Create(7, 100000m, "GTU-1406-40734", "GTU-1406-40734");
         request.Status = WalletDepositRequestStatus.Approved;
 
         var act = async () => await _service.MarkRejectedAsync(request, new UserContext { UserId = 1, Role = GameTopUp.DAL.Entities.Users.UserRole.Admin });
@@ -216,7 +221,7 @@ public class WalletDepositRequestServiceTests
     [Fact]
     public async Task MapToResponse_ShouldIncludeBankDetailsAndCurrentStatus()
     {
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7", "NAP GTU7", "https://qr.test");
+        var request = WalletDepositRequest.Create(7, 100000m, "GTU-1406-40734", "GTU-1406-40734");
         request.Id = 99;
         request.Status = WalletDepositRequestStatus.UserConfirmed;
 
@@ -225,9 +230,9 @@ public class WalletDepositRequestServiceTests
         response.Id.Should().Be(99);
         response.UserId.Should().Be(7);
         response.Amount.Should().Be(100000m);
-        response.Code.Should().Be("GTU7");
-        response.TransferContent.Should().Be("NAP GTU7");
-        response.QrImageUrl.Should().Be("https://qr.test");
+        response.Code.Should().Be("GTU-1406-40734");
+        response.TransferContent.Should().Be("GTU-1406-40734");
+        response.QrImageUrl.Should().Contain("https://img.vietqr.io/image/");
         response.BankId.Should().Be("VCB");
         response.AccountNo.Should().Be("123456789");
         response.AccountName.Should().Be("GameTopUp");

@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Security.Cryptography;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Wallets;
 using GameTopUp.BLL.Exceptions;
@@ -26,10 +28,9 @@ public sealed class WalletDepositRequestService
         ValidateAmount(amount);
         ValidateVietQrSettings();
 
-        var code = CreateDepositCode(context.UserId);
-        var transferContent = $"NAP {code}";
-        var qrImageUrl = BuildQrImageUrl(amount, transferContent);
-        var request = WalletDepositRequest.Create(context.UserId, amount, code, transferContent, qrImageUrl);
+        var code = CreateDepositCode();
+        var transferContent = code;
+        var request = WalletDepositRequest.Create(context.UserId, amount, code, transferContent);
 
         request.Id = await _repository.CreateAsync(request);
         return MapToResponse(request);
@@ -122,7 +123,7 @@ public sealed class WalletDepositRequestService
             Amount = request.Amount,
             Code = request.Code,
             TransferContent = request.TransferContent,
-            QrImageUrl = request.QrImageUrl,
+            QrImageUrl = BuildQrImageUrl(),
             BankId = _vietQrSettings.BankId,
             AccountNo = _vietQrSettings.AccountNo,
             AccountName = _vietQrSettings.AccountName,
@@ -159,19 +160,21 @@ public sealed class WalletDepositRequestService
         }
     }
 
-    private string BuildQrImageUrl(decimal amount, string transferContent)
+    private string BuildQrImageUrl()
     {
         var bankId = Uri.EscapeDataString(_vietQrSettings.BankId.Trim());
         var accountNo = Uri.EscapeDataString(_vietQrSettings.AccountNo.Trim());
         var template = string.IsNullOrWhiteSpace(_vietQrSettings.Template) ? "compact2" : _vietQrSettings.Template.Trim();
-        var accountName = Uri.EscapeDataString(_vietQrSettings.AccountName.Trim());
-        var addInfo = Uri.EscapeDataString(transferContent);
 
-        return $"https://img.vietqr.io/image/{bankId}-{accountNo}-{template}.png?amount={amount:0}&addInfo={addInfo}&accountName={accountName}";
+        return $"https://img.vietqr.io/image/{bankId}-{accountNo}-{template}.png";
     }
 
-    private static string CreateDepositCode(long userId)
+    private static string CreateDepositCode()
     {
-        return $"GTU{userId}{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+        var localNow = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7));
+        var datePart = localNow.ToString("ddMM", CultureInfo.InvariantCulture);
+        var randomPart = RandomNumberGenerator.GetInt32(10000, 100000).ToString(CultureInfo.InvariantCulture);
+
+        return $"GTU-{datePart}-{randomPart}";
     }
 }

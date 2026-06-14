@@ -176,8 +176,7 @@ public static partial class TestDatabaseExtensions
             userId,
             amount,
             requestCode,
-            $"Deposit content {requestCode}",
-            $"https://qr.test/{requestCode}");
+            $"Deposit content {requestCode}");
 
         request.Status = status;
         customize?.Invoke(request);

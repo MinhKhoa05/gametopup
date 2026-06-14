@@ -118,7 +118,7 @@ public class EntityBehaviorTests
     [Fact]
     public void WalletDepositRequestCreate_ShouldStartPendingAndAllowTransitions()
     {
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7", "NAP GTU7", "https://qr.test");
+        var request = WalletDepositRequest.Create(7, 100000m, "GTU7", "NAP GTU7");
         var confirmedAt = DateTime.UtcNow;
 
         request.Status.Should().Be(WalletDepositRequestStatus.Pending);

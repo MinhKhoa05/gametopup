@@ -43,7 +43,7 @@ public class WalletUseCaseTests : IDisposable
     public async Task ApproveDepositRequestAsync_ShouldCreditWalletAndMarkRequestApproved()
     {
         WalletTransaction? createdTransaction = null;
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7CODE", "NAP GTU7CODE", "https://qr.test/GTU7CODE");
+        var request = WalletDepositRequest.Create(7, 100000m, "GTU7CODE", "NAP GTU7CODE");
         request.MarkUserConfirmed(DateTime.UtcNow);
 
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
@@ -84,7 +84,7 @@ public class WalletUseCaseTests : IDisposable
     [Fact]
     public async Task ApproveDepositRequestAsync_ShouldBeIdempotent_WhenRequestIsAlreadyApproved()
     {
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7CODE", "NAP GTU7CODE", "https://qr.test/GTU7CODE");
+        var request = WalletDepositRequest.Create(7, 100000m, "GTU7CODE", "NAP GTU7CODE");
         request.Status = WalletDepositRequestStatus.Approved;
 
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
@@ -106,7 +106,7 @@ public class WalletUseCaseTests : IDisposable
     [Fact]
     public async Task RejectDepositRequestAsync_ShouldMarkRequestRejected()
     {
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7CODE", "NAP GTU7CODE", "https://qr.test/GTU7CODE");
+        var request = WalletDepositRequest.Create(7, 100000m, "GTU7CODE", "NAP GTU7CODE");
         request.MarkUserConfirmed(DateTime.UtcNow);
 
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
