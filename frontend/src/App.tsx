@@ -9,17 +9,14 @@ import { BottomNav } from '@/app/components/BottomNav';
 import { SiteHeader } from '@/app/components/SiteHeader';
 import { Footer } from '@/app/site-shell/Footer';
 import { AppRouter } from '@/app/router/AppRouter';
-import { ROUTE_PATHS } from '@/app/router/routes';
+import { ROUTE_PATHS, isAdminRoutePath, isAuthRoutePath, isGameDetailRoutePath } from '@/app/router/routes';
 
 export function App() {
   const location = useLocation();
   const navigate = useNavigate();
-  const isAdminRoute = location.pathname === ROUTE_PATHS.admin || location.pathname.startsWith(`${ROUTE_PATHS.admin}/`);
-  const isAuthRoute =
-    location.pathname === ROUTE_PATHS.login ||
-    location.pathname === ROUTE_PATHS.register ||
-    location.pathname === ROUTE_PATHS.authLegacy;
-  const isTopupRoute = location.pathname.startsWith('/topup/') || (location.pathname.startsWith('/games/') && location.pathname !== ROUTE_PATHS.games);
+  const isAdminRoute = isAdminRoutePath(location.pathname);
+  const isAuthRoute = isAuthRoutePath(location.pathname);
+  const isTopupRoute = isGameDetailRoutePath(location.pathname);
   const footerVariant = location.pathname === ROUTE_PATHS.home ? 'full' : 'minimal';
   const [sessionExpiredAt, setSessionExpiredAt] = useState<number | null>(null);
 
@@ -43,7 +40,7 @@ export function App() {
     setSessionExpiredAt(null);
     navigate(ROUTE_PATHS.login, {
       replace: true,
-      state: { from: location.pathname },
+      state: { from: `${location.pathname}${location.search}${location.hash}` },
     });
   }, [location.pathname, navigate, sessionExpiredAt]);
 

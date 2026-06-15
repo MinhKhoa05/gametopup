@@ -1,10 +1,14 @@
 export { Badge } from './Badge';
 export { Button } from './Button';
+export { FilterChip } from './FilterChip';
+export { FilterSelectField } from './FilterSelectField';
 export { EmptyState } from './EmptyState';
 export { Field } from './Field';
 export { FormActions } from './FormActions';
 export { ImageBox, ImagePicker } from './image';
 export { IconBox } from './IconBox';
+export { PanelShell } from './PanelShell';
+export { DetailRow } from './DetailRow';
 export { PageHero } from './PageHero';
 export { TrustSection } from './TrustSection';
 export { RecordRow } from './RecordRow';

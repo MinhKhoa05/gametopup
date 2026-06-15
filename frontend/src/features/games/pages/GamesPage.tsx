@@ -1,6 +1,6 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Gamepad2, Heart, Search, Sparkles } from 'lucide-react';
+import { Gamepad2, Heart, Sparkles } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { routes } from '@/app/router/routes';
 import type { Game } from '@/features/games/types';
@@ -16,8 +16,7 @@ import {
   type CatalogPlatformFilter,
   type CatalogSortKey,
 } from '@/features/games/lib/catalog';
-import { Badge, Button, IconBox, ImageBox, EmptyState } from '@/shared/components';
-import { classNames } from '@/shared/lib/classNames';
+import { Badge, Button, EmptyState, FilterChip, FilterSelectField, IconBox, ImageBox, PanelShell, PageHero, SearchBar } from '@/shared/components';
 
 const PLATFORM_OPTIONS: Array<{ value: CatalogPlatformFilter; label: string }> = [
   { value: 'all', label: 'Nền tảng: Tất cả' },
@@ -48,9 +47,6 @@ const QUICK_TAGS: Array<{ value: CatalogCategoryFilter; label: string }> = [
   { value: 'pc', label: 'PC' },
   { value: 'console', label: 'Console' },
 ];
-
-const PANEL_CLASS =
-  'rounded-[26px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(22,27,34,0.95),rgba(18,24,34,0.98))] shadow-[0_16px_38px_rgba(2,6,23,0.18)]';
 
 export function GamesPage() {
   const navigate = useNavigate();
@@ -84,50 +80,42 @@ export function GamesPage() {
   return (
     <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
         <div className="grid gap-6">
-          <header className={PANEL_CLASS}>
-            <div className="grid gap-5 px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
-              <div className="flex items-start gap-4">
-                <IconBox size="lg" className="h-[62px] w-[62px] rounded-[18px] border-cyan/20 bg-cyan/10 text-cyan-50">
-                  <Gamepad2 size={30} strokeWidth={1.8} />
-                </IconBox>
-                <div className="grid gap-2">
-                  <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">KHO GAME</p>
-                  <h1 className="m-0 text-[clamp(2.3rem,3.3vw,3.6rem)] font-black leading-[0.96] tracking-[-0.06em] text-white text-balance">
-                    Kho game
-                  </h1>
-                  <p className="max-w-3xl text-[0.98rem] leading-7 text-slate-400">
-                    Khám phá và nạp ngay cho tựa game yêu thích của bạn.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </header>
+          <PageHero
+            eyebrow="KHO GAME"
+            visual={
+              <IconBox size="lg" tone="primary" className="h-[62px] w-[62px] rounded-[18px]">
+                <Gamepad2 size={30} strokeWidth={1.8} />
+              </IconBox>
+            }
+            title="Kho game"
+            description="Khám phá và nạp ngay cho tựa game yêu thích của bạn."
+          />
 
-          <section className={PANEL_CLASS}>
+          <PanelShell>
             <div className="grid gap-4 px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
               <div className="grid gap-3 xl:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
-                <SearchField value={query} onChange={setQuery} />
-                <SelectField value={platformFilter} onChange={(value) => setPlatformFilter(value as CatalogPlatformFilter)}>
+                <SearchBar value={query} onChange={setQuery} placeholder="Tìm kiếm game..." />
+                <FilterSelectField value={platformFilter} onChange={(value) => setPlatformFilter(value as CatalogPlatformFilter)}>
                   {PLATFORM_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
-                </SelectField>
-                <SelectField value={categoryFilter} onChange={(value) => setCategoryFilter(value as CatalogCategoryFilter)}>
+                </FilterSelectField>
+                <FilterSelectField value={categoryFilter} onChange={(value) => setCategoryFilter(value as CatalogCategoryFilter)}>
                   {CATEGORY_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
-                </SelectField>
-                <SelectField value={sortKey} onChange={(value) => setSortKey(value as CatalogSortKey)}>
+                </FilterSelectField>
+                <FilterSelectField value={sortKey} onChange={(value) => setSortKey(value as CatalogSortKey)}>
                   {SORT_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
-                </SelectField>
+                </FilterSelectField>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
@@ -135,24 +123,18 @@ export function GamesPage() {
                   const active = tag.value === categoryFilter;
 
                   return (
-                    <button
+                    <FilterChip
                       key={tag.value}
-                      type="button"
-                      className={classNames(
-                        'inline-flex min-h-10 items-center rounded-full border px-4 text-sm font-semibold transition-all duration-200',
-                        active
-                          ? 'border-cyan/35 bg-cyan/12 text-cyan-100 shadow-[0_0_0_1px_rgba(34,211,238,0.08)]'
-                          : 'border-white/10 bg-white/[0.04] text-slate-300 hover:-translate-y-px hover:border-cyan/20 hover:bg-cyan/10 hover:text-cyan-50',
-                      )}
+                      active={active}
                       onClick={() => setCategoryFilter(tag.value)}
                     >
                       {tag.label}
-                    </button>
+                    </FilterChip>
                   );
                 })}
               </div>
             </div>
-          </section>
+          </PanelShell>
 
           {gamesQuery.isPending && !games.length ? (
             <GameCatalogGrid loading />
@@ -183,49 +165,6 @@ export function GamesPage() {
           )}
         </div>
     </AppPageContainer>
-  );
-}
-
-function SearchField({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="flex min-h-14 items-center gap-3 rounded-[18px] border border-white/10 bg-[rgba(7,16,31,0.72)] px-4 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 focus-within:border-cyan/60 focus-within:bg-[rgba(10,24,44,0.92)] focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]">
-      <Search size={18} className="shrink-0 text-slate-400" />
-      <input
-        className="w-full border-0 bg-transparent p-0 text-sm text-white outline-none placeholder:text-slate-500 focus:ring-0"
-        placeholder="Tìm kiếm game..."
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      />
-    </label>
-  );
-}
-
-function SelectField({
-  children,
-  onChange,
-  value,
-}: {
-  children: ReactNode;
-  onChange: (value: string) => void;
-  value: string;
-}) {
-  return (
-    <label className="relative flex min-h-14 items-center rounded-[18px] border border-white/10 bg-[rgba(7,16,31,0.72)] px-4 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 focus-within:border-cyan/60 focus-within:bg-[rgba(10,24,44,0.92)] focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]">
-      <select
-        className="w-full appearance-none border-0 bg-transparent p-0 pr-7 text-sm font-medium text-white outline-none focus:ring-0"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        {children}
-      </select>
-      <ChevronDown size={16} className="pointer-events-none absolute right-4 text-slate-500" />
-    </label>
   );
 }
 
@@ -270,7 +209,7 @@ function GameCard({
       </div>
 
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2 px-1">
-        <Badge variant="accent" className="w-fit rounded-full px-2.5 py-1 text-[0.72rem] font-bold">
+        <Badge tone="primary" className="w-fit rounded-full px-2.5 py-1 text-[0.72rem] font-bold">
           {platformLabel}
         </Badge>
         <button

@@ -83,7 +83,7 @@ export function PackagesAdminPanel({
         </div>
 
         <SectionHeading title="Danh sách gói nạp" />
-        <SearchBar className="mb-4" inputClassName="text-sm" value={state.query} onChange={state.setQuery} placeholder="Tìm gói nạp..." />
+        <SearchBar className="mb-4" value={state.query} onChange={state.setQuery} placeholder="Tìm gói nạp..." />
 
         {loading && games.length === 0 && state.scopedPackages.length === 0 ? (
           <div className="grid gap-2" aria-busy="true">
@@ -117,7 +117,7 @@ export function PackagesAdminPanel({
                       {formatCurrency(profit)}
                     </span>
                   </div>
-                  <Badge variant={item.isActive ? 'success' : 'default'} icon={item.isActive ? <CheckCircle2 size={14} /> : <X size={14} />}>
+                  <Badge tone={item.isActive ? 'success' : 'neutral'} icon={item.isActive ? <CheckCircle2 size={14} /> : <X size={14} />}>
                     {item.isActive ? 'Bật' : 'Tắt'}
                   </Badge>
                   <div className="flex gap-2">

@@ -16,6 +16,12 @@ type SearchBarProps = {
   value: string;
 };
 
+const searchBarBaseClassName =
+  'relative flex w-full min-w-0 items-center gap-3 rounded-[22px] border border-white/10 bg-[rgba(7,16,31,0.72)] px-4 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-[rgba(15,29,51,0.9)] focus-within:border-cyan/60 focus-within:bg-[rgba(15,29,51,0.9)] focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]';
+
+const searchInputClassName =
+  '!min-h-0 !border-0 !bg-transparent !px-0 text-base leading-6 text-white !shadow-none hover:!bg-transparent hover:!shadow-none focus:!border-transparent focus:!bg-transparent focus:!shadow-none';
+
 export function SearchBar({
   ariaLabel,
   className,
@@ -37,24 +43,18 @@ export function SearchBar({
   return (
     <label
       className={classNames(
-        dense
-          ? 'relative flex min-h-11 w-full min-w-0 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 text-slate-200 outline-none transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan/25 hover:bg-cyan/10 hover:shadow-[0_8px_24px_rgba(34,211,238,0.1)] focus-within:border-cyan/70 focus-within:bg-cyan/10 focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.14)]'
-          : 'relative flex min-h-12 w-full min-w-0 items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 text-slate-200 outline-none transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan/25 hover:bg-cyan/10 hover:shadow-[0_8px_24px_rgba(34,211,238,0.1)] focus-within:border-cyan/70 focus-within:bg-cyan/10 focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.14)]',
+        searchBarBaseClassName,
+        dense ? 'min-h-[3.25rem]' : 'min-h-[3.75rem]',
         className,
       )}
       aria-label={ariaLabel}
     >
-      <span className="pointer-events-none shrink-0 text-cyan" aria-hidden="true">
+      <span className="pointer-events-none shrink-0 text-cyan-50/90" aria-hidden="true">
         {icon ?? <Search size={size} />}
       </span>
+
       <input
-        className={classNames(
-          fieldInputClassName,
-          dense
-            ? '!min-h-0 !border-0 !bg-transparent !px-0 text-sm !shadow-none hover:!bg-transparent hover:!shadow-none focus:!border-transparent focus:!bg-transparent focus:!shadow-none'
-            : '!min-h-0 !border-0 !bg-transparent !px-0 !shadow-none hover:!bg-transparent hover:!shadow-none focus:!border-transparent focus:!bg-transparent focus:!shadow-none',
-          inputClassName,
-        )}
+        className={classNames(fieldInputClassName, searchInputClassName, inputClassName)}
         value={value}
         onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
         onKeyDown={handleKeyDown}

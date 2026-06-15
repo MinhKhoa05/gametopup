@@ -9,9 +9,8 @@ import { useGamesQuery } from '@/features/games/server';
 import { useMyOrdersQuery } from '@/features/orders/server';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
 import { useWalletBalanceQuery } from '@/features/wallet/server';
-import { Badge, Button, IconBox, ImageBox, TrustSection, EmptyState } from '@/shared/components';
+import { Badge, Button, EmptyState, IconBox, ImageBox, PanelShell, SectionHeading, TrustSection } from '@/shared/components';
 import { formatCurrency } from '@/shared/lib/format';
-import { classNames } from '@/shared/lib/classNames';
 import type { Game } from '@/features/games/types';
 import type { Order } from '@/features/orders/types';
 
@@ -22,9 +21,6 @@ type PackageCard = {
   imageUrl: string;
   ctaLabel: string;
 };
-
-const PANEL_CLASS =
-  'rounded-[26px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(22,27,34,0.94),rgba(18,24,34,0.98))] shadow-[0_18px_42px_rgba(2,6,23,0.18)]';
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -51,16 +47,19 @@ export function HomePage() {
           <FeaturedRail games={featuredGames} onPick={(game) => navigate(routes.gameDetail(game.id))} loading={isGamesLoading} />
 
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.82fr)]">
-            <section className={PANEL_CLASS}>
-              <div className="flex items-center justify-between gap-4 px-5 pt-5 sm:px-6 sm:pt-6">
-                <div className="grid gap-1">
-                  <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">BEST SELLERS</p>
-                  <h2 className="m-0 text-[1.45rem] font-black tracking-[-0.04em] text-white sm:text-[1.7rem]">Gói nạp bán chạy</h2>
-                </div>
-                <Button variant="secondary" className="rounded-[14px] px-4 text-sm font-semibold" onClick={() => navigate(routes.games())}>
-                  Xem game
-                  <Search size={16} />
-                </Button>
+            <PanelShell>
+              <div className="px-5 pt-5 sm:px-6 sm:pt-6">
+                <SectionHeading
+                  className="items-center"
+                  title="Gói nạp bán chạy"
+                  titleClassName="text-[1.45rem] sm:text-[1.7rem]"
+                  action={
+                    <Button variant="secondary" className="rounded-[14px] px-4 text-sm font-semibold" onClick={() => navigate(routes.games())}>
+                      Xem game
+                      <Search size={16} />
+                    </Button>
+                  }
+                />
               </div>
 
               <div className="px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
@@ -78,12 +77,12 @@ export function HomePage() {
                   />
                 )}
               </div>
-            </section>
+            </PanelShell>
 
             <aside className="grid gap-6">
-              <section className={classNames(PANEL_CLASS, 'overflow-hidden')}>
+              <PanelShell className="overflow-hidden">
                 <div className="grid gap-4 px-5 py-5 sm:px-6 sm:py-6">
-                  <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">VÍ CỦA BẠN</p>
+                  <SectionHeading title="Ví của bạn" />
                   <div className="text-[clamp(2.1rem,3.2vw,3rem)] font-black tracking-[-0.06em] text-cyan-300 gt-tabular">
                     {isWalletLoading ? '--' : auth.status === 'authenticated' ? formatCurrency(walletBalance) : 'Đăng nhập'}
                   </div>
@@ -97,18 +96,21 @@ export function HomePage() {
                     </Button>
                   </div>
                 </div>
-              </section>
+              </PanelShell>
 
-              <section className={PANEL_CLASS}>
-                <div className="flex items-start justify-between gap-4 px-5 pt-5 sm:px-6 sm:pt-6">
-                  <div className="grid gap-1">
-                    <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">ĐƠN GẦN ĐÂY</p>
-                    <h2 className="m-0 text-[1.3rem] font-black tracking-[-0.04em] text-white">Đơn hàng gần đây</h2>
-                  </div>
-                  <Button variant="secondary" className="rounded-[14px] px-4 text-sm font-semibold" onClick={() => navigate(routes.orders())}>
-                    Xem tất cả
-                    <ArrowRight size={16} />
-                  </Button>
+              <PanelShell>
+                <div className="px-5 pt-5 sm:px-6 sm:pt-6">
+                  <SectionHeading
+                    className="items-center"
+                    title="Đơn hàng gần đây"
+                    titleClassName="text-[1.3rem]"
+                    action={
+                      <Button variant="secondary" className="rounded-[14px] px-4 text-sm font-semibold" onClick={() => navigate(routes.orders())}>
+                        Xem tất cả
+                        <ArrowRight size={16} />
+                      </Button>
+                    }
+                  />
                 </div>
 
                 <div className="grid gap-3 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
@@ -131,12 +133,12 @@ export function HomePage() {
                       title="Đăng nhập để xem lịch sử"
                       description="Sau khi đăng nhập, các đơn hàng gần đây sẽ hiển thị tại đây."
                       actionLabel="Đăng nhập"
-                      onAction={() => navigate(routes.auth())}
+                      onAction={() => navigate(routes.login())}
                       variant="compact"
                     />
                   )}
                 </div>
-              </section>
+              </PanelShell>
             </aside>
           </div>
 
@@ -154,10 +156,10 @@ function HeroSection({
   onDeposit: () => void;
 }) {
   return (
-    <section className={classNames(PANEL_CLASS, 'overflow-hidden')}>
+    <PanelShell className="overflow-hidden">
       <div className="grid gap-8 px-5 py-5 sm:px-6 sm:py-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:items-center lg:px-7 lg:py-7">
         <div className="grid content-start gap-4">
-          <Badge variant="accent" className="w-fit rounded-full border-cyan/20 bg-cyan/10 px-3 py-1 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">
+          <Badge tone="primary" className="w-fit rounded-full border-cyan/20 bg-cyan/10 px-3 py-1 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">
             NẠP GAME UY TÍN
           </Badge>
 
@@ -206,7 +208,7 @@ function HeroSection({
           </div>
         </div>
       </div>
-    </section>
+    </PanelShell>
   );
 }
 
@@ -220,12 +222,9 @@ function FeaturedRail({
   onPick: (game: Game) => void;
 }) {
   return (
-    <section className={PANEL_CLASS}>
-      <div className="flex items-center justify-between gap-4 px-5 pt-5 sm:px-6 sm:pt-6">
-        <div className="grid gap-1">
-          <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">GAME NỔI BẬT</p>
-          <h2 className="m-0 text-[1.3rem] font-black tracking-[-0.04em] text-white">Chọn game nhanh</h2>
-        </div>
+    <PanelShell>
+      <div className="px-5 pt-5 sm:px-6 sm:pt-6">
+        <SectionHeading title="Game nổi bật" titleClassName="text-[1.3rem]" />
       </div>
 
       <div className="overflow-x-auto px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
@@ -244,10 +243,10 @@ function FeaturedRail({
               <button
                 key={game.id}
                 type="button"
-                className="group grid min-w-[92px] gap-2 text-left"
+                className="group grid min-w-[84px] gap-2 text-left"
                 onClick={() => onPick(game)}
               >
-                <div className="relative aspect-square overflow-hidden rounded-[22px] border border-white/[0.08] bg-slate-950 transition-all duration-200 group-hover:-translate-y-1 group-hover:border-cyan/30 group-hover:shadow-[0_16px_28px_rgba(2,6,23,0.16)]">
+                <div className="relative h-[84px] w-[84px] overflow-hidden rounded-[22px] border border-white/[0.08] bg-slate-950 transition-all duration-200 group-hover:-translate-y-1 group-hover:border-cyan/30 group-hover:shadow-[0_16px_28px_rgba(2,6,23,0.16)]">
                   <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.05]" />
                 </div>
                 <span className="truncate text-xs font-semibold text-slate-300 group-hover:text-cyan-100">{game.name}</span>
@@ -256,7 +255,7 @@ function FeaturedRail({
           </div>
         )}
       </div>
-    </section>
+    </PanelShell>
   );
 }
 
@@ -298,7 +297,7 @@ function RecentOrderItem({ order }: { order: Order }) {
 
   return (
     <article className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-white/[0.08] bg-white/[0.03] px-4 py-3 transition-colors hover:border-cyan/20 hover:bg-cyan/10">
-      <IconBox size="sm" className="h-11 w-11 rounded-[16px] border-cyan/20 bg-cyan/10 text-cyan-50">
+      <IconBox size="sm" tone="primary" className="h-11 w-11 rounded-[16px]">
         <ReceiptText size={18} />
       </IconBox>
       <div className="min-w-0">
@@ -306,7 +305,7 @@ function RecentOrderItem({ order }: { order: Order }) {
         <span className="block truncate text-xs text-slate-400">{order.gameAccountInfo}</span>
       </div>
       <div className="grid justify-items-end gap-1">
-        <Badge variant={statusMeta.variant} className="rounded-full text-[0.72rem]">
+        <Badge tone={statusMeta.tone} className="rounded-full text-[0.72rem]">
           {statusMeta.label}
         </Badge>
         <span className="text-xs text-slate-400">{timeLabel}</span>

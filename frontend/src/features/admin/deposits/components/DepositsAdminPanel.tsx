@@ -1,6 +1,6 @@
 import { CheckCircle2, CircleSlash, Clock3, Send, UserRound, WalletCards } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Badge, Button, EmptyState, IconBox, RecordRow, SearchBar, SectionHeading } from '@/shared/components';
+import { Badge, Button, EmptyState, FilterChip, IconBox, RecordRow, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
 import type { DepositRequestStatusInfo } from '@/features/wallet/lib/deposit-request-status';
@@ -23,6 +23,26 @@ type DepositRequestsAdminPanelState = {
   setQuery: (value: string) => void;
   setReviewNote: (value: string) => void;
 };
+
+function DepositDetailRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: ReactNode;
+  value: ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2">
+      <span className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] p-2 text-slate-200">{icon}</span>
+      <div className="min-w-0">
+        <span className="block text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-slate-500">{label}</span>
+        <span className="mt-1 block break-words text-right text-sm font-medium text-slate-100">{value}</span>
+      </div>
+    </div>
+  );
+}
 
 export function DepositsAdminPanel({
   busy,
@@ -48,25 +68,24 @@ export function DepositsAdminPanel({
           description="Duyệt hoặc từ chối các yêu cầu đã được khách hàng xác nhận chuyển khoản."
           action={
             <div className="flex items-center gap-2">
-              <Badge variant="warning">Chờ xử lý {pendingCount}</Badge>
-              <Badge variant="success">Đã duyệt {approvedCount}</Badge>
-              <Badge variant="danger">Từ chối {rejectedCount}</Badge>
+              <Badge tone="warning">Chờ xử lý {pendingCount}</Badge>
+              <Badge tone="success">Đã duyệt {approvedCount}</Badge>
+              <Badge tone="danger">Từ chối {rejectedCount}</Badge>
             </div>
           }
         />
 
-        <SearchBar className="mb-1" inputClassName="text-sm" value={state.query} onChange={state.setQuery} placeholder="Tìm theo mã, user, số tiền, nội dung chuyển khoản..." />
+        <SearchBar className="mb-1" value={state.query} onChange={state.setQuery} placeholder="Tìm theo mã, user, số tiền, nội dung chuyển khoản..." />
 
         <div className="flex flex-wrap gap-2.5">
           {state.filters.map((item) => (
-            <Button
+            <FilterChip
               key={item.key}
-              variant={state.filter === item.key ? 'accent' : 'default'}
-              className="min-h-10 whitespace-nowrap rounded-full px-3.5 py-2 text-sm"
+              active={state.filter === item.key}
               onClick={() => state.setFilter(item.key)}
             >
               {item.label}
-            </Button>
+            </FilterChip>
           ))}
         </div>
 
@@ -111,7 +130,7 @@ export function DepositsAdminPanel({
 
                   <div className="grid justify-items-end gap-2 max-[700px]:justify-items-start">
                     <div className="grid gap-1.5 justify-items-end max-[700px]:justify-items-start">
-                      <Badge variant={status.badgeVariant}>{status.label}</Badge>
+                      <Badge tone={status.tone}>{status.label}</Badge>
                       {request.userConfirmedAt ? (
                         <span className="text-xs font-semibold text-slate-500">Xác nhận {formatDate(request.userConfirmedAt)}</span>
                       ) : (
@@ -134,7 +153,7 @@ export function DepositsAdminPanel({
         <SectionHeading
           title="Chi tiết yêu cầu"
           description="Xem thông tin chuyển khoản và thực hiện duyệt thủ công."
-          action={state.selectedRequest ? <Badge variant="default">{state.selectedStatus?.label}</Badge> : undefined}
+          action={state.selectedRequest ? <Badge tone="neutral">{state.selectedStatus?.label}</Badge> : undefined}
         />
 
         {!state.selectedRequest ? (
@@ -156,7 +175,7 @@ export function DepositsAdminPanel({
                   <strong className="mt-1 block text-xl font-black text-white">#{state.selectedRequest.id}</strong>
                   <span className="mt-1 block text-sm text-slate-300">User #{state.selectedRequest.userId}</span>
                 </div>
-                <Badge variant={state.selectedStatus?.badgeVariant ?? 'default'} icon={state.selectedStatus?.icon}>
+                <Badge tone={state.selectedStatus?.tone ?? 'neutral'} icon={state.selectedStatus?.icon}>
                   {state.selectedStatus?.label}
                 </Badge>
               </div>
@@ -174,18 +193,18 @@ export function DepositsAdminPanel({
                   <strong className="block text-lg font-black text-white">#{state.selectedRequest.id}</strong>
                   <span className="mt-1 block text-sm text-slate-300">User #{state.selectedRequest.userId}</span>
                 </div>
-                <Badge variant={state.selectedStatus?.badgeVariant ?? 'default'} icon={state.selectedStatus?.icon}>
+                <Badge tone={state.selectedStatus?.tone ?? 'neutral'} icon={state.selectedStatus?.icon}>
                   {state.selectedStatus?.label}
                 </Badge>
               </div>
 
               <div className="grid gap-2 rounded-2xl border border-white/8 bg-white/[0.03] p-3 text-sm text-slate-200">
-                <DetailRow label="Số tiền" value={formatCurrency(state.selectedRequest.amount)} icon={<WalletCards size={16} />} />
-                <DetailRow label="Mã nạp" value={state.selectedRequest.code} icon={<Send size={16} />} />
-                <DetailRow label="Ngân hàng" value={state.selectedRequest.bankId ?? '---'} icon={<UserRound size={16} />} />
-                <DetailRow label="Số tài khoản" value={state.selectedRequest.accountNo ?? '---'} icon={<WalletCards size={16} />} />
-                <DetailRow label="Tên tài khoản" value={state.selectedRequest.accountName ?? '---'} icon={<UserRound size={16} />} />
-                <DetailRow label="Nội dung" value={state.selectedRequest.transferContent} icon={<Send size={16} />} />
+                <DepositDetailRow icon={<WalletCards size={16} />} label="Số tiền" value={formatCurrency(state.selectedRequest.amount)} />
+                <DepositDetailRow icon={<Send size={16} />} label="Mã nạp" value={state.selectedRequest.code} />
+                <DepositDetailRow icon={<UserRound size={16} />} label="Ngân hàng" value={state.selectedRequest.bankId ?? '---'} />
+                <DepositDetailRow icon={<WalletCards size={16} />} label="Số tài khoản" value={state.selectedRequest.accountNo ?? '---'} />
+                <DepositDetailRow icon={<UserRound size={16} />} label="Tên tài khoản" value={state.selectedRequest.accountName ?? '---'} />
+                <DepositDetailRow icon={<Send size={16} />} label="Nội dung" value={state.selectedRequest.transferContent} />
               </div>
 
               <div className="grid gap-2 text-sm leading-6 text-slate-200">
@@ -242,26 +261,6 @@ export function DepositsAdminPanel({
           </div>
         )}
       </aside>
-    </div>
-  );
-}
-
-function DetailRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2">
-      <span className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-cyan">{icon}</span>
-      <div className="min-w-0">
-        <span className="block text-[0.78rem] font-bold uppercase tracking-[0.12em] text-slate-500">{label}</span>
-        <span className="mt-1 block break-words text-sm font-semibold text-slate-100">{value}</span>
-      </div>
     </div>
   );
 }

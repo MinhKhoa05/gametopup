@@ -28,7 +28,7 @@ export function AdminLayoutPage() {
   );
 
   if (!auth.user || String(auth.user.role ?? '').trim().toLowerCase() !== 'admin') {
-    return <AdminAccessDenied onLogin={() => navigate(routes.auth())} />;
+    return <AdminAccessDenied onLogin={() => navigate(routes.login())} />;
   }
 
   const brandCollapsed = sidebarCollapsed;

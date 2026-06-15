@@ -2,7 +2,7 @@ import { CheckCircle2, Clock3, Send, XCircle } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 export type DepositRequestStatusInfo = {
-  badgeVariant: 'warning' | 'accent' | 'success' | 'danger';
+  tone: 'warning' | 'primary' | 'success' | 'danger';
   description: string;
   icon: ReactNode;
   iconClassName: string;
@@ -13,35 +13,35 @@ export const DEPOSIT_REQUEST_STATUS_BY_CODE: Record<number, DepositRequestStatus
   1: {
     description: 'Bạn cần chuyển khoản và xác nhận.',
     label: 'Chờ chuyển khoản',
-    badgeVariant: 'warning',
+    tone: 'warning',
     icon: <Send size={16} />,
     iconClassName: 'border-amber-400/15 bg-amber-400/10 text-amber-300',
   },
   2: {
     description: 'Admin kiểm tra khoảng 10-15 phút.',
     label: 'Đã gửi, chờ duyệt',
-    badgeVariant: 'accent',
+    tone: 'primary',
     icon: <Clock3 size={16} />,
     iconClassName: 'border-cyan/15 bg-cyan/10 text-cyan-50',
   },
   3: {
     description: 'Số dư đã được cộng vào ví.',
     label: 'Đã duyệt',
-    badgeVariant: 'success',
+    tone: 'success',
     icon: <CheckCircle2 size={16} />,
     iconClassName: 'border-emerald-400/15 bg-emerald-400/10 text-emerald-300',
   },
   4: {
     description: 'Vui lòng kiểm tra lại thông tin.',
     label: 'Đã từ chối',
-    badgeVariant: 'danger',
+    tone: 'danger',
     icon: <XCircle size={16} />,
     iconClassName: 'border-rose-400/15 bg-rose-400/10 text-rose-300',
   },
 };
 
 const DEFAULT_DEPOSIT_REQUEST_STATUS: DepositRequestStatusInfo = {
-  badgeVariant: 'warning',
+  tone: 'warning',
   description: 'Đang cập nhật thông tin.',
   icon: <Send size={16} />,
   iconClassName: 'border-amber-400/15 bg-amber-400/10 text-amber-300',

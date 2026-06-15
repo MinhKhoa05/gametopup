@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode, type RefObject } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BadgeCheck, ChevronLeft, ChevronRight, LockKeyhole, PencilLine, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LockKeyhole, PencilLine, ShieldCheck } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
@@ -13,12 +13,9 @@ import type { Order } from '@/features/orders/types';
 import { useMyOrdersQuery } from '@/features/orders/server';
 import { useUpdateMyProfileMutation } from '@/features/profile/server';
 import { useWalletBalanceQuery, useWalletTransactionsQuery } from '@/features/wallet/server';
-import { Badge, Button, EmptyState, ImageBox } from '@/shared/components';
+import { Button, EmptyState, ImageBox, PanelShell, PageHero, SectionHeading } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency } from '@/shared/lib/format';
-
-const PANEL_CLASS =
-  'rounded-[26px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(22,27,34,0.94),rgba(18,24,34,0.98))] shadow-[0_16px_38px_rgba(2,6,23,0.18)]';
 
 type FavoriteGameCard = {
   count: number;
@@ -60,7 +57,6 @@ function ProfileContent({ user }: { user: User }) {
 
   const displayName = user.displayName?.trim() || user.email;
   const rawRoleLabel = formatUserRoleLabel(user.role);
-  const roleLabel = isAdminUserRole(user.role) ? 'Admin' : rawRoleLabel === 'Member' ? 'Thành viên' : rawRoleLabel;
   const joinedAtLabel = formatJoinedDate(user.createdAt);
 
   const stats = useMemo(() => {
@@ -93,39 +89,24 @@ function ProfileContent({ user }: { user: User }) {
 
   return (
     <div className="relative isolate overflow-hidden">
-      <BackgroundDecor />
-
       <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
         <div className="grid gap-6 lg:gap-7">
-          <header className={PANEL_CLASS}>
-            <div className="grid gap-5 px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="grid size-[78px] place-items-center rounded-full border border-cyan/20 bg-[radial-gradient(circle_at_30%_30%,rgba(34,211,238,0.24),rgba(34,211,238,0.08)_50%,rgba(7,16,31,0.92)_72%)] text-[1.65rem] font-black tracking-[-0.06em] text-white">
-                  {user.avatarUrl ? <ImageBox src={user.avatarUrl} alt={displayName} className="size-full rounded-full object-cover" /> : getInitials(user.displayName ?? user.email, user.email)}
-                </div>
-
-                <div className="grid gap-2">
-                  <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">TÀI KHOẢN CỦA TÔI</p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="m-0 text-[clamp(2.2rem,3vw,3.3rem)] font-black leading-[0.96] tracking-[-0.06em] text-white">{displayName}</h1>
-                    <Badge variant="accent" icon={<BadgeCheck size={14} />} className="rounded-full border-cyan/20 bg-cyan/10">
-                      {roleLabel}
-                    </Badge>
-                    <Badge variant="default" className="rounded-full border-white/10 bg-white/[0.04] text-slate-200">
-                      {tier.label}
-                    </Badge>
-                  </div>
-                  <p className="m-0 text-sm leading-6 text-slate-400">Thành viên từ {joinedAtLabel}</p>
-                </div>
+          <PageHero
+            eyebrow="TÀI KHOẢN CỦA TÔI"
+            visual={
+              <div className="grid size-[78px] place-items-center overflow-hidden rounded-full border border-cyan/20 bg-[radial-gradient(circle_at_30%_30%,rgba(34,211,238,0.24),rgba(34,211,238,0.08)_50%,rgba(7,16,31,0.92)_72%)] text-[1.65rem] font-black tracking-[-0.06em] text-white">
+                {user.avatarUrl ? <ImageBox src={user.avatarUrl} alt={displayName} className="size-full rounded-full object-cover" /> : getInitials(user.displayName ?? user.email, user.email)}
               </div>
-            </div>
-          </header>
+            }
+            title={displayName}
+            description={`Thành viên từ ${joinedAtLabel}`}
+          />
 
           <section className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.9fr)] xl:items-start">
             <div className="grid gap-6">
-              <section className={PANEL_CLASS}>
+              <PanelShell>
                 <div className="px-5 pt-5 sm:px-6 sm:pt-6">
-                  <h2 className="m-0 text-[1.35rem] font-black tracking-[-0.04em] text-white">Thông tin hồ sơ</h2>
+                  <SectionHeading title="Thông tin hồ sơ" titleClassName="text-[1.35rem]" />
                 </div>
                 <form className="grid gap-4 px-5 pb-5 pt-4 sm:px-6 sm:pb-6" onSubmit={handleSubmit}>
                   <TextField
@@ -153,11 +134,11 @@ function ProfileContent({ user }: { user: User }) {
                     {updateProfileMutation.isPending ? 'Đang cập nhật...' : 'Lưu thay đổi'}
                   </Button>
                 </form>
-              </section>
+              </PanelShell>
 
-              <section className={PANEL_CLASS}>
+              <PanelShell>
                 <div className="px-5 pt-5 sm:px-6 sm:pt-6">
-                  <h2 className="m-0 text-[1.35rem] font-black tracking-[-0.04em] text-white">Đổi mật khẩu</h2>
+                  <SectionHeading title="Đổi mật khẩu" titleClassName="text-[1.35rem]" />
                 </div>
 
                 <div className="grid gap-4 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
@@ -184,7 +165,7 @@ function ProfileContent({ user }: { user: User }) {
                     </div>
                   </div>
                 </div>
-              </section>
+              </PanelShell>
             </div>
 
             <div className="grid gap-6">
@@ -212,9 +193,9 @@ const VipCard = ({
   tilt: { x: number; y: number };
 }) => {
   return (
-    <section className={PANEL_CLASS}>
+    <PanelShell>
       <div className="px-5 pt-5 sm:px-6 sm:pt-6">
-        <h2 className="m-0 text-[1.35rem] font-black tracking-[-0.04em] text-white">Thẻ VIP</h2>
+        <SectionHeading title="Thẻ VIP" titleClassName="text-[1.35rem]" />
       </div>
 
       <div className="px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
@@ -272,7 +253,7 @@ const VipCard = ({
           </div>
         </div>
       </div>
-    </section>
+    </PanelShell>
   );
 };
 
@@ -288,12 +269,13 @@ function FavoriteGamesSection({
   const railRef = useRef<HTMLDivElement | null>(null);
 
   return (
-    <section className={PANEL_CLASS}>
+    <PanelShell>
       <div className="flex items-center justify-between gap-4 px-5 pt-5 sm:px-6 sm:pt-6">
-        <div className="grid gap-1">
-          <h2 className="m-0 text-[1.35rem] font-black tracking-[-0.04em] text-white">Game yêu thích</h2>
-          <p className="m-0 text-sm leading-6 text-slate-400">Các game bạn nạp nhiều nhất sẽ nằm ở đây.</p>
-        </div>
+        <SectionHeading
+          title="Game yêu thích"
+          titleClassName="text-[1.35rem]"
+          description="Các game bạn nạp nhiều nhất sẽ nằm ở đây."
+        />
 
         <div className="flex items-center gap-2">
           <RailButton ariaLabel="Xem game trước" onClick={() => scrollRail(railRef.current, -1)}>
@@ -337,7 +319,7 @@ function FavoriteGamesSection({
           />
         )}
       </div>
-    </section>
+    </PanelShell>
   );
 }
 
@@ -502,17 +484,8 @@ function ProfileGuestState() {
       title="Không có phiên đăng nhập"
       description="Vui lòng đăng nhập lại để xem tài khoản của bạn."
       actionLabel="Đăng nhập"
-      onAction={() => navigate(routes.auth())}
+      onAction={() => navigate(routes.login())}
     />
-  );
-}
-
-function BackgroundDecor() {
-  return (
-    <>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_26%),radial-gradient(circle_at_top_right,rgba(34,211,238,0.06),transparent_18%),radial-gradient(circle_at_50%_-10%,rgba(15,118,110,0.16),transparent_34%)]" />
-      <div className="pointer-events-none absolute inset-0 gt-page-grid opacity-[0.045]" />
-    </>
   );
 }
 

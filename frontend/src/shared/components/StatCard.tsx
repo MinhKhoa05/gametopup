@@ -1,50 +1,69 @@
 import type { ReactNode } from 'react';
 import { classNames } from '@/shared/lib/classNames';
-import { IconBox } from './IconBox';
+
+type StatCardTone = 'primary' | 'success' | 'warning' | 'danger';
+
+const TONE_CLASSES: Record<StatCardTone, { icon: string; value: string }> = {
+  primary: {
+    icon: 'border-cyan-400/15 bg-cyan-500/30 text-cyan-100 shadow-[0_0_0_1px_rgba(34,211,238,0.14),0_0_24px_rgba(34,211,238,0.18)]',
+    value: 'text-cyan-100',
+  },
+  success: {
+    icon: 'border-emerald-400/15 bg-emerald-500/30 text-emerald-100 shadow-[0_0_0_1px_rgba(34,197,94,0.14),0_0_24px_rgba(34,197,94,0.18)]',
+    value: 'text-emerald-100',
+  },
+  warning: {
+    icon: 'border-amber-400/15 bg-amber-500/30 text-amber-100 shadow-[0_0_0_1px_rgba(245,158,11,0.14),0_0_24px_rgba(245,158,11,0.18)]',
+    value: 'text-amber-100',
+  },
+  danger: {
+    icon: 'border-rose-400/15 bg-rose-500/30 text-rose-100 shadow-[0_0_0_1px_rgba(244,63,94,0.14),0_0_24px_rgba(244,63,94,0.18)]',
+    value: 'text-rose-100',
+  },
+};
 
 export function StatCard({
   className,
-  iconClassName,
   icon,
+  compact,
+  labelClassName,
   label,
-  surface = true,
   supporting,
-  variant = 'stacked',
   value,
+  tone = 'primary',
 }: {
   className?: string;
-  iconClassName?: string;
+  compact?: boolean;
+  labelClassName?: string;
   icon: ReactNode;
   label: ReactNode;
   supporting?: ReactNode;
-  surface?: boolean;
-  variant?: 'stacked' | 'inline';
+  tone?: StatCardTone;
   value: ReactNode;
 }) {
+  const toneClasses = TONE_CLASSES[tone];
   const rootClassName = classNames(
-    surface && 'gt-surface-ink rounded-[20px]',
-    'grid min-w-0 gap-3',
-    variant === 'stacked' ? 'p-4' : 'grid-cols-[auto_minmax(0,1fr)] items-center gap-3 p-4',
+    'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-[22px] border border-cyan/15 bg-[rgba(8,20,40,0.58)] p-5 backdrop-blur-[14px] transition-all duration-200 hover:-translate-y-1 hover:border-cyan/30 hover:shadow-[0_18px_38px_rgba(2,6,23,0.18)]',
+    compact && 'gap-3 p-3',
     className,
   );
 
   return (
-    <div className={rootClassName}>
-      <IconBox size="sm" className={classNames('h-10 w-10 rounded-xl', iconClassName)}>
+    <article className={rootClassName}>
+      <div
+        className={classNames(
+          'flex h-14 w-14 items-center justify-center rounded-[18px] border text-cyan-50',
+          compact && 'h-11 w-11 rounded-[16px]',
+          toneClasses.icon,
+        )}
+      >
         {icon}
-      </IconBox>
-      <div className={classNames('grid min-w-0 gap-1.5', variant === 'inline' && 'gap-1')}>
-        <span className="block font-extrabold leading-[1.25] text-slate-400">{label}</span>
-        <strong
-          className={classNames(
-            'block break-words font-black leading-[1.1] text-white',
-            variant === 'stacked' ? 'text-[clamp(1.3rem,2.2vw,1.9rem)]' : 'text-[clamp(1.2rem,1.9vw,1.65rem)]',
-          )}
-        >
-          {value}
-        </strong>
-        {supporting ? <span className="block text-sm leading-[1.45] text-slate-400">{supporting}</span> : null}
       </div>
-    </div>
+      <div className="grid gap-1">
+        <span className={classNames('font-semibold text-slate-400', compact ? 'text-[0.82rem]' : 'text-sm', labelClassName)}>{label}</span>
+        <strong className={classNames('font-black tracking-[-0.05em] tabular-nums leading-none', compact ? 'text-[1.08rem]' : 'text-[1.75rem]', toneClasses.value)}>{value}</strong>
+        {supporting ? <span className={classNames('text-slate-500', compact ? 'text-xs' : 'text-sm')}>{supporting}</span> : null}
+      </div>
+    </article>
   );
 }

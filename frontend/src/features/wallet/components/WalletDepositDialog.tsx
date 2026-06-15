@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { CheckCircle2, Check, Copy, QrCode, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { Badge, Button } from '@/shared/components';
+import { Badge, Button, DetailRow } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency } from '@/shared/lib/format';
 import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
@@ -186,8 +186,8 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
               <section className="grid gap-5">
                 <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
                   <div className="grid gap-1.5 py-3.5">
-                    <InfoRow label="Phương thức" labelClassName="!text-cyan-300" value="Chuyển khoản QR" valueClassName="!text-white" />
-                    <InfoRow label="Xử lý" labelClassName="!text-amber-300" value="Sau khi admin duyệt" valueClassName="!text-amber-100" />
+                    <DetailRow label="Phương thức" labelClassName="!text-cyan-300" value="Chuyển khoản QR" valueClassName="!text-white" />
+                    <DetailRow label="Xử lý" labelClassName="!text-amber-300" value="Sau khi admin duyệt" valueClassName="!text-amber-100" />
                   </div>
                 </div>
 
@@ -247,13 +247,13 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                 </div>
 
                 <div className="grid gap-0 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-                  <InfoRow label="Phương thức" labelClassName="!text-cyan-300" value="Chuyển khoản QR" valueClassName="!text-white" />
-                  <InfoRow label="Xử lý" labelClassName="!text-amber-300" value="Sau khi admin duyệt" valueClassName="!text-amber-100" />
+                  <DetailRow label="Phương thức" labelClassName="!text-cyan-300" value="Chuyển khoản QR" valueClassName="!text-white" />
+                  <DetailRow label="Xử lý" labelClassName="!text-amber-300" value="Sau khi admin duyệt" valueClassName="!text-amber-100" />
                 </div>
 
                 <div className="mt-5 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4 py-3.5">
-                  <InfoRow label="Số tiền chọn" labelClassName="!text-violet-300" value={amount ? formatCurrency(Number(amount)) : '---'} valueClassName="!text-white" />
-                  <InfoRow label="Trạng thái" labelClassName="!text-emerald-300" value="Chưa tạo yêu cầu" valueClassName="!text-emerald-200" />
+                  <DetailRow label="Số tiền chọn" labelClassName="!text-violet-300" value={amount ? formatCurrency(Number(amount)) : '---'} valueClassName="!text-white" />
+                  <DetailRow label="Trạng thái" labelClassName="!text-emerald-300" value="Chưa tạo yêu cầu" valueClassName="!text-emerald-200" />
                 </div>
 
                 <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -272,7 +272,7 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                 <div className="rounded-[22px] border border-cyan-400/10 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.14),transparent_42%),linear-gradient(180deg,rgba(9,14,30,0.94),rgba(8,13,28,0.98))] p-4">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200/85">QR thanh toán</p>
-                    <Badge variant="accent">VietQR</Badge>
+                    <Badge tone="primary">VietQR</Badge>
                   </div>
 
                   <div className="grid place-items-center">
@@ -294,11 +294,11 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                 </div>
 
                 <div className="grid gap-0 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-                  <InfoRow label="Số tiền" labelClassName="!text-cyan-300" value={formatCurrency(request.amount)} valueClassName="!text-cyan-100 font-black" />
-                  <InfoRow label="Ngân hàng" labelClassName="!text-amber-300" value={resolveBankDisplayName(request.bankId)} valueClassName="!text-white" />
-                  <InfoRow label="Số tài khoản" labelClassName="!text-sky-300" value={request.accountNo || '---'} valueClassName="!text-white" />
-                  <InfoRow label="Chủ tài khoản" labelClassName="!text-violet-300" value={request.accountName || '---'} valueClassName="!text-white" />
-                  <InfoRow
+                  <DetailRow label="Số tiền" labelClassName="!text-cyan-300" value={formatCurrency(request.amount)} valueClassName="!text-cyan-100 font-black" />
+                  <DetailRow label="Ngân hàng" labelClassName="!text-amber-300" value={resolveBankDisplayName(request.bankId)} valueClassName="!text-white" />
+                  <DetailRow label="Số tài khoản" labelClassName="!text-sky-300" value={request.accountNo || '---'} valueClassName="!text-white" />
+                  <DetailRow label="Chủ tài khoản" labelClassName="!text-violet-300" value={request.accountName || '---'} valueClassName="!text-white" />
+                  <DetailRow
                     label="Nội dung CK"
                     labelClassName="!text-emerald-300"
                     value={request.transferContent}
@@ -353,9 +353,9 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
               </div>
 
               <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4 text-left">
-                <InfoRow label="Số tiền" labelClassName="!text-cyan-300" value={request ? formatCurrency(request.amount) : '---'} valueClassName="!text-white" />
-                <InfoRow label="Mã yêu cầu" labelClassName="!text-violet-300" value={request?.code ?? '---'} valueClassName="!text-white" />
-                <InfoRow label="Trạng thái" labelClassName="!text-emerald-300" value={status?.label ?? 'Chờ duyệt'} valueClassName="!text-emerald-200" />
+                <DetailRow label="Số tiền" labelClassName="!text-cyan-300" value={request ? formatCurrency(request.amount) : '---'} valueClassName="!text-white" />
+                <DetailRow label="Mã yêu cầu" labelClassName="!text-violet-300" value={request?.code ?? '---'} valueClassName="!text-white" />
+                <DetailRow label="Trạng thái" labelClassName="!text-emerald-300" value={status?.label ?? 'Chờ duyệt'} valueClassName="!text-emerald-200" />
               </div>
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
@@ -370,25 +370,6 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-function InfoRow({
-  label,
-  value,
-  labelClassName,
-  valueClassName,
-}: {
-  label: string;
-  value: string;
-  labelClassName?: string;
-  valueClassName?: string;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] py-3.5 last:border-b-0">
-      <span className={classNames('text-sm font-medium text-slate-400', labelClassName)}>{label}</span>
-      <span className={classNames('text-right text-sm font-semibold text-white', valueClassName)}>{value}</span>
     </div>
   );
 }

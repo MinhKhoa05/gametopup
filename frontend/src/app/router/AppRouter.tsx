@@ -3,8 +3,7 @@ import { ROUTE_PATHS } from './routes';
 import { HomePage } from '@/features/home/pages/HomePage';
 import { GamesPage } from '@/features/games/pages/GamesPage';
 import { GameDetailPage } from '@/features/games/pages/GameDetailPage';
-import { LoginPage } from '@/features/auth/pages/LoginPage';
-import { RegisterPage } from '@/features/auth/pages/RegisterPage';
+import { AuthPage } from '@/features/auth/components/AuthPage';
 import { WalletPage } from '@/features/wallet/pages/WalletPage';
 import { OrdersPage } from '@/features/orders/pages/OrdersPage';
 import { ProfilePage } from '@/features/profile/pages/ProfilePage';
@@ -21,13 +20,10 @@ export function AppRouter() {
   return (
     <Routes>
       <Route path={ROUTE_PATHS.home} element={<HomePage />} />
-      <Route path={ROUTE_PATHS.login} element={<LoginPage />} />
-      <Route path={ROUTE_PATHS.register} element={<RegisterPage />} />
-      <Route path={ROUTE_PATHS.authLegacy} element={<Navigate to={ROUTE_PATHS.login} replace />} />
+      <Route path={ROUTE_PATHS.login} element={<AuthPage mode="login" />} />
+      <Route path={ROUTE_PATHS.register} element={<AuthPage mode="register" />} />
       <Route path={ROUTE_PATHS.games} element={<GamesPage />} />
       <Route path={ROUTE_PATHS.gameDetail} element={<GameDetailPage />} />
-      <Route path={ROUTE_PATHS.topupLegacy} element={<GameDetailPage />} />
-      <Route path={ROUTE_PATHS.topup} element={<GameDetailPage />} />
       <Route
         path={ROUTE_PATHS.wallet}
         element={
@@ -44,7 +40,6 @@ export function AppRouter() {
           </RequireAuth>
         }
       />
-      <Route path={ROUTE_PATHS.account} element={<Navigate to={ROUTE_PATHS.profile} replace />} />
       <Route
         path={ROUTE_PATHS.profile}
         element={

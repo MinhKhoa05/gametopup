@@ -76,7 +76,7 @@ export function AdminSectionShell({
               7 ngày qua
             </Button>
 
-            <Badge variant={busy || loading ? 'accent' : 'success'} icon={<LayoutDashboard size={14} />} className="rounded-full px-3.5 py-2">
+            <Badge tone={busy || loading ? 'primary' : 'success'} icon={<LayoutDashboard size={14} />} className="rounded-full px-3.5 py-2">
               {busy || loading ? 'Đang đồng bộ' : 'Sẵn sàng'}
             </Badge>
           </div>

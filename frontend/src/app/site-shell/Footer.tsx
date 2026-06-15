@@ -10,20 +10,20 @@ type FooterVariant = 'full' | 'minimal';
 
 const FOOTER_LINKS = {
   about: [
-    { label: 'Giới thiệu', href: routes.home() },
-    { label: 'Điều khoản', href: routes.home() },
-    { label: 'Chính sách bảo mật', href: routes.home() },
-    { label: 'Liên hệ', href: routes.home() },
+    { label: 'Trang chủ', href: routes.home() },
+    { label: 'Kho game', href: routes.games() },
+    { label: 'Nạp ví', href: routes.wallet() },
+    { label: 'Đơn hàng', href: routes.orders() },
   ],
   guide: [
-    { label: 'Hướng dẫn nạp game', href: routes.games() },
-    { label: 'Hướng dẫn nạp ví', href: routes.wallet() },
-    { label: 'Câu hỏi thường gặp', href: routes.home() },
+    { label: 'Hồ sơ', href: routes.profile() },
+    { label: 'Đăng nhập', href: routes.login() },
+    { label: 'Đăng ký', href: routes.register() },
   ],
   support: [
-    { label: 'Trung tâm hỗ trợ', href: routes.home() },
-    { label: 'Ticket của tôi', href: routes.orders() },
-    { label: 'Liên hệ hỗ trợ', href: routes.profile() },
+    { label: 'Lịch sử đơn', href: routes.orders() },
+    { label: 'Nạp ví', href: routes.wallet() },
+    { label: 'Kho game', href: routes.games() },
   ],
 } as const;
 

@@ -34,7 +34,7 @@ export function GamesAdminPanel({
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(380px,0.82fr)]">
       <div className="gt-surface grid gap-4">
         <SectionHeading title="Danh sách game" />
-        <SearchBar className="mb-4" inputClassName="text-sm" value={state.query} onChange={state.setQuery} placeholder="Tìm game..." />
+        <SearchBar className="mb-4" value={state.query} onChange={state.setQuery} placeholder="Tìm game..." />
         {loading && state.filteredGames.length === 0 ? (
           <div className="grid gap-2" aria-busy="true">
             {Array.from({ length: 5 }).map((_, index) => (
@@ -52,7 +52,7 @@ export function GamesAdminPanel({
                   <strong>{game.name}</strong>
                   <small>{game.isActive ? 'Đang hiển thị' : 'Đang ẩn'}</small>
                 </div>
-                <Badge variant={game.isActive ? 'success' : 'default'} icon={game.isActive ? <CheckCircle2 size={14} /> : <X size={14} />}>
+                <Badge tone={game.isActive ? 'success' : 'neutral'} icon={game.isActive ? <CheckCircle2 size={14} /> : <X size={14} />}>
                   {game.isActive ? 'Bật' : 'Tắt'}
                 </Badge>
                 <div className="flex gap-2">

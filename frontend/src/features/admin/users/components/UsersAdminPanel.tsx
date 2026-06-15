@@ -45,7 +45,7 @@ export function UsersAdminPanel({
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(380px,0.82fr)]">
       <div className="gt-surface grid gap-4">
         <SectionHeading title="Danh sách người dùng" />
-        <SearchBar className="mb-4" inputClassName="text-sm" value={state.query} onChange={state.setQuery} placeholder="Tìm theo tên, email, vai trò..." />
+        <SearchBar className="mb-4" value={state.query} onChange={state.setQuery} placeholder="Tìm theo tên, email, vai trò..." />
 
         {loading && state.filteredUsers.length === 0 ? (
           <div className="grid gap-2" aria-busy="true">
@@ -77,10 +77,10 @@ export function UsersAdminPanel({
                     </small>
                   </div>
                   <div className="grid justify-items-end gap-1.5 max-[700px]:justify-items-start">
-                    <Badge variant={user.isActive !== false ? 'success' : 'default'} icon={user.isActive !== false ? <CheckCircle2 size={14} /> : <X size={14} />}>
+                    <Badge tone={user.isActive !== false ? 'success' : 'neutral'} icon={user.isActive !== false ? <CheckCircle2 size={14} /> : <X size={14} />}>
                       {user.isActive !== false ? 'Bật' : 'Tắt'}
                     </Badge>
-                    <Badge variant={isAdminRole ? 'accent' : 'default'} icon={<UserCheck2 size={14} />}>
+                    <Badge tone={isAdminRole ? 'primary' : 'neutral'} icon={<UserCheck2 size={14} />}>
                       {userRoleLabel}
                     </Badge>
                   </div>

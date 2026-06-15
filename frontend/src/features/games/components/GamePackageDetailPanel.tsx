@@ -1,4 +1,4 @@
-import { Button, ImageBox } from '@/shared/components';
+import { Button, ImageBox, DetailRow } from '@/shared/components';
 import { formatCurrency } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
 import type { GamePackage } from '@/features/games/types';
@@ -92,24 +92,5 @@ export function GamePackageDetailPanel({ gameName, onPurchase, selectedPackage }
         )}
       </div>
     </aside>
-  );
-}
-
-function DetailRow({
-  label,
-  value,
-  labelClassName,
-  valueClassName,
-}: {
-  label: string;
-  value: string;
-  labelClassName?: string;
-  valueClassName?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4 border-b border-white/[0.06] py-3.5 last:border-b-0">
-      <span className={classNames('text-sm font-medium', labelClassName ?? 'text-slate-400')}>{label}</span>
-      <span className={classNames('text-right text-sm font-semibold text-white', valueClassName)}>{value}</span>
-    </div>
   );
 }

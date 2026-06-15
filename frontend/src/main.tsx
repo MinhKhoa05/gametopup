@@ -26,7 +26,7 @@ async function bootstrap() {
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
           <App />
-          <Toaster richColors position="top-right" />
+          <Toaster richColors position="top-right" closeButton duration={3000} toastOptions={{ closeButton: true, duration: 3000 }} />
         </QueryClientProvider>
       </BrowserRouter>
     </React.StrictMode>,

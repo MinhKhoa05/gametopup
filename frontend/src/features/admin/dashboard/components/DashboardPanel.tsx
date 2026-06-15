@@ -58,10 +58,10 @@ export function DashboardPanel({
   return (
     <div className="grid min-w-0 gap-4">
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={<Gamepad2 size={18} />} iconClassName="border-cyan-400/15 bg-cyan-500/10 text-cyan-100" label="Game" supporting="100% active" value={`${metrics.activeGames} / ${games.length}`} />
-        <StatCard icon={<ShoppingCart size={18} />} iconClassName="border-violet-400/15 bg-violet-500/10 text-violet-100" label="Đơn hàng" supporting="Tổng đơn hệ thống" value={orders.length.toString()} />
-        <StatCard icon={<Clock3 size={18} />} iconClassName="border-amber-400/15 bg-amber-500/10 text-amber-100" label="Đơn đang chờ" supporting="Cần xử lý" value={metrics.pendingOrders.toString()} />
-        <StatCard icon={<CircleDollarSign size={18} />} iconClassName="border-emerald-400/15 bg-emerald-500/10 text-emerald-100" label="Doanh thu" supporting="Tổng đã ghi nhận" value={formatCurrency(metrics.revenue)} />
+        <StatCard icon={<Gamepad2 size={18} />} label="Game" supporting="100% active" tone="primary" value={`${metrics.activeGames} / ${games.length}`} />
+        <StatCard icon={<ShoppingCart size={18} />} label="Đơn hàng" supporting="Tổng đơn hệ thống" tone="primary" value={orders.length.toString()} />
+        <StatCard icon={<Clock3 size={18} />} label="Đơn đang chờ" supporting="Cần xử lý" tone="warning" value={metrics.pendingOrders.toString()} />
+        <StatCard icon={<CircleDollarSign size={18} />} label="Doanh thu" supporting="Tổng đã ghi nhận" tone="success" value={formatCurrency(metrics.revenue)} />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.78fr)]">
@@ -74,7 +74,7 @@ export function DashboardPanel({
                 <CalendarDays size={14} />
                 7 ngày
               </Button>
-              <Badge variant="success">Sẵn sàng</Badge>
+              <Badge tone="success">Sẵn sàng</Badge>
             </div>
           </div>
 
@@ -129,7 +129,7 @@ export function DashboardPanel({
                       </small>
                     </div>
                     <div className="grid justify-items-end gap-1">
-                      <Badge variant={statusMeta.variant} icon={statusMeta.icon}>
+                      <Badge tone={statusMeta.tone} icon={statusMeta.icon}>
                         {statusMeta.label}
                       </Badge>
                       <b className="text-sm text-white">{formatCurrency(order.total ?? order.unitPrice)}</b>
@@ -167,7 +167,7 @@ export function DashboardPanel({
                       <small className="block truncate text-xs text-slate-400">{formatDate(request.createdAt)}</small>
                     </div>
                     <div className="grid justify-items-end gap-1">
-                      <Badge variant="warning">Chờ duyệt</Badge>
+                      <Badge tone="warning">Chờ duyệt</Badge>
                       <b className="text-sm text-white">{formatCurrency(request.amount)}</b>
                     </div>
                   </RecordRow>
@@ -379,5 +379,3 @@ function QuickActionButton({
     </Button>
   );
 }
-
-

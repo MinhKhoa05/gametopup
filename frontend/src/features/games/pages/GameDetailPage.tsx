@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useReducer, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { SiteCredits } from '@/app/site-shell/SiteCredits';
@@ -9,9 +9,8 @@ import { useGamesQuery } from '@/features/games/server';
 import { useGamePackagesQuery } from '@/features/packages/server';
 import { usePurchaseOrderMutation } from '@/features/orders/server';
 import { useWalletBalanceQuery } from '@/features/wallet/server';
-import { EmptyState } from '@/shared/components';
+import { EmptyState, ImageBox, PageHero } from '@/shared/components';
 import { GameDetailPageSkeleton } from '@/features/games/components/GameDetailLayout';
-import { GameHero } from '@/features/games/components/GameHero';
 import { GamePackageDetailPanel } from '@/features/games/components/GamePackageDetailPanel';
 import { GamePackageGrid } from '@/features/games/components/GamePackageGrid';
 import { PackagePurchaseDialog, PurchaseSuccessDialog } from '@/features/games/components/PurchasePackageDialog';
@@ -51,7 +50,6 @@ function draftReducer(state: GameDetailDraftState, action: GameDetailDraftAction
 
 export function GameDetailPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { gameId: gameIdParam } = useParams<{ gameId?: string }>();
   const auth = useAuthSession();
   const gamesQuery = useGamesQuery();
@@ -64,7 +62,6 @@ export function GameDetailPage() {
   const [purchaseInfo, setPurchaseInfo] = useState<GameDetailPurchaseInfo | null>(null);
 
   const gameId = Number(gameIdParam);
-  const hasValidGameId = Number.isFinite(gameId) && gameId > 0;
 
   const game = useMemo(() => {
     if (!gameId) {
@@ -84,16 +81,6 @@ export function GameDetailPage() {
     setCheckoutResult(null);
     setPurchaseInfo(null);
   }, [gameId]);
-
-  useEffect(() => {
-    if (!game || !hasValidGameId) {
-      return;
-    }
-
-    if (location.pathname.startsWith('/topup/')) {
-      navigate(routes.gameDetail(game.id), { replace: true });
-    }
-  }, [game, hasValidGameId, location.pathname, navigate]);
 
   useEffect(() => {
     if (!packages.length) {
@@ -187,7 +174,16 @@ export function GameDetailPage() {
   return (
     <AppPageContainer className="py-5 sm:py-7 lg:py-8">
       <div className="grid gap-6">
-        <GameHero game={game} />
+        <PageHero
+          eyebrow="NẠP GAME"
+          visual={
+            <div className="h-[72px] w-[72px] overflow-hidden rounded-[22px] border border-cyan-400/18 bg-white/[0.03] p-1.5 sm:h-[88px] sm:w-[88px]">
+              <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full rounded-[16px] object-cover" />
+            </div>
+          }
+          title={game.name}
+          description="Chọn gói nạp phù hợp và tạo đơn hàng chỉ trong vài bước."
+        />
 
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,3fr)]">
           <GamePackageGrid

@@ -2,7 +2,7 @@ import { CheckCircle2, CircleSlash, Clock3, Send, TriangleAlert, XCircle } from 
 import { useMemo, useState } from 'react';
 import type { Order } from '@/features/orders/types';
 import type { User } from '@/features/auth/types';
-import { Badge, Button, EmptyState, IconBox, RecordRow, SearchBar, SectionHeading } from '@/shared/components';
+import { Badge, Button, DetailRow, EmptyState, FilterChip, IconBox, RecordRow, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { getOrderStatusMeta as getSharedOrderStatusMeta } from '@/features/orders/lib/orderStatus';
 
@@ -50,24 +50,23 @@ export function OrdersAdminPanel({
           title="Bộ lọc đơn hàng"
           action={
             <div className="flex flex-wrap gap-2">
-              <Badge variant="warning">Chờ xử lý {summary.pending}</Badge>
-              <Badge variant="accent">Đang xử lý {summary.processing}</Badge>
-              <Badge variant="success">Thành công {summary.completed}</Badge>
-              <Badge variant="danger">Đã hủy {summary.cancelled}</Badge>
+              <Badge tone="warning">Chờ xử lý {summary.pending}</Badge>
+              <Badge tone="primary">Đang xử lý {summary.processing}</Badge>
+              <Badge tone="success">Thành công {summary.completed}</Badge>
+              <Badge tone="danger">Đã hủy {summary.cancelled}</Badge>
             </div>
           }
         />
-        <SearchBar className="mb-1" inputClassName="text-sm" value={state.query} onChange={state.setQuery} placeholder="Tìm theo mã đơn, user, package..." />
+        <SearchBar className="mb-1" value={state.query} onChange={state.setQuery} placeholder="Tìm theo mã đơn, user, package..." />
         <div className="flex flex-wrap gap-2.5">
           {state.filters.map((item) => (
-            <Button
+            <FilterChip
               key={item.key}
-              variant={state.filter === item.key ? 'accent' : 'default'}
-              className="min-h-10 whitespace-nowrap rounded-full px-3.5 py-2 text-sm"
+              active={state.filter === item.key}
               onClick={() => state.setFilter(item.key)}
             >
               {item.label}
-            </Button>
+            </FilterChip>
           ))}
         </div>
 
@@ -108,7 +107,7 @@ export function OrdersAdminPanel({
                       </small>
                     </div>
                     <div className="grid justify-items-end gap-1">
-                      <Badge variant={statusMeta.variant} icon={statusMeta.icon}>
+                      <Badge tone={statusMeta.tone} icon={statusMeta.icon}>
                         {statusMeta.label}
                       </Badge>
                       <strong className="text-sm text-white">{formatCurrency(total)}</strong>
@@ -125,7 +124,7 @@ export function OrdersAdminPanel({
         <SectionHeading
           title="Xử lý đơn hàng"
           description="Khu này chỉ làm đúng 3 việc: nhận đơn, hoàn thành hoặc huỷ nếu đơn đang đúng trạng thái."
-          action={selectedOrder ? <Badge variant={getOrderStatusMeta(selectedOrder.status).variant}>{getOrderStatusMeta(selectedOrder.status).label}</Badge> : undefined}
+          action={selectedOrder ? <Badge tone={getOrderStatusMeta(selectedOrder.status).tone}>{getOrderStatusMeta(selectedOrder.status).label}</Badge> : undefined}
         />
 
         {!selectedOrder ? (
@@ -139,7 +138,7 @@ export function OrdersAdminPanel({
                   <strong className="mt-1 block text-xl font-black text-white">#{selectedOrder.id}</strong>
                   <span className="mt-1 block text-sm text-slate-300">User #{selectedOrder.userId}</span>
                 </div>
-                <Badge variant={getOrderStatusMeta(selectedOrder.status).variant} icon={getOrderStatusMeta(selectedOrder.status).icon}>
+                <Badge tone={getOrderStatusMeta(selectedOrder.status).tone} icon={getOrderStatusMeta(selectedOrder.status).icon}>
                   {getOrderStatusMeta(selectedOrder.status).label}
                 </Badge>
               </div>
@@ -218,18 +217,6 @@ function canPick(order: Order) {
 
 function canAct(order: Order, currentAdminId: number | null) {
   return order.status === 2 && order.assignedTo === currentAdminId;
-}
-
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2">
-      <span className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-cyan">{label}</span>
-      <div className="min-w-0">
-        <span className="block text-[0.78rem] font-bold uppercase tracking-[0.12em] text-slate-500">{label}</span>
-        <span className="mt-1 block break-words text-sm font-semibold text-slate-100">{value}</span>
-      </div>
-    </div>
-  );
 }
 
 function getOrderStatusMeta(status: number) {
