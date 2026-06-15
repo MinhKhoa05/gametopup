@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { CheckCircle2, Check, Copy, CreditCard, QrCode, ShieldCheck, X } from 'lucide-react';
+import { CheckCircle2, Check, Copy, QrCode, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge, Button } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';

@@ -10,7 +10,6 @@ import {
   Gamepad2,
   Headphones,
   History,
-  Package2,
   ReceiptText,
   Search,
   SlidersHorizontal,
@@ -1084,4 +1083,3 @@ function getPaginationPages(currentPage: number, totalPages: number) {
 
   return [1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages];
 }
-

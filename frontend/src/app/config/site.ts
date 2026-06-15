@@ -1,4 +1,4 @@
-import { routes, type AdminSection } from '@/app/router/routes';
+import { routes } from '@/app/router/routes';
 import type { NavItem } from '@/shared/types/layout';
 
 export type HeaderAccountMenuItemConfig = {
@@ -8,27 +8,17 @@ export type HeaderAccountMenuItemConfig = {
   dividerAfter?: boolean;
 };
 
-export type BottomNavItemConfig = NavItem & {
+type BottomNavItemConfig = NavItem & {
   iconKey: 'home' | 'games' | 'wallet' | 'orders' | 'profile';
   requiresAuth?: boolean;
 };
 
-export type FooterContactLinkConfig = {
+type FooterContactLinkConfig = {
   label: string;
   href: string;
   ariaLabel: string;
   iconKey: 'mail' | 'facebook' | 'zalo';
   external: boolean;
-};
-
-export type FooterSupportPointConfig = {
-  label: string;
-  iconKey: 'shield' | 'zap' | 'headset';
-};
-
-export type FooterDeveloperLinkConfig = {
-  label: string;
-  href: string;
 };
 
 export const SITE_IMAGES = {
@@ -96,19 +86,6 @@ export const BOTTOM_NAV_ITEMS: BottomNavItemConfig[] = [
   { label: 'Tài khoản', href: routes.profile(), iconKey: 'profile', requiresAuth: true },
 ];
 
-export const FOOTER_SERVICE_LINKS = [
-  { label: 'Kho game', href: routes.games() },
-  { label: 'Nạp ví VietQR', href: routes.wallet() },
-  { label: 'Tra cứu đơn hàng', href: routes.orders() },
-  { label: 'Chính sách bảo mật', href: routes.home() },
-] as const;
-
-export const FOOTER_SUPPORT_POINTS: FooterSupportPointConfig[] = [
-  { label: 'Bảo mật 100%', iconKey: 'shield' },
-  { label: 'Xử lý tức thì', iconKey: 'zap' },
-  { label: 'Hỗ trợ 24/7', iconKey: 'headset' },
-];
-
 export const FOOTER_CONTACT_LINKS: FooterContactLinkConfig[] = [
   {
     label: 'Email',
@@ -137,16 +114,3 @@ export const FOOTER_DEVELOPER_LINKS = [
   { label: 'GitHub', href: SITE.contact.github },
   { label: 'LinkedIn', href: SITE.contact.linkedin },
 ] as const;
-
-export function getFooterCopyright() {
-  return `© ${SITE.copyrightYear} ${SITE.name}. All rights reserved.`;
-}
-
-export const ADMIN_HEADER_SUBTITLES: Record<AdminSection, string> = {
-  dashboard: 'Tổng quan',
-  games: 'Quản lý game',
-  packages: 'Quản lý gói nạp',
-  orders: 'Quản lý đơn hàng',
-  deposits: 'Quản lý nạp tiền',
-  users: 'Quản lý người dùng',
-} as const;

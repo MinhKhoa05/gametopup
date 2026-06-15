@@ -1,22 +1,14 @@
-﻿import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowDownLeft,
   ArrowUpRight,
-  CheckCircle2,
   ChevronDown,
   Clock3,
-  Copy,
-  Headphones,
-  History,
-  Info,
-  QrCode,
   ReceiptText,
   Search,
   SlidersHorizontal,
   WalletCards,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
@@ -28,7 +20,6 @@ import { formatCurrency } from '@/shared/lib/format';
 import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
 import type { DepositRequest, WalletTransaction, WalletTransactionType } from '@/features/wallet/types';
 
-const QUICK_AMOUNTS = [50000, 100000, 200000, 500000, 1000000, 2000000] as const;
 const HISTORY_PAGE_SIZE = 8;
 
 const HISTORY_SUB_TABS = [
@@ -331,201 +322,6 @@ export function WalletPage() {
   );
 }
 
-function DepositPanel({
-  amount,
-  amountError,
-  busy,
-  onAmountChange,
-  onQuickPick,
-  onSubmit,
-}: {
-  amount: string;
-  amountError: string | null;
-  busy: boolean;
-  onAmountChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  onQuickPick: (value: number) => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-}) {
-  const formattedAmount = amount ? new Intl.NumberFormat('vi-VN').format(Number(amount)) : '';
-
-  return (
-    <div className="grid gap-5">
-      <div className="grid gap-1.5">
-        <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">BƯỚC 1</p>
-        <h2 className="m-0 text-[1.2rem] font-black tracking-[-0.03em] text-white">Tạo yêu cầu nạp tiền</h2>
-        <p className="m-0 max-w-2xl text-sm leading-6 text-slate-400">Nhập số tiền bạn muốn nạp vào ví.</p>
-      </div>
-
-      <form className="grid gap-5" onSubmit={onSubmit}>
-        <div className="grid gap-2.5">
-          <label htmlFor="wallet-deposit-amount" className="text-sm font-semibold text-slate-200">
-            Số tiền nạp
-          </label>
-          <div className="relative">
-            <input
-              id="wallet-deposit-amount"
-              inputMode="numeric"
-              autoComplete="off"
-              value={formattedAmount}
-              onChange={onAmountChange}
-              placeholder="100.000"
-              className="h-14 w-full rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 pr-12 text-[1rem] font-semibold tracking-[0.01em] text-white outline-none transition-all duration-200 placeholder:text-slate-500 hover:border-cyan-300/30 hover:bg-[rgba(255,255,255,0.05)] focus:border-cyan-300/55 focus:bg-[rgba(255,255,255,0.05)] focus:shadow-[0_0_0_4px_rgba(34,211,238,0.08)]"
-            />
-            <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-[0.95rem] font-semibold text-slate-400">đ</span>
-          </div>
-          {amountError ? <p className="m-0 text-sm text-rose-300">{amountError}</p> : null}
-        </div>
-
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-          {QUICK_AMOUNTS.map((value) => {
-            const selected = amount === String(value);
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => onQuickPick(value)}
-                className={classNames(
-                  'min-h-12 rounded-[14px] border px-3 py-3 text-sm font-semibold transition-all duration-200',
-                  selected
-                    ? 'border-cyan-300/75 bg-cyan-400/12 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.16),0_0_22px_rgba(34,211,238,0.16)]'
-                    : 'border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/35 hover:bg-white/[0.05] hover:text-white',
-                )}
-              >
-                {formatCurrency(value)}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <button
-            type="submit"
-            disabled={busy}
-            className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[18px] border border-cyan/30 bg-cyan-400 px-5 text-[1rem] font-semibold text-slate-950 shadow-[0_16px_36px_rgba(34,211,238,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-cyan-300 disabled:translate-y-0 disabled:opacity-60"
-          >
-            <WalletCards size={18} />
-            Tạo mã QR nạp tiền
-          </button>
-
-          <button
-            type="button"
-            disabled
-            className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[18px] border border-white/10 bg-transparent px-5 text-[1rem] font-semibold text-slate-300 opacity-35 transition-all duration-200 disabled:cursor-not-allowed"
-          >
-            <CheckCircle2 size={18} />
-            Tôi đã chuyển khoản
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function PaymentPanel({
-  activeRequest,
-  busy,
-  copiedKey,
-  remainingLabel,
-  onConfirm,
-  onCopy,
-}: {
-  activeRequest: DepositRequest | null;
-  busy: boolean;
-  copiedKey: string | null;
-  remainingLabel: string;
-  onConfirm: () => Promise<void>;
-  onCopy: (key: string, value: string) => Promise<void>;
-}) {
-  const status = activeRequest ? getDepositRequestStatus(activeRequest.status) : null;
-
-  return (
-    <div className="grid gap-5">
-      <div className="grid gap-1.5">
-        <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">BƯỚC 2</p>
-        <h2 className="m-0 text-[1.2rem] font-black tracking-[-0.03em] text-white">Thông tin chuyển khoản</h2>
-        <p className="m-0 max-w-2xl text-sm leading-6 text-slate-400">Sao chép đúng nội dung chuyển khoản để hệ thống ghi nhận nhanh.</p>
-      </div>
-
-      {activeRequest ? (
-        <div className="grid gap-5">
-          <div className="grid gap-5 border-b border-white/[0.08] pb-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <span className="grid size-12 place-items-center rounded-[16px] border border-cyan/15 bg-cyan/10 text-cyan-50">
-                  <QrCode size={22} />
-                </span>
-                <div className="grid gap-0.5">
-                  <strong className="text-sm font-black text-white">QR thanh toán</strong>
-                  <span className="text-xs text-slate-400">Mã nạp riêng cho yêu cầu này</span>
-                </div>
-              </div>
-              <Badge variant={status?.badgeVariant ?? 'warning'} className="rounded-full">
-                {status?.label ?? 'Đang chờ'}
-              </Badge>
-            </div>
-
-            <div className="grid place-items-center rounded-[24px] border border-white/[0.08] bg-transparent p-3">
-              <img src={activeRequest.qrImageUrl} alt="Mã QR chuyển khoản" className="w-full max-w-[300px] rounded-[16px]" />
-            </div>
-          </div>
-
-          <div className="grid gap-1">
-            <PaymentRow
-              label="Ngân hàng"
-              value={resolveBankDisplayName(activeRequest.bankId)}
-            />
-            <PaymentRow
-              label="Số tài khoản"
-              value={activeRequest.accountNo}
-              copyKey="accountNo"
-              copiedKey={copiedKey}
-              onCopy={() => void onCopy('accountNo', activeRequest.accountNo)}
-            />
-            <PaymentRow
-              label="Nội dung"
-              value={activeRequest.transferContent}
-              copyKey="transferContent"
-              copiedKey={copiedKey}
-              highlighted
-              onCopy={() => void onCopy('transferContent', activeRequest.transferContent)}
-            />
-          </div>
-
-          <div className="grid gap-3 border-t border-white/[0.08] pt-5 sm:grid-cols-2">
-            <button
-              type="button"
-              disabled={!activeRequest || busy}
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[18px] border border-white/10 bg-transparent px-5 text-[1rem] font-semibold text-slate-200 transition-all duration-200 hover:border-cyan/25 hover:bg-[rgba(255,255,255,0.04)] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-              onClick={() => void onConfirm()}
-            >
-              <CheckCircle2 size={18} />
-              Tôi đã chuyển khoản
-            </button>
-
-            <button
-              type="button"
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[18px] border border-white/10 bg-transparent px-5 text-[1rem] font-semibold text-slate-200 transition-all duration-200 hover:border-cyan/25 hover:bg-[rgba(255,255,255,0.04)] hover:text-white"
-            >
-              <Headphones size={18} />
-              Liên hệ hỗ trợ
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="grid place-items-center gap-4 border border-dashed border-white/10 px-6 py-14 text-center">
-          <span className="grid size-16 place-items-center rounded-[24px] border border-cyan/15 bg-cyan/10 text-cyan-100">
-            <QrCode size={28} />
-          </span>
-          <div className="grid gap-1">
-            <strong className="text-base font-black text-white">Chưa có yêu cầu nạp đang hoạt động</strong>
-            <p className="m-0 max-w-md text-sm leading-7 text-slate-400">Tạo một yêu cầu nạp ở khung bên trái để hiện QR, ngân hàng và nội dung chuyển khoản.</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function HistoryFiltersBar({
   bankOptions,
   filters,
@@ -652,7 +448,7 @@ function HistoryTable({
 
       <div className="divide-y divide-white/[0.06] border-y border-white/[0.08]">
         {rows.map((row) => (
-          <HistoryRow key={`${row.kind}-${row.id}`} row={row} mode={mode} />
+          <HistoryRow key={`${row.kind}-${row.id}`} row={row} />
         ))}
       </div>
     </div>
@@ -660,10 +456,8 @@ function HistoryTable({
 }
 
 function HistoryRow({
-  mode,
   row,
 }: {
-  mode: HistoryView;
   row: WalletHistoryRow;
 }) {
   if (row.kind === 'deposit') {
@@ -796,47 +590,6 @@ function SelectField({
   );
 }
 
-function PaymentRow({
-  label,
-  value,
-  copyKey,
-  copiedKey,
-  highlighted,
-  onCopy,
-}: {
-  label: string;
-  value: ReactNode;
-  copyKey?: string;
-  copiedKey?: string | null;
-  highlighted?: boolean;
-  onCopy?: () => void;
-}) {
-  return (
-    <div className={classNames('grid grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] items-center gap-3 py-1.5', highlighted ? 'rounded-[8px] bg-cyan-400/5 px-0.5' : '')}>
-      <span className="min-w-0 text-[0.84rem] leading-5 text-slate-400">{label}</span>
-      <div className="flex min-w-0 items-center justify-end gap-2">
-        <div className="min-w-0 truncate text-right text-sm font-semibold text-white">{value}</div>
-        {copyKey && onCopy ? (
-          <button
-            type="button"
-            aria-label={`Sao chép ${label}`}
-            title={`Sao chép ${label}`}
-            onClick={onCopy}
-            className={classNames(
-              'inline-flex size-7 shrink-0 items-center justify-center rounded-[6px] border transition-colors',
-              copiedKey === copyKey
-                ? 'border-cyan-300/30 bg-cyan-400/10 text-cyan-100'
-                : 'border-cyan-300/15 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10 hover:text-cyan-50',
-            )}
-          >
-            <Copy size={12} />
-          </button>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
 function Pagination({
   currentPage,
   onPageChange,
@@ -920,25 +673,6 @@ function PagerNumberButton({
     >
       {children}
     </button>
-  );
-}
-
-function InfoRow({
-  label,
-  value,
-  labelClassName,
-  valueClassName,
-}: {
-  label: string;
-  value: string;
-  labelClassName?: string;
-  valueClassName?: string;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] py-3.5 last:border-b-0">
-      <span className={classNames('text-sm font-medium text-slate-400', labelClassName)}>{label}</span>
-      <span className={classNames('text-right text-sm font-semibold text-white', valueClassName)}>{value}</span>
-    </div>
   );
 }
 
@@ -1129,24 +863,6 @@ function formatShortDateTime(value: string) {
   }).format(date);
 }
 
-function formatWalletMemberSince(value?: string) {
-  if (!value) return '--';
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '--';
-
-  return new Intl.DateTimeFormat('vi-VN', {
-    month: '2-digit',
-    year: 'numeric',
-  }).format(date);
-}
-
-function formatCountdown(totalSeconds: number) {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
 function getPaginationPages(currentPage: number, totalPages: number) {
   if (totalPages <= 5) {
     return Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -1163,18 +879,3 @@ function getPaginationPages(currentPage: number, totalPages: number) {
   return [1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages];
 }
 
-async function copyValue(value: string) {
-  if (!value.trim()) {
-    toast.error('Không có nội dung để sao chép.');
-    return false;
-  }
-
-  try {
-    await navigator.clipboard.writeText(value);
-    toast.success('Đã sao chép.');
-    return true;
-  } catch {
-    toast.error('Không thể sao chép lúc này.');
-    return false;
-  }
-}

@@ -1,5 +1,5 @@
 import { CheckCircle2, CircleSlash, Clock3, Send, TriangleAlert, XCircle } from 'lucide-react';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import type { Order } from '@/features/orders/types';
 import type { User } from '@/features/auth/types';
 import { Badge, Button, EmptyState, IconBox, RecordRow, SearchBar, SectionHeading } from '@/shared/components';
@@ -246,4 +246,3 @@ function getOrderStatusIcon(status: number) {
 
   return icons[status as keyof typeof icons] ?? <TriangleAlert size={14} />;
 }
-

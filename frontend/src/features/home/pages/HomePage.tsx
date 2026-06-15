@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Clock3, Gamepad2, History, Package2, ReceiptText, Search, WalletCards, Zap } from 'lucide-react';
+import { ArrowRight, ReceiptText, Search, Zap } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { SITE_IMAGES } from '@/app/config/site';
 import { routes } from '@/app/router/routes';

@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Gamepad2, Heart, Search, Sparkles, Star } from 'lucide-react';
+import { ChevronDown, Gamepad2, Heart, Search, Sparkles } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { routes } from '@/app/router/routes';
 import type { Game } from '@/features/games/types';

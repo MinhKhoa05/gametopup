@@ -8,7 +8,6 @@ type GamePlatformKey = Exclude<CatalogPlatformFilter, 'all'>;
 const FEATURED_LIMIT = 8;
 
 const MOBILE_KEYWORDS = ['mobile', 'free fire', 'liên quân', 'lien quan', 'pubg', 'call of duty', 'cod mobile'];
-const PC_KEYWORDS = ['valorant', 'league of legends', 'lol', 'fc online', 'roblox', 'minecraft', 'genshin', 'steam'];
 const CONSOLE_KEYWORDS = ['console', 'playstation', 'ps5', 'ps4', 'xbox', 'nintendo', 'switch'];
 const FEATURED_ORDER = [
   'liên quân mobile',

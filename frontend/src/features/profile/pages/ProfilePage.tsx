@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode, type RefObject } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, BadgeCheck, ChevronLeft, ChevronRight, Gamepad2, LockKeyhole, Mail, Package2, PencilLine, ReceiptText, ShieldCheck, Sparkles, UserRound, WalletCards } from 'lucide-react';
+import { BadgeCheck, ChevronLeft, ChevronRight, LockKeyhole, PencilLine, ShieldCheck } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
@@ -13,7 +13,7 @@ import type { Order } from '@/features/orders/types';
 import { useMyOrdersQuery } from '@/features/orders/server';
 import { useUpdateMyProfileMutation } from '@/features/profile/server';
 import { useWalletBalanceQuery, useWalletTransactionsQuery } from '@/features/wallet/server';
-import { Badge, Button, EmptyState, IconBox, ImageBox } from '@/shared/components';
+import { Badge, Button, EmptyState, ImageBox } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency } from '@/shared/lib/format';
 

@@ -13,8 +13,6 @@ export function AdminDepositsPage() {
     <DepositsAdminPanel
       busy={section.busy}
       loading={section.loading}
-      onApproveRequest={section.approveRequest}
-      onRejectRequest={section.rejectRequest}
       requests={section.requests}
       state={state}
     />

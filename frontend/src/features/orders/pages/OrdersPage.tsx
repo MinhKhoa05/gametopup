@@ -5,10 +5,8 @@ import { classNames } from '@/shared/lib/classNames';
 import { useCancelOrderMutation, useMyOrdersQuery } from '@/features/orders/server';
 import { useGamesQuery } from '@/features/games/server';
 import { buildOrderHistoryItems, type OrderHistoryItem } from '@/features/orders/components/OrderHistorySections';
-import type { Order } from '@/features/orders/types';
-import { CalendarRange, ChevronDown, ClipboardList, Clock3, Gamepad2, Headphones, Search, SlidersHorizontal, TimerReset, CheckCircle2, XCircle } from 'lucide-react';
+import { CalendarRange, ChevronDown, ClipboardList, Gamepad2, Headphones, Search, SlidersHorizontal, TimerReset, CheckCircle2, XCircle } from 'lucide-react';
 import { ImageBox } from '@/shared/components';
-import { formatCurrency } from '@/shared/lib/format';
 
 const PAGE_SIZE = 6;
 
@@ -419,7 +417,7 @@ function OrderTimeline({ steps }: { steps: OrderHistoryItem['timeline'] }) {
   return (
     <div className="relative grid gap-6 pl-0.5">
       <div className="absolute left-[19px] top-1 bottom-1 w-px rounded-full bg-gradient-to-b from-cyan-300/20 via-white/12 to-white/0" />
-      {steps.map((step, index) => (
+      {steps.map((step) => (
         <div key={step.label} className="relative grid grid-cols-[auto_minmax(0,1fr)] gap-4">
           <div className="relative z-10 flex flex-col items-center pt-0.5">
             <div

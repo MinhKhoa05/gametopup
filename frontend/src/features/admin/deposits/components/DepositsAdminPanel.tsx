@@ -27,15 +27,11 @@ type DepositRequestsAdminPanelState = {
 export function DepositsAdminPanel({
   busy,
   loading,
-  onApproveRequest,
-  onRejectRequest,
   requests,
   state,
 }: {
   busy: boolean;
   loading: boolean;
-  onApproveRequest: (payload: { note?: string; requestId: number }) => Promise<void>;
-  onRejectRequest: (payload: { note?: string; requestId: number }) => Promise<void>;
   requests: DepositRequest[];
   state: DepositRequestsAdminPanelState;
 }) {
