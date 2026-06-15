@@ -82,10 +82,7 @@ export function GamesPage() {
   const activeCount = filteredGames.length;
 
   return (
-    <div className="relative isolate overflow-hidden">
-      <BackgroundDecor />
-
-      <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
+    <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
         <div className="grid gap-6">
           <header className={PANEL_CLASS}>
             <div className="grid gap-5 px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
@@ -166,7 +163,7 @@ export function GamesPage() {
                   <h2 className="m-0 text-[1.25rem] font-black tracking-[-0.03em] text-white">Lưới game</h2>
                   <span className="text-sm text-slate-400 gt-tabular">{activeCount} game</span>
                 </div>
-                <GameCatalogGrid games={filteredGames} onPick={(game) => navigate(routes.topup(game.id, 1))} />
+                <GameCatalogGrid games={filteredGames} onPick={(game) => navigate(routes.gameDetail(game.id))} />
               </section>
             </>
           ) : (
@@ -185,8 +182,7 @@ export function GamesPage() {
             />
           )}
         </div>
-      </AppPageContainer>
-    </div>
+    </AppPageContainer>
   );
 }
 
@@ -230,15 +226,6 @@ function SelectField({
       </select>
       <ChevronDown size={16} className="pointer-events-none absolute right-4 text-slate-500" />
     </label>
-  );
-}
-
-function BackgroundDecor() {
-  return (
-    <>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.1),transparent_26%),radial-gradient(circle_at_top_right,rgba(34,211,238,0.05),transparent_18%),radial-gradient(circle_at_50%_-10%,rgba(15,118,110,0.14),transparent_34%)]" />
-      <div className="pointer-events-none absolute inset-0 gt-page-grid opacity-[0.05]" />
-    </>
   );
 }
 

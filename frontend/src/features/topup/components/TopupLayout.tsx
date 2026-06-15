@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
+import { memo } from 'react';
 import { ChevronRight, Home } from 'lucide-react';
 import { Badge, IconBox, ImageBox, StepProgress, type ProgressStep } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 
 export const TOPUP_ORDER_STEPS: readonly ProgressStep[] = [
-  { icon: <span className="text-sm font-black tabular-nums">1</span>, title: 'Chọn gói & nhập thông tin' },
-  { icon: <span className="text-sm font-black tabular-nums">2</span>, title: 'Đặt hàng thành công' },
+  { icon: <span className="text-sm font-black tabular-nums">1</span>, title: 'Chọn gói' },
+  { icon: <span className="text-sm font-black tabular-nums">2</span>, title: 'Hoàn tất' },
 ] as const;
 
 export function TopupBreadcrumb({ gameName }: { gameName: string }) {
@@ -22,7 +23,7 @@ export function TopupBreadcrumb({ gameName }: { gameName: string }) {
 }
 
 export function TopupStepProgress({ currentStep }: { currentStep: 1 | 2 }) {
-  return <StepProgress currentStep={currentStep} steps={TOPUP_ORDER_STEPS} className="max-w-[640px]" />;
+  return <StepProgress currentStep={currentStep} steps={TOPUP_ORDER_STEPS} className="mx-auto w-full max-w-[640px]" />;
 }
 
 export function TopupHeroBanner({
@@ -147,63 +148,47 @@ export function TopupStatusItem({
 
 export function TopupPageSkeleton() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8" aria-busy="true" aria-label="Đang tải trang đặt hàng">
-      <div className="mb-5 flex items-center gap-2 text-sm text-slate-400">
-        <div className="h-4 w-4 animate-pulse rounded-full bg-white/10" />
-        <div className="h-4 w-24 animate-pulse rounded-full bg-white/10" />
-      </div>
-      <div className="gt-surface p-5 sm:p-6">
-        <div className="mx-auto mb-5 grid w-full max-w-[640px] grid-cols-2 gap-2.5 sm:gap-4" aria-hidden="true">
-          {Array.from({ length: 2 }).map((_, index) => (
-            <div
-              key={`step-skeleton-${index}`}
-              className={classNames(
-                'relative flex flex-col items-center gap-1.5 text-center text-slate-500',
-                index === 0 &&
-                  "after:absolute after:top-[13px] after:left-[calc(50%+24px)] after:right-[calc(-50%+24px)] after:h-0.5 after:rounded-full after:bg-white/6 after:content-['']",
-              )}
-            >
-              <span
-                className={classNames(
-                  'relative z-10 inline-flex size-7 items-center justify-center rounded-full border border-white/8 bg-slate-700/30 text-sm font-black text-slate-300 ring-1 ring-inset ring-white/5',
-                  index === 0 && 'bg-cyan-500 text-slate-950 shadow-[0_0_22px_rgba(34,211,238,0.24)] ring-cyan-200/20',
-                )}
-              >
-                <span className="animate-pulse text-transparent">0</span>
-              </span>
-              <small className="h-3 w-20 animate-pulse rounded-full bg-white/10 text-transparent" />
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="grid gap-4">
-            <div className="h-56 animate-pulse rounded-2xl bg-white/5" />
-            <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-3.5">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <div key={`package-skeleton-${index}`} className="relative flex min-h-48 flex-col items-stretch rounded-lg border border-white/[0.06] bg-ink-lighter p-2.5 text-center md:min-h-[210px]" aria-hidden="true">
-                  <div className="mb-2.5 aspect-[1/0.82] overflow-hidden rounded-md bg-ink-dark">
-                    <div className="h-full w-full animate-pulse bg-[linear-gradient(110deg,rgba(255,255,255,0.03)_8%,rgba(255,255,255,0.12)_18%,rgba(255,255,255,0.03)_33%)] bg-[length:200%_100%]" />
-                  </div>
-                  <div className="mb-2 h-4 w-3/4 animate-pulse rounded-full bg-white/8" />
-                  <div className="h-3 w-1/2 animate-pulse rounded-full bg-white/6" />
-                  <div className="mt-auto h-8 w-full rounded-md bg-white/8" />
-                </div>
-              ))}
-            </div>
+    <div className="mx-auto grid max-w-[1480px] gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10" aria-busy="true" aria-label="Đang tải trang đặt hàng">
+      <div className="rounded-[30px] border border-white/8 bg-[rgba(7,14,28,0.86)] p-5 shadow-[0_24px_70px_rgba(2,6,23,0.28)] sm:p-6 lg:p-7">
+        <div className="flex items-center gap-4 sm:gap-5">
+          <div className="h-20 w-20 animate-pulse rounded-[24px] bg-white/[0.04] sm:h-24 sm:w-24" aria-hidden="true" />
+          <div className="min-w-0 flex-1 space-y-3">
+            <div className="h-6 w-32 animate-pulse rounded-full bg-white/10" />
+            <div className="h-10 w-72 max-w-full animate-pulse rounded-full bg-white/10" />
+            <div className="h-4 w-[min(100%,28rem)] animate-pulse rounded-full bg-white/8" />
           </div>
-          <aside className="sticky top-24">
-            <div className="gt-panel gt-panel-soft rounded-lg p-4">
-              <div className="mb-4 h-5 w-40 animate-pulse rounded-full bg-white/10" />
-              <div className="grid gap-3">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={`field-skeleton-${index}`} className="h-12 rounded-xl bg-white/6" aria-hidden="true" />
-                ))}
-                <div className="h-12 rounded-xl bg-white/8" />
-              </div>
-            </div>
-          </aside>
         </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="grid gap-4">
+          <div className="space-y-2">
+            <div className="h-8 w-44 animate-pulse rounded-full bg-white/10" />
+            <div className="h-4 w-72 animate-pulse rounded-full bg-white/8" />
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={`package-skeleton-${index}`} className="flex min-h-[280px] flex-col gap-3 rounded-[24px] border border-white/[0.06] bg-white/[0.025] p-3" aria-hidden="true">
+                <div className="aspect-[1.05/0.82] rounded-[18px] bg-white/[0.05]" />
+                <div className="h-4 w-3/4 animate-pulse rounded-full bg-white/8" />
+                <div className="h-3 w-1/2 animate-pulse rounded-full bg-white/6" />
+                <div className="mt-auto h-10 rounded-2xl bg-white/8" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <aside className="rounded-[28px] border border-white/8 bg-[rgba(7,13,25,0.92)] p-5 shadow-[0_22px_60px_rgba(2,6,23,0.3)] backdrop-blur-xl sm:p-6">
+          <div className="mb-4 h-5 w-40 animate-pulse rounded-full bg-white/10" />
+          <div className="grid gap-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={`field-skeleton-${index}`} className="h-12 rounded-xl bg-white/6" aria-hidden="true" />
+            ))}
+            <div className="h-12 rounded-xl bg-white/8" />
+          </div>
+        </aside>
       </div>
     </div>
   );
 }
+
+export const TopupPageSkeletonMemo = memo(TopupPageSkeleton);

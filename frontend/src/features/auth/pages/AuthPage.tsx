@@ -25,15 +25,6 @@ export function AuthPage({ mode }: AuthPageProps) {
 
   return (
     <div className="relative flex min-h-[calc(100dvh-4.5rem)] flex-col overflow-hidden px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.12),transparent_32%),linear-gradient(180deg,rgba(2,6,23,0.96)_0%,rgba(2,6,23,1)_100%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 opacity-[0.14] [background-image:linear-gradient(rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.08)_1px,transparent_1px)] [background-size:40px_40px]"
-      />
-
       <section className="relative flex w-full flex-1 items-center justify-center">
         <div className="mx-auto grid w-full max-w-[30rem] gap-6">
           <div className="text-center">

@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { ROUTE_PATHS } from './routes';
 import { HomePage } from '@/features/home/pages/HomePage';
 import { GamesPage } from '@/features/games/pages/GamesPage';
-import { TopupPage } from '@/features/topup/pages/TopupPage';
+import { GameDetailPage } from '@/features/games/pages/GameDetailPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { WalletPage } from '@/features/wallet/pages/WalletPage';
@@ -25,9 +25,9 @@ export function AppRouter() {
       <Route path={ROUTE_PATHS.register} element={<RegisterPage />} />
       <Route path={ROUTE_PATHS.authLegacy} element={<Navigate to={ROUTE_PATHS.login} replace />} />
       <Route path={ROUTE_PATHS.games} element={<GamesPage />} />
-      <Route path={ROUTE_PATHS.gameDetail} element={<GamesPage />} />
-      <Route path={ROUTE_PATHS.topupLegacy} element={<TopupPage />} />
-      <Route path={ROUTE_PATHS.topup} element={<TopupPage />} />
+      <Route path={ROUTE_PATHS.gameDetail} element={<GameDetailPage />} />
+      <Route path={ROUTE_PATHS.topupLegacy} element={<GameDetailPage />} />
+      <Route path={ROUTE_PATHS.topup} element={<GameDetailPage />} />
       <Route
         path={ROUTE_PATHS.wallet}
         element={

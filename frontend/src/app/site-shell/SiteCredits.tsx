@@ -4,11 +4,11 @@ import { routes } from '@/app/router/routes';
 
 export function SiteCredits() {
   return (
-    <div className="border-t border-white/8 pt-4 text-xs text-slate-500">
-      <div className="mx-auto flex w-full max-w-[1480px] flex-col items-center gap-2 px-4 text-center sm:flex-row sm:justify-between sm:px-6 lg:px-8">
-        <span className="flex flex-wrap items-center justify-center gap-1">
+    <div className="border-t border-white/8 pt-5 text-sm text-slate-400">
+      <div className="mx-auto flex w-full max-w-[1480px] flex-col items-center gap-3 px-4 text-center sm:flex-row sm:justify-between sm:px-6 lg:px-8">
+        <span className="flex flex-wrap items-center justify-center gap-1.5">
           <span>© {SITE.copyrightYear}</span>
-          <Link to={routes.home()} className="font-medium text-slate-400 transition-colors hover:text-slate-200">
+          <Link to={routes.home()} className="font-semibold text-slate-300 transition-colors hover:text-slate-100">
             {SITE.name}
           </Link>
           <span>All rights reserved.</span>
@@ -19,7 +19,7 @@ export function SiteCredits() {
           {FOOTER_DEVELOPER_LINKS.map((link) => (
             <a
               key={link.label}
-              className="text-slate-400 transition-colors hover:text-slate-200"
+              className="text-cyan-200/85 transition-colors hover:text-cyan-100"
               href={link.href}
               target="_blank"
               rel="noreferrer"

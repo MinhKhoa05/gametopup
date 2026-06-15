@@ -44,14 +44,11 @@ export function HomePage() {
   const isWalletLoading = walletQuery.isPending && auth.status === 'authenticated' && walletQuery.data == null;
 
   return (
-    <div className="relative isolate overflow-hidden">
-      <BackgroundDecor />
-
-      <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
+    <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
         <div className="grid gap-6 lg:gap-8">
           <HeroSection onBrowse={() => navigate(routes.games())} onDeposit={() => navigate(routes.wallet())} />
 
-          <FeaturedRail games={featuredGames} onPick={(game) => navigate(routes.topup(game.id, 1))} loading={isGamesLoading} />
+          <FeaturedRail games={featuredGames} onPick={(game) => navigate(routes.gameDetail(game.id))} loading={isGamesLoading} />
 
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.82fr)]">
             <section className={PANEL_CLASS}>
@@ -70,7 +67,7 @@ export function HomePage() {
                 {featuredPackages.length ? (
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {featuredPackages.map((pkg) => (
-                      <PackageCardView key={`${pkg.game.id}-${pkg.name}`} packageItem={pkg} onPick={() => navigate(routes.topup(pkg.game.id, 1))} />
+                      <PackageCardView key={`${pkg.game.id}-${pkg.name}`} packageItem={pkg} onPick={() => navigate(routes.gameDetail(pkg.game.id))} />
                     ))}
                   </div>
                 ) : (
@@ -145,8 +142,7 @@ export function HomePage() {
 
           <TrustSection />
         </div>
-      </AppPageContainer>
-    </div>
+    </AppPageContainer>
   );
 }
 
@@ -366,15 +362,6 @@ function formatRelativeTime(value: string) {
 
   const diffDays = Math.round(diffHours / 24);
   return `${diffDays} ngày trước`;
-}
-
-function BackgroundDecor() {
-  return (
-    <>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.1),transparent_26%),radial-gradient(circle_at_top_right,rgba(34,211,238,0.05),transparent_18%),radial-gradient(circle_at_50%_-10%,rgba(15,118,110,0.14),transparent_34%)]" />
-      <div className="pointer-events-none absolute inset-0 gt-page-grid opacity-[0.05]" />
-    </>
-  );
 }
 
 const PACKAGE_PRESETS = [

@@ -11,6 +11,7 @@ export type Game = {
 export type GamePackage = {
   id: number;
   name: string;
+  description?: string | null;
   imageUrl: string;
   imageRelativePath: string | null;
   gameId: number;

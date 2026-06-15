@@ -19,6 +19,7 @@ export function App() {
     location.pathname === ROUTE_PATHS.login ||
     location.pathname === ROUTE_PATHS.register ||
     location.pathname === ROUTE_PATHS.authLegacy;
+  const isTopupRoute = location.pathname.startsWith('/topup/') || (location.pathname.startsWith('/games/') && location.pathname !== ROUTE_PATHS.games);
   const footerVariant = location.pathname === ROUTE_PATHS.home ? 'full' : 'minimal';
   const [sessionExpiredAt, setSessionExpiredAt] = useState<number | null>(null);
 
@@ -52,8 +53,8 @@ export function App() {
       isAuthRoute={isAuthRoute}
       header={<SiteHeader />}
       authHeader={<AuthHeader />}
-      footer={<Footer variant={footerVariant} />}
-      bottomNav={<BottomNav />}
+      footer={isTopupRoute || isAuthRoute ? undefined : <Footer variant={footerVariant} />}
+      bottomNav={isTopupRoute || isAuthRoute ? undefined : <BottomNav />}
     >
       <AppRouter />
     </AppLayout>

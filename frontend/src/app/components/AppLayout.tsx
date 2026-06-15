@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { AppBackground } from './AppBackground';
 
 type AppLayoutProps = {
   bottomNav?: ReactNode;
@@ -20,7 +21,8 @@ export function AppLayout({
   isAuthRoute = false,
 }: AppLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-ink text-slate-100">
+    <div className="relative isolate flex min-h-screen flex-col bg-ink text-slate-100">
+      <AppBackground />
       {!isAdminRoute && !isAuthRoute && header}
       {!isAdminRoute && isAuthRoute && authHeader}
       <main className={`flex flex-1 flex-col pb-[env(safe-area-inset-bottom,0px)] ${isAuthRoute ? 'pt-[4.5rem]' : ''}`}>{children}</main>
