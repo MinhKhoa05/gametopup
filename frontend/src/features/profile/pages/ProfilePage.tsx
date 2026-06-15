@@ -453,7 +453,7 @@ function buildFavoriteGames(orders: Order[], games: Game[]) {
 
   return Array.from(grouped.values())
     .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name))
-    .slice(0, 5);
+    .slice(0, 2);
 }
 
 function resolveVipTier(totalDeposited: number) {

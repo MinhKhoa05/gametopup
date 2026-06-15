@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
+﻿import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowDownLeft,
@@ -7,7 +7,6 @@ import {
   ChevronDown,
   Clock3,
   Copy,
-  CreditCard,
   Headphones,
   History,
   Info,
@@ -21,13 +20,8 @@ import { toast } from 'sonner';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
-import {
-  useConfirmDepositTransferMutation,
-  useCreateDepositRequestMutation,
-  useMyDepositRequestsQuery,
-  useWalletBalanceQuery,
-  useWalletTransactionsQuery,
-} from '@/features/wallet/server';
+import { WalletDepositDialog } from '@/features/wallet/components/WalletDepositDialog';
+import { useMyDepositRequestsQuery, useWalletBalanceQuery, useWalletTransactionsQuery } from '@/features/wallet/server';
 import { Badge, EmptyState, IconBox } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency } from '@/shared/lib/format';
@@ -37,17 +31,11 @@ import type { DepositRequest, WalletTransaction, WalletTransactionType } from '@
 const QUICK_AMOUNTS = [50000, 100000, 200000, 500000, 1000000, 2000000] as const;
 const HISTORY_PAGE_SIZE = 8;
 
-const VIEW_TABS = [
-  { label: 'Nạp tiền vào ví', value: 'deposit' },
-  { label: 'Lịch sử nạp tiền', value: 'history' },
-] as const;
-
 const HISTORY_SUB_TABS = [
   { label: 'Lịch sử nạp tiền', value: 'deposit' },
   { label: 'Biến động số dư', value: 'ledger' },
 ] as const;
 
-type WalletView = (typeof VIEW_TABS)[number]['value'];
 type HistoryView = (typeof HISTORY_SUB_TABS)[number]['value'];
 type HistorySort = 'newest' | 'oldest' | 'amount-desc' | 'amount-asc';
 type HistoryTime = 'all' | '24h' | '7d' | '30d';
@@ -135,17 +123,10 @@ export function WalletPage() {
   const balanceQuery = useWalletBalanceQuery(auth.status === 'authenticated');
   const transactionsQuery = useWalletTransactionsQuery(auth.status === 'authenticated');
   const depositRequestsQuery = useMyDepositRequestsQuery(auth.status === 'authenticated');
-  const createDepositRequestMutation = useCreateDepositRequestMutation();
-  const confirmDepositTransferMutation = useConfirmDepositTransferMutation();
 
-  const [view, setView] = useState<WalletView>('deposit');
   const [historyView, setHistoryView] = useState<HistoryView>('deposit');
-  const [amount, setAmount] = useState(String(QUICK_AMOUNTS[1]));
-  const [amountError, setAmountError] = useState<string | null>(null);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [activeRequestId, setActiveRequestId] = useState<number | null>(null);
   const [historyPage, setHistoryPage] = useState(1);
-  const [now, setNow] = useState(() => Date.now());
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [historyFilters, setHistoryFilters] = useState<HistoryFilters>({
     search: '',
     bank: 'all',
@@ -159,35 +140,12 @@ export function WalletPage() {
   const depositRequests = depositRequestsQuery.data ?? [];
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!copiedKey) return;
-    const timer = window.setTimeout(() => setCopiedKey(null), 1400);
-    return () => window.clearTimeout(timer);
-  }, [copiedKey]);
-
-  useEffect(() => {
     setHistoryPage(1);
   }, [historyFilters, historyView]);
 
   useEffect(() => {
     setHistoryFilters((current) => ({ ...current, bank: 'all', status: 'all' }));
   }, [historyView]);
-
-  const activeRequest = useMemo(() => {
-    if (!depositRequests.length) return null;
-    if (activeRequestId && depositRequests.some((request) => request.id === activeRequestId)) {
-      return depositRequests.find((request) => request.id === activeRequestId) ?? depositRequests[0];
-    }
-    return depositRequests[0];
-  }, [activeRequestId, depositRequests]);
-
-  const paymentExpiry = activeRequest ? new Date(new Date(activeRequest.createdAt).getTime() + 15 * 60 * 1000).getTime() : null;
-  const remainingSeconds = paymentExpiry ? Math.max(0, Math.floor((paymentExpiry - now) / 1000)) : 0;
-  const remainingLabel = paymentExpiry ? formatCountdown(remainingSeconds) : '--:--';
 
   const historyRows = useMemo(() => buildWalletHistoryRows(depositRequests, transactions), [depositRequests, transactions]);
 
@@ -269,137 +227,106 @@ export function WalletPage() {
             </div>
           </header>
 
-          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <WalletStatCard label="Số dư hiện tại" value={formatCurrency(stats.balance)} icon={<WalletCards size={20} />} tone="cyan" />
-            <WalletStatCard label="Tổng đã nạp" value={formatCurrency(stats.topupAmount)} icon={<ArrowUpRight size={20} />} tone="emerald" />
-            <WalletStatCard label="Yêu cầu nạp" value={`${stats.requests} yêu cầu`} icon={<Clock3 size={20} />} tone="amber" />
-            <WalletStatCard label="Giao dịch gần đây" value={`${stats.transactions} giao dịch`} icon={<ReceiptText size={20} />} tone="sky" />
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.95fr)] xl:items-stretch">
+            <aside className="relative overflow-hidden rounded-[30px] border border-cyan-300/14 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.2),transparent_26%),linear-gradient(165deg,rgba(8,16,31,0.99),rgba(7,12,24,0.99))] p-6 shadow-[0_18px_50px_rgba(2,6,23,0.22)] sm:p-7">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.08),transparent_20%),linear-gradient(135deg,rgba(255,255,255,0.05),transparent_40%,rgba(255,255,255,0.03))] opacity-70" />
+
+              <div className="relative flex min-h-[320px] flex-col gap-8">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="grid gap-1">
+                    <p className="m-0 text-[0.72rem] font-black uppercase tracking-[0.24em] text-cyan-100/80">VÍ NỘI BỘ GAMETOPUP</p>
+                  </div>
+
+                  <div className="grid size-12 place-items-center rounded-[18px] border border-cyan-300/18 bg-cyan-400/12 text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                    <WalletCards size={20} />
+                  </div>
+                </div>
+
+                <div className="flex items-end justify-between gap-4 border-t border-white/[0.08] pt-4">
+                  <div className="grid gap-1">
+                    <span className="text-[0.74rem] font-black uppercase tracking-[0.22em] text-slate-500">Số dư</span>
+                    <strong className="text-[clamp(2.2rem,3.9vw,4rem)] font-black tracking-[-0.08em] text-white gt-tabular">
+                      {formatCurrency(stats.balance)}
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="mt-auto pt-2">
+                  <button
+                    type="button"
+                    className="inline-flex min-h-12 w-full items-center justify-center rounded-[16px] bg-cyan-400 px-4 text-sm font-black text-slate-950 transition-all duration-200 hover:-translate-y-px hover:bg-cyan-300"
+                    onClick={() => setIsDepositOpen(true)}
+                  >
+                    Nạp tiền
+                  </button>
+                </div>
+              </div>
+            </aside>
+
+            <div className="grid gap-3 self-stretch">
+              <WalletStatCard label="Tổng đã nạp" value={formatCurrency(stats.topupAmount)} icon={<ArrowUpRight size={20} />} tone="emerald" compact />
+              <WalletStatCard label="Yêu cầu nạp" value={`${stats.requests} yêu cầu`} icon={<Clock3 size={20} />} tone="amber" compact />
+              <WalletStatCard label="Giao dịch gần đây" value={`${stats.transactions} giao dịch`} icon={<ReceiptText size={20} />} tone="sky" compact />
+            </div>
           </section>
 
-          <section className="grid gap-4 rounded-[24px] border border-white/[0.08] bg-[rgba(255,255,255,0.02)] p-1.5">
-            <div className="flex flex-wrap gap-2">
-              {VIEW_TABS.map((tab) => {
-                const active = view === tab.value;
-                return (
-                  <button
-                    key={tab.value}
-                    type="button"
-                    className={classNames(
-                      'inline-flex min-h-12 items-center rounded-full px-4 text-sm font-semibold transition-all duration-200 sm:px-5',
-                      active
-                        ? 'bg-cyan-400 text-slate-950 shadow-[0_10px_24px_rgba(34,211,238,0.16)]'
-                        : 'text-slate-300 hover:bg-white/[0.04] hover:text-white',
-                    )}
-                    onClick={() => setView(tab.value)}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
+          <section className="grid gap-5 rounded-[24px] border border-white/[0.08] bg-[rgba(255,255,255,0.02)] p-5 sm:p-6 lg:p-7">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="grid gap-1.5">
+                <h2 className="m-0 text-[1.35rem] font-black tracking-[-0.04em] text-white">Dòng tiền & giao dịch</h2>
+                <p className="m-0 text-sm leading-6 text-slate-400">Theo dõi lịch sử nạp và biến động số dư trong cùng một nơi.</p>
+              </div>
             </div>
 
-            <section className={SHEET_CLASS}>
-              {view === 'deposit' ? (
-                <div className="grid xl:grid-cols-[minmax(0,0.4fr)_1px_minmax(0,0.6fr)]">
-                  <div className="border-b border-white/[0.08] p-5 sm:p-6 lg:p-7 xl:border-b-0 xl:border-r xl:border-white/[0.08]">
-                    <DepositPanel
-                      amount={amount}
-                      amountError={amountError}
-                      busy={createDepositRequestMutation.isPending}
-                      onAmountChange={(event) => {
-                        const next = event.target.value.replace(/\D/g, '');
-                        setAmount(next);
-                        setAmountError(null);
-                      }}
-                      onQuickPick={(value) => {
-                        setAmount(String(value));
-                        setAmountError(null);
-                      }}
-                      onSubmit={async (event) => {
-                        event.preventDefault();
-                        setAmountError(null);
-
-                        const parsedAmount = Number.parseInt(amount, 10);
-                        if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-                          setAmountError('Vui lòng nhập số tiền hợp lệ.');
-                          return;
-                        }
-
-                        const request = await createDepositRequestMutation.mutateAsync({ amount: parsedAmount });
-                        setActiveRequestId(request.id);
-                      }}
-                    />
-                  </div>
-
-                  <div className="hidden xl:block" />
-
-                  <div className="p-5 sm:p-6 lg:p-7">
-                    <PaymentPanel
-                      activeRequest={activeRequest}
-                      busy={confirmDepositTransferMutation.isPending}
-                      copiedKey={copiedKey}
-                      remainingLabel={remainingLabel}
-                      onConfirm={async () => {
-                        if (!activeRequest) return;
-                        const request = await confirmDepositTransferMutation.mutateAsync({ requestId: activeRequest.id });
-                        setActiveRequestId(request.id);
-                      }}
-                      onCopy={async (key, value) => {
-                        const copied = await copyValue(value);
-                        if (copied) setCopiedKey(key);
-                      }}
-                    />
-                  </div>
+            <div className="grid gap-5">
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <div className="flex flex-wrap gap-2 text-sm font-semibold">
+                  {HISTORY_SUB_TABS.map((tab) => {
+                    const active = historyView === tab.value;
+                    return (
+                      <button
+                        key={tab.value}
+                        type="button"
+                        className={classNames(
+                          'rounded-full border px-4 py-2 transition-all duration-200',
+                          active
+                            ? 'border-cyan-300/40 bg-cyan-400/12 text-cyan-100'
+                            : 'border-white/10 text-slate-300 hover:border-cyan/20 hover:bg-white/[0.04] hover:text-white',
+                        )}
+                        onClick={() => setHistoryView(tab.value)}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
                 </div>
-              ) : (
-                <div className="grid gap-5 p-5 sm:p-6 lg:p-7">
-                  <div className="flex flex-wrap items-end justify-between gap-4">
-                    <div className="grid gap-1">
-                      <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">LỊCH SỬ & BIẾN ĐỘNG</p>
-                      <h2 className="m-0 text-[1.35rem] font-black tracking-[-0.04em] text-white">Dòng tiền và giao dịch</h2>
-                    </div>
+              </div>
 
-                    <div className="flex flex-wrap gap-2 text-sm font-semibold">
-                      {HISTORY_SUB_TABS.map((tab) => {
-                        const active = historyView === tab.value;
-                        return (
-                          <button
-                            key={tab.value}
-                            type="button"
-                            className={classNames(
-                              'rounded-full border px-4 py-2 transition-all duration-200',
-                              active
-                                ? 'border-cyan-300/40 bg-cyan-400/12 text-cyan-100'
-                                : 'border-white/10 text-slate-300 hover:border-cyan/20 hover:bg-white/[0.04] hover:text-white',
-                            )}
-                            onClick={() => setHistoryView(tab.value)}
-                          >
-                            {tab.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+              <HistoryFiltersBar
+                mode={historyView}
+                filters={historyFilters}
+                bankOptions={getBankOptions(depositRequests)}
+                onChange={(patch) => setHistoryFilters((current) => ({ ...current, ...patch }))}
+              />
 
-                  <HistoryFiltersBar
-                    mode={historyView}
-                    filters={historyFilters}
-                    bankOptions={getBankOptions(depositRequests)}
-                    onChange={(patch) => setHistoryFilters((current) => ({ ...current, ...patch }))}
-                  />
+              <HistoryTable
+                mode={historyView}
+                rows={historyPageRows}
+              />
 
-                  <HistoryTable
-                    mode={historyView}
-                    rows={historyPageRows}
-                  />
-
-                  <Pagination currentPage={currentHistoryPage} totalPages={historyTotalPages} onPageChange={setHistoryPage} />
-                </div>
-              )}
-            </section>
+              <Pagination currentPage={currentHistoryPage} totalPages={historyTotalPages} onPageChange={setHistoryPage} />
+            </div>
           </section>
         </div>
       </AppPageContainer>
+      <WalletDepositDialog
+        isOpen={isDepositOpen}
+        onClose={() => setIsDepositOpen(false)}
+        onViewHistory={() => {
+          setHistoryView('deposit');
+          setIsDepositOpen(false);
+        }}
+      />
     </div>
   );
 }
@@ -623,7 +550,7 @@ function HistoryFiltersBar({
       <div className="grid gap-4 md:grid-cols-3">
         <SelectField
           value={filters.bank}
-          icon={<CreditCard size={16} />}
+          icon={<WalletCards size={16} />}
           label={mode === 'deposit' ? 'Lọc ngân hàng' : 'Lọc loại'}
           onChange={(value) => onChange({ bank: value })}
         >
@@ -779,11 +706,13 @@ function HistoryRow({
 function WalletStatCard({
   icon,
   label,
+  compact,
   tone,
   value,
 }: {
   icon: ReactNode;
   label: string;
+  compact?: boolean;
   tone: 'cyan' | 'emerald' | 'amber' | 'sky';
   value: string;
 }) {
@@ -797,11 +726,18 @@ function WalletStatCard({
           : 'border-cyan/15 bg-cyan/10 text-cyan-100';
 
   return (
-    <article className="group grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-[22px] border border-white/[0.08] bg-[rgba(255,255,255,0.03)] p-4 transition-all duration-200 hover:border-white/[0.12] hover:bg-[rgba(255,255,255,0.05)]">
-      <span className={classNames('grid size-11 place-items-center rounded-[16px] border transition-colors duration-200', toneClassName)}>{icon}</span>
+    <article
+      className={classNames(
+        'group grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-[22px] border border-white/[0.08] bg-[rgba(255,255,255,0.03)] transition-all duration-200 hover:border-white/[0.12] hover:bg-[rgba(255,255,255,0.05)]',
+        compact ? 'p-3' : 'p-4',
+      )}
+    >
+      <span className={classNames('grid place-items-center rounded-[16px] border transition-colors duration-200', compact ? 'size-10' : 'size-11', toneClassName)}>{icon}</span>
       <div className="grid gap-1">
-        <span className="text-[0.9rem] font-semibold text-slate-400">{label}</span>
-        <strong className="text-[clamp(1.2rem,1.65vw,1.55rem)] font-black tracking-[-0.04em] text-white gt-tabular">{value}</strong>
+        <span className={classNames('font-semibold text-slate-400', compact ? 'text-[0.82rem]' : 'text-[0.9rem]')}>{label}</span>
+        <strong className={classNames('font-black tracking-[-0.04em] text-white gt-tabular', compact ? 'text-[1.08rem]' : 'text-[clamp(1.2rem,1.65vw,1.55rem)]')}>
+          {value}
+        </strong>
       </div>
     </article>
   );
@@ -984,6 +920,25 @@ function PagerNumberButton({
     >
       {children}
     </button>
+  );
+}
+
+function InfoRow({
+  label,
+  value,
+  labelClassName,
+  valueClassName,
+}: {
+  label: string;
+  value: string;
+  labelClassName?: string;
+  valueClassName?: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] py-3.5 last:border-b-0">
+      <span className={classNames('text-sm font-medium text-slate-400', labelClassName)}>{label}</span>
+      <span className={classNames('text-right text-sm font-semibold text-white', valueClassName)}>{value}</span>
+    </div>
   );
 }
 
@@ -1171,6 +1126,18 @@ function formatShortDateTime(value: string) {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+  }).format(date);
+}
+
+function formatWalletMemberSince(value?: string) {
+  if (!value) return '--';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '--';
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    month: '2-digit',
+    year: 'numeric',
   }).format(date);
 }
 
