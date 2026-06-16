@@ -16,7 +16,7 @@ import {
   type CatalogPlatformFilter,
   type CatalogSortKey,
 } from '@/features/games/lib/catalog';
-import { Badge, Button, EmptyState, FilterChip, FilterSelectField, IconBox, ImageBox, PanelShell, PageHero, SearchBar } from '@/shared/components';
+import { Badge, Button, EmptyState, FilterChipGroup, FilterSelectField, IconBox, ImageBox, PanelShell, PageHero, SearchBar } from '@/shared/components';
 
 const PLATFORM_OPTIONS: Array<{ value: CatalogPlatformFilter; label: string }> = [
   { value: 'all', label: 'Nền tảng: Tất cả' },
@@ -118,21 +118,7 @@ export function GamesPage() {
                 </FilterSelectField>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3">
-                {QUICK_TAGS.map((tag) => {
-                  const active = tag.value === categoryFilter;
-
-                  return (
-                    <FilterChip
-                      key={tag.value}
-                      active={active}
-                      onClick={() => setCategoryFilter(tag.value)}
-                    >
-                      {tag.label}
-                    </FilterChip>
-                  );
-                })}
-              </div>
+              <FilterChipGroup items={QUICK_TAGS} value={categoryFilter} onChange={(value) => setCategoryFilter(value as CatalogCategoryFilter)} />
             </div>
           </PanelShell>
 

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ReceiptText, Search, Zap } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
@@ -9,8 +9,8 @@ import { useGamesQuery } from '@/features/games/server';
 import { useMyOrdersQuery } from '@/features/orders/server';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
 import { useWalletBalanceQuery } from '@/features/wallet/server';
-import { Badge, Button, EmptyState, IconBox, ImageBox, PanelShell, SectionHeading, TrustSection } from '@/shared/components';
-import { formatCurrency } from '@/shared/lib/format';
+import { Badge, Button, EmptyState, IconBox, ImageBox, MediaListItem, PanelShell, PageHero, SectionHeading, TrustSection } from '@/shared/components';
+import { formatCurrency, formatRelativeTime } from '@/shared/lib/format';
 import type { Game } from '@/features/games/types';
 import type { Order } from '@/features/orders/types';
 
@@ -156,59 +156,50 @@ function HeroSection({
   onDeposit: () => void;
 }) {
   return (
-    <PanelShell className="overflow-hidden">
-      <div className="grid gap-8 px-5 py-5 sm:px-6 sm:py-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:items-center lg:px-7 lg:py-7">
-        <div className="grid content-start gap-4">
-          <Badge tone="primary" className="w-fit rounded-full border-cyan/20 bg-cyan/10 px-3 py-1 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">
-            NẠP GAME UY TÍN
-          </Badge>
-
-          <h1 className="m-0 max-w-[12ch] text-[clamp(2.7rem,4.7vw,5.1rem)] font-black leading-[0.96] tracking-[-0.07em] text-white text-balance">
-            Nạp game tiết kiệm hơn
-          </h1>
-
-          <p className="max-w-[34ch] text-[1rem] leading-7 text-slate-400">
-            Giá tốt, xử lý nhanh và theo dõi được từng trạng thái đơn hàng. Đi thẳng tới game hoặc nạp ví trong một chạm.
-          </p>
-
-          <div className="flex flex-wrap gap-3">
-            <Button variant="primary" className="rounded-[14px] px-5 text-sm font-bold" onClick={onDeposit}>
-              Nạp ngay
-              <Zap size={16} />
-            </Button>
-            <Button variant="secondary" className="rounded-[14px] px-5 text-sm font-bold" onClick={onBrowse}>
-              Xem danh sách game
-            </Button>
+    <div className="grid gap-4">
+      <PageHero
+        eyebrow="NẠP GAME UY TÍN"
+        title="Nạp game tiết kiệm hơn"
+        description="Giá tốt, xử lý nhanh và theo dõi được từng trạng thái đơn hàng. Đi thẳng tới game hoặc nạp ví trong một chạm."
+        visual={
+          <div className="relative min-h-[230px] w-full min-w-[280px] max-w-[560px] lg:min-h-[360px]">
+            <div className="pointer-events-none absolute inset-0 rounded-[28px] bg-[radial-gradient(circle_at_50%_42%,rgba(34,211,238,0.16),transparent_36%),radial-gradient(circle_at_72%_18%,rgba(34,211,238,0.1),transparent_24%)]" />
+            <div className="pointer-events-none absolute inset-x-[16%] bottom-[12%] h-12 rounded-full bg-cyan/12 blur-[42px]" />
+            <div className="pointer-events-none absolute left-[16%] top-[16%] h-28 w-28 rounded-full bg-cyan/12 blur-[72px]" />
+            <div className="relative flex h-full items-center justify-center">
+              <img
+                src={SITE_IMAGES.home.heroIllustration}
+                alt="Khối máy chơi game phát sáng"
+                className="relative z-10 w-full object-contain drop-shadow-[0_0_56px_rgba(34,211,238,0.18)]"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
           </div>
+        }
+      />
 
-          <div className="flex flex-wrap gap-4 text-sm text-slate-400">
-            <span className="inline-flex items-center gap-2">
-              <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(34,197,94,0.5)]" />
-              Hỗ trợ 24/7
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="size-2 rounded-full bg-cyan shadow-[0_0_12px_rgba(34,211,238,0.5)]" />
-              Xử lý đơn 5-15 phút
-            </span>
-          </div>
-        </div>
-
-        <div className="relative min-h-[260px] lg:min-h-[360px]">
-          <div className="pointer-events-none absolute inset-0 rounded-[28px] bg-[radial-gradient(circle_at_50%_42%,rgba(34,211,238,0.16),transparent_36%),radial-gradient(circle_at_72%_18%,rgba(34,211,238,0.1),transparent_24%)]" />
-          <div className="pointer-events-none absolute inset-x-[16%] bottom-[12%] h-12 rounded-full bg-cyan/12 blur-[42px]" />
-          <div className="pointer-events-none absolute left-[16%] top-[16%] h-28 w-28 rounded-full bg-cyan/12 blur-[72px]" />
-          <div className="relative flex h-full items-center justify-center">
-            <img
-              src={SITE_IMAGES.home.heroIllustration}
-              alt="Khối máy chơi game phát sáng"
-              className="relative z-10 w-full max-w-[560px] object-contain drop-shadow-[0_0_56px_rgba(34,211,238,0.18)]"
-              loading="eager"
-              decoding="async"
-            />
-          </div>
-        </div>
+      <div className="flex flex-wrap gap-3">
+        <Button variant="primary" className="rounded-[14px] px-5 text-sm font-bold" onClick={onDeposit}>
+          Nạp ngay
+          <Zap size={16} />
+        </Button>
+        <Button variant="secondary" className="rounded-[14px] px-5 text-sm font-bold" onClick={onBrowse}>
+          Xem danh sách game
+        </Button>
       </div>
-    </PanelShell>
+
+      <div className="flex flex-wrap gap-4 text-sm text-slate-400">
+        <span className="inline-flex items-center gap-2">
+          <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(34,197,94,0.5)]" />
+          Hỗ trợ 24/7
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <span className="size-2 rounded-full bg-cyan shadow-[0_0_12px_rgba(34,211,238,0.5)]" />
+          Xử lý đơn 5-15 phút
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -296,21 +287,22 @@ function RecentOrderItem({ order }: { order: Order }) {
   const timeLabel = formatRelativeTime(order.createdAt);
 
   return (
-    <article className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-white/[0.08] bg-white/[0.03] px-4 py-3 transition-colors hover:border-cyan/20 hover:bg-cyan/10">
-      <IconBox size="sm" tone="primary" className="h-11 w-11 rounded-[16px]">
-        <ReceiptText size={18} />
-      </IconBox>
-      <div className="min-w-0">
-        <strong className="block truncate text-sm font-bold text-white">Đơn #{order.id} - Gói #{order.gamePackageId}</strong>
-        <span className="block truncate text-xs text-slate-400">{order.gameAccountInfo}</span>
-      </div>
-      <div className="grid justify-items-end gap-1">
+    <MediaListItem
+      leading={
+        <IconBox size="sm" tone="primary" className="h-11 w-11 rounded-[16px]">
+          <ReceiptText size={18} />
+        </IconBox>
+      }
+      title={`Đơn #${order.id} - Gói #${order.gamePackageId}`}
+      subtitle={order.gameAccountInfo}
+      meta={timeLabel}
+      titleAccessory={
         <Badge tone={statusMeta.tone} className="rounded-full text-[0.72rem]">
           {statusMeta.label}
         </Badge>
-        <span className="text-xs text-slate-400">{timeLabel}</span>
-      </div>
-    </article>
+      }
+      className="bg-white/[0.03] hover:border-cyan/20 hover:bg-cyan/10"
+    />
   );
 }
 
@@ -347,22 +339,6 @@ function buildFeaturedPackages(games: Game[]): PackageCard[] {
   });
 }
 
-function formatRelativeTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return '--';
-  }
-
-  const diffMinutes = Math.max(1, Math.round((Date.now() - date.getTime()) / 60000));
-  if (diffMinutes < 60) return `${diffMinutes} phút trước`;
-
-  const diffHours = Math.round(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours} giờ trước`;
-
-  const diffDays = Math.round(diffHours / 24);
-  return `${diffDays} ngày trước`;
-}
-
 const PACKAGE_PRESETS = [
   {
     nameFor: (gameName: string) => {
@@ -397,3 +373,4 @@ const PACKAGE_PRESETS = [
     price: 1599000,
   },
 ] as const;
+

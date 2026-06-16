@@ -16,3 +16,19 @@ export function formatDate(value?: string | null) {
     timeStyle: 'short',
   }).format(new Date(value));
 }
+
+export function formatRelativeTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '--';
+  }
+
+  const diffMinutes = Math.max(1, Math.round((Date.now() - date.getTime()) / 60000));
+  if (diffMinutes < 60) return `${diffMinutes} phút trước`;
+
+  const diffHours = Math.round(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} giờ trước`;
+
+  const diffDays = Math.round(diffHours / 24);
+  return `${diffDays} ngày trước`;
+}

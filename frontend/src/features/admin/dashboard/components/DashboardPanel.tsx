@@ -1,30 +1,27 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowDownRight,
-  ArrowUpRight,
-  Boxes,
-  CalendarDays,
-  ChevronRight,
+  ArrowRight,
   CircleDollarSign,
   Clock3,
   Gamepad2,
+  LayoutDashboard,
   ShoppingCart,
-  TrendingUp,
-  Users,
+  UserRound,
   WalletCards,
 } from 'lucide-react';
-import { Badge, Button, EmptyState, IconBox, RecordRow, SectionHeading, StatCard } from '@/shared/components';
-import { formatCurrency, formatDate } from '@/shared/lib/format';
-import { classNames } from '@/shared/lib/classNames';
-import type { Game } from '@/features/games/types';
-import type { Order } from '@/features/orders/types';
-import type { User } from '@/features/auth/types';
-import type { DepositRequest } from '@/features/wallet/types';
-import { AdminSkeleton } from '@/features/admin/components/AdminShared';
 import { routes } from '@/app/router/routes';
-import { buildChartMeta, buildRevenueSeries, formatCompactCurrency, type DashboardDay } from '@/features/admin/dashboard/lib/dashboard';
+import { AdminSkeleton } from '@/features/admin/components/AdminShared';
+import type { User } from '@/features/auth/types';
+import type { Game, GamePackage } from '@/features/games/types';
+import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
+import type { DepositRequest } from '@/features/wallet/types';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
+import type { Order } from '@/features/orders/types';
+import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, IconBox, ImageBox, MediaListItem, PageHero, PanelShell, SearchBar, SectionHeading, StatCard } from '@/shared/components';
+import { classNames } from '@/shared/lib/classNames';
+import { formatCurrency, formatDate } from '@/shared/lib/format';
+
 type AdminCatalogMetrics = {
   activeGames: number;
   activeUsers: number;
@@ -34,12 +31,63 @@ type AdminCatalogMetrics = {
   totalPackages: number;
   totalUsers: number;
 };
+
+type DashboardScope = 'all' | 'orders' | 'deposits';
+
+type QueueItem =
+  | {
+      actionHref: string;
+      actionLabel: string;
+      amountLabel: string;
+      createdAt: string;
+      description: string;
+      id: string;
+      imageAlt: string;
+      imageUrl: string | null;
+      kind: 'order';
+      searchText: string;
+      sortValue: number;
+      statusIcon: ReactNode;
+      statusLabel: string;
+      statusTone: 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
+      title: string;
+    }
+  | {
+      actionHref: string;
+      actionLabel: string;
+      amountLabel: string;
+      createdAt: string;
+      description: string;
+      id: string;
+      imageAlt: string;
+      imageUrl: null;
+      kind: 'deposit';
+      searchText: string;
+      sortValue: number;
+      statusIcon: ReactNode;
+      statusLabel: string;
+      statusTone: 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
+      title: string;
+    };
+
+type WatchItem = {
+  actionHref: string;
+  description: string;
+  id: string;
+  imageUrl: string;
+  subtitle: string;
+  title: string;
+  stockLabel: string;
+  tone: 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
+};
+
 export function DashboardPanel({
   depositRequests,
   games,
   loading,
   metrics,
   orders,
+  packages,
   users,
 }: {
   depositRequests: DepositRequest[];
@@ -47,335 +95,478 @@ export function DashboardPanel({
   loading: boolean;
   metrics: AdminCatalogMetrics;
   orders: Order[];
+  packages: GamePackage[];
   users: User[];
 }) {
   const navigate = useNavigate();
-  const latestOrders = orders.slice(0, 5);
-  const pendingDeposits = depositRequests.slice(0, 3);
-  const series = useMemo(() => buildRevenueSeries(orders), [orders]);
-  const chartMeta = useMemo(() => buildChartMeta(series), [series]);
+  const [query, setQuery] = useState('');
+  const [scope, setScope] = useState<DashboardScope>('all');
+
+  const queueItems = useMemo(
+    () => buildQueueItems({ depositRequests, games, orders, packages }),
+    [depositRequests, games, orders, packages],
+  );
+  const watchItems = useMemo(() => buildWatchItems(packages, games), [games, packages]);
+  const recentUsers = useMemo(() => buildRecentUsers(users), [users]);
+  const todayOrdersCount = useMemo(() => countOrdersToday(orders), [orders]);
+
+  const visibleQueueItems = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    const scopedItems =
+      scope === 'orders'
+        ? queueItems.filter((item) => item.kind === 'order')
+        : scope === 'deposits'
+          ? queueItems.filter((item) => item.kind === 'deposit')
+          : queueItems;
+
+    if (!normalizedQuery) {
+      return scopedItems;
+    }
+
+    return scopedItems.filter((item) => item.searchText.includes(normalizedQuery));
+  }, [query, queueItems, scope]);
+
+  const systemRows = [
+    { label: 'Game đang hoạt động', value: metrics.activeGames.toString() },
+    { label: 'Người dùng hoạt động', value: metrics.activeUsers.toString() },
+    { label: 'Gói nạp', value: metrics.totalPackages.toString() },
+    { label: 'Gói đang tắt', value: metrics.disabledPackages.toString() },
+    { label: 'Đơn chờ xử lý', value: metrics.pendingOrders.toString() },
+    { label: 'Nạp tiền chờ duyệt', value: depositRequests.filter((request) => request.status === 1 || request.status === 2).length.toString() },
+  ];
 
   return (
-    <div className="grid min-w-0 gap-4">
+    <div className="grid min-w-0 gap-6 lg:gap-7">
+      <PageHero
+        eyebrow="ADMIN"
+        visual={<DashboardHeroVisual metrics={metrics} depositCount={depositRequests.length} todayOrdersCount={todayOrdersCount} />}
+        title="Điều hành hệ thống"
+        description="Theo dõi đơn hàng, kiểm tra nạp tiền và giữ kho game luôn ở trạng thái sẵn sàng trong cùng một màn hình."
+      />
+
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={<Gamepad2 size={18} />} label="Game" supporting="100% active" tone="primary" value={`${metrics.activeGames} / ${games.length}`} />
-        <StatCard icon={<ShoppingCart size={18} />} label="Đơn hàng" supporting="Tổng đơn hệ thống" tone="primary" value={orders.length.toString()} />
-        <StatCard icon={<Clock3 size={18} />} label="Đơn đang chờ" supporting="Cần xử lý" tone="warning" value={metrics.pendingOrders.toString()} />
-        <StatCard icon={<CircleDollarSign size={18} />} label="Doanh thu" supporting="Tổng đã ghi nhận" tone="success" value={formatCurrency(metrics.revenue)} />
+        <StatCard icon={<Gamepad2 size={18} />} label="Game hoạt động" supporting="Danh mục đang mở bán" tone="primary" value={`${metrics.activeGames} / ${games.length}`} />
+        <StatCard icon={<ShoppingCart size={18} />} label="Đơn hôm nay" supporting="Đơn tạo mới trong ngày" tone="success" value={todayOrdersCount.toString()} />
+        <StatCard icon={<Clock3 size={18} />} label="Đơn chờ xử lý" supporting="Cần thao tác ngay" tone="warning" value={metrics.pendingOrders.toString()} />
+        <StatCard icon={<CircleDollarSign size={18} />} label="Doanh thu" supporting="Tổng ghi nhận hệ thống" tone="primary" value={formatCurrency(metrics.revenue)} />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.78fr)]">
-        <div className="gt-surface overflow-hidden border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,18,34,0.96),rgba(7,13,24,0.98))] shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <SectionHeading title="Tổng quan" description="Theo dõi nhanh các chỉ số quan trọng của hệ thống." />
-
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" className="rounded-full border-white/8 bg-white/[0.03] px-3.5 text-slate-300 hover:bg-white/[0.06] hover:text-white">
-                <CalendarDays size={14} />
-                7 ngày
-              </Button>
-              <Badge tone="success">Sẵn sàng</Badge>
-            </div>
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.58fr)_minmax(320px,0.82fr)]">
+        <PanelShell className="overflow-hidden">
+          <div className="px-5 pt-5 sm:px-6 sm:pt-6">
+            <SectionHeading
+              className="items-center"
+              title="Hàng đợi xử lý"
+              titleClassName="text-[1.35rem]"
+              description="Đơn hàng và yêu cầu nạp tiền mới nhất."
+              action={<Badge tone={loading ? 'primary' : 'success'} icon={<LayoutDashboard size={14} />} className="rounded-full px-3.5 py-2">{loading ? 'Đang tải' : 'Sẵn sàng'}</Badge>}
+            />
           </div>
 
-          <div className="mt-4 grid gap-3">
-            <div className="flex flex-wrap items-end gap-3">
-              <strong className="text-[clamp(1.9rem,3vw,3rem)] font-black leading-[1] tracking-[-0.04em] text-white">{formatCurrency(metrics.revenue)}</strong>
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-300">
-                <ArrowUpRight size={16} />
-                23% so với 7 ngày trước
-              </span>
-            </div>
+          <div className="grid gap-4 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+            <SearchBar
+              value={query}
+              onChange={setQuery}
+              placeholder="Tìm đơn, mã nạp, tên game..."
+              ariaLabel="Tìm kiếm hàng đợi"
+              dense
+            />
 
-            <RevenueChart series={series} />
+            <FilterChipGroup
+              items={[
+                { value: 'all', label: 'Tất cả' },
+                { value: 'orders', label: 'Đơn hàng' },
+                { value: 'deposits', label: 'Nạp tiền' },
+              ]}
+              value={scope}
+              onChange={(value) => setScope(value as DashboardScope)}
+            />
 
-            <div className="grid gap-2 sm:grid-cols-3">
-              <MetricPill accent="emerald" icon={<ArrowUpRight size={15} />} label="Cao nhất" value={formatCurrency(chartMeta.max.value)} sublabel={chartMeta.max.label} />
-              <MetricPill accent="rose" icon={<ArrowDownRight size={15} />} label="Thấp nhất" value={formatCurrency(chartMeta.min.value)} sublabel={chartMeta.min.label} />
-              <MetricPill accent="blue" icon={<TrendingUp size={15} />} label="Trung bình" value={formatCurrency(chartMeta.average)} sublabel="7 ngày gần nhất" />
-            </div>
-          </div>
-        </div>
-
-        <aside className="grid gap-4">
-          <div className="gt-surface border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,18,34,0.96),rgba(7,13,24,0.98))] shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
-            <div className="flex items-center justify-between gap-3">
-              <SectionHeading title="Đơn hàng gần đây" />
-              <Button className="border-none bg-transparent px-0 text-cyan hover:bg-transparent hover:text-cyan-50" onClick={() => navigate(routes.admin('orders'))}>
-                Xem tất cả
-              </Button>
-            </div>
-
-            {loading && latestOrders.length === 0 ? (
-              <div className="mt-4">
-                <AdminSkeleton rows={5} />
-              </div>
-            ) : latestOrders.length === 0 ? (
-              <EmptyState className="mt-4" description="Chưa có đơn hàng nào." />
-            ) : (
-              <div className="mt-4 grid gap-2.5">
-                {latestOrders.map((order) => {
-                  const statusMeta = getOrderStatusMeta(order.status);
-
-                  return (
-                  <RecordRow className="grid-cols-[auto_minmax(0,1fr)_auto] rounded-[16px] bg-white/[0.025]" key={order.id}>
-                    <IconBox size="md" className="border-cyan-400/15 bg-cyan-500/10 text-cyan-100">
-                      <ShoppingCart size={17} />
-                    </IconBox>
-                    <div className="min-w-0">
-                      <strong className="block truncate text-sm font-bold text-white">#{String(order.id).padStart(4, '0')}</strong>
-                      <small className="block truncate text-xs text-slate-400">
-                        {formatDate(order.createdAt)} · {order.gameAccountInfo}
-                      </small>
-                    </div>
-                    <div className="grid justify-items-end gap-1">
-                      <Badge tone={statusMeta.tone} icon={statusMeta.icon}>
-                        {statusMeta.label}
-                      </Badge>
-                      <b className="text-sm text-white">{formatCurrency(order.total ?? order.unitPrice)}</b>
-                    </div>
-                  </RecordRow>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="gt-surface border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,18,34,0.96),rgba(7,13,24,0.98))] shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
-            <div className="flex items-center justify-between gap-3">
-              <SectionHeading title="Yêu cầu nạp tiền đang chờ" />
-              <Button className="border-none bg-transparent px-0 text-cyan hover:bg-transparent hover:text-cyan-50" onClick={() => navigate(routes.admin('deposits'))}>
-                Xem tất cả
-              </Button>
-            </div>
-
-            {loading && pendingDeposits.length === 0 ? (
-              <div className="mt-4">
-                <AdminSkeleton rows={3} />
-              </div>
-            ) : pendingDeposits.length === 0 ? (
-              <EmptyState className="mt-4" description="Không có yêu cầu nào đang chờ." />
-            ) : (
-              <div className="mt-4 grid gap-2.5">
-                {pendingDeposits.map((request) => (
-                  <RecordRow className="grid-cols-[auto_minmax(0,1fr)_auto] rounded-[16px] bg-white/[0.025]" key={request.id}>
-                    <IconBox size="md" className="border-amber-400/15 bg-amber-500/10 text-amber-100">
-                      <WalletCards size={17} />
-                    </IconBox>
-                    <div className="min-w-0">
-                      <strong className="block truncate text-sm font-bold text-white">#{String(request.id).padStart(4, '0')}</strong>
-                      <small className="block truncate text-xs text-slate-400">{formatDate(request.createdAt)}</small>
-                    </div>
-                    <div className="grid justify-items-end gap-1">
-                      <Badge tone="warning">Chờ duyệt</Badge>
-                      <b className="text-sm text-white">{formatCurrency(request.amount)}</b>
-                    </div>
-                  </RecordRow>
+            {loading && visibleQueueItems.length === 0 ? (
+              <AdminSkeleton rows={5} />
+            ) : visibleQueueItems.length ? (
+              <div className="grid gap-3">
+                {visibleQueueItems.map((item) => (
+                  <QueueItemCard key={item.id} item={item} onOpen={() => navigate(item.actionHref)} />
                 ))}
               </div>
+            ) : (
+              <EmptyState
+                variant="compact"
+                title="Không có mục phù hợp"
+                description={query.trim() ? 'Thử đổi từ khóa hoặc chuyển sang bộ lọc khác.' : 'Danh sách sẽ hiển thị khi có đơn hàng hoặc yêu cầu nạp tiền mới.'}
+              />
             )}
           </div>
-        </aside>
-      </section>
+        </PanelShell>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <div className="gt-surface border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,18,34,0.96),rgba(7,13,24,0.98))] shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
-          <SectionHeading title="Thao tác nhanh" description="Các lối tắt chính để điều hành hệ thống nhanh hơn." />
+        <div className="grid gap-6">
+          <PanelShell>
+            <div className="px-5 pt-5 sm:px-6 sm:pt-6">
+              <SectionHeading title="Tóm tắt vận hành" titleClassName="text-[1.25rem]" description="Những chỉ số quan trọng cần nhìn nhanh." />
+            </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <QuickActionButton label="Thêm game" icon={<Gamepad2 size={17} />} onClick={() => navigate(routes.admin('games'))} />
-            <QuickActionButton label="Thêm gói nạp" icon={<Boxes size={17} />} onClick={() => navigate(routes.admin('packages'))} />
-            <QuickActionButton label="Tạo đơn hàng" icon={<ShoppingCart size={17} />} onClick={() => navigate(routes.admin('orders'))} />
-            <QuickActionButton label="Duyệt nạp tiền" icon={<WalletCards size={17} />} onClick={() => navigate(routes.admin('deposits'))} />
-          </div>
-        </div>
+            <div className="grid gap-2 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+              {systemRows.map((row) => (
+                <DetailRow key={row.label} label={row.label} value={row.value} />
+              ))}
 
-        <div className="gt-surface border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,18,34,0.96),rgba(7,13,24,0.98))] shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
-          <SectionHeading title="Số liệu hệ thống" description="Tổng quan nhanh cho quản trị viên." />
+              <div className="grid gap-3 pt-2 sm:grid-cols-2">
+                <Button variant="primary" className="justify-center rounded-[16px] px-4" onClick={() => navigate(routes.admin('orders'))}>
+                  Mở đơn hàng
+                  <ArrowRight size={16} />
+                </Button>
+                <Button variant="outline" className="justify-center rounded-[16px] px-4" onClick={() => navigate(routes.admin('deposits'))}>
+                  Duyệt nạp tiền
+                </Button>
+              </div>
+            </div>
+          </PanelShell>
 
-          <div className="mt-4 grid gap-2.5">
-            <MiniInfoCard icon={<Gamepad2 size={17} />} label="Game" value={`${metrics.activeGames}/${games.length}`} sublabel="Đang hoạt động" />
-            <MiniInfoCard icon={<Users size={17} />} label="Người dùng" value={`${metrics.activeUsers}/${metrics.totalUsers || users.length}`} sublabel="Tài khoản hoạt động" />
-            <MiniInfoCard icon={<WalletCards size={17} />} label="Gói nạp" value={String(metrics.totalPackages)} sublabel={`${metrics.disabledPackages} gói đang tắt`} />
-          </div>
+          <PanelShell>
+            <div className="px-5 pt-5 sm:px-6 sm:pt-6">
+              <SectionHeading
+                title="Kho cần chú ý"
+                titleClassName="text-[1.25rem]"
+                description="Gói nạp có tồn thấp hoặc đang tắt."
+                action={<Button variant="ghost" className="px-0 text-cyan" onClick={() => navigate(routes.admin('packages'))}>Xem kho</Button>}
+              />
+            </div>
+
+            <div className="grid gap-3 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+              {watchItems.length ? (
+                watchItems.map((item) => <WatchItemRow key={item.id} item={item} onOpen={() => navigate(item.actionHref)} />)
+              ) : (
+                <EmptyState
+                  variant="compact"
+                  title="Kho đang ổn"
+                  description="Không có gói nào cần kiểm tra gấp vào lúc này."
+                />
+              )}
+            </div>
+          </PanelShell>
+
+          <PanelShell>
+            <div className="px-5 pt-5 sm:px-6 sm:pt-6">
+              <SectionHeading
+                title="Người dùng gần đây"
+                titleClassName="text-[1.25rem]"
+                description="Tài khoản mới nhất trong hệ thống."
+                action={<Badge tone="neutral" className="rounded-full px-3.5 py-2">{recentUsers.length} tài khoản</Badge>}
+              />
+            </div>
+
+            <div className="grid gap-3 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+              {recentUsers.length ? (
+                recentUsers.map((user) => <UserRow key={user.id} user={user} />)
+              ) : (
+                <EmptyState variant="compact" title="Chưa có dữ liệu" description="Danh sách người dùng sẽ xuất hiện ở đây khi hệ thống đã có tài khoản." />
+              )}
+            </div>
+          </PanelShell>
         </div>
       </section>
     </div>
   );
 }
 
-function RevenueChart({ series }: { series: DashboardDay[] }) {
-  const width = 760;
-  const height = 284;
-  const padding = { top: 18, right: 12, bottom: 34, left: 48 };
-
-  const values = series.map((item) => item.value);
-  const maxValue = Math.max(...values, 1);
-  const minValue = Math.min(...values, 0);
-  const range = Math.max(maxValue - minValue, 1);
-
-  const points = series.map((item, index) => {
-    const x = padding.left + (index * (width - padding.left - padding.right)) / Math.max(series.length - 1, 1);
-    const y = padding.top + (1 - (item.value - minValue) / range) * (height - padding.top - padding.bottom);
-    return { ...item, x, y };
-  });
-
-  const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join(' ');
-  const lastPoint = points[points.length - 1];
-  const firstPoint = points[0];
-  const areaPath = `${linePath} L ${lastPoint?.x?.toFixed(2) ?? 0} ${height - padding.bottom} L ${firstPoint?.x?.toFixed(2) ?? 0} ${height - padding.bottom} Z`;
+function DashboardHeroVisual({
+  metrics,
+  depositCount,
+  todayOrdersCount,
+}: {
+  metrics: AdminCatalogMetrics;
+  depositCount: number;
+  todayOrdersCount: number;
+}) {
+  const bars = [58, 74, 66, 86, 64];
 
   return (
-    <div className="overflow-hidden rounded-[20px] border border-white/[0.04] bg-[linear-gradient(180deg,rgba(6,13,26,0.8),rgba(5,11,22,0.62))] p-3">
-      <div className="relative overflow-hidden rounded-[18px]">
-        <svg viewBox={`0 0 ${width} ${height}`} className="h-[304px] w-full">
-          <defs>
-            <linearGradient id="chart-line" x1="0" x2="1">
-              <stop offset="0%" stopColor="#60a5fa" />
-              <stop offset="50%" stopColor="#22d3ee" />
-              <stop offset="100%" stopColor="#38bdf8" />
-            </linearGradient>
-            <linearGradient id="chart-fill" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="rgba(34,211,238,0.28)" />
-              <stop offset="100%" stopColor="rgba(34,211,238,0.02)" />
-            </linearGradient>
-          </defs>
+    <div className="relative w-full max-w-[320px]">
+      <div className="pointer-events-none absolute -right-6 -top-6 size-28 rounded-full bg-cyan-400/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-4 left-4 h-20 w-44 rounded-full bg-blue-500/10 blur-3xl" />
 
-          {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-            const y = padding.top + ratio * (height - padding.top - padding.bottom);
-            const value = maxValue - ratio * range;
+      <div className="relative grid gap-3 rounded-[26px] border border-white/[0.08] bg-[rgba(7,16,31,0.76)] p-4 shadow-[0_18px_34px_rgba(2,6,23,0.18)]">
+        <div className="flex items-start justify-between gap-3">
+          <div className="grid gap-1">
+            <p className="m-0 text-[0.68rem] font-black uppercase tracking-[0.22em] text-cyan-100/80">Live control</p>
+            <strong className="text-sm font-bold text-white">Tình trạng hệ thống</strong>
+          </div>
+          <IconBox size="sm" tone="primary" className="rounded-[18px]">
+            <LayoutDashboard size={16} />
+          </IconBox>
+        </div>
 
-            return (
-              <g key={ratio}>
-                <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="rgba(255,255,255,0.05)" strokeDasharray="4 8" />
-                <text fill="rgba(148,163,184,0.9)" fontSize="12" x="10" y={y + 4}>
-                  {formatCompactCurrency(value)}
-                </text>
-              </g>
-            );
-          })}
+        <div className="grid gap-2">
+          <MiniPulse label="Đơn chờ" value={metrics.pendingOrders.toString()} tone="warning" />
+          <MiniPulse label="Nạp chờ" value={depositCount.toString()} tone="primary" />
+          <MiniPulse label="Đơn hôm nay" value={todayOrdersCount.toString()} tone="success" />
+        </div>
 
-          <path d={areaPath} fill="url(#chart-fill)" />
-          <path d={linePath} fill="none" stroke="url(#chart-line)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-
-          {points.map((point, index) => (
-            <g key={point.iso}>
-              <circle cx={point.x} cy={point.y} fill="rgba(12,18,34,1)" r="6.5" stroke="rgba(34,211,238,0.88)" strokeWidth="2.5" />
-              {index === points.length - 1 ? (
-                <>
-                  <circle cx={point.x} cy={point.y} fill="#22d3ee" r="3.5" />
-                  <rect
-                    fill="rgba(15,23,42,0.94)"
-                    height="54"
-                    rx="14"
-                    stroke="rgba(255,255,255,0.08)"
-                    width="138"
-                    x={Math.max(point.x - 68, padding.left)}
-                    y={Math.max(point.y - 80, 8)}
-                  />
-                  <text fill="#cbd5e1" fontSize="12" x={Math.max(point.x - 54, padding.left + 14)} y={Math.max(point.y - 54, 32)}>
-                    {point.label}
-                  </text>
-                  <text fill="#f8fafc" fontSize="14" fontWeight="700" x={Math.max(point.x - 54, padding.left + 14)} y={Math.max(point.y - 30, 56)}>
-                    {formatCurrency(point.value)}
-                  </text>
-                </>
-              ) : null}
-            </g>
-          ))}
-
-          {points.map((point, index) => (
-            <text key={`${point.iso}-label`} fill="rgba(148,163,184,0.95)" fontSize="12" textAnchor="middle" x={point.x} y={height - 12}>
-              {index === 0 || index === points.length - 1 || index % 2 === 0 ? point.label : ''}
-            </text>
-          ))}
-        </svg>
+        <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.03] p-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs font-semibold text-slate-400">Nhịp giao dịch</span>
+            <span className="text-xs font-semibold text-cyan-100">7 ngày gần nhất</span>
+          </div>
+          <div className="mt-3 flex items-end gap-1.5">
+            {bars.map((height, index) => (
+              <span
+                key={height}
+                className={classNames('h-20 flex-1 rounded-t-[10px]', index === bars.length - 1 ? 'bg-cyan-400' : 'bg-cyan-400/40')}
+                style={{ height: `${height}px` }}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function MetricPill({
-  accent,
-  icon,
+function MiniPulse({
   label,
-  sublabel,
+  tone,
   value,
 }: {
-  accent: 'blue' | 'emerald' | 'rose';
-  icon: ReactNode;
   label: string;
-  sublabel: string;
+  tone: 'primary' | 'success' | 'warning';
   value: string;
 }) {
-  const accentClass =
-    accent === 'emerald'
+  const toneClass =
+    tone === 'success'
       ? 'border-emerald-400/15 bg-emerald-500/10 text-emerald-100'
-      : accent === 'rose'
-        ? 'border-rose-400/15 bg-rose-500/10 text-rose-100'
+      : tone === 'warning'
+        ? 'border-amber-400/15 bg-amber-500/10 text-amber-100'
         : 'border-cyan-400/15 bg-cyan-500/10 text-cyan-100';
 
   return (
-    <div className="rounded-[16px] border border-white/[0.05] bg-white/[0.025] p-3">
-      <div className="flex items-start gap-3">
-        <IconBox size="sm" className={classNames('h-9 w-9 rounded-xl border-0', accentClass)}>
-          {icon}
-        </IconBox>
-        <div className="min-w-0">
-          <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{label}</span>
-          <strong className="block text-base font-black text-white">{value}</strong>
-          <span className="block text-xs text-slate-400">{sublabel}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MiniInfoCard({
-  icon,
-  label,
-  sublabel,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  sublabel: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-[16px] border border-white/[0.05] bg-white/[0.025] px-3 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-[18px] border border-white/[0.06] bg-[rgba(255,255,255,0.03)] px-3 py-3">
       <div className="flex items-center gap-3">
-        <IconBox size="sm" className="h-9 w-9 rounded-xl border-0 bg-white/[0.04] text-cyan-50">
-          {icon}
-        </IconBox>
-        <div className="min-w-0">
-          <strong className="block text-sm font-bold text-white">{label}</strong>
-          <span className="block text-xs text-slate-400">{sublabel}</span>
+        <span className={classNames('inline-flex size-9 items-center justify-center rounded-[18px] border text-sm font-black', toneClass)}>
+          {label.slice(0, 1)}
+        </span>
+        <div className="grid gap-0.5">
+          <strong className="text-sm font-bold text-white">{label}</strong>
+          <span className="text-xs text-slate-400">Theo dõi trực tiếp</span>
         </div>
       </div>
-      <strong className="text-lg font-black text-white">{value}</strong>
+      <strong className="text-lg font-black tracking-[-0.04em] text-white">{value}</strong>
     </div>
   );
 }
 
-function QuickActionButton({
-  icon,
-  label,
-  onClick,
+function QueueItemCard({
+  item,
+  onOpen,
 }: {
-  icon: ReactNode;
-  label: string;
-  onClick: () => void;
+  item: QueueItem;
+  onOpen: () => void;
+}) {
+  if (item.kind === 'order') {
+    return (
+      <MediaListItem
+        onClick={onOpen}
+        leading={
+          <div className="relative aspect-square w-[96px] overflow-hidden rounded-[18px] bg-slate-950">
+            {item.imageUrl ? <ImageBox src={item.imageUrl} alt={item.imageAlt} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" /> : null}
+            <div className="absolute inset-0 ring-1 ring-inset ring-white/[0.04]" />
+          </div>
+        }
+        title={item.title}
+        subtitle={item.description}
+        meta={formatDate(item.createdAt)}
+        titleAccessory={
+          <Badge tone={item.statusTone} icon={item.statusIcon} className="rounded-full">
+            {item.statusLabel}
+          </Badge>
+        }
+        trailing={<strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">{item.amountLabel}</strong>}
+      />
+    );
+  }
+
+  return (
+    <MediaListItem
+      onClick={onOpen}
+      leading={
+        <IconBox size="md" tone="neutral" className="h-12 w-12 rounded-[18px]">
+          <WalletCards size={18} />
+        </IconBox>
+      }
+      title={item.title}
+      subtitle={item.description}
+      meta={formatDate(item.createdAt)}
+      titleAccessory={
+        <Badge tone={item.statusTone} icon={item.statusIcon} className="rounded-full">
+          {item.statusLabel}
+        </Badge>
+      }
+      trailing={<strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">{item.amountLabel}</strong>}
+    />
+  );
+}
+
+function WatchItemRow({
+  item,
+  onOpen,
+}: {
+  item: WatchItem;
+  onOpen: () => void;
 }) {
   return (
-    <Button className="justify-between rounded-[16px] border-white/[0.05] bg-white/[0.025] px-3.5 py-3 text-left text-slate-100 hover:border-cyan/20 hover:bg-cyan/10 hover:text-white" onClick={onClick}>
-      <span className="inline-flex items-center gap-3">
-        <IconBox size="sm" className="h-9 w-9 rounded-xl border-0 bg-white/[0.05] text-cyan-50">
-          {icon}
-        </IconBox>
-        <span className="text-sm font-semibold">{label}</span>
-      </span>
-      <ChevronRight size={16} className="text-slate-500" />
-    </Button>
+    <button
+      type="button"
+      className="grid gap-3 rounded-[18px] border border-white/[0.06] bg-[rgba(255,255,255,0.025)] p-3 text-left transition-all duration-200 hover:-translate-y-px hover:border-cyan/20 hover:bg-[rgba(255,255,255,0.04)] sm:grid-cols-[60px_minmax(0,1fr)_auto] sm:items-center"
+      onClick={onOpen}
+    >
+      <div className="relative aspect-square overflow-hidden rounded-[16px] bg-slate-950">
+        <ImageBox src={item.imageUrl} alt={item.title} className="h-full w-full object-cover transition-transform duration-300" />
+      </div>
+
+      <div className="grid gap-1 min-w-0">
+        <strong className="truncate text-sm font-bold text-white">{item.title}</strong>
+        <span className="truncate text-sm text-slate-400">{item.subtitle}</span>
+        <span className="truncate text-xs text-slate-500">{item.description}</span>
+      </div>
+
+      <div className="grid justify-items-start gap-2 sm:justify-items-end">
+        <Badge tone={item.tone} className="rounded-full">
+          {item.stockLabel}
+        </Badge>
+        <span className="text-xs text-slate-500">Mở kho</span>
+      </div>
+    </button>
   );
+}
+
+function UserRow({ user }: { user: User }) {
+  return (
+    <div className="grid gap-4 rounded-[18px] border border-white/[0.06] bg-[rgba(255,255,255,0.025)] p-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
+      <IconBox size="md" tone="neutral" className="h-12 w-12 rounded-[18px]">
+        <UserRound size={18} />
+      </IconBox>
+
+      <div className="grid gap-1 min-w-0">
+        <strong className="truncate text-sm font-bold text-white">{user.displayName?.trim() || user.email}</strong>
+        <span className="truncate text-sm text-slate-400">{user.email}</span>
+      </div>
+
+      <div className="grid justify-items-start gap-2 sm:justify-items-end">
+        <Badge tone={user.isActive !== false ? 'success' : 'neutral'} className="rounded-full">
+          {user.isActive !== false ? 'Hoạt động' : 'Ngưng'}
+        </Badge>
+        <span className="text-xs text-slate-500">{formatDate(user.createdAt)}</span>
+      </div>
+    </div>
+  );
+}
+
+function buildQueueItems({
+  depositRequests,
+  games,
+  orders,
+  packages,
+}: {
+  depositRequests: DepositRequest[];
+  games: Game[];
+  orders: Order[];
+  packages: GamePackage[];
+}) {
+  const gameById = new Map(games.map((game) => [game.id, game]));
+  const packageById = new Map(packages.map((item) => [item.id, item]));
+
+  const orderItems = orders.slice(0, 6).map<QueueItem>((order) => {
+    const gamePackage = packageById.get(order.gamePackageId);
+    const game = gamePackage ? gameById.get(gamePackage.gameId) : undefined;
+    const statusMeta = getOrderStatusMeta(order.status);
+    const amount = formatCurrency(order.total ?? order.unitPrice);
+    const title = gamePackage ? `${game?.name ?? 'Game'} · ${gamePackage.name}` : `Đơn #${order.id}`;
+    const description = `${order.gameAccountInfo || 'Chưa có thông tin'} · #${order.id}`;
+
+    return {
+      actionHref: routes.admin('orders'),
+      actionLabel: 'Mở đơn',
+      amountLabel: amount,
+      createdAt: order.createdAt,
+      description,
+      id: `order-${order.id}`,
+      imageAlt: game?.name ?? gamePackage?.name ?? `Đơn ${order.id}`,
+      imageUrl: gamePackage?.imageUrl ?? game?.imageUrl ?? null,
+      kind: 'order',
+      searchText: [order.id, order.gameAccountInfo, game?.name, gamePackage?.name, statusMeta.label, amount].join(' ').toLowerCase(),
+      sortValue: new Date(order.createdAt).getTime(),
+      statusIcon: statusMeta.icon,
+      statusLabel: statusMeta.label,
+      statusTone: statusMeta.tone,
+      title,
+    };
+  });
+
+  const depositItems = depositRequests.slice(0, 5).map<QueueItem>((request) => {
+    const statusMeta = getDepositRequestStatus(request.status);
+    const amount = formatCurrency(request.amount);
+
+    return {
+      actionHref: routes.admin('deposits'),
+      actionLabel: 'Mở yêu cầu',
+      amountLabel: amount,
+      createdAt: request.createdAt,
+      description: `${request.code} · ${request.bankId}`,
+      id: `deposit-${request.id}`,
+      imageAlt: '',
+      imageUrl: null,
+      kind: 'deposit',
+      searchText: [request.code, request.bankId, request.accountName, request.accountNo, statusMeta.label, amount].join(' ').toLowerCase(),
+      sortValue: new Date(request.createdAt).getTime(),
+      statusIcon: statusMeta.icon,
+      statusLabel: statusMeta.label,
+      statusTone: statusMeta.tone,
+      title: `Nạp ${amount}`,
+    };
+  });
+
+  return [...orderItems, ...depositItems].sort((left, right) => right.sortValue - left.sortValue);
+}
+
+function buildWatchItems(packages: GamePackage[], games: Game[]) {
+  const gameById = new Map(games.map((game) => [game.id, game]));
+
+  return packages
+    .filter((item) => !item.isActive || item.stockQuantity <= 20)
+    .sort((left, right) => Number(left.isActive) - Number(right.isActive) || left.stockQuantity - right.stockQuantity)
+    .slice(0, 4)
+    .map<WatchItem>((item) => {
+      const game = gameById.get(item.gameId);
+
+      return {
+        actionHref: routes.admin('packages'),
+        description: item.isActive ? `Tồn kho ${item.stockQuantity} gói` : 'Đang tắt hiển thị',
+        id: `package-${item.id}`,
+        imageUrl: item.imageUrl ?? game?.imageUrl ?? '',
+        subtitle: `${game?.name ?? 'Game'} · ${item.name}`,
+        stockLabel: item.isActive ? `Còn ${item.stockQuantity}` : 'Đang tắt',
+        title: item.name,
+        tone: item.isActive ? (item.stockQuantity <= 10 ? 'warning' : 'success') : 'neutral',
+      };
+    });
+}
+
+function buildRecentUsers(users: User[]) {
+  return users
+    .slice()
+    .sort((left, right) => new Date(right.createdAt ?? 0).getTime() - new Date(left.createdAt ?? 0).getTime())
+    .slice(0, 4);
+}
+
+function countOrdersToday(orders: Order[]) {
+  const today = new Date();
+
+  return orders.filter((order) => {
+    const createdAt = new Date(order.createdAt);
+    return (
+      createdAt.getFullYear() === today.getFullYear() &&
+      createdAt.getMonth() === today.getMonth() &&
+      createdAt.getDate() === today.getDate()
+    );
+  }).length;
 }

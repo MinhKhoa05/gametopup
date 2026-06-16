@@ -2,125 +2,298 @@
 
 This file provides the minimum project-specific context needed to work effectively in this repository.
 
-Use available skills for engineering workflow, planning, implementation, testing, review, refactoring, security, and documentation.
+Use available skills for planning, implementation, testing, review, refactoring, security, and documentation.
 
 Use this file for GameTopUp-specific constraints, priorities, and preferences.
 
-## Project Snapshot
+---
 
-GameTopUp is a full-stack system for managing intermediary game top-up services.
+# Project Snapshot
 
-The repository revolves around several business-critical flows:
+GameTopUp is a full-stack platform for managing intermediary game top-up services.
 
-* order state transitions
-* wallet and transaction tracking
-* inventory reservation
-* payment processing
-* deposit workflows
-* audit-friendly balance history
+The application has two faces:
+
+* User App
+
+  * Browse games
+  * Place orders
+  * Manage wallet
+  * Track order history
+
+* Admin App
+
+  * Manage orders
+  * Review deposits
+  * Manage users
+  * Manage catalog data
+
+Core business flows:
+
+* Order lifecycle
+* Wallet and balance tracking
+* Inventory reservation
+* Payment processing
+* Deposit workflows
+* Audit history
 
 If a change touches these areas, preserve existing behavior and consistency guarantees unless the task explicitly requires otherwise.
 
-## Technology
+---
 
-### Backend
+# Product Mental Model
 
-- .NET 8
-- ASP.NET Core Web API
-- Dapper
-- Dommel
-- MariaDB
-- JWT Authentication
-- BCrypt
-- Mapster
-- xUnit
-
-### Frontend
-
-- React
-- TypeScript
-- Vite
-- TanStack Query
-- Zustand
-- React Router
-- Tailwind CSS
+* Home, Games, Wallet, Orders, and Profile form the primary customer experience.
+* Admin is not a separate product.
+* Admin is a management layer built on top of the same product experience.
+* Reuse existing patterns before creating new ones.
 
 ---
 
-## What Matters Here
+# Design Principles
+
+* Consistency over novelty.
+* Reuse > Extend > Create.
+* Admin = User Design System + Management Features.
+* Layout patterns matter more than visual effects.
+* Redesign should simplify, not reinvent.
+* Consistency is a feature.
+* Keep props, tones, and variants simple.
+* Prefer a small shared set of common styles.
+* Standardize first, then reuse.
+
+---
+
+# Technology
+
+## Backend
+
+* .NET 8
+* ASP.NET Core Web API
+* Dapper
+* Dommel
+* MariaDB
+* JWT Authentication
+* BCrypt
+* Mapster
+* xUnit
+
+## Frontend
+
+* React
+* TypeScript
+* Vite
+* TanStack Query
+* Zustand
+* React Router
+* Tailwind CSS
+
+---
+
+# What Matters Here
 
 Operational correctness matters more than architectural purity.
 
+Priorities:
+
+1. Correctness
+2. Consistency
+3. Maintainability
+4. Performance
+5. Abstraction
+
 Key constraints:
 
-* Transactional flows are consistency-sensitive.
-* Wallet, order, stock, and payment operations must remain traceable and auditable.
-* Locking, state-transition correctness, and data integrity are more important than reducing a few lines of code.
-* Prefer explicit business flow over abstraction unless the abstraction clearly reduces real duplication.
+* Preserve transactional correctness.
+* Keep wallet, order, stock, and payment flows auditable.
+* Favor explicit business flow over abstraction.
+* Optimize for clarity over cleverness.
 
 ---
 
-## Project Areas
+# Project Areas
 
-* `backend/` contains the backend application, data access, and tests.
-* `frontend/` contains the React application.
-* `README.md` and `README.vi.md` provide product context and local setup instructions.
+* backend/ contains backend services, repositories, business logic, and tests.
+* frontend/ contains the React application.
+* README.md and README.vi.md provide product overview and setup instructions.
 
 ---
 
-## Working Guidelines
+# Working Guidelines
 
 Before non-trivial work:
 
 1. Read this file first.
-2. Use the smallest relevant set of available skills.
-3. Preserve project-specific behavior and consistency guarantees.
-4. Verify changes before considering work complete.
+2. Preserve behavior.
+3. Preserve consistency.
+4. Reuse existing patterns.
+5. Verify changes before finishing.
 
 ---
 
-## Backend Constraints
+# Backend Constraints
 
-When modifying wallet, order, inventory, deposit, or payment flows:
+When modifying:
 
-* Preserve transaction boundaries.
-* Preserve locking behavior.
-* Preserve audit trails and balance history.
-* Preserve state-transition rules.
-* Prioritize correctness over abstraction.
+* Wallet
+* Orders
+* Inventory
+* Deposits
+* Payments
 
-Do not simplify transactional workflows in ways that weaken consistency guarantees.
+Always preserve:
+
+* Transaction boundaries
+* Locking behavior
+* Audit trails
+* Balance history
+* State transitions
+
+Prefer correctness over abstraction.
+
+Do not simplify critical flows in ways that weaken consistency guarantees.
 
 ---
 
-## Frontend Preferences
+# Frontend Preferences
 
+* Keep UI consistent with existing pages.
 * Prefer practical and explicit component APIs.
-* Keep business-related UI flows easy to trace.
-* Favor readability over flexibility when the structure is stable.
-* Avoid abstractions that make business behavior harder to follow.
+* Keep business flows easy to trace.
+* Favor readability over flexibility.
+* Avoid abstractions that hide behavior.
 
 ---
 
-## Refactoring Preferences
+# UI Guidelines
+
+## Core Rules
+
+* Reuse before creating.
+* Match Wallet, Orders, Games, and Profile.
+* Consistency over creativity.
+* Admin = User Design System + Management Features.
+* Prefer simple product layouts over dashboard layouts.
+* Avoid visual clutter.
+
+---
+
+## Layout Patterns
+
+Prefer existing page structures before inventing new layouts.
+
+Common pattern:
+
+PageHero
+→ Stats
+→ Filters / Controls
+→ Main Content
+→ Detail Panel
+
+Not every page requires every section.
+
+Prefer established patterns from:
+
+* Wallet
+* Orders
+* Games
+* Profile
+
+---
+
+## Visual Language
+
+* Dark navy/slate surfaces.
+* Cyan as the primary accent.
+* Soft corners.
+* Subtle borders.
+* Minimal shadows.
+* Comfortable spacing.
+
+Visual hierarchy is more important than decoration.
+
+---
+
+## Component Reuse
+
+Prefer existing shared components:
+
+* PageHero
+* Badge
+* Button
+* FilterChip
+* DetailRow
+* ImageBox
+* EmptyState
+* SearchBar
+* StatCard
+
+If a similar component already exists:
+
+* Reuse it.
+* Extend it if necessary.
+* Create a new one only as a last resort.
+
+---
+
+## Admin Pages
+
+Admin pages should feel like natural extensions of User pages.
+
+Admin = User Design System + Management Features.
+
+Do not introduce a separate Admin design language.
+
+---
+
+## Avoid
+
+Do not:
+
+* Build generic SaaS dashboards.
+* Introduce a different Admin design system.
+* Add unnecessary charts.
+* Add analytics-heavy layouts by default.
+* Create new UI patterns when existing ones can be reused.
+* Redesign solely for visual novelty.
+* Increase complexity without UX benefit.
+
+If a page feels visually disconnected from User pages, treat that as a bug.
+
+---
+
+## UI Refactoring
+
+When improving existing pages:
+
+1. Preserve behavior.
+2. Preserve successful patterns.
+3. Simplify layouts.
+4. Improve consistency.
+5. Create new patterns only when necessary.
+
+Prefer evolutionary improvements over complete redesigns.
+
+---
+
+# Refactoring Preferences
 
 * Preserve behavior first.
-* Reduce duplication when it is real and recurring.
+* Reduce real duplication only.
 * Prefer explicit code over indirection.
-* Avoid abstractions created primarily for theoretical reuse.
-* Favor maintainability over premature optimization.
-* Keep business-critical flows easy to follow from entry point to persistence.
+* Avoid theoretical reuse.
+* Keep critical flows easy to follow.
 
 ---
 
-## Documentation
+# Documentation
 
-Document decisions that are expensive to reverse or easy to forget, especially:
+Document decisions that are expensive to reverse or easy to forget:
 
-* architecture changes
+* Architecture changes
 * API contract changes
-* schema changes
-* transaction-flow changes
-* state-transition changes
+* Schema changes
+* Transaction-flow changes
+* State-transition changes
 
 Prefer readable code over excessive documentation.

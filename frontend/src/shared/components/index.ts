@@ -1,6 +1,7 @@
 export { Badge } from './Badge';
 export { Button } from './Button';
 export { FilterChip } from './FilterChip';
+export { FilterChipGroup } from './FilterChipGroup';
 export { FilterSelectField } from './FilterSelectField';
 export { EmptyState } from './EmptyState';
 export { Field } from './Field';
@@ -9,6 +10,7 @@ export { ImageBox, ImagePicker } from './image';
 export { IconBox } from './IconBox';
 export { PanelShell } from './PanelShell';
 export { DetailRow } from './DetailRow';
+export { MediaListItem } from './MediaListItem';
 export { PageHero } from './PageHero';
 export { TrustSection } from './TrustSection';
 export { RecordRow } from './RecordRow';

@@ -13,6 +13,7 @@ export function AdminDashboardPage() {
       loading={adminPage.loading}
       metrics={adminPage.metrics}
       orders={adminPage.orders}
+      packages={adminPage.packages}
       users={adminPage.users}
     />
   );

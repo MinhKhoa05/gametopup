@@ -58,6 +58,10 @@ export function AdminSectionShell({
 }) {
   const meta = ADMIN_SECTION_META[activeSection];
 
+  if (activeSection === 'dashboard') {
+    return <div className="grid min-w-0 gap-5 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">{children}</div>;
+  }
+
   return (
     <div className="grid min-w-0 gap-5 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
       <section className="grid gap-4 border-b border-white/[0.06] pb-5">
@@ -71,7 +75,7 @@ export function AdminSectionShell({
           </div>
 
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-            <Button size="sm" variant="outline" className="rounded-full border-white/8 bg-white/[0.03] px-4 text-slate-200 hover:bg-white/[0.06] hover:text-white">
+            <Button size="sm" variant="outline" className="rounded-full border-white/[0.08] bg-white/[0.03] px-4 text-slate-200 hover:bg-white/[0.06] hover:text-white">
               <CalendarDays size={14} />
               7 ngày qua
             </Button>
@@ -142,7 +146,7 @@ export function AdminDesktopLayout({
             <button
               type="button"
               aria-label="Đóng hoặc mở sidebar"
-              className="gt-interactive hidden size-10 shrink-0 items-center justify-center rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] text-slate-100 shadow-[0_10px_24px_rgba(2,6,23,0.18)] transition-colors hover:border-cyan/20 hover:bg-[linear-gradient(180deg,rgba(34,211,238,0.14),rgba(34,211,238,0.06))] hover:text-white lg:inline-flex"
+              className="gt-interactive hidden size-10 shrink-0 items-center justify-center rounded-[18px] border border-white/[0.08] bg-white/[0.04] text-slate-100 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white lg:inline-flex"
               onClick={onToggleSidebar}
             >
               <Menu size={16} strokeWidth={2.4} />
@@ -162,7 +166,7 @@ export function AdminDesktopLayout({
           <div className="ml-auto flex flex-none items-center gap-2">
             <button
               type="button"
-              className="gt-interactive inline-flex size-10 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+              className="gt-interactive inline-flex size-10 items-center justify-center rounded-[18px] border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
               onClick={onRefresh}
               title="Làm mới"
             >
@@ -171,7 +175,7 @@ export function AdminDesktopLayout({
 
             <button
               type="button"
-              className="gt-interactive inline-flex size-10 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+              className="gt-interactive inline-flex size-10 items-center justify-center rounded-[18px] border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
               title="Thông báo"
             >
               <MoonStar size={17} />
@@ -221,7 +225,7 @@ export function AdminMobileLayout({
           <button
             type="button"
             aria-label="Đóng hoặc mở sidebar"
-            className="gt-interactive inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] text-slate-100 shadow-[0_10px_24px_rgba(2,6,23,0.18)] transition-colors hover:border-cyan/20 hover:bg-[linear-gradient(180deg,rgba(34,211,238,0.14),rgba(34,211,238,0.06))] hover:text-white"
+            className="gt-interactive inline-flex size-10 shrink-0 items-center justify-center rounded-[18px] border border-white/[0.08] bg-white/[0.04] text-slate-100 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
             onClick={onToggleSidebar}
           >
             <Menu size={16} strokeWidth={2.4} />
@@ -240,7 +244,7 @@ export function AdminMobileLayout({
           <div className="ml-auto flex flex-none items-center gap-2">
             <button
               type="button"
-              className="gt-interactive inline-flex size-10 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+              className="gt-interactive inline-flex size-10 items-center justify-center rounded-[18px] border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
               onClick={onRefresh}
               title="Làm mới"
             >
@@ -249,7 +253,7 @@ export function AdminMobileLayout({
 
             <button
               type="button"
-              className="gt-interactive inline-flex size-10 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+              className="gt-interactive inline-flex size-10 items-center justify-center rounded-[18px] border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
               title="Thông báo"
             >
               <MoonStar size={17} />
@@ -309,7 +313,7 @@ function AdminSidebarDesktop({
           <span className="block size-6 rounded-full bg-white shadow-[0_2px_10px_rgba(15,23,42,0.26)]" />
         </button>
       ) : (
-        <div className="mt-auto flex items-center justify-between gap-3 rounded-[14px] border border-white/[0.05] bg-white/[0.03] px-3 py-2.5">
+        <div className="mt-auto flex items-center justify-between gap-3 rounded-[18px] border border-white/[0.05] bg-white/[0.03] px-3 py-2.5">
           <div className="flex items-center gap-2.5">
             <MoonStar size={15} className="text-slate-300" />
             <span className="text-sm font-medium text-slate-200">Chế độ tối</span>
@@ -368,7 +372,7 @@ function AdminSidebarMobile({
           <button
             type="button"
             aria-label="Đóng sidebar"
-            className="gt-interactive inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+            className="gt-interactive inline-flex size-10 shrink-0 items-center justify-center rounded-[18px] border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
             onClick={onClose}
           >
             <X size={16} />
@@ -394,7 +398,7 @@ function AdminSidebarMobile({
         </div>
 
         <div className="mt-auto border-t border-white/[0.06] pt-4">
-          <div className="flex items-center justify-between gap-3 rounded-[14px] border border-white/[0.05] bg-white/[0.03] px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-white/[0.05] bg-white/[0.03] px-3 py-2.5">
             <div className="flex items-center gap-2.5">
               <MoonStar size={15} className="text-slate-300" />
               <span className="text-sm font-medium text-slate-200">Chế độ tối</span>
@@ -433,7 +437,7 @@ function SidebarNavItem({
     <>
       <span
         className={classNames(
-          'inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border transition-colors',
+          'inline-flex size-10 shrink-0 items-center justify-center rounded-[18px] border transition-colors',
           secondary
             ? 'border-white/[0.06] bg-white/[0.03] text-slate-400'
             : active
@@ -454,7 +458,7 @@ function SidebarNavItem({
   );
 
   const baseClassName = classNames(
-    'flex min-h-12 items-center gap-3 rounded-[14px] border px-3 py-2 text-left transition-colors',
+    'flex min-h-12 items-center gap-3 rounded-[18px] border px-3 py-2 text-left transition-colors',
     secondary
       ? 'border-transparent bg-transparent text-slate-400 hover:bg-white/[0.03] hover:text-slate-200'
       : active

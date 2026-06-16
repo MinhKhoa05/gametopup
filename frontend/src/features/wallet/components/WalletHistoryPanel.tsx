@@ -1,6 +1,6 @@
 import { ChevronDown, Clock3, Search, SlidersHorizontal, WalletCards } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Badge, EmptyState, FilterChip, FilterSelectField, PanelShell, SectionHeading } from '@/shared/components';
+import { Badge, EmptyState, FilterChipGroup, FilterSelectField, PanelShell, SectionHeading } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency } from '@/shared/lib/format';
 import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
@@ -125,20 +125,7 @@ export function WalletHistoryPanel({
 
       <div className="grid gap-5">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="flex flex-wrap gap-2 text-sm font-semibold">
-            {HISTORY_SUB_TABS.map((tab) => {
-              const active = mode === tab.value;
-              return (
-                <FilterChip
-                  key={tab.value}
-                  active={active}
-                  onClick={() => onViewChange(tab.value)}
-                >
-                  {tab.label}
-                </FilterChip>
-              );
-            })}
-          </div>
+          <FilterChipGroup items={HISTORY_SUB_TABS} value={mode} onChange={onViewChange} />
         </div>
 
         <HistoryFiltersBar
@@ -318,20 +305,11 @@ function HistoryFiltersBar({
         </FilterSelectField>
       </div>
 
-      <div className="flex flex-wrap gap-2.5">
-        {statusOptions.map((option) => {
-          const active = filters.status === option.value;
-          return (
-            <FilterChip
-              key={option.value}
-              active={active}
-              onClick={() => onChange({ status: option.value })}
-            >
-              {option.label}
-            </FilterChip>
-          );
-        })}
-      </div>
+      <FilterChipGroup
+        items={statusOptions}
+        value={filters.status}
+        onChange={(value) => onChange({ status: value })}
+      />
     </div>
   );
 }

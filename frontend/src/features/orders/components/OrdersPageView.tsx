@@ -1,6 +1,6 @@
 import { ChevronDown, CheckCircle2, Gamepad2, Headphones, ReceiptText, SlidersHorizontal, TimerReset, XCircle, CalendarRange } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Badge, Button, DetailRow, EmptyState, FilterChip, FilterSelectField, ImageBox, PanelShell, SearchBar, StatCard } from '@/shared/components';
+import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, FilterSelectField, ImageBox, MediaListItem, PanelShell, SearchBar, StatCard } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { type OrderHistoryItem } from '@/features/orders/components/OrderHistorySections';
 import type { OrderStatus } from '@/features/orders/types';
@@ -101,24 +101,14 @@ export function OrdersPageView({
           </div>
 
           <div className="grid gap-3 px-5 pt-2.5 sm:px-6 lg:px-7">
-            <div className="flex flex-wrap gap-2.5">
-              {STATUS_OPTIONS.map((option) => {
-                const active = filters.status === option.value;
-
-                return (
-                  <FilterChip
-                    key={option.value}
-                    active={active}
-                    onClick={() => {
-                      setFilters((current) => ({ ...current, status: option.value }));
-                      setPage(1);
-                    }}
-                  >
-                    {option.label}
-                  </FilterChip>
-                );
-              })}
-            </div>
+            <FilterChipGroup
+              items={STATUS_OPTIONS}
+              value={filters.status}
+              onChange={(value) => {
+                setFilters((current) => ({ ...current, status: value as OrderFilters['status'] }));
+                setPage(1);
+              }}
+            />
           </div>
 
           <div className="px-5 pb-7 pt-8 sm:px-6 sm:pb-8 lg:px-7">
@@ -255,40 +245,24 @@ function OrderListItem({
   selected: boolean;
 }) {
   return (
-    <button
-      type="button"
-      className={classNames(
-        'group grid gap-5 rounded-[22px] border border-white/[0.08] px-4 py-5 text-left transition-all duration-200 sm:grid-cols-[104px_minmax(0,1fr)_auto] sm:items-center sm:px-5',
-        selected
-          ? 'bg-[rgba(7,16,31,0.62)] shadow-[inset_0_0_0_1px_rgba(34,211,238,0.08)]'
-          : 'bg-[rgba(255,255,255,0.02)] hover:border-cyan/18 hover:bg-[rgba(255,255,255,0.05)] hover:shadow-[inset_0_0_0_1px_rgba(34,211,238,0.14),0_0_0_1px_rgba(34,211,238,0.04)]',
-      )}
+    <MediaListItem
       onClick={onSelect}
-    >
-      <div className="relative aspect-square overflow-hidden rounded-[18px] bg-slate-950">
-        <ImageBox src={item.gameThumbnailSrc} alt={item.gameName} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
-      </div>
-
-      <div className="grid gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <strong className="text-[1.02rem] font-black tracking-[-0.03em] text-white">{item.gameName}</strong>
-          <span className="inline-flex rounded-full border border-cyan/20 bg-cyan/10 px-2.5 py-1 text-[0.78rem] font-bold text-cyan-100">{item.packageName}</span>
+      selected={selected}
+      leading={
+        <div className="relative aspect-square w-[104px] overflow-hidden rounded-[18px] bg-slate-950">
+          <ImageBox src={item.gameThumbnailSrc} alt={item.gameName} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
         </div>
-        <div className="grid gap-1 text-sm text-slate-400">
-          <span>{item.orderCode}</span>
-          <span>{item.createdAtLabel}</span>
-          <span>{item.gameAccountInfo}</span>
-        </div>
-      </div>
-
-      <div className="grid justify-items-start gap-2 sm:justify-items-end">
-        <strong className="text-[1.05rem] font-black tracking-[-0.03em] text-cyan-100 gt-tabular">{item.amountLabel}</strong>
+      }
+      title={item.gameName}
+      subtitle={item.packageName}
+      meta={`${item.orderCode} · ${item.gameAccountInfo}`}
+      titleAccessory={
         <Badge tone={item.statusTone} icon={item.statusIcon} className="rounded-full">
           {item.statusLabel}
         </Badge>
-        <span className="text-sm text-slate-400">{item.createdRelativeLabel}</span>
-      </div>
-    </button>
+      }
+      trailing={<strong className="text-[1.05rem] font-black tracking-[-0.03em] text-cyan-100 gt-tabular">{item.amountLabel}</strong>}
+    />
   );
 }
 

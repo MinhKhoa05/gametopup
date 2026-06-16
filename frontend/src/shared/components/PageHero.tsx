@@ -45,7 +45,6 @@ export function PageHero({ className, description, eyebrow, title, visual }: Pag
           </div>
         </div>
       </div>
-
     </section>
   );
 }

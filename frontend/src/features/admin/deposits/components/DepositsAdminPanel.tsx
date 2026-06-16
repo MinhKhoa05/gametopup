@@ -1,11 +1,11 @@
 import { CheckCircle2, CircleSlash, Clock3, Send, UserRound, WalletCards } from 'lucide-react';
-import type { ReactNode } from 'react';
-import { Badge, Button, EmptyState, FilterChip, IconBox, RecordRow, SearchBar, SectionHeading } from '@/shared/components';
+import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
 import type { DepositRequestStatusInfo } from '@/features/wallet/lib/deposit-request-status';
 import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
 import type { DepositRequest } from '@/features/wallet/types';
+import { AdminListSkeleton } from '@/features/admin/components/AdminShared';
 
 type DepositRequestsAdminPanelState = {
   clearSelection: () => void;
@@ -24,26 +24,6 @@ type DepositRequestsAdminPanelState = {
   setReviewNote: (value: string) => void;
 };
 
-function DepositDetailRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: ReactNode;
-  value: ReactNode;
-}) {
-  return (
-    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2">
-      <span className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] p-2 text-slate-200">{icon}</span>
-      <div className="min-w-0">
-        <span className="block text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-slate-500">{label}</span>
-        <span className="mt-1 block break-words text-right text-sm font-medium text-slate-100">{value}</span>
-      </div>
-    </div>
-  );
-}
-
 export function DepositsAdminPanel({
   busy,
   loading,
@@ -61,150 +41,143 @@ export function DepositsAdminPanel({
   const actionable = state.selectedRequest?.status === 2;
 
   return (
-    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)]">
-      <div className="gt-surface grid gap-4">
-        <SectionHeading
-          title="Yêu cầu nạp tiền"
-          description="Duyệt hoặc từ chối các yêu cầu đã được khách hàng xác nhận chuyển khoản."
-          action={
-            <div className="flex items-center gap-2">
-              <Badge tone="warning">Chờ xử lý {pendingCount}</Badge>
-              <Badge tone="success">Đã duyệt {approvedCount}</Badge>
-              <Badge tone="danger">Từ chối {rejectedCount}</Badge>
-            </div>
-          }
-        />
-
-        <SearchBar className="mb-1" value={state.query} onChange={state.setQuery} placeholder="Tìm theo mã, user, số tiền, nội dung chuyển khoản..." />
-
-        <div className="flex flex-wrap gap-2.5">
-          {state.filters.map((item) => (
-            <FilterChip
-              key={item.key}
-              active={state.filter === item.key}
-              onClick={() => state.setFilter(item.key)}
-            >
-              {item.label}
-            </FilterChip>
-          ))}
-        </div>
-
-        {loading && state.filteredRequests.length === 0 ? (
-          <div className="grid gap-2" aria-busy="true">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="h-16 animate-pulse rounded-2xl bg-white/5" />
-            ))}
-          </div>
-        ) : state.filteredRequests.length === 0 ? (
-          <EmptyState
-            actionLabel={state.query.trim() || state.filter !== 'all' ? 'Xóa bộ lọc' : undefined}
-            description="Không có yêu cầu nào khớp với bộ lọc hiện tại."
-            onAction={state.query.trim() || state.filter !== 'all' ? state.resetFilters : undefined}
-            title="Chưa có yêu cầu nạp tiền phù hợp."
-          />
-        ) : (
-          <div className="grid gap-2.5">
-            {state.filteredRequests.map((request) => {
-              const status = getDepositRequestStatus(request.status);
-              const isSelected = request.id === state.selectedRequest?.id;
-
-              return (
-                <RecordRow className="grid-cols-[auto_minmax(0,1fr)_minmax(160px,auto)]" highlighted={isSelected} key={request.id}>
-                  <IconBox size="md" className="font-black text-[0.8rem]">
-                    #{request.id}
-                  </IconBox>
-
-                  <div className="min-w-0">
-                    <strong className="block text-white">
-                      User #{request.userId} · {formatCurrency(request.amount)}
-                    </strong>
-                    <small className="mt-1 block break-words text-slate-300">{request.transferContent}</small>
-                    <small className="mt-1 block text-slate-500">
-                      {request.code}
-                      {' · '}
-                      {request.bankId ?? 'Không có ngân hàng'}
-                      {request.accountNo ? ` · ${request.accountNo}` : ''}
-                    </small>
-                    <small className="mt-1 block text-slate-500">Tạo lúc {formatDate(request.createdAt)}</small>
-                  </div>
-
-                  <div className="grid justify-items-end gap-2 max-[700px]:justify-items-start">
-                    <div className="grid gap-1.5 justify-items-end max-[700px]:justify-items-start">
-                      <Badge tone={status.tone}>{status.label}</Badge>
-                      {request.userConfirmedAt ? (
-                        <span className="text-xs font-semibold text-slate-500">Xác nhận {formatDate(request.userConfirmedAt)}</span>
-                      ) : (
-                        <span className="text-xs font-semibold text-slate-500">Chưa xác nhận giao dịch</span>
-                      )}
-                    </div>
-
-                    <Button className="min-h-10 px-4 py-2 text-sm" variant={isSelected ? 'accent' : 'default'} onClick={() => state.selectRequest(request)}>
-                      {isSelected ? 'Đang xem' : 'Xem chi tiết'}
-                    </Button>
-                  </div>
-                </RecordRow>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      <aside className="gt-surface sticky top-24 grid gap-4 max-h-[calc(100vh-7rem)] overflow-y-auto">
-        <SectionHeading
-          title="Chi tiết yêu cầu"
-          description="Xem thông tin chuyển khoản và thực hiện duyệt thủ công."
-          action={state.selectedRequest ? <Badge tone="neutral">{state.selectedStatus?.label}</Badge> : undefined}
-        />
-
-        {!state.selectedRequest ? (
-          <EmptyState
-            title="Chưa chọn yêu cầu"
-            description="Chọn một yêu cầu từ danh sách bên trái để xem chi tiết và xử lý."
-            icon={
-              <IconBox size="sm">
-                <Clock3 size={16} />
-              </IconBox>
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)]">
+      <PanelShell>
+        <div className="grid gap-4 px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6">
+          <SectionHeading
+            title="Yêu cầu nạp tiền"
+            titleClassName="text-[1.2rem]"
+            description="Duyệt hoặc từ chối các yêu cầu đã được khách hàng xác nhận chuyển khoản."
+            action={
+              <div className="flex flex-wrap gap-2">
+                <Badge tone="warning">Chờ xử lý {pendingCount}</Badge>
+                <Badge tone="success">Đã duyệt {approvedCount}</Badge>
+                <Badge tone="danger">Từ chối {rejectedCount}</Badge>
+              </div>
             }
           />
-        ) : (
-          <div className="grid gap-4 pb-1">
-            <div className="rounded-2xl border border-cyan/15 bg-cyan/8 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-cyan">Đang xem</p>
-                  <strong className="mt-1 block text-xl font-black text-white">#{state.selectedRequest.id}</strong>
-                  <span className="mt-1 block text-sm text-slate-300">User #{state.selectedRequest.userId}</span>
-                </div>
-                <Badge tone={state.selectedStatus?.tone ?? 'neutral'} icon={state.selectedStatus?.icon}>
-                  {state.selectedStatus?.label}
-                </Badge>
-              </div>
 
-              <div className="mt-3 grid gap-1.5 text-sm leading-6 text-slate-200">
-                <span className="font-semibold text-white">{formatCurrency(state.selectedRequest.amount)}</span>
-                <span className="break-words text-slate-200">{state.selectedRequest.code}</span>
-                <span className="break-words text-slate-300">{state.selectedRequest.transferContent}</span>
-              </div>
+          <SearchBar className="mb-1" value={state.query} onChange={state.setQuery} placeholder="Tìm theo mã, user, số tiền, nội dung chuyển khoản..." dense />
+
+          <FilterChipGroup
+            items={state.filters.map((item) => ({ value: item.key, label: item.label }))}
+            value={state.filter}
+            onChange={(value) => state.setFilter(value as typeof state.filter)}
+          />
+
+          {loading && state.filteredRequests.length === 0 ? (
+            <AdminListSkeleton ariaLabel="Đang tải yêu cầu nạp tiền" rows={5} />
+          ) : state.filteredRequests.length === 0 ? (
+            <EmptyState
+              actionLabel={state.query.trim() || state.filter !== 'all' ? 'Xóa bộ lọc' : undefined}
+              description="Không có yêu cầu nào khớp với bộ lọc hiện tại."
+              onAction={state.query.trim() || state.filter !== 'all' ? state.resetFilters : undefined}
+              title="Chưa có yêu cầu nạp tiền phù hợp."
+            />
+          ) : (
+            <div className="grid gap-2.5">
+              {state.filteredRequests.map((request) => {
+                const status = getDepositRequestStatus(request.status);
+                const isSelected = request.id === state.selectedRequest?.id;
+
+                return (
+                  <button
+                    key={request.id}
+                    type="button"
+                    className={classNames(
+                      'grid gap-4 rounded-[20px] border p-3 text-left transition-all duration-200 sm:grid-cols-[auto_minmax(0,1fr)_minmax(160px,auto)]',
+                      isSelected
+                        ? 'border-cyan/25 bg-cyan/10 shadow-[0_0_0_1px_rgba(34,211,238,0.08)]'
+                        : 'border-white/[0.06] bg-white/[0.025] hover:-translate-y-px hover:border-cyan/20 hover:bg-[rgba(255,255,255,0.04)]',
+                    )}
+                    onClick={() => state.selectRequest(request)}
+                  >
+                    <span className="inline-flex size-12 items-center justify-center rounded-[16px] border border-white/[0.06] bg-white/[0.03] font-black text-cyan-50 max-[700px]:size-[54px]">
+                      #{request.id}
+                    </span>
+
+                    <div className="min-w-0">
+                      <strong className="block text-white">
+                        User #{request.userId} · {formatCurrency(request.amount)}
+                      </strong>
+                      <small className="mt-1 block break-words text-slate-300">{request.transferContent}</small>
+                      <small className="mt-1 block text-slate-500">
+                        {request.code}
+                        {' · '}
+                        {request.bankId ?? 'Không có ngân hàng'}
+                        {request.accountNo ? ` · ${request.accountNo}` : ''}
+                      </small>
+                      <small className="mt-1 block text-slate-500">Tạo lúc {formatDate(request.createdAt)}</small>
+                    </div>
+
+                    <div className="grid justify-items-end gap-2 max-[700px]:justify-items-start">
+                      <div className="grid gap-1.5 justify-items-end max-[700px]:justify-items-start">
+                        <Badge tone={status.tone}>{status.label}</Badge>
+                        {request.userConfirmedAt ? (
+                          <span className="text-xs font-semibold text-slate-500">Xác nhận {formatDate(request.userConfirmedAt)}</span>
+                        ) : (
+                          <span className="text-xs font-semibold text-slate-500">Chưa xác nhận giao dịch</span>
+                        )}
+                      </div>
+                      <Button className="min-h-10 px-4 py-2 text-sm" variant={isSelected ? 'accent' : 'default'} onClick={() => state.selectRequest(request)}>
+                        {isSelected ? 'Đang xem' : 'Xem chi tiết'}
+                      </Button>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
+          )}
+        </div>
+      </PanelShell>
 
-            <div className="grid gap-3 rounded-2xl border border-white/8 bg-slate-950/55 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <strong className="block text-lg font-black text-white">#{state.selectedRequest.id}</strong>
-                  <span className="mt-1 block text-sm text-slate-300">User #{state.selectedRequest.userId}</span>
+      <PanelShell className="sticky top-24">
+        <div className="grid gap-4 px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6">
+          <SectionHeading
+            title="Chi tiết yêu cầu"
+            titleClassName="text-[1.2rem]"
+            description="Xem thông tin chuyển khoản và xử lý thủ công."
+            action={state.selectedRequest ? <Badge tone="neutral">{state.selectedStatus?.label}</Badge> : undefined}
+          />
+
+          {!state.selectedRequest ? (
+            <EmptyState
+              title="Chưa chọn yêu cầu"
+              description="Chọn một yêu cầu từ danh sách bên trái để xem chi tiết và xử lý."
+              icon={
+                <span className="inline-flex size-10 items-center justify-center rounded-[16px] border border-white/[0.06] bg-white/[0.03] text-cyan-50">
+                  <Clock3 size={16} />
+                </span>
+              }
+            />
+          ) : (
+            <div className="grid gap-4 pb-1">
+              <div className="rounded-[20px] border border-cyan/15 bg-cyan/10 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-cyan">Đang xem</p>
+                    <strong className="mt-1 block text-xl font-black text-white">#{state.selectedRequest.id}</strong>
+                    <span className="mt-1 block text-sm text-slate-300">User #{state.selectedRequest.userId}</span>
+                  </div>
+                  <Badge tone={state.selectedStatus?.tone ?? 'neutral'} icon={state.selectedStatus?.icon}>
+                    {state.selectedStatus?.label}
+                  </Badge>
                 </div>
-                <Badge tone={state.selectedStatus?.tone ?? 'neutral'} icon={state.selectedStatus?.icon}>
-                  {state.selectedStatus?.label}
-                </Badge>
+
+                <div className="mt-3 grid gap-1.5 text-sm leading-6 text-slate-200">
+                  <span className="font-semibold text-white">{formatCurrency(state.selectedRequest.amount)}</span>
+                  <span className="break-words text-slate-200">{state.selectedRequest.code}</span>
+                  <span className="break-words text-slate-300">{state.selectedRequest.transferContent}</span>
+                </div>
               </div>
 
-              <div className="grid gap-2 rounded-2xl border border-white/8 bg-white/[0.03] p-3 text-sm text-slate-200">
-                <DepositDetailRow icon={<WalletCards size={16} />} label="Số tiền" value={formatCurrency(state.selectedRequest.amount)} />
-                <DepositDetailRow icon={<Send size={16} />} label="Mã nạp" value={state.selectedRequest.code} />
-                <DepositDetailRow icon={<UserRound size={16} />} label="Ngân hàng" value={state.selectedRequest.bankId ?? '---'} />
-                <DepositDetailRow icon={<WalletCards size={16} />} label="Số tài khoản" value={state.selectedRequest.accountNo ?? '---'} />
-                <DepositDetailRow icon={<UserRound size={16} />} label="Tên tài khoản" value={state.selectedRequest.accountName ?? '---'} />
-                <DepositDetailRow icon={<Send size={16} />} label="Nội dung" value={state.selectedRequest.transferContent} />
+              <div className="grid gap-3 rounded-[20px] border border-white/[0.06] bg-white/[0.03] p-4">
+                <DetailRow icon={<WalletCards size={16} />} label="Số tiền" value={formatCurrency(state.selectedRequest.amount)} />
+                <DetailRow icon={<Send size={16} />} label="Mã nạp" value={state.selectedRequest.code} />
+                <DetailRow icon={<UserRound size={16} />} label="Ngân hàng" value={state.selectedRequest.bankId ?? '---'} />
+                <DetailRow icon={<WalletCards size={16} />} label="Số tài khoản" value={state.selectedRequest.accountNo ?? '---'} />
+                <DetailRow icon={<UserRound size={16} />} label="Tên tài khoản" value={state.selectedRequest.accountName ?? '---'} />
+                <DetailRow icon={<Send size={16} />} label="Nội dung" value={state.selectedRequest.transferContent} />
               </div>
 
               <div className="grid gap-2 text-sm leading-6 text-slate-200">
@@ -215,7 +188,7 @@ export function DepositsAdminPanel({
               </div>
 
               {state.selectedRequest.adminNote ? (
-                <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+                <div className="rounded-[18px] border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
                   <strong className="mb-1 block text-amber-50">Ghi chú hiện có</strong>
                   <p className="m-0 leading-6 text-amber-100/90">{state.selectedRequest.adminNote}</p>
                 </div>
@@ -225,7 +198,7 @@ export function DepositsAdminPanel({
                 <span className="mb-2 block text-sm font-semibold text-slate-200">Ghi chú admin</span>
                 <textarea
                   className={classNames(
-                    'w-full min-h-28 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-base text-slate-200 outline-none',
+                    'w-full min-h-28 rounded-[18px] border border-white/[0.08] bg-[rgba(7,16,31,0.72)] px-4 py-3 text-base text-slate-200 outline-none',
                     'placeholder:text-slate-500 transition-all duration-200 hover:border-cyan/25 hover:bg-cyan/10',
                     'focus:border-cyan focus:shadow-[0_0_0_3px_rgba(34,211,238,0.1)] disabled:cursor-not-allowed disabled:opacity-70',
                   )}
@@ -237,7 +210,7 @@ export function DepositsAdminPanel({
               </label>
 
               {!actionable ? (
-                <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/25 px-4 py-3 text-sm leading-6 text-slate-400">
+                <div className="rounded-[18px] border border-dashed border-white/[0.08] bg-slate-950/25 px-4 py-3 text-sm leading-6 text-slate-400">
                   Chỉ các yêu cầu ở trạng thái <b className="text-white">đã xác nhận</b> mới có thể duyệt hoặc từ chối.
                 </div>
               ) : null}
@@ -258,9 +231,9 @@ export function DepositsAdminPanel({
                 </Button>
               </div>
             </div>
-          </div>
-        )}
-      </aside>
+          )}
+        </div>
+      </PanelShell>
     </div>
   );
 }

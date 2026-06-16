@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import { CheckCircle2, Clock3, ClipboardList, History, TimerReset, XCircle } from 'lucide-react';
 import type { Game } from '@/features/games/types';
 import type { Order } from '@/features/orders/types';
-import { formatCurrency, formatDate } from '@/shared/lib/format';
+import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
+import { formatCurrency, formatDate, formatRelativeTime } from '@/shared/lib/format';
 
 type StatusGroup = 'pending' | 'processing' | 'completed' | 'canceled';
 type TimelineState = 'complete' | 'current' | 'danger' | 'upcoming';
@@ -81,46 +82,11 @@ const ORDER_VISUAL_FALLBACKS = [
   },
 ] as const;
 
-const STATUS_META: Record<
-  number,
-  {
-    icon: ReactNode;
-    label: string;
-    statusGroup: StatusGroup;
-    tone: 'danger' | 'neutral' | 'primary' | 'success' | 'warning';
-  }
-> = {
-  1: {
-    icon: <Clock3 size={14} />,
-    label: 'Chờ xử lý',
-    statusGroup: 'pending',
-    tone: 'primary',
-  },
-  2: {
-    icon: <TimerReset size={14} />,
-    label: 'Đang xử lý',
-    statusGroup: 'processing',
-    tone: 'warning',
-  },
-  3: {
-    icon: <CheckCircle2 size={14} />,
-    label: 'Hoàn thành',
-    statusGroup: 'completed',
-    tone: 'success',
-  },
-  4: {
-    icon: <XCircle size={14} />,
-    label: 'Đã hủy',
-    statusGroup: 'canceled',
-    tone: 'danger',
-  },
-};
-
 export function buildOrderHistoryItems(orders: Order[], games: Game[]): OrderHistoryItem[] {
   return orders.map((order, index) => {
     const visual = resolveVisual(order, index, games);
     const amount = order.total ?? order.unitPrice;
-    const status = STATUS_META[order.status] ?? STATUS_META[1];
+    const status = getOrderStatusMeta(order.status, getOrderStatusIcon(order.status));
     const createdAtLabel = formatDate(order.createdAt);
     const updatedAtLabel = formatDate(order.updatedAt);
     const createdRelativeLabel = formatRelativeTime(order.createdAt);
@@ -145,8 +111,8 @@ export function buildOrderHistoryItems(orders: Order[], games: Game[]): OrderHis
       order,
       orderCode: `#GTOP${order.id}`,
       packageName: visual.packageName,
-      statusDescription: statusDescriptionFor(status.statusGroup),
-      statusGroup: status.statusGroup,
+      statusDescription: statusDescriptionFor(getStatusGroup(order.status)),
+      statusGroup: getStatusGroup(order.status),
       statusIcon: status.icon,
       statusLabel: status.label,
       statusTone: status.tone,
@@ -392,22 +358,32 @@ function escapeXml(value: string) {
     .split("'").join('&apos;');
 }
 
-function formatRelativeTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return '--';
+function getStatusGroup(status: number): StatusGroup {
+  switch (status) {
+    case 1:
+      return 'pending';
+    case 2:
+      return 'processing';
+    case 3:
+      return 'completed';
+    case 4:
+      return 'canceled';
+    default:
+      return 'pending';
   }
+}
 
-  const diffMinutes = Math.max(1, Math.round((Date.now() - date.getTime()) / 60000));
-  if (diffMinutes < 60) {
-    return `${diffMinutes} phút trước`;
+function getOrderStatusIcon(status: number) {
+  switch (status) {
+    case 1:
+      return <Clock3 size={14} />;
+    case 2:
+      return <TimerReset size={14} />;
+    case 3:
+      return <CheckCircle2 size={14} />;
+    case 4:
+      return <XCircle size={14} />;
+    default:
+      return <Clock3 size={14} />;
   }
-
-  const diffHours = Math.round(diffMinutes / 60);
-  if (diffHours < 24) {
-    return `${diffHours} giờ trước`;
-  }
-
-  const diffDays = Math.round(diffHours / 24);
-  return `${diffDays} ngày trước`;
 }
