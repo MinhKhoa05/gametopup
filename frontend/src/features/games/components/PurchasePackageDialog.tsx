@@ -159,18 +159,12 @@ export function PackagePurchaseDialog({ busy, game, isOpen, onClose, onConfirm, 
                 </div>
 
                 <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-                  <DetailRow label="Tên gói" labelClassName="!text-cyan-300" value={selectedPackage.name} valueClassName="!text-white font-semibold" />
-                  <DetailRow label="Giá gốc" labelClassName="!text-amber-300" value={formatCurrency(selectedPackage.originalPrice)} valueClassName="!text-slate-500 line-through" />
-                  <DetailRow label="Giá bán" labelClassName="!text-sky-300" value={formatCurrency(salePrice)} valueClassName="!text-cyan-100 font-black" />
-                  <DetailRow
-                    label="Tiết kiệm"
-                    labelClassName="!text-emerald-300"
-                    value={`${formatCurrency(selectedPackage.originalPrice - salePrice)} (-${Math.max(
-                      1,
-                      Math.round((1 - salePrice / selectedPackage.originalPrice) * 100),
-                    )}%)`}
-                    valueClassName="!text-emerald-300 font-semibold"
-                  />
+                  <DetailRow label="Tên gói">{selectedPackage.name}</DetailRow>
+                  <DetailRow label="Giá gốc"><span className="line-through text-slate-500">{formatCurrency(selectedPackage.originalPrice)}</span></DetailRow>
+                  <DetailRow label="Giá bán">{formatCurrency(salePrice)}</DetailRow>
+                  <DetailRow label="Tiết kiệm">
+                    {`${formatCurrency(selectedPackage.originalPrice - salePrice)} (-${Math.max(1, Math.round((1 - salePrice / selectedPackage.originalPrice) * 100))}%)`}
+                  </DetailRow>
                 </div>
               </section>
 
@@ -180,19 +174,9 @@ export function PackagePurchaseDialog({ busy, game, isOpen, onClose, onConfirm, 
                 </div>
 
                 <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-                  <DetailRow label="Số dư ví" labelClassName="!text-sky-300" value={formatCurrency(walletBalance)} valueClassName="!text-white" />
-                  <DetailRow
-                    label="Số cần trả"
-                    labelClassName="!text-rose-300"
-                    value={formatCurrency(salePrice)}
-                    valueClassName="!text-rose-200 font-black"
-                  />
-                  <DetailRow
-                    label="Số dư sau mua"
-                    labelClassName="!text-violet-300"
-                    value={formatCurrency(afterPayment)}
-                    valueClassName="!text-emerald-300 font-semibold"
-                  />
+                  <DetailRow label="Số dư ví">{formatCurrency(walletBalance)}</DetailRow>
+                  <DetailRow label="Số cần trả">{formatCurrency(salePrice)}</DetailRow>
+                  <DetailRow label="Số dư sau mua">{formatCurrency(afterPayment)}</DetailRow>
                 </div>
               </section>
             </div>
@@ -319,12 +303,12 @@ export function PurchaseSuccessDialog({ game, isOpen, onContinue, onViewOrders, 
           </div>
 
           <div className="mt-5 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-            <DetailRow label="Gói nạp" value={packageItem.name} />
-            <DetailRow label="Giá gói" value={formatCurrency(packageItem.salePrice)} valueClassName="!text-cyan-100 font-black" />
-            <DetailRow label="Tài khoản nạp" value={purchaseInfo.uidServer} valueClassName="!text-white" />
-            <DetailRow label="Nhân vật" value={purchaseInfo.characterName || 'Không có'} valueClassName="!text-violet-200" />
-            <DetailRow label="Mã đơn" value={orderCode} />
-            <DetailRow label="Thời gian" value={successTime} />
+            <DetailRow label="Gói nạp">{packageItem.name}</DetailRow>
+            <DetailRow label="Giá gói">{formatCurrency(packageItem.salePrice)}</DetailRow>
+            <DetailRow label="Tài khoản nạp">{purchaseInfo.uidServer}</DetailRow>
+            <DetailRow label="Nhân vật">{purchaseInfo.characterName || 'Không có'}</DetailRow>
+            <DetailRow label="Mã đơn">{orderCode}</DetailRow>
+            <DetailRow label="Thời gian">{successTime}</DetailRow>
           </div>
 
           <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

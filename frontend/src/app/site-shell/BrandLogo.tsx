@@ -1,6 +1,5 @@
-import { Gamepad2 } from 'lucide-react';
 import { classNames } from '@/shared/lib/classNames';
-import { IconBox } from '@/shared/components';
+import brandLogoSrc from '@/assets/brand/gametopup-logo.svg';
 
 type BrandLogoProps = {
   className?: string;
@@ -37,15 +36,14 @@ export function BrandLogo({
       onClick={onClick}
     >
       <span className="relative inline-flex">
-        <IconBox
-          size="sm"
+        <img
+          src={brandLogoSrc}
+          alt=""
           className={classNames(
-            large ? 'h-12 w-12 rounded-[1rem]' : compact ? 'h-9 w-9 rounded-xl' : 'h-10 w-10',
-            'transition-all duration-200 group-hover:bg-cyan/15 group-hover:shadow-[0_8px_24px_rgba(34,211,238,0.12)]',
+            'block shrink-0 object-contain transition-transform duration-200 group-hover:scale-[1.01]',
+            large ? 'h-12 w-12' : compact ? 'h-9 w-9' : 'h-10 w-10',
           )}
-        >
-          <Gamepad2 size={large ? 28 : compact ? 20 : 24} />
-        </IconBox>
+        />
         {adminDot ? (
           <span className="absolute -bottom-0.5 -right-0.5 size-2 rounded-full border border-[#071427] bg-cyan shadow-[0_0_0_3px_rgba(34,211,238,0.14)]" />
         ) : null}
@@ -59,7 +57,8 @@ export function BrandLogo({
               large ? 'text-[1.15rem] font-extrabold tracking-[-0.02em]' : compact ? 'text-base font-bold' : 'text-lg font-bold',
             )}
           >
-            {title}
+            <span className="text-white">Game</span>
+            <span className="text-cyan-300">TopUp</span>
           </strong>
           {subtitle ? (
             <small

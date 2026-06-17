@@ -1,5 +1,5 @@
 import { CheckCircle2, CircleSlash, Clock3, Send, UserRound, WalletCards } from 'lucide-react';
-import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
+import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
 import type { DepositRequestStatusInfo } from '@/features/wallet/lib/deposit-request-status';
@@ -81,49 +81,32 @@ export function DepositsAdminPanel({
                 const isSelected = request.id === state.selectedRequest?.id;
 
                 return (
-                  <button
+                  <MediaListItem
                     key={request.id}
-                    type="button"
-                    className={classNames(
-                      'grid gap-4 rounded-[20px] border p-3 text-left transition-all duration-200 sm:grid-cols-[auto_minmax(0,1fr)_minmax(160px,auto)]',
-                      isSelected
-                        ? 'border-cyan/25 bg-cyan/10 shadow-[0_0_0_1px_rgba(34,211,238,0.08)]'
-                        : 'border-white/[0.06] bg-white/[0.025] hover:-translate-y-px hover:border-cyan/20 hover:bg-[rgba(255,255,255,0.04)]',
-                    )}
+                    className={classNames('p-3', isSelected ? 'border-cyan/25 bg-cyan/10 shadow-[0_0_0_1px_rgba(34,211,238,0.08)]' : '')}
+                    selected={isSelected}
                     onClick={() => state.selectRequest(request)}
-                  >
-                    <span className="inline-flex size-12 items-center justify-center rounded-[16px] border border-white/[0.06] bg-white/[0.03] font-black text-cyan-50 max-[700px]:size-[54px]">
-                      #{request.id}
-                    </span>
-
-                    <div className="min-w-0">
-                      <strong className="block text-white">
+                    leading={
+                      <span className="inline-flex size-12 items-center justify-center rounded-[16px] border border-white/[0.06] bg-white/[0.03] font-black text-cyan-50 max-[700px]:size-[54px]">
+                        #{request.id}
+                      </span>
+                    }
+                    title={
+                      <>
                         User #{request.userId} · {formatCurrency(request.amount)}
-                      </strong>
-                      <small className="mt-1 block break-words text-slate-300">{request.transferContent}</small>
-                      <small className="mt-1 block text-slate-500">
-                        {request.code}
-                        {' · '}
-                        {request.bankId ?? 'Không có ngân hàng'}
-                        {request.accountNo ? ` · ${request.accountNo}` : ''}
-                      </small>
-                      <small className="mt-1 block text-slate-500">Tạo lúc {formatDate(request.createdAt)}</small>
-                    </div>
-
-                    <div className="grid justify-items-end gap-2 max-[700px]:justify-items-start">
-                      <div className="grid gap-1.5 justify-items-end max-[700px]:justify-items-start">
-                        <Badge tone={status.tone}>{status.label}</Badge>
-                        {request.userConfirmedAt ? (
-                          <span className="text-xs font-semibold text-slate-500">Xác nhận {formatDate(request.userConfirmedAt)}</span>
-                        ) : (
-                          <span className="text-xs font-semibold text-slate-500">Chưa xác nhận giao dịch</span>
-                        )}
-                      </div>
-                      <Button className="min-h-10 px-4 py-2 text-sm" variant={isSelected ? 'accent' : 'default'} onClick={() => state.selectRequest(request)}>
-                        {isSelected ? 'Đang xem' : 'Xem chi tiết'}
-                      </Button>
-                    </div>
-                  </button>
+                      </>
+                    }
+                    subtitle={request.transferContent}
+                    meta={`${request.code} · ${request.bankId ?? 'Không có ngân hàng'}${request.accountNo ? ` · ${request.accountNo}` : ''} · Tạo lúc ${formatDate(request.createdAt)}`}
+                    titleAccessory={<Badge tone={status.tone}>{status.label}</Badge>}
+                    trailing={
+                      request.userConfirmedAt ? (
+                        <span className="text-xs font-semibold text-slate-500">Xác nhận {formatDate(request.userConfirmedAt)}</span>
+                      ) : (
+                        <span className="text-xs font-semibold text-slate-500">Chưa xác nhận giao dịch</span>
+                      )
+                    }
+                  />
                 );
               })}
             </div>
@@ -137,7 +120,7 @@ export function DepositsAdminPanel({
             title="Chi tiết yêu cầu"
             titleClassName="text-[1.2rem]"
             description="Xem thông tin chuyển khoản và xử lý thủ công."
-            action={state.selectedRequest ? <Badge tone="neutral">{state.selectedStatus?.label}</Badge> : undefined}
+            action={state.selectedRequest ? <Badge tone={state.selectedStatus?.tone ?? 'neutral'}>{state.selectedStatus?.label}</Badge> : undefined}
           />
 
           {!state.selectedRequest ? (
@@ -172,12 +155,12 @@ export function DepositsAdminPanel({
               </div>
 
               <div className="grid gap-3 rounded-[20px] border border-white/[0.06] bg-white/[0.03] p-4">
-                <DetailRow icon={<WalletCards size={16} />} label="Số tiền" value={formatCurrency(state.selectedRequest.amount)} />
-                <DetailRow icon={<Send size={16} />} label="Mã nạp" value={state.selectedRequest.code} />
-                <DetailRow icon={<UserRound size={16} />} label="Ngân hàng" value={state.selectedRequest.bankId ?? '---'} />
-                <DetailRow icon={<WalletCards size={16} />} label="Số tài khoản" value={state.selectedRequest.accountNo ?? '---'} />
-                <DetailRow icon={<UserRound size={16} />} label="Tên tài khoản" value={state.selectedRequest.accountName ?? '---'} />
-                <DetailRow icon={<Send size={16} />} label="Nội dung" value={state.selectedRequest.transferContent} />
+                <DetailRow label={<span className="inline-flex items-center gap-2"><WalletCards size={16} />Số tiền</span>}>{formatCurrency(state.selectedRequest.amount)}</DetailRow>
+                <DetailRow label={<span className="inline-flex items-center gap-2"><Send size={16} />Mã nạp</span>}>{state.selectedRequest.code}</DetailRow>
+                <DetailRow label={<span className="inline-flex items-center gap-2"><UserRound size={16} />Ngân hàng</span>}>{state.selectedRequest.bankId ?? '---'}</DetailRow>
+                <DetailRow label={<span className="inline-flex items-center gap-2"><WalletCards size={16} />Số tài khoản</span>}>{state.selectedRequest.accountNo ?? '---'}</DetailRow>
+                <DetailRow label={<span className="inline-flex items-center gap-2"><UserRound size={16} />Tên tài khoản</span>}>{state.selectedRequest.accountName ?? '---'}</DetailRow>
+                <DetailRow label={<span className="inline-flex items-center gap-2"><Send size={16} />Nội dung</span>}>{state.selectedRequest.transferContent}</DetailRow>
               </div>
 
               <div className="grid gap-2 text-sm leading-6 text-slate-200">

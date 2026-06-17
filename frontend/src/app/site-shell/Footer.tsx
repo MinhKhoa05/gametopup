@@ -104,9 +104,9 @@ export function Footer({ variant = 'full' }: { variant?: FooterVariant }) {
             </>
           )}
         </div>
-
-        <SiteCredits />
       </div>
+
+      <SiteCredits />
     </footer>
   );
 }

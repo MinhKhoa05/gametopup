@@ -23,7 +23,7 @@ type FooterContactLinkConfig = {
 
 export const SITE_IMAGES = {
   home: {
-    heroIllustration: '/assets/hero-illustration.png',
+    heroIllustration: '/assets/home-hero-banner.png',
     walletIllustration: '/assets/wallet-illustration.png',
   },
   games: {

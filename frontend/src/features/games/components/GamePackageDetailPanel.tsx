@@ -54,31 +54,20 @@ export function GamePackageDetailPanel({ gameName, onPurchase, selectedPackage }
             </div>
 
             <div className="space-y-0 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-              <DetailRow
-                label="Giá GameTopUp"
-                labelClassName="text-sky-300"
-                value={formatCurrency(selectedPackage.salePrice)}
-                valueClassName="text-cyan-100 font-black"
-              />
-              {hasDiscount ? <DetailRow label="Giá trong game" labelClassName="text-slate-300" value={formatCurrency(selectedPackage.originalPrice)} valueClassName="line-through text-slate-500" /> : null}
+              <DetailRow label="Giá GameTopUp">{formatCurrency(selectedPackage.salePrice)}</DetailRow>
+              {hasDiscount ? <DetailRow label="Giá trong game"><span className="line-through text-slate-500">{formatCurrency(selectedPackage.originalPrice)}</span></DetailRow> : null}
               {hasDiscount ? (
-                <DetailRow
-                  label="Tiết kiệm"
-                  labelClassName="text-emerald-300"
-                  value={`${formatCurrency(selectedPackage.originalPrice - selectedPackage.salePrice)} (-${discountPercent}%)`}
-                  valueClassName="text-emerald-300"
-                />
+                <DetailRow label="Tiết kiệm">{`${formatCurrency(selectedPackage.originalPrice - selectedPackage.salePrice)} (-${discountPercent}%)`}</DetailRow>
               ) : null}
             </div>
 
             <div className="space-y-0 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-              <DetailRow
-                label="Tình trạng"
-                value={stockQuantity > 0 ? `Còn ${stockQuantity} suất` : 'Hết hàng'}
-                labelClassName="text-amber-300"
-                valueClassName={classNames(isSoldOut ? 'text-rose-300' : isLowStock ? 'text-amber-300' : 'text-white')}
-              />
-              <DetailRow label="Xử lý dự kiến" labelClassName="text-cyan-300" value="5–15 phút" valueClassName="text-cyan-100" />
+              <DetailRow label="Tình trạng">
+                <span className={classNames(isSoldOut ? 'text-rose-300' : isLowStock ? 'text-amber-300' : 'text-white')}>
+                  {stockQuantity > 0 ? `Còn ${stockQuantity} suất` : 'Hết hàng'}
+                </span>
+              </DetailRow>
+              <DetailRow label="Xử lý dự kiến">5–15 phút</DetailRow>
             </div>
 
             <Button type="button" variant="accent" className="w-full py-3.5" onClick={onPurchase} disabled={isSoldOut}>

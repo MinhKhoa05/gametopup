@@ -2,9 +2,10 @@ import { CheckCircle2, CircleSlash, Clock3, Send, TriangleAlert, XCircle } from 
 import { useMemo, useState } from 'react';
 import type { Order } from '@/features/orders/types';
 import type { User } from '@/features/auth/types';
-import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
+import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, ImageBox, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { getOrderStatusMeta as getSharedOrderStatusMeta } from '@/features/orders/lib/orderStatus';
+import { DEFAULT_IMAGE_SRC } from '@/shared/lib/image';
 
 type OrdersAdminPanelState = {
   filters: Array<{ key: 'all' | 'pending' | 'processing' | 'completed' | 'cancelled'; label: string }>;
@@ -90,6 +91,7 @@ export function OrdersAdminPanel({
                     key={order.id}
                     onClick={() => setSelectedOrderId(order.id)}
                     selected={isSelected}
+                    leading={<ImageBox src={DEFAULT_IMAGE_SRC} alt="" className="object-cover" />}
                     title={`Đơn #${order.id}`}
                     subtitle={`User #${order.userId} · Gói #${order.gamePackageId}`}
                     meta={`${order.gameAccountInfo} · ${formatDate(order.createdAt)}`}
@@ -137,13 +139,13 @@ export function OrdersAdminPanel({
               </div>
 
               <div className="grid gap-2 rounded-[20px] border border-white/[0.06] bg-white/[0.03] p-4 text-sm text-slate-200">
-                <DetailRow label="User" value={`#${selectedOrder.userId}`} />
-                <DetailRow label="Gói" value={`#${selectedOrder.gamePackageId}`} />
-                <DetailRow label="Tài khoản game" value={selectedOrder.gameAccountInfo} />
-                <DetailRow label="Giao cho" value={selectedOrder.assignedTo ? `#${selectedOrder.assignedTo}` : 'Chưa phân công'} />
-                <DetailRow label="Tạo lúc" value={formatDate(selectedOrder.createdAt)} />
-                <DetailRow label="Cập nhật" value={formatDate(selectedOrder.updatedAt)} />
-                <DetailRow label="Giá đơn vị" value={formatCurrency(selectedOrder.unitPrice)} />
+                <DetailRow label="User">{`#${selectedOrder.userId}`}</DetailRow>
+                <DetailRow label="Gói">{`#${selectedOrder.gamePackageId}`}</DetailRow>
+                <DetailRow label="Tài khoản game">{selectedOrder.gameAccountInfo}</DetailRow>
+                <DetailRow label="Giao cho">{selectedOrder.assignedTo ? `#${selectedOrder.assignedTo}` : 'Chưa phân công'}</DetailRow>
+                <DetailRow label="Tạo lúc">{formatDate(selectedOrder.createdAt)}</DetailRow>
+                <DetailRow label="Cập nhật">{formatDate(selectedOrder.updatedAt)}</DetailRow>
+                <DetailRow label="Giá đơn vị">{formatCurrency(selectedOrder.unitPrice)}</DetailRow>
               </div>
 
               <div className="grid gap-2 text-sm leading-6 text-slate-200">

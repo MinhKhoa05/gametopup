@@ -21,6 +21,7 @@ import type { Order } from '@/features/orders/types';
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, IconBox, ImageBox, MediaListItem, PageHero, PanelShell, SearchBar, SectionHeading, StatCard } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
+import { formatUserRoleLabel } from '@/features/auth/userRole';
 
 type AdminCatalogMetrics = {
   activeGames: number;
@@ -37,7 +38,6 @@ type DashboardScope = 'all' | 'orders' | 'deposits';
 type QueueItem =
   | {
       actionHref: string;
-      actionLabel: string;
       amountLabel: string;
       createdAt: string;
       description: string;
@@ -54,7 +54,6 @@ type QueueItem =
     }
   | {
       actionHref: string;
-      actionLabel: string;
       amountLabel: string;
       createdAt: string;
       description: string;
@@ -208,7 +207,9 @@ export function DashboardPanel({
 
             <div className="grid gap-2 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
               {systemRows.map((row) => (
-                <DetailRow key={row.label} label={row.label} value={row.value} />
+                <DetailRow key={row.label} label={row.label}>
+                  {row.value}
+                </DetailRow>
               ))}
 
               <div className="grid gap-3 pt-2 sm:grid-cols-2">
@@ -234,8 +235,23 @@ export function DashboardPanel({
             </div>
 
             <div className="grid gap-3 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
-              {watchItems.length ? (
-                watchItems.map((item) => <WatchItemRow key={item.id} item={item} onOpen={() => navigate(item.actionHref)} />)
+                {watchItems.length ? (
+                  watchItems.map((item) => (
+                    <MediaListItem
+                      key={item.id}
+                      onClick={() => navigate(item.actionHref)}
+                      leading={<ImageBox src={item.imageUrl} alt={item.title} className="object-cover" />}
+                      title={item.title}
+                      subtitle={item.subtitle}
+                      meta={item.description}
+                    titleAccessory={
+                      <Badge tone={item.tone} className="rounded-full">
+                        {item.stockLabel}
+                      </Badge>
+                    }
+                    trailing={<span className="text-xs text-slate-500">Mở kho</span>}
+                  />
+                ))
               ) : (
                 <EmptyState
                   variant="compact"
@@ -258,7 +274,33 @@ export function DashboardPanel({
 
             <div className="grid gap-3 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
               {recentUsers.length ? (
-                recentUsers.map((user) => <UserRow key={user.id} user={user} />)
+                recentUsers.map((user) => {
+                  const roleLabel = formatUserRoleLabel(user.role);
+
+                  return (
+                    <MediaListItem
+                      key={user.id}
+                      leading={
+                        <IconBox size="md" tone="neutral" className="h-12 w-12 rounded-[18px]">
+                          <UserRound size={18} />
+                        </IconBox>
+                      }
+                      title={user.displayName?.trim() || user.email}
+                      subtitle={user.email}
+                      meta={formatDate(user.createdAt)}
+                      titleAccessory={
+                        <Badge tone={user.isActive !== false ? 'success' : 'neutral'} className="rounded-full">
+                          {user.isActive !== false ? 'Hoạt động' : 'Ngưng'}
+                        </Badge>
+                      }
+                      trailing={
+                        <Badge tone={roleLabel === 'Member' ? 'neutral' : 'primary'} className="rounded-full">
+                          {roleLabel}
+                        </Badge>
+                      }
+                    />
+                  );
+                })
               ) : (
                 <EmptyState variant="compact" title="Chưa có dữ liệu" description="Danh sách người dùng sẽ xuất hiện ở đây khi hệ thống đã có tài khoản." />
               )}
@@ -366,12 +408,7 @@ function QueueItemCard({
     return (
       <MediaListItem
         onClick={onOpen}
-        leading={
-          <div className="relative aspect-square w-[96px] overflow-hidden rounded-[18px] bg-slate-950">
-            {item.imageUrl ? <ImageBox src={item.imageUrl} alt={item.imageAlt} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" /> : null}
-            <div className="absolute inset-0 ring-1 ring-inset ring-white/[0.04]" />
-          </div>
-        }
+        leading={item.imageUrl ? <ImageBox src={item.imageUrl} alt={item.imageAlt} className="object-cover transition-transform duration-300 group-hover:scale-[1.04]" /> : null}
         title={item.title}
         subtitle={item.description}
         meta={formatDate(item.createdAt)}
@@ -388,11 +425,7 @@ function QueueItemCard({
   return (
     <MediaListItem
       onClick={onOpen}
-      leading={
-        <IconBox size="md" tone="neutral" className="h-12 w-12 rounded-[18px]">
-          <WalletCards size={18} />
-        </IconBox>
-      }
+      leading={<IconBox size="md" tone="neutral"><WalletCards size={18} /></IconBox>}
       title={item.title}
       subtitle={item.description}
       meta={formatDate(item.createdAt)}
@@ -403,61 +436,6 @@ function QueueItemCard({
       }
       trailing={<strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">{item.amountLabel}</strong>}
     />
-  );
-}
-
-function WatchItemRow({
-  item,
-  onOpen,
-}: {
-  item: WatchItem;
-  onOpen: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className="grid gap-3 rounded-[18px] border border-white/[0.06] bg-[rgba(255,255,255,0.025)] p-3 text-left transition-all duration-200 hover:-translate-y-px hover:border-cyan/20 hover:bg-[rgba(255,255,255,0.04)] sm:grid-cols-[60px_minmax(0,1fr)_auto] sm:items-center"
-      onClick={onOpen}
-    >
-      <div className="relative aspect-square overflow-hidden rounded-[16px] bg-slate-950">
-        <ImageBox src={item.imageUrl} alt={item.title} className="h-full w-full object-cover transition-transform duration-300" />
-      </div>
-
-      <div className="grid gap-1 min-w-0">
-        <strong className="truncate text-sm font-bold text-white">{item.title}</strong>
-        <span className="truncate text-sm text-slate-400">{item.subtitle}</span>
-        <span className="truncate text-xs text-slate-500">{item.description}</span>
-      </div>
-
-      <div className="grid justify-items-start gap-2 sm:justify-items-end">
-        <Badge tone={item.tone} className="rounded-full">
-          {item.stockLabel}
-        </Badge>
-        <span className="text-xs text-slate-500">Mở kho</span>
-      </div>
-    </button>
-  );
-}
-
-function UserRow({ user }: { user: User }) {
-  return (
-    <div className="grid gap-4 rounded-[18px] border border-white/[0.06] bg-[rgba(255,255,255,0.025)] p-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
-      <IconBox size="md" tone="neutral" className="h-12 w-12 rounded-[18px]">
-        <UserRound size={18} />
-      </IconBox>
-
-      <div className="grid gap-1 min-w-0">
-        <strong className="truncate text-sm font-bold text-white">{user.displayName?.trim() || user.email}</strong>
-        <span className="truncate text-sm text-slate-400">{user.email}</span>
-      </div>
-
-      <div className="grid justify-items-start gap-2 sm:justify-items-end">
-        <Badge tone={user.isActive !== false ? 'success' : 'neutral'} className="rounded-full">
-          {user.isActive !== false ? 'Hoạt động' : 'Ngưng'}
-        </Badge>
-        <span className="text-xs text-slate-500">{formatDate(user.createdAt)}</span>
-      </div>
-    </div>
   );
 }
 
@@ -485,7 +463,6 @@ function buildQueueItems({
 
     return {
       actionHref: routes.admin('orders'),
-      actionLabel: 'Mở đơn',
       amountLabel: amount,
       createdAt: order.createdAt,
       description,
@@ -508,7 +485,6 @@ function buildQueueItems({
 
     return {
       actionHref: routes.admin('deposits'),
-      actionLabel: 'Mở yêu cầu',
       amountLabel: amount,
       createdAt: request.createdAt,
       description: `${request.code} · ${request.bankId}`,

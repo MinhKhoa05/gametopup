@@ -1,6 +1,6 @@
 ﻿import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ReceiptText, Search, Zap } from 'lucide-react';
+import { ArrowRight, ChevronDown, Headset, ReceiptText, Search, ShieldCheck, Tag, Zap } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { SITE_IMAGES } from '@/app/config/site';
 import { routes } from '@/app/router/routes';
@@ -9,10 +9,11 @@ import { useGamesQuery } from '@/features/games/server';
 import { useMyOrdersQuery } from '@/features/orders/server';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
 import { useWalletBalanceQuery } from '@/features/wallet/server';
-import { Badge, Button, EmptyState, IconBox, ImageBox, MediaListItem, PanelShell, PageHero, SectionHeading, TrustSection } from '@/shared/components';
+import { Badge, Button, EmptyState, IconBox, ImageBox, MediaListItem, PanelShell, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatRelativeTime } from '@/shared/lib/format';
 import type { Game } from '@/features/games/types';
 import type { Order } from '@/features/orders/types';
+import type { ReactNode } from 'react';
 
 type PackageCard = {
   game: Game;
@@ -143,6 +144,8 @@ export function HomePage() {
           </div>
 
           <TrustSection />
+
+          <FaqSection />
         </div>
     </AppPageContainer>
   );
@@ -156,28 +159,18 @@ function HeroSection({
   onDeposit: () => void;
 }) {
   return (
-    <div className="grid gap-4">
-      <PageHero
-        eyebrow="NẠP GAME UY TÍN"
-        title="Nạp game tiết kiệm hơn"
-        description="Giá tốt, xử lý nhanh và theo dõi được từng trạng thái đơn hàng. Đi thẳng tới game hoặc nạp ví trong một chạm."
-        visual={
-          <div className="relative min-h-[230px] w-full min-w-[280px] max-w-[560px] lg:min-h-[360px]">
-            <div className="pointer-events-none absolute inset-0 rounded-[28px] bg-[radial-gradient(circle_at_50%_42%,rgba(34,211,238,0.16),transparent_36%),radial-gradient(circle_at_72%_18%,rgba(34,211,238,0.1),transparent_24%)]" />
-            <div className="pointer-events-none absolute inset-x-[16%] bottom-[12%] h-12 rounded-full bg-cyan/12 blur-[42px]" />
-            <div className="pointer-events-none absolute left-[16%] top-[16%] h-28 w-28 rounded-full bg-cyan/12 blur-[72px]" />
-            <div className="relative flex h-full items-center justify-center">
-              <img
-                src={SITE_IMAGES.home.heroIllustration}
-                alt="Khối máy chơi game phát sáng"
-                className="relative z-10 w-full object-contain drop-shadow-[0_0_56px_rgba(34,211,238,0.18)]"
-                loading="eager"
-                decoding="async"
-              />
-            </div>
-          </div>
-        }
-      />
+    <div className="grid gap-4 sm:gap-5">
+      <section className="overflow-hidden rounded-[28px] border border-white/[0.08] bg-[#020817] shadow-[0_24px_70px_rgba(2,6,23,0.28)]">
+        <div className="relative aspect-[16/9] w-full">
+          <img
+            src={SITE_IMAGES.home.heroIllustration}
+            alt="Banner GameTopUp"
+            className="h-full w-full object-cover"
+            loading="eager"
+            decoding="async"
+          />
+        </div>
+      </section>
 
       <div className="flex flex-wrap gap-3">
         <Button variant="primary" className="rounded-[14px] px-5 text-sm font-bold" onClick={onDeposit}>
@@ -373,4 +366,124 @@ const PACKAGE_PRESETS = [
     price: 1599000,
   },
 ] as const;
+
+type TrustSectionItem = {
+  title: string;
+  description: string;
+  icon: ReactNode;
+};
+
+const BENEFITS = [
+  {
+    title: 'Giá tốt hơn',
+    description: 'Tiết kiệm đến 15% so với cửa hàng chính thức.',
+    icon: <Tag size={24} />,
+  },
+  {
+    title: 'Thanh toán an toàn',
+    description: 'Bảo mật thông tin tuyệt đối, hỗ trợ nhiều phương thức.',
+    icon: <ShieldCheck size={24} />,
+  },
+  {
+    title: 'Xử lý nhanh chóng',
+    description: 'Đơn được xử lý tự động 5 - 15 phút.',
+    icon: <Zap size={24} />,
+  },
+  {
+    title: 'Hỗ trợ 24/7',
+    description: 'Đội ngũ hỗ trợ luôn sẵn sàng giúp đỡ bạn.',
+    icon: <Headset size={24} />,
+  },
+] as const satisfies readonly TrustSectionItem[];
+
+function TrustSection() {
+  return (
+    <section className="grid gap-5">
+      <div className="flex items-end justify-between gap-4">
+        <h2 className="m-0 text-[1.5rem] font-black tracking-[-0.03em] text-white sm:text-[1.7rem]">Vì sao chọn GameTopUp?</h2>
+      </div>
+
+      <section className="gt-surface overflow-hidden rounded-[18px] border border-white/10 p-0">
+        <div className="grid divide-y divide-white/10 xl:grid-cols-4 xl:divide-x xl:divide-y-0">
+          {BENEFITS.map((item) => (
+            <article key={item.title} className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 px-7 py-5">
+              <IconBox size="sm" className="h-12 w-12 rounded-[16px] border-cyan/20 bg-cyan/10 text-cyan-50">
+                {item.icon}
+              </IconBox>
+              <div className="grid gap-1">
+                <h3 className="text-base font-black text-white">{item.title}</h3>
+                <p className="m-0 text-sm leading-6 text-slate-400">{item.description}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </section>
+  );
+}
+
+const FAQ_ITEMS = [
+  {
+    question: 'Nạp tiền vào ví như thế nào?',
+    answer:
+      'Bạn tạo yêu cầu nạp, chuyển khoản theo hướng dẫn rồi xác nhận đã thanh toán. Sau khi giao dịch được kiểm tra, tiền sẽ được cộng vào ví.',
+  },
+  {
+    question: 'Mua gói nạp ra sao?',
+    answer:
+      'Chọn game, chọn gói cần nạp, nhập đúng thông tin nhân vật hoặc tài khoản game rồi thanh toán bằng ví. Sau đó đơn sẽ được tiếp nhận để xử lý.',
+  },
+  {
+    question: 'Đơn hàng xử lý mất bao lâu?',
+    answer:
+      'Thông thường đơn được xử lý trong khoảng 5–15 phút. Nếu đang đông đơn hoặc game cần kiểm tra thêm, thời gian có thể lâu hơn một chút.',
+  },
+  {
+    question: 'Nạp qua GameTopUp có an toàn không?',
+    answer:
+      'GameTopUp ưu tiên xử lý đơn rõ ràng, kiểm tra kỹ thông tin trước khi nạp và luôn cập nhật trạng thái để bạn yên tâm theo dõi.',
+  },
+  {
+    question: 'Có ảnh hưởng đến tài khoản game không?',
+    answer:
+      'Bạn chỉ cần cung cấp đúng thông tin cần thiết và không chia sẻ thêm các dữ liệu không liên quan. Đơn sẽ được xử lý theo cách thông thường của từng game.',
+  },
+  {
+    question: 'Nếu nhập sai thông tin thì sao?',
+    answer:
+      'Nếu thông tin sai khiến đơn chưa xử lý được, GameTopUp sẽ hỗ trợ kiểm tra lại. Trường hợp không thể nạp, tiền sẽ được hoàn về ví.',
+  },
+] as const;
+
+function FaqSection() {
+  return (
+    <section className="grid gap-4">
+      <div className="flex items-end justify-between gap-4">
+        <div className="grid gap-1">
+          <h2 className="m-0 text-[1.5rem] font-black tracking-[-0.03em] text-white sm:text-[1.7rem]">Quy trình & thắc mắc</h2>
+          <p className="m-0 text-sm leading-6 text-slate-400">Giải đáp nhanh những câu hỏi hay gặp trước khi bạn nạp game.</p>
+        </div>
+      </div>
+
+      <div className="grid gap-3">
+        {FAQ_ITEMS.map((item, index) => (
+          <details
+            key={item.question}
+            className="group rounded-[20px] border border-white/[0.06] bg-[rgba(255,255,255,0.025)] px-5 py-4 transition-colors open:border-cyan/20 open:bg-[rgba(255,255,255,0.04)]"
+            open={index === 0}
+          >
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left">
+              <span className="text-base font-bold text-white">{item.question}</span>
+              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.03] text-cyan-100 transition-transform duration-200 group-open:rotate-180">
+                <ChevronDown size={16} />
+              </span>
+            </summary>
+
+            <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-400">{item.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  );
+}
 

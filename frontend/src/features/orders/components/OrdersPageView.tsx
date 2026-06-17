@@ -201,11 +201,11 @@ function OrderDetailPanel({
       </div>
 
       <div className="grid gap-3 border-b border-white/10 py-5">
-        <DetailRow label="Mã đơn hàng" value={orderItem.orderCode} />
-        <DetailRow label="Số tiền" value={orderItem.amountLabel} />
-        <DetailRow label="Thông tin nhân vật" value={formatGameInfo(orderItem.gameAccountInfo)} />
-        <DetailRow label="Thời gian tạo" value={orderItem.createdAtLabel} />
-        <DetailRow label="Cập nhật gần nhất" value={orderItem.updatedAtLabel} />
+        <DetailRow label="Mã đơn hàng">{orderItem.orderCode}</DetailRow>
+        <DetailRow label="Số tiền">{orderItem.amountLabel}</DetailRow>
+        <DetailRow label="Thông tin nhân vật">{formatGameInfo(orderItem.gameAccountInfo)}</DetailRow>
+        <DetailRow label="Thời gian tạo">{orderItem.createdAtLabel}</DetailRow>
+        <DetailRow label="Cập nhật gần nhất">{orderItem.updatedAtLabel}</DetailRow>
       </div>
 
       <div className="grid gap-3 border-b border-white/10 py-5">
@@ -248,11 +248,7 @@ function OrderListItem({
     <MediaListItem
       onClick={onSelect}
       selected={selected}
-      leading={
-        <div className="relative aspect-square w-[104px] overflow-hidden rounded-[18px] bg-slate-950">
-          <ImageBox src={item.gameThumbnailSrc} alt={item.gameName} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
-        </div>
-      }
+      leading={<ImageBox src={item.gameThumbnailSrc} alt={item.gameName} className="object-cover transition-transform duration-300 group-hover:scale-[1.04]" />}
       title={item.gameName}
       subtitle={item.packageName}
       meta={`${item.orderCode} · ${item.gameAccountInfo}`}

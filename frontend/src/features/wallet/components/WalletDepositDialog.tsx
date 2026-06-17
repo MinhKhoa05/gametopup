@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+﻿import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { CheckCircle2, Check, Copy, QrCode, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge, Button, DetailRow } from '@/shared/components';
@@ -83,7 +83,7 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
 
     const parsedAmount = Number.parseInt(amount.replace(/\D/g, ''), 10);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setAmountError('Vui lòng nhập số tiền hợp lệ.');
+      setAmountError('Vui lÃ²ng nháº­p sá»‘ tiá»n há»£p lá»‡.');
       return;
     }
 
@@ -91,10 +91,10 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
       const created = await createDepositMutation.mutateAsync({ amount: parsedAmount });
       setRequest(created);
       setStep('payment');
-      toast.success('Đã tạo yêu cầu nạp tiền.');
+      toast.success('ÄÃ£ táº¡o yÃªu cáº§u náº¡p tiá»n.');
     } catch (error) {
       console.error(error);
-      toast.error('Không thể tạo yêu cầu nạp tiền. Vui lòng thử lại.');
+      toast.error('KhÃ´ng thá»ƒ táº¡o yÃªu cáº§u náº¡p tiá»n. Vui lÃ²ng thá»­ láº¡i.');
     }
   };
 
@@ -105,46 +105,46 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
       const confirmed = await confirmDepositMutation.mutateAsync({ requestId: request.id });
       setRequest(confirmed);
       setStep('success');
-      toast.success('Đã xác nhận chuyển khoản.');
+      toast.success('ÄÃ£ xÃ¡c nháº­n chuyá»ƒn khoáº£n.');
     } catch (error) {
       console.error(error);
-      toast.error('Không thể xác nhận chuyển khoản. Vui lòng thử lại.');
+      toast.error('KhÃ´ng thá»ƒ xÃ¡c nháº­n chuyá»ƒn khoáº£n. Vui lÃ²ng thá»­ láº¡i.');
     }
   };
 
   const handleCopy = async (key: string, value: string) => {
     if (!value.trim()) {
-      toast.error('Không có nội dung để sao chép.');
+      toast.error('KhÃ´ng cÃ³ ná»™i dung Ä‘á»ƒ sao chÃ©p.');
       return;
     }
 
     try {
       await navigator.clipboard.writeText(value);
       setCopiedKey(key);
-      toast.success('Đã sao chép.');
+      toast.success('ÄÃ£ sao chÃ©p.');
     } catch {
-      toast.error('Không thể sao chép lúc này.');
+      toast.error('KhÃ´ng thá»ƒ sao chÃ©p lÃºc nÃ y.');
     }
   };
 
   const title =
     step === 'amount'
-      ? 'Nạp tiền vào ví'
+      ? 'Náº¡p tiá»n vÃ o vÃ­'
       : step === 'payment'
-        ? 'Quét QR và chuyển khoản đúng nội dung'
-        : 'Yêu cầu đã được gửi';
+        ? 'QuÃ©t QR vÃ  chuyá»ƒn khoáº£n Ä‘Ãºng ná»™i dung'
+        : 'YÃªu cáº§u Ä‘Ã£ Ä‘Æ°á»£c gá»­i';
 
   const description =
     step === 'amount'
-      ? 'Nhập số tiền cần nạp'
+      ? 'Nháº­p sá»‘ tiá»n cáº§n náº¡p'
       : step === 'payment'
-        ? 'Kiểm tra thông tin trước khi chuyển khoản'
-        : 'Admin sẽ kiểm tra và duyệt giao dịch';
+        ? 'Kiá»ƒm tra thÃ´ng tin trÆ°á»›c khi chuyá»ƒn khoáº£n'
+        : 'Admin sáº½ kiá»ƒm tra vÃ  duyá»‡t giao dá»‹ch';
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 py-6">
       <button
-        aria-label="Đóng"
+        aria-label="ÄÃ³ng"
         className="absolute inset-0 cursor-default bg-slate-950/72 backdrop-blur-[6px]"
         onClick={isBusy ? undefined : onClose}
         type="button"
@@ -158,7 +158,7 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
       >
         <div className="flex items-start justify-between gap-4 border-b border-white/8 px-5 py-4 sm:px-6">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-cyan-200/85">Nạp tiền vào ví</p>
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-cyan-200/85">Náº¡p tiá»n vÃ o vÃ­</p>
             <h2 id="wallet-deposit-dialog-title" className="mt-2 text-[1.2rem] font-black tracking-tight text-white">
               {title}
             </h2>
@@ -167,7 +167,7 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
 
           <button
             ref={closeRef}
-            aria-label="Đóng popup"
+            aria-label="ÄÃ³ng popup"
             className={classNames(
               'inline-flex size-10 shrink-0 items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.03] text-slate-300 transition-colors hover:border-white/15 hover:bg-white/[0.06] hover:text-white',
               isBusy && 'cursor-not-allowed opacity-50 hover:border-white/10 hover:bg-white/[0.03] hover:text-slate-300',
@@ -185,15 +185,15 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
             <form className="grid gap-6 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:items-start" onSubmit={handleCreateRequest}>
               <section className="grid gap-5">
                 <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-                  <div className="grid gap-1.5 py-3.5">
-                    <DetailRow label="Phương thức" labelClassName="!text-cyan-300" value="Chuyển khoản QR" valueClassName="!text-white" />
-                    <DetailRow label="Xử lý" labelClassName="!text-amber-300" value="Sau khi admin duyệt" valueClassName="!text-amber-100" />
+                <div className="grid gap-1.5 py-3.5">
+                    <DetailRow label="Phương thức">Chuyển khoản QR</DetailRow>
+                    <DetailRow label="Xử lý">Sau khi admin duyệt</DetailRow>
                   </div>
                 </div>
 
                 <div className="grid gap-2.5">
                   <label htmlFor="wallet-deposit-amount" className="text-sm font-semibold text-slate-200">
-                    Số tiền nạp
+                    Sá»‘ tiá»n náº¡p
                   </label>
                   <div className="relative">
                     <input
@@ -210,14 +210,14 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                       className="h-14 w-full rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 pr-12 text-[1rem] font-semibold tracking-[0.01em] text-white outline-none transition-all duration-200 placeholder:text-slate-500 hover:border-cyan-300/30 hover:bg-[rgba(255,255,255,0.05)] focus:border-cyan-300/55 focus:bg-[rgba(255,255,255,0.05)] focus:shadow-[0_0_0_4px_rgba(34,211,238,0.08)]"
                     />
                     <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-[0.95rem] font-semibold text-slate-400">
-                      đ
+                      Ä‘
                     </span>
                   </div>
                   {amountError ? <p className="m-0 text-sm text-rose-300">{amountError}</p> : null}
                 </div>
 
                 <div className="grid gap-2">
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200/85">Gợi ý nhanh</p>
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200/85">Gá»£i Ã½ nhanh</p>
                   <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                     {QUICK_AMOUNTS.map((value) => {
                       const selected = amount === String(value);
@@ -243,25 +243,25 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
 
               <section className="rounded-[22px] border border-white/[0.06] bg-white/[0.02] px-4 py-4 sm:px-5 sm:py-5">
                 <div className="mb-3">
-                  <h3 className="text-[1.05rem] font-black tracking-tight text-white">Thông tin</h3>
+                  <h3 className="text-[1.05rem] font-black tracking-tight text-white">ThÃ´ng tin</h3>
                 </div>
 
                 <div className="grid gap-0 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-                  <DetailRow label="Phương thức" labelClassName="!text-cyan-300" value="Chuyển khoản QR" valueClassName="!text-white" />
-                  <DetailRow label="Xử lý" labelClassName="!text-amber-300" value="Sau khi admin duyệt" valueClassName="!text-amber-100" />
+                  <DetailRow label="Method">QR transfer</DetailRow>
+                  <DetailRow label="Process">After admin approval</DetailRow>
                 </div>
 
                 <div className="mt-5 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4 py-3.5">
-                  <DetailRow label="Số tiền chọn" labelClassName="!text-violet-300" value={amount ? formatCurrency(Number(amount)) : '---'} valueClassName="!text-white" />
-                  <DetailRow label="Trạng thái" labelClassName="!text-emerald-300" value="Chưa tạo yêu cầu" valueClassName="!text-emerald-200" />
+                  <DetailRow label="Sá»‘ tiá»n chá»n">{amount ? formatCurrency(Number(amount)) : '---'}</DetailRow>
+                  <DetailRow label="Tráº¡ng thÃ¡i">ChÆ°a táº¡o yÃªu cáº§u</DetailRow>
                 </div>
 
                 <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                   <Button className="sm:min-w-32" disabled={isBusy} variant="outline" onClick={onClose}>
-                    Hủy
+                    Há»§y
                   </Button>
                   <Button className="sm:min-w-40" disabled={isBusy || !amount.trim() || Number.parseInt(amount, 10) <= 0} variant="accent" type="submit">
-                    {createDepositMutation.isPending ? 'Đang tạo yêu cầu...' : 'Tạo yêu cầu nạp'}
+                    {createDepositMutation.isPending ? 'Äang táº¡o yÃªu cáº§u...' : 'Táº¡o yÃªu cáº§u náº¡p'}
                   </Button>
                 </div>
               </section>
@@ -271,17 +271,17 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
               <section className="space-y-4">
                 <div className="rounded-[22px] border border-cyan-400/10 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.14),transparent_42%),linear-gradient(180deg,rgba(9,14,30,0.94),rgba(8,13,28,0.98))] p-4">
                   <div className="mb-4 flex items-center justify-between gap-3">
-                    <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200/85">QR thanh toán</p>
+                    <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200/85">QR thanh toÃ¡n</p>
                     <Badge tone="primary">VietQR</Badge>
                   </div>
 
                   <div className="grid place-items-center">
                     {request.qrImageUrl ? (
-                      <img src={request.qrImageUrl} alt="Mã QR chuyển khoản VietQR" className="max-w-full rounded-[16px]" />
+                      <img src={request.qrImageUrl} alt="MÃ£ QR chuyá»ƒn khoáº£n VietQR" className="max-w-full rounded-[16px]" />
                     ) : (
                       <div className="grid place-items-center gap-2 py-8 text-center text-slate-400">
                         <QrCode size={26} />
-                        <span>Không có mã QR</span>
+                        <span>KhÃ´ng cÃ³ mÃ£ QR</span>
                       </div>
                     )}
                   </div>
@@ -290,20 +290,15 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
 
               <section className="rounded-[22px] border border-white/[0.06] bg-white/[0.02] px-4 py-4 sm:px-5 sm:py-5">
                 <div className="mb-3">
-                  <h3 className="text-[1.05rem] font-black tracking-tight text-white">Thông tin chuyển khoản</h3>
+                  <h3 className="text-[1.05rem] font-black tracking-tight text-white">ThÃ´ng tin chuyá»ƒn khoáº£n</h3>
                 </div>
 
                 <div className="grid gap-0 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-                  <DetailRow label="Số tiền" labelClassName="!text-cyan-300" value={formatCurrency(request.amount)} valueClassName="!text-cyan-100 font-black" />
-                  <DetailRow label="Ngân hàng" labelClassName="!text-amber-300" value={resolveBankDisplayName(request.bankId)} valueClassName="!text-white" />
-                  <DetailRow label="Số tài khoản" labelClassName="!text-sky-300" value={request.accountNo || '---'} valueClassName="!text-white" />
-                  <DetailRow label="Chủ tài khoản" labelClassName="!text-violet-300" value={request.accountName || '---'} valueClassName="!text-white" />
-                  <DetailRow
-                    label="Nội dung CK"
-                    labelClassName="!text-emerald-300"
-                    value={request.transferContent}
-                    valueClassName="!text-cyan-50 font-black"
-                  />
+                  <DetailRow label="Số tiền">{formatCurrency(request.amount)}</DetailRow>
+                  <DetailRow label="Ngân hàng">{resolveBankDisplayName(request.bankId)}</DetailRow>
+                  <DetailRow label="Số tài khoản">{request.accountNo || '---'}</DetailRow>
+                  <DetailRow label="Chủ tài khoản">{request.accountName || '---'}</DetailRow>
+                  <DetailRow label="Nội dung CK">{request.transferContent}</DetailRow>
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2.5">
@@ -314,7 +309,7 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                     onClick={() => void handleCopy('content', request.transferContent)}
                   >
                     {copiedKey === 'content' ? <Check size={14} /> : <Copy size={14} />}
-                    Copy nội dung
+                    Copy ná»™i dung
                   </Button>
                   <Button
                     type="button"
@@ -328,15 +323,15 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                 </div>
 
                 <p className="mt-4 rounded-[16px] border border-amber-400/12 bg-amber-400/8 p-4 text-sm leading-6 text-amber-100/90">
-                  Lưu ý: chuyển khoản đúng nội dung để admin đối soát nhanh hơn.
+                  LÆ°u Ã½: chuyá»ƒn khoáº£n Ä‘Ãºng ná»™i dung Ä‘á»ƒ admin Ä‘á»‘i soÃ¡t nhanh hÆ¡n.
                 </p>
 
                 <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                   <Button className="sm:min-w-32" disabled={isBusy} variant="outline" onClick={onClose}>
-                    Đóng
+                    ÄÃ³ng
                   </Button>
                   <Button className="sm:min-w-44" disabled={isBusy} variant="accent" onClick={() => void handleConfirmTransfer()}>
-                    {confirmDepositMutation.isPending ? 'Đang xác nhận...' : 'Tôi đã chuyển khoản'}
+                    {confirmDepositMutation.isPending ? 'Äang xÃ¡c nháº­n...' : 'TÃ´i Ä‘Ã£ chuyá»ƒn khoáº£n'}
                   </Button>
                 </div>
               </section>
@@ -348,22 +343,22 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-[1.3rem] font-black tracking-tight text-white">Yêu cầu đã được gửi</h3>
-                <p className="text-sm leading-6 text-slate-300">Admin sẽ kiểm tra và duyệt giao dịch.</p>
+                <h3 className="text-[1.3rem] font-black tracking-tight text-white">YÃªu cáº§u Ä‘Ã£ Ä‘Æ°á»£c gá»­i</h3>
+                <p className="text-sm leading-6 text-slate-300">Admin sáº½ kiá»ƒm tra vÃ  duyá»‡t giao dá»‹ch.</p>
               </div>
 
               <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4 text-left">
-                <DetailRow label="Số tiền" labelClassName="!text-cyan-300" value={request ? formatCurrency(request.amount) : '---'} valueClassName="!text-white" />
-                <DetailRow label="Mã yêu cầu" labelClassName="!text-violet-300" value={request?.code ?? '---'} valueClassName="!text-white" />
-                <DetailRow label="Trạng thái" labelClassName="!text-emerald-300" value={status?.label ?? 'Chờ duyệt'} valueClassName="!text-emerald-200" />
+                <DetailRow label="Sá»‘ tiá»n">{request ? formatCurrency(request.amount) : '---'}</DetailRow>
+                <DetailRow label="MÃ£ yÃªu cáº§u">{request?.code ?? '---'}</DetailRow>
+                <DetailRow label="Tráº¡ng thÃ¡i">{status?.label ?? 'Chá» duyá»‡t'}</DetailRow>
               </div>
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
                 <Button className="sm:min-w-36" variant="outline" onClick={onClose}>
-                  Đóng
+                  ÄÃ³ng
                 </Button>
                 <Button className="sm:min-w-40" variant="accent" onClick={onViewHistory}>
-                  Xem lịch sử nạp
+                  Xem lá»‹ch sá»­ náº¡p
                 </Button>
               </div>
             </div>
@@ -377,11 +372,13 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
 function resolveBankDisplayName(bankId?: string): string {
   const normalized = bankId?.trim().toLowerCase();
   if (!normalized) {
-    return 'Ngân hàng liên kết';
+    return 'NgÃ¢n hÃ ng liÃªn káº¿t';
   }
 
   if (normalized === 'vcb' || normalized === 'vietcombank') return 'Vietcombank';
   if (normalized === 'mb' || normalized === 'mbbank') return 'MB Bank';
   if (normalized === 'acb') return 'ACB';
-  return bankId ?? 'Ngân hàng liên kết';
+  return bankId ?? 'NgÃ¢n hÃ ng liÃªn káº¿t';
 }
+
+

@@ -12,8 +12,6 @@ export { PanelShell } from './PanelShell';
 export { DetailRow } from './DetailRow';
 export { MediaListItem } from './MediaListItem';
 export { PageHero } from './PageHero';
-export { TrustSection } from './TrustSection';
-export { RecordRow } from './RecordRow';
 export { StatCard } from './StatCard';
 export { SearchBar } from './SearchBar';
 export { SectionHeading } from './SectionHeading';
