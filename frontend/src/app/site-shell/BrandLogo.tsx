@@ -1,5 +1,5 @@
 import { classNames } from '@/shared/lib/classNames';
-import brandLogoSrc from '@/assets/brand/gametopup-logo.svg';
+import brandLogoSrc from '@/assets/brand/logo.svg';
 
 type BrandLogoProps = {
   className?: string;

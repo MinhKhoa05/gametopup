@@ -23,15 +23,8 @@ type FooterContactLinkConfig = {
 
 export const SITE_IMAGES = {
   home: {
-    heroIllustration: '/assets/home-hero-banner.png',
-    walletIllustration: '/assets/wallet-illustration.png',
-  },
-  games: {
-    heroIllustration: '/assets/game-illustration.png',
-  },
-  orders: {
-    heroIllustration: '/assets/order-illustration.png',
-  },
+    heroIllustration: '/assets/home-hero-banner.webp'
+  }
 } as const;
 
 export const SITE = {
@@ -43,8 +36,8 @@ export const SITE = {
   developerName: 'Hồ Nguyễn Minh Khoa',
   contact: {
     email: 'mkhoa639@gmail.com',
-    facebook: 'https://www.facebook.com/honguyen.minhkhoa',
-    zalo: 'https://zalo.me/0373441697',
+    facebook: '#',
+    zalo: '#',
     github: 'https://github.com/MinhKhoa05',
     linkedin: 'https://www.linkedin.com/in/minh-khoa-h%E1%BB%93-nguy%E1%BB%85n-0365353b7/',
   },

@@ -1,4 +1,6 @@
-# GameTopUp
+<p align="center">
+  <img src="frontend/src/assets/brand/readme-hero.svg" alt="GameTopUp hero" width="960" />
+</p>
 
 ![CI](https://github.com/MinhKhoa05/gametopup/actions/workflows/ci.yml/badge.svg?branch=main)
 ![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-8.0-512BD4)
@@ -11,7 +13,7 @@
 
 ## Introduction
 
-GameTopUp is a full-stack web application for managing the operations of intermediary game top-up services.
+GameTopUp is a web-based operations system for intermediary game top-up services.
 
 In this business model, service owners purchase game packages or credits at discounted rates and resell them to players at lower prices than the official store while keeping the margin. Players receive a better deal, while the service earns from the price difference.
 

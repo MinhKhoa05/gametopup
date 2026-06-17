@@ -1,4 +1,6 @@
-# GameTopUp
+<p align="center">
+  <img src="frontend/src/assets/brand/readme-hero.svg" alt="Hero GameTopUp" width="960" />
+</p>
 
 ![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-8.0-512BD4)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
@@ -10,7 +12,7 @@
 
 ## Giới thiệu
 
-GameTopUp là một ứng dụng web full-stack hỗ trợ quản lý vận hành cho các dịch vụ nạp game trung gian.
+GameTopUp là hệ thống vận hành dành cho các dịch vụ nạp game trung gian.
 
 Trong mô hình này, chủ dịch vụ mua các gói nạp hoặc vật phẩm game với mức giá chiết khấu, sau đó bán lại cho người chơi với giá thấp hơn so với cửa hàng chính thức. Người chơi được hưởng mức giá tốt hơn, trong khi chủ dịch vụ thu lợi nhuận từ phần chênh lệch.
 
