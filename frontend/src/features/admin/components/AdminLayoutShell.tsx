@@ -28,7 +28,7 @@ const ADMIN_SECTION_META: Record<AdminSection, { description: string; label: str
 
 export function AdminAccessDenied({ onLogin }: { onLogin: () => void }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#061224] px-4 py-6 text-slate-100">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--gt-bg)] px-4 py-6 gt-text">
       <EmptyState
         className="max-w-[560px] py-10"
         icon={
@@ -64,18 +64,18 @@ export function AdminSectionShell({
 
   return (
     <div className="grid min-w-0 gap-5 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-      <section className="grid gap-4 border-b border-white/[0.06] pb-5">
+      <section className="grid gap-4 border-b gt-border pb-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="grid min-w-0 gap-2">
             <div className="grid gap-1">
-              <p className="gt-eyebrow">Admin</p>
+              <p className="text-[0.75rem] font-bold uppercase tracking-[0.18em] gt-text-soft">Admin</p>
               <h1 className="m-0 text-[clamp(2rem,2.8vw,3rem)] font-black leading-[1.04] tracking-[-0.04em] text-white">{meta.label}</h1>
-              <p className="m-0 max-w-3xl text-sm leading-[1.55] text-slate-400 sm:text-[0.96rem]">{meta.description}</p>
+              <p className="m-0 max-w-3xl text-sm leading-[1.55] gt-text-muted sm:text-[0.96rem]">{meta.description}</p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-            <Button size="sm" variant="outline" className="rounded-full border-white/[0.08] bg-white/[0.03] px-4 text-slate-200 hover:bg-white/[0.06] hover:text-white">
+            <Button size="sm" variant="outline" className="rounded-full border gt-border bg-[var(--gt-card)] px-4 gt-text-soft hover:bg-[var(--gt-card-hover)] hover:text-[var(--gt-text)]">
               <CalendarDays size={14} />
               7 ngày qua
             </Button>
@@ -129,7 +129,7 @@ export function AdminDesktopLayout({
         } as CSSProperties
       }
     >
-      <div className={classNames('sticky top-0 z-40 flex items-center border-b border-r border-white/[0.06] bg-[#071427]/95 px-6 py-4 lg:px-7', brandCollapsed ? 'justify-center' : 'justify-start')}>
+      <div className={classNames('sticky top-0 z-40 flex items-center border-b border-r gt-border bg-[var(--gt-shell)] px-6 py-4 lg:px-7', brandCollapsed ? 'justify-center' : 'justify-start')}>
         <BrandLogo
           adminDot
           collapsed={brandCollapsed}
@@ -140,13 +140,13 @@ export function AdminDesktopLayout({
         />
       </div>
 
-      <header className="sticky top-0 z-40 flex items-center border-b border-white/[0.06] bg-[#071427]/80 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-40 flex items-center border-b gt-border bg-[var(--gt-shell)]/80 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
         <div className="flex w-full items-center justify-between gap-3">
           <div className="flex min-w-0 flex-1 items-center gap-2 lg:max-w-[720px] xl:max-w-[920px]">
             <button
               type="button"
               aria-label="Đóng hoặc mở sidebar"
-              className="gt-interactive hidden size-10 shrink-0 items-center justify-center rounded-[18px] border border-white/[0.08] bg-white/[0.04] text-slate-100 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white lg:inline-flex"
+              className="gt-button gt-button-secondary hidden size-10 shrink-0 items-center justify-center rounded-[18px] gt-text-soft lg:inline-flex"
               onClick={onToggleSidebar}
             >
               <Menu size={16} strokeWidth={2.4} />
@@ -166,7 +166,7 @@ export function AdminDesktopLayout({
           <div className="ml-auto flex flex-none items-center gap-2">
             <button
               type="button"
-              className="gt-interactive inline-flex size-10 items-center justify-center rounded-[18px] border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+              className="gt-button gt-button-secondary inline-flex size-10 items-center justify-center rounded-[18px] gt-text-muted"
               onClick={onRefresh}
               title="Làm mới"
             >
@@ -175,7 +175,7 @@ export function AdminDesktopLayout({
 
             <button
               type="button"
-              className="gt-interactive inline-flex size-10 items-center justify-center rounded-[18px] border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+              className="gt-button gt-button-secondary inline-flex size-10 items-center justify-center rounded-[18px] gt-text-muted"
               title="Thông báo"
             >
               <MoonStar size={17} />
@@ -220,12 +220,12 @@ export function AdminMobileLayout({
 }) {
   return (
     <div className="lg:hidden">
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#071427]/95 px-4 py-3 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b gt-border bg-[var(--gt-shell)]/95 px-4 py-3 backdrop-blur-xl">
         <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
           <button
             type="button"
             aria-label="Đóng hoặc mở sidebar"
-            className="gt-interactive inline-flex size-10 shrink-0 items-center justify-center rounded-[18px] border border-white/[0.08] bg-white/[0.04] text-slate-100 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+            className="gt-button gt-button-secondary inline-flex size-10 shrink-0 items-center justify-center rounded-[18px] gt-text-soft"
             onClick={onToggleSidebar}
           >
             <Menu size={16} strokeWidth={2.4} />
@@ -244,7 +244,7 @@ export function AdminMobileLayout({
           <div className="ml-auto flex flex-none items-center gap-2">
             <button
               type="button"
-              className="gt-interactive inline-flex size-10 items-center justify-center rounded-[18px] border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+            className="gt-button gt-button-secondary inline-flex size-10 items-center justify-center rounded-[18px] gt-text-muted"
               onClick={onRefresh}
               title="Làm mới"
             >
@@ -253,7 +253,7 @@ export function AdminMobileLayout({
 
             <button
               type="button"
-              className="gt-interactive inline-flex size-10 items-center justify-center rounded-[18px] border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+            className="gt-button gt-button-secondary inline-flex size-10 items-center justify-center rounded-[18px] gt-text-muted"
               title="Thông báo"
             >
               <MoonStar size={17} />
@@ -283,7 +283,7 @@ function AdminSidebarDesktop({
   const compact = collapsed;
 
   return (
-    <aside aria-label="Điều hướng quản trị" className="flex min-h-0 flex-col gap-4 overflow-hidden border-r border-white/[0.06] bg-[#071427]/95 px-3 py-3 backdrop-blur-xl">
+    <aside aria-label="Điều hướng quản trị" className="flex min-h-0 flex-col gap-4 overflow-hidden border-r gt-border bg-[var(--gt-shell)] px-3 py-3 backdrop-blur-xl">
       <nav className="grid gap-1">
         {ADMIN_NAV_ITEMS.map((item) => (
           <SidebarNavItem
@@ -297,8 +297,8 @@ function AdminSidebarDesktop({
         ))}
       </nav>
 
-      <div className={classNames('grid gap-1.5 border-t border-white/[0.06]', compact ? 'pt-3' : 'mt-4 pt-4')}>
-        {!compact ? <div className="px-2 pt-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Hệ thống</div> : null}
+      <div className={classNames('grid gap-1.5 border-t gt-border', compact ? 'pt-3' : 'mt-4 pt-4')}>
+        {!compact ? <div className="px-2 pt-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] gt-text-disabled">Hệ thống</div> : null}
         <SidebarNavItem collapsed={compact} icon={<Settings2 size={17} />} label="Cài đặt" secondary />
         <SidebarNavItem collapsed={compact} icon={<History size={17} />} label="Nhật ký hoạt động" secondary />
       </div>
@@ -307,24 +307,24 @@ function AdminSidebarDesktop({
         <button
           type="button"
           aria-label="Chế độ tối"
-          className="relative mx-auto mt-auto h-7 w-12 rounded-full border border-cyan/20 bg-cyan/90 p-0.5 shadow-[0_0_0_1px_rgba(34,211,238,0.12)]"
+          className="relative mx-auto mt-auto h-7 w-12 rounded-full border gt-border bg-[var(--gt-card)] p-0.5"
           disabled
         >
-          <span className="block size-6 rounded-full bg-white shadow-[0_2px_10px_rgba(15,23,42,0.26)]" />
+          <span className="block size-6 rounded-full bg-[var(--gt-primary)] shadow-[0_2px_10px_rgba(15,23,42,0.18)]" />
         </button>
       ) : (
-        <div className="mt-auto flex items-center justify-between gap-3 rounded-[18px] border border-white/[0.05] bg-white/[0.03] px-3 py-2.5">
+        <div className="mt-auto flex items-center justify-between gap-3 rounded-[18px] border gt-border bg-[var(--gt-card)] px-3 py-2.5">
           <div className="flex items-center gap-2.5">
-            <MoonStar size={15} className="text-slate-300" />
-            <span className="text-sm font-medium text-slate-200">Chế độ tối</span>
+            <MoonStar size={15} className="gt-text-muted" />
+            <span className="text-sm font-medium gt-text-soft">Chế độ tối</span>
           </div>
           <button
             type="button"
             aria-label="Chế độ tối"
-            className="relative h-7 w-12 rounded-full border border-cyan/20 bg-cyan/90 p-0.5 shadow-[0_0_0_1px_rgba(34,211,238,0.12)]"
+            className="relative h-7 w-12 rounded-full border gt-border bg-[var(--gt-card)] p-0.5"
             disabled
           >
-            <span className="block size-6 rounded-full bg-white shadow-[0_2px_10px_rgba(15,23,42,0.26)]" />
+            <span className="block size-6 rounded-full bg-[var(--gt-primary)] shadow-[0_2px_10px_rgba(15,23,42,0.18)]" />
           </button>
         </div>
       )}
@@ -350,15 +350,15 @@ function AdminSidebarMobile({
       <button
         type="button"
         aria-label="Đóng sidebar"
-        className="absolute inset-0 bg-[#020816]/70 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-[var(--gt-bg)]/70 backdrop-blur-[2px]"
         onClick={onClose}
       />
 
       <aside
         aria-label="Điều hướng quản trị"
-        className="relative z-10 flex h-full w-[min(88vw,320px)] flex-col border-r border-white/[0.06] bg-[#071427]/98 px-4 py-4 shadow-[24px_0_56px_rgba(2,6,23,0.4)] backdrop-blur-xl"
+        className="relative z-10 flex h-full w-[min(88vw,320px)] flex-col border-r gt-border bg-[var(--gt-shell)]/98 px-4 py-4 shadow-[24px_0_56px_rgba(2,6,23,0.4)] backdrop-blur-xl"
       >
-        <div className="flex items-start justify-between gap-3 border-b border-white/[0.06] pb-4">
+        <div className="flex items-start justify-between gap-3 border-b gt-border pb-4">
           <BrandLogo
             adminDot
             className="min-w-0 flex-1"
@@ -372,7 +372,7 @@ function AdminSidebarMobile({
           <button
             type="button"
             aria-label="Đóng sidebar"
-            className="gt-interactive inline-flex size-10 shrink-0 items-center justify-center rounded-[18px] border border-white/[0.06] bg-white/[0.04] text-slate-300 transition-colors hover:border-cyan/20 hover:bg-cyan/10 hover:text-white"
+          className="gt-button gt-button-secondary inline-flex size-10 shrink-0 items-center justify-center rounded-[18px] gt-text-muted"
             onClick={onClose}
           >
             <X size={16} />
@@ -391,25 +391,25 @@ function AdminSidebarMobile({
           ))}
         </nav>
 
-        <div className="mt-4 grid gap-1.5 border-t border-white/[0.06] pt-4">
-          <div className="px-2 pt-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Hệ thống</div>
+        <div className="mt-4 grid gap-1.5 border-t gt-border pt-4">
+          <div className="px-2 pt-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] gt-text-disabled">Hệ thống</div>
           <SidebarNavItem icon={<Settings2 size={17} />} label="Cài đặt" secondary />
           <SidebarNavItem icon={<History size={17} />} label="Nhật ký hoạt động" secondary />
         </div>
 
-        <div className="mt-auto border-t border-white/[0.06] pt-4">
-          <div className="flex items-center justify-between gap-3 rounded-[18px] border border-white/[0.05] bg-white/[0.03] px-3 py-2.5">
+        <div className="mt-auto border-t gt-border pt-4">
+          <div className="flex items-center justify-between gap-3 rounded-[18px] border gt-border bg-[var(--gt-card)] px-3 py-2.5">
             <div className="flex items-center gap-2.5">
-              <MoonStar size={15} className="text-slate-300" />
-              <span className="text-sm font-medium text-slate-200">Chế độ tối</span>
+              <MoonStar size={15} className="gt-text-muted" />
+              <span className="text-sm font-medium gt-text-soft">Chế độ tối</span>
             </div>
             <button
               type="button"
               aria-label="Chế độ tối"
-              className="relative h-7 w-12 rounded-full border border-cyan/20 bg-cyan/90 p-0.5 shadow-[0_0_0_1px_rgba(34,211,238,0.12)]"
+              className="relative h-7 w-12 rounded-full border gt-border bg-[var(--gt-card)] p-0.5"
               disabled
             >
-              <span className="block size-6 rounded-full bg-white shadow-[0_2px_10px_rgba(15,23,42,0.26)]" />
+              <span className="block size-6 rounded-full bg-[var(--gt-primary)] shadow-[0_2px_10px_rgba(15,23,42,0.18)]" />
             </button>
           </div>
         </div>
@@ -439,17 +439,17 @@ function SidebarNavItem({
         className={classNames(
           'inline-flex size-10 shrink-0 items-center justify-center rounded-[18px] border transition-colors',
           secondary
-            ? 'border-white/[0.06] bg-white/[0.03] text-slate-400'
+            ? 'border gt-border bg-[var(--gt-card)] gt-text-muted'
             : active
-              ? 'border-cyan/20 bg-cyan/10 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.10)]'
-              : 'border-white/[0.06] bg-white/[0.03] text-slate-300',
+              ? 'border-[color:var(--gt-border-accent)] bg-[var(--gt-primary-soft)] gt-text'
+              : 'border gt-border bg-[var(--gt-card)] gt-text-soft',
         )}
       >
         {icon}
       </span>
       {collapsed ? null : (
         <span className="min-w-0 flex-1 text-left">
-          <span className={classNames('block truncate text-sm font-semibold', secondary ? 'text-slate-400' : active ? 'text-white' : 'text-slate-200')}>
+          <span className={classNames('block truncate text-sm font-semibold', secondary ? 'gt-text-muted' : active ? 'gt-text' : 'gt-text-soft')}>
             {label}
           </span>
         </span>
@@ -460,10 +460,10 @@ function SidebarNavItem({
   const baseClassName = classNames(
     'flex min-h-12 items-center gap-3 rounded-[18px] border px-3 py-2 text-left transition-colors',
     secondary
-      ? 'border-transparent bg-transparent text-slate-400 hover:bg-white/[0.03] hover:text-slate-200'
+      ? 'border-transparent bg-transparent gt-text-muted hover:bg-[var(--gt-card)] hover:text-[var(--gt-text-soft)]'
       : active
-        ? 'border-cyan/15 bg-cyan/10 text-white shadow-[0_0_0_1px_rgba(34,211,238,0.08)]'
-        : 'border-transparent bg-transparent text-slate-300 hover:border-white/[0.06] hover:bg-white/[0.03] hover:text-white',
+        ? 'border-[color:var(--gt-border-accent)] bg-[var(--gt-primary-soft)] gt-text shadow-[0_0_0_1px_rgba(34,211,238,0.08)]'
+        : 'border-transparent bg-transparent gt-text-soft hover:border-[color:var(--gt-border)] hover:bg-[var(--gt-card)] hover:text-[var(--gt-text)]',
     collapsed && 'justify-center px-2',
   );
 
@@ -478,7 +478,7 @@ function SidebarNavItem({
   return (
     <button type="button" className={baseClassName} onClick={onClick}>
       {content}
-      {!collapsed && !secondary ? <ChevronRight size={16} className="ml-auto text-slate-500" /> : null}
+      {!collapsed && !secondary ? <ChevronRight size={16} className="ml-auto gt-text-disabled" /> : null}
     </button>
   );
 }

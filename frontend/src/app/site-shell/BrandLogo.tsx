@@ -45,7 +45,7 @@ export function BrandLogo({
           )}
         />
         {adminDot ? (
-          <span className="absolute -bottom-0.5 -right-0.5 size-2 rounded-full border border-[#071427] bg-cyan shadow-[0_0_0_3px_rgba(34,211,238,0.14)]" />
+          <span className="absolute -bottom-0.5 -right-0.5 size-2 rounded-full border border-[var(--gt-bg-soft)] bg-[var(--gt-primary)]" />
         ) : null}
       </span>
       {collapsed ? null : (
@@ -57,13 +57,13 @@ export function BrandLogo({
               large ? 'text-[1.15rem] font-extrabold tracking-[-0.02em]' : compact ? 'text-base font-bold' : 'text-lg font-bold',
             )}
           >
-            <span className="text-white">Game</span>
+            <span className="gt-text">Game</span>
             <span className="text-cyan-300">TopUp</span>
           </strong>
           {subtitle ? (
             <small
               className={classNames(
-                'block font-medium leading-tight text-cyan-50',
+                'block font-medium leading-tight gt-text-soft',
                 showTextOnMobile ? 'break-words' : 'truncate',
                 large ? 'text-sm' : compact ? 'text-[0.7rem]' : 'text-sm',
               )}

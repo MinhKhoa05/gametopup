@@ -19,6 +19,7 @@ import {
   ToggleField,
   FilterChipGroup,
 } from '@/shared/components';
+import { inputClassName } from '@/shared/components/Field';
 import { formatDate } from '@/shared/lib/format';
 import { AdminListSkeleton } from '@/features/admin/components/AdminShared';
 import { classNames } from '@/shared/lib/classNames';
@@ -41,8 +42,10 @@ type GamesAdminPanelState = {
   submit: (event: FormEvent) => Promise<void>;
 };
 
-type PanelMode = 'empty' | 'view' | 'form';
+type PanelMode = 'empty' | 'view' | 'edit' | 'create';
 type StatusFilter = 'all' | 'active' | 'inactive';
+
+const detailInputClassName = classNames(inputClassName, 'h-11 rounded-[14px] text-sm');
 
 export function GamesAdminPanel({
   busy,
@@ -85,13 +88,13 @@ export function GamesAdminPanel({
     state.resetForm();
     state.setImageFile(null);
     setSelectedGameId(null);
-    setPanelMode('form');
+    setPanelMode('create');
   };
 
   const openEditForm = (game: Game) => {
     setSelectedGameId(game.id);
     state.startEdit(game);
-    setPanelMode('form');
+    setPanelMode('edit');
   };
 
   const openQuickToggleForm = (game: Game) => {
@@ -115,12 +118,8 @@ export function GamesAdminPanel({
       <div className="flex flex-col gap-3 rounded-[24px] border border-white/[0.08] bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(2,6,23,0.92))] px-5 py-5 shadow-[0_24px_70px_rgba(2,6,23,0.22)] sm:flex-row sm:items-end sm:justify-between sm:px-6">
         <div className="grid gap-1">
           <p className="m-0 text-[0.72rem] font-black uppercase tracking-[0.2em] text-cyan-100/90">Quản lý game</p>
-          <h1 className="m-0 text-[clamp(2rem,3.4vw,3rem)] font-black leading-none tracking-[-0.06em] text-white">
-            Quản lý game
-          </h1>
-          <p className="m-0 max-w-3xl text-sm leading-6 text-slate-400">
-            Quản lý danh mục game đang bán trên hệ thống.
-          </p>
+          <h1 className="m-0 text-[clamp(2rem,3.4vw,3rem)] font-black leading-none tracking-[-0.06em] text-white">Quản lý game</h1>
+          <p className="m-0 max-w-3xl text-sm leading-6 text-slate-400">Quản lý danh mục game đang bán trên hệ thống.</p>
         </div>
 
         <Button variant="primary" className="justify-center rounded-[16px] px-4" onClick={openCreateForm}>
@@ -187,7 +186,7 @@ export function GamesAdminPanel({
 
         <PanelShell className="sticky top-24">
           <div className="grid gap-5 px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6">
-            {panelMode === 'form' ? (
+            {panelMode === 'create' ? (
               <>
                 <SectionHeading
                   title={state.editing ? 'Sửa game' : 'Tạo game mới'}
@@ -206,6 +205,58 @@ export function GamesAdminPanel({
                   setForm={state.setForm}
                 />
               </>
+            ) : panelMode === 'edit' && selectedGame ? (
+              <>
+                <SectionHeading
+                  title="Chỉnh sửa game"
+                  titleClassName="text-[1.2rem]"
+                  description={`Game #${selectedGame.id} · ${selectedGame.isActive ? 'Đang bán' : 'Đang ẩn'}`}
+                />
+
+                <form className="grid gap-4" onSubmit={state.submit}>
+                  <GameSummaryCard item={selectedGame} packageCount={packageCountByGameId[selectedGame.id] ?? 0} />
+
+                  <div className="grid gap-0 rounded-[20px] border gt-border bg-[var(--gt-card)] px-4">
+                    <DetailRow label="Mã game">#{selectedGame.id}</DetailRow>
+                    <DetailRow label="Tên game">
+                      <div className="grid justify-items-end gap-1">
+                        <input
+                          className={classNames(detailInputClassName, 'w-full max-w-[320px]')}
+                          value={state.form.name}
+                          onChange={(event) => state.setForm((current) => ({ ...current, name: event.target.value }))}
+                          placeholder="Nhập tên game"
+                        />
+                        {!state.form.name.trim() ? (
+                          <span className="max-w-[320px] text-xs font-medium text-rose-200">Tên game không được để trống.</span>
+                        ) : null}
+                      </div>
+                    </DetailRow>
+                    <DetailRow label="Trạng thái">
+                      <div className="justify-self-end">
+                        <ToggleField
+                          checked={state.form.isActive}
+                          label={state.form.isActive ? 'Đang bán' : 'Đang ẩn'}
+                          onChange={(isActive) => state.setForm((current) => ({ ...current, isActive }))}
+                        />
+                      </div>
+                    </DetailRow>
+                    <DetailRow label="Số gói nạp">{packageCountByGameId[selectedGame.id] ?? 0} gói</DetailRow>
+                    <DetailRow label="Ngày tạo">{formatDate(selectedGame.createdAt)}</DetailRow>
+                    <DetailRow label="Cập nhật">{formatDate(selectedGame.updatedAt)}</DetailRow>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2.5">
+                    <Button variant="secondary" className="justify-center rounded-[16px] px-4" onClick={closeForm} type="button">
+                      <X size={16} />
+                      Hủy
+                    </Button>
+                    <Button variant="primary" className="justify-center rounded-[16px] px-4" disabled={busy || !state.form.name.trim()} type="submit">
+                      <Save size={16} />
+                      Lưu thay đổi
+                    </Button>
+                  </div>
+                </form>
+              </>
             ) : selectedGame ? (
               <>
                 <SectionHeading
@@ -215,26 +266,15 @@ export function GamesAdminPanel({
                 />
 
                 <div className="grid gap-4">
-                  <div className="overflow-hidden rounded-[24px] border border-white/[0.08] bg-slate-950">
-                    <ImageBox src={selectedGame.imageUrl} alt={selectedGame.name} className="aspect-[16/9] w-full object-cover" />
+                  <GameSummaryCard item={selectedGame} packageCount={packageCountByGameId[selectedGame.id] ?? 0} />
 
-                    <div className="grid gap-1.5 border-t border-white/[0.06] px-4 py-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <strong className="min-w-0 truncate text-[1.05rem] font-black tracking-[-0.03em] text-white">
-                          {selectedGame.name}
-                        </strong>
-                        <Badge tone={selectedGame.isActive ? 'success' : 'neutral'} icon={selectedGame.isActive ? <CheckCircle2 size={14} /> : <X size={14} />}>
-                          {selectedGame.isActive ? 'Đang bán' : 'Đang ẩn'}
-                        </Badge>
-                      </div>
-                      <span className="text-sm text-slate-400">Ảnh game lớn</span>
-                    </div>
-                  </div>
-
-                  <div className="grid rounded-[20px] border border-white/[0.06] bg-white/[0.03] px-4">
+                  <div className="grid gap-0 rounded-[20px] border gt-border bg-[var(--gt-card)] px-4">
+                    <DetailRow label="Mã game">#{selectedGame.id}</DetailRow>
                     <DetailRow label="Tên game">{selectedGame.name}</DetailRow>
                     <DetailRow label="Trạng thái">
-                      <Badge tone={selectedGame.isActive ? 'success' : 'neutral'}>{selectedGame.isActive ? 'Đang bán' : 'Đang ẩn'}</Badge>
+                      <Badge tone={selectedGame.isActive ? 'success' : 'neutral'} icon={selectedGame.isActive ? <CheckCircle2 size={14} /> : <X size={14} />}>
+                        {selectedGame.isActive ? 'Đang bán' : 'Đang ẩn'}
+                      </Badge>
                     </DetailRow>
                     <DetailRow label="Số gói nạp">{packageCountByGameId[selectedGame.id] ?? 0} gói</DetailRow>
                     <DetailRow label="Ngày tạo">{formatDate(selectedGame.createdAt)}</DetailRow>
@@ -267,14 +307,34 @@ export function GamesAdminPanel({
               </>
             ) : (
               <div className="grid gap-4">
-                <EmptyState
-                  title="Chọn một game để xem chi tiết"
-                  description="Xem thông tin, số gói nạp, trạng thái và thao tác nhanh."
-                />
+                <EmptyState title="Chọn một game để xem chi tiết" description="Xem thông tin, số gói nạp, trạng thái và thao tác nhanh." />
               </div>
             )}
           </div>
         </PanelShell>
+      </div>
+    </div>
+  );
+}
+
+function GameSummaryCard({ item, packageCount }: { item: Game; packageCount: number }) {
+  return (
+    <div className="grid gap-4 rounded-[24px] border gt-border bg-[var(--gt-panel)] p-5">
+      <div className="flex items-center gap-4">
+        <div className="relative h-[96px] w-[96px] shrink-0 overflow-hidden rounded-[18px] border gt-border bg-[var(--gt-card)]">
+          <ImageBox src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <h3 className="overflow-hidden text-[1.04rem] font-black leading-[1.18] gt-text" title={item.name}>
+            {item.name}
+          </h3>
+          <p className="mt-1.5 text-[0.92rem] leading-6 gt-text-muted">Ảnh game và trạng thái hiện tại</p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Badge tone={item.isActive ? 'success' : 'neutral'}>{item.isActive ? 'Đang bán' : 'Đang ẩn'}</Badge>
+            <span className="text-xs font-semibold uppercase tracking-[0.16em] gt-text-disabled">{packageCount} gói nạp</span>
+          </div>
+        </div>
       </div>
     </div>
   );

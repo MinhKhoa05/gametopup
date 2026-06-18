@@ -79,7 +79,7 @@ export function GamesPage() {
 
   return (
     <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
-        <div className="grid gap-6">
+        <div className="grid gap-10 lg:gap-12">
           <PageHero
             eyebrow="KHO GAME"
             visual={
@@ -129,7 +129,7 @@ export function GamesPage() {
               <section className="grid gap-3">
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="m-0 text-[1.25rem] font-black tracking-[-0.03em] text-white">Lưới game</h2>
-                  <span className="text-sm text-slate-400 gt-tabular">{activeCount} game</span>
+                  <span className="text-sm gt-text-muted gt-tabular">{activeCount} game</span>
                 </div>
                 <GameCatalogGrid games={filteredGames} onPick={(game) => navigate(routes.gameDetail(game.id))} />
               </section>
@@ -185,8 +185,8 @@ function GameCard({
   const topupLabel = getGameTopupLabel(game);
 
   return (
-    <article className="group grid h-full gap-3 rounded-[22px] border border-white/[0.08] bg-[rgba(22,27,34,0.9)] p-3 transition-all duration-200 hover:-translate-y-1 hover:border-cyan/25 hover:bg-[rgba(24,32,44,0.98)] hover:shadow-[0_18px_36px_rgba(2,6,23,0.2)]">
-      <div className="relative overflow-hidden rounded-[18px] bg-slate-950">
+    <article className="gt-card-hover group grid h-full gap-3 rounded-[24px] bg-[rgba(22,27,34,0.9)] p-3 transition-all duration-200 hover:border-cyan/25 hover:shadow-[0_18px_36px_rgba(2,6,23,0.2)]">
+      <div className="relative overflow-hidden rounded-[20px] bg-[var(--gt-bg-soft)]">
         <div className="relative h-[220px] overflow-hidden">
           <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.02)_0%,rgba(2,6,23,0.12)_42%,rgba(2,6,23,0.82)_100%)]" />
@@ -206,8 +206,8 @@ function GameCard({
           <Heart size={16} />
         </button>
         <div className="col-span-2 grid gap-0.5">
-          <h3 className="m-0 text-base font-black text-white">{game.name}</h3>
-          <p className="m-0 text-sm leading-6 text-slate-400">Nạp {topupLabel}</p>
+          <h3 className="m-0 text-base font-black gt-text">{game.name}</h3>
+          <p className="m-0 text-sm leading-6 gt-text-muted">Nạp {topupLabel}</p>
         </div>
       </div>
 
@@ -225,8 +225,8 @@ function GameCard({
 
 function GameCardSkeleton() {
   return (
-    <article className="grid gap-3 rounded-[22px] border border-white/[0.08] bg-[rgba(22,27,34,0.9)] p-3" aria-hidden="true">
-      <div className="relative overflow-hidden rounded-[18px] bg-slate-950">
+    <article className="grid gap-3 rounded-[24px] border border-white/[0.08] bg-[rgba(22,27,34,0.9)] p-3" aria-hidden="true">
+      <div className="relative overflow-hidden rounded-[20px] bg-[var(--gt-bg-soft)]">
         <div className="h-[220px] animate-pulse bg-white/6" />
       </div>
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2 px-1">

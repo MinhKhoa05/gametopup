@@ -32,7 +32,7 @@ export function SiteHeader() {
   const menuItems = buildHeaderAccountMenuItems(baseMenuItems, auth.handleLogout, (href) => navigate(href));
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[linear-gradient(180deg,rgba(3,10,22,0.94)_0%,rgba(3,10,22,0.84)_100%)] shadow-[0_12px_32px_rgba(2,6,23,0.22)] backdrop-blur-[18px]">
+    <header className="gt-shell-surface sticky top-0 z-50 border-b gt-border shadow-[0_12px_32px_rgba(2,6,23,0.18)]">
       <div className="mx-auto grid max-w-[1480px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-6">
           <BrandLogo title={SITE.name} onClick={() => navigate(ROUTE_PATHS.home)} />
@@ -48,16 +48,18 @@ export function SiteHeader() {
                   type="button"
                   aria-current={isActive ? 'page' : undefined}
                   className={classNames(
-                    'relative rounded-full px-3.5 py-2 text-sm font-semibold tracking-[-0.01em] text-slate-300 transition-all duration-200 hover:text-white',
-                    isActive && 'text-cyan-50',
+                    'relative rounded-full px-4 py-2 text-sm font-semibold tracking-[-0.01em] transition-all duration-200',
+                    isActive
+                      ? 'bg-[var(--gt-primary-soft)] text-[var(--gt-text)] shadow-[inset_0_0_0_1px_rgba(34,211,238,0.18)]'
+                      : 'gt-text-muted hover:bg-[var(--gt-primary-soft)] hover:text-[var(--gt-text)]',
                   )}
                   onClick={() => navigate(itemPath)}
                 >
                   <span>{item.label}</span>
                   <span
                     className={classNames(
-                      'absolute inset-x-3 bottom-0 h-px rounded-full bg-transparent transition-all duration-200',
-                      isActive && 'bg-[linear-gradient(90deg,transparent,rgba(34,211,238,0.95),transparent)] shadow-[0_0_18px_rgba(34,211,238,0.45)]',
+                      'absolute inset-x-3 -bottom-0.5 h-px rounded-full bg-transparent transition-all duration-200',
+                      isActive && 'bg-[var(--gt-primary)]',
                     )}
                   />
                 </button>
@@ -67,10 +69,10 @@ export function SiteHeader() {
         </div>
 
         <div className="hidden justify-center lg:flex">
-          <label className="flex min-h-11 w-full max-w-[360px] items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 text-slate-300 transition-all duration-200 hover:border-cyan/25 hover:bg-cyan/10 focus-within:border-cyan/60 focus-within:bg-cyan/10 focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]">
+          <label className="gt-input-shell flex min-h-11 w-full max-w-[360px] items-center gap-3 px-4 gt-text-soft">
             <Search size={16} className="shrink-0 text-cyan-200" />
             <input
-              className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-slate-100 outline-none placeholder:text-slate-500"
+              className="gt-input min-w-0 flex-1 p-0 text-sm placeholder:text-[var(--gt-text-disabled)]"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={(event) => {
@@ -81,7 +83,7 @@ export function SiteHeader() {
               placeholder="Tìm game, gói nạp..."
               aria-label="Tìm game"
             />
-            <kbd className="inline-flex h-7 items-center rounded-lg border border-white/10 bg-white/5 px-2 text-[0.7rem] font-semibold text-slate-400">Ctrl K</kbd>
+            <kbd className="inline-flex h-7 items-center rounded-lg border gt-border bg-white/5 px-2 text-[0.7rem] font-semibold gt-text-muted">Ctrl K</kbd>
           </label>
         </div>
 
@@ -89,7 +91,7 @@ export function SiteHeader() {
           {hasLogin ? (
             <button
               type="button"
-              className="hidden h-11 items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3.5 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 sm:inline-flex"
+              className="gt-button gt-button-secondary hidden h-11 items-center gap-2 rounded-2xl px-3.5 text-sm font-bold sm:inline-flex"
               onClick={() => navigate(routes.wallet())}
             >
               <IconBox size="sm" className="h-8 w-8 rounded-xl">
@@ -101,7 +103,7 @@ export function SiteHeader() {
 
           <div className="hidden items-center gap-3 sm:flex">
             {isAuthPending && !hasKnownSession ? (
-              <div className="flex h-11 min-w-44 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3">
+              <div className="flex h-11 min-w-44 items-center gap-3 rounded-2xl border gt-border bg-[var(--gt-card)] px-3">
                 <div className="h-8 w-8 animate-pulse rounded-full bg-white/10" />
                 <div className="grid gap-1">
                   <div className="h-3 w-24 animate-pulse rounded-full bg-white/10" />
@@ -112,11 +114,11 @@ export function SiteHeader() {
               <>
                 <button
                   type="button"
-                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 hover:text-white"
+                  className="gt-button gt-button-secondary relative inline-flex h-11 w-11 items-center justify-center rounded-2xl gt-text-soft"
                   title="Thông báo"
                 >
                   <Bell size={18} />
-                  <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-cyan shadow-[0_0_0_4px_rgba(34,211,238,0.12)]" />
+                  <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-cyan" />
                 </button>
 
                 <HeaderAccountMenu triggerLabel={auth.userDisplayName} items={menuItems} />
@@ -131,7 +133,7 @@ export function SiteHeader() {
 
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-cyan/10 hover:text-white sm:hidden"
+            className="gt-button gt-button-secondary inline-flex h-11 w-11 items-center justify-center rounded-2xl gt-text-soft sm:hidden"
             onClick={() => navigate(routes.login())}
           >
             <UserRound size={18} />

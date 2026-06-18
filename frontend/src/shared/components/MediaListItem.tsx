@@ -36,6 +36,8 @@ export function MediaListItem({
       onClick();
     }
   };
+  const interactiveSurfaceClass = 'border-[color:var(--gt-border-accent)] bg-[var(--gt-panel-hover)] shadow-[inset_0_0_0_1px_rgba(34,211,238,0.14),0_10px_24px_rgba(2,6,23,0.22)]';
+  const interactiveHoverClass = 'hover:border-[color:var(--gt-border-accent)] hover:bg-[var(--gt-panel-hover)] hover:shadow-[inset_0_0_0_1px_rgba(34,211,238,0.14),0_10px_24px_rgba(2,6,23,0.22)]';
 
   return (
     <article
@@ -44,12 +46,9 @@ export function MediaListItem({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={classNames(
-        'min-h-[92px] rounded-[20px] border p-3 transition',
-        selected
-          ? 'border-cyan/30 bg-cyan/5 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.08)]'
-          : 'border-white/[0.08] bg-white/[0.025]',
-        onClick &&
-          'cursor-pointer hover:-translate-y-px hover:border-cyan/20 hover:bg-white/[0.05]',
+        'gt-card-hover gt-border min-h-[92px] rounded-[20px] border p-3 transition',
+        selected ? interactiveSurfaceClass : `bg-[var(--gt-card)] ${interactiveHoverClass}`,
+        onClick && 'cursor-pointer',
         className,
       )}
     >
@@ -61,18 +60,18 @@ export function MediaListItem({
         )}
 
         <div className="flex min-w-0 flex-col justify-center">
-          <strong className="block truncate text-[clamp(0.9rem,0.35vw+0.78rem,1rem)] font-bold leading-tight text-white">
+          <strong className="block truncate text-[clamp(0.9rem,0.35vw+0.78rem,1rem)] font-bold leading-tight gt-text">
             {title}
           </strong>
 
           {subtitle && (
-            <p className="mt-1 truncate text-[clamp(0.78rem,0.2vw+0.72rem,0.88rem)] leading-tight text-slate-400">
+            <p className="mt-1 truncate text-[clamp(0.78rem,0.2vw+0.72rem,0.88rem)] leading-tight gt-text-muted">
               {subtitle}
             </p>
           )}
 
           {meta && (
-            <p className="mt-1 truncate text-[clamp(0.68rem,0.18vw+0.62rem,0.76rem)] leading-tight text-slate-500">
+            <p className="mt-1 truncate text-[clamp(0.68rem,0.18vw+0.62rem,0.76rem)] leading-tight gt-text-disabled">
               {meta}
             </p>
           )}

@@ -39,7 +39,7 @@ export function AdminLayoutPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#061224] text-slate-100">
+    <div className="gt-app-shell min-h-screen">
       <AdminMobileLayout
         accountMenuItems={accountMenuItems}
         activeSection={activeSection}

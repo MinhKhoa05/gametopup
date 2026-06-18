@@ -10,19 +10,17 @@ Use this file for GameTopUp-specific constraints, priorities, and preferences.
 
 # Project Snapshot
 
-GameTopUp is a full-stack platform for managing intermediary game top-up services.
+GameTopUp is a full-stack platform for intermediary game top-up services.
 
 The application has two faces:
 
 * User App
-
   * Browse games
   * Place orders
   * Manage wallet
   * Track order history
 
 * Admin App
-
   * Manage orders
   * Review deposits
   * Manage users
@@ -185,10 +183,10 @@ Prefer existing page structures before inventing new layouts.
 Common pattern:
 
 PageHero
-→ Stats
-→ Filters / Controls
-→ Main Content
-→ Detail Panel
+-> Stats
+-> Filters / Controls
+-> Main Content
+-> Detail Panel
 
 Not every page requires every section.
 
@@ -203,8 +201,8 @@ Prefer established patterns from:
 
 ## Visual Language
 
-* Dark navy/slate surfaces.
-* Cyan as the primary accent.
+* Dark navy/slate surfaces with cyan as the primary accent.
+* Mostly solid surfaces.
 * Soft corners.
 * Subtle borders.
 * Minimal shadows.
@@ -213,6 +211,43 @@ Prefer established patterns from:
 Visual hierarchy is more important than decoration.
 
 ---
+
+## Current Design System
+
+Current frontend state:
+
+* `frontend/src/styles/theme.css` is the single source of truth for colors and surface tokens.
+* Legacy theme files and duplicate styling layers have been removed.
+* Shared components already consume semantic tokens.
+* Admin and user pages share the same dark visual language.
+
+How the UI now behaves:
+
+* The app uses a dark navy base with cyan as the main accent.
+* Most surfaces are solid and quiet.
+* Panels blend into the shell instead of looking like separate bright cards.
+* Cards sit slightly above panels.
+* Hover and active states use the same surface treatment.
+* Navigation items stay visibly selected after route changes.
+* Decorative gradients are reserved for hero or summary sections.
+* Borders stay subtle and should not compete with content.
+
+Component conventions:
+
+* Reuse `Button`, `Badge`, `FilterChip`, `DetailRow`, `SearchBar`, `StatCard`, `EmptyState`, `PanelShell`, `PageHero`, and `MediaListItem` before creating new variants.
+* Badge and FilterChip must remain visually different.
+* Badge shape is a small rectangle with about 6px to 8px radius.
+* FilterChip shape is a pill.
+* Primary buttons use cyan.
+* Secondary buttons stay dark and restrained.
+* Ghost buttons stay muted.
+
+When changing UI:
+
+* Update shared components first.
+* Use semantic tokens instead of hardcoded Tailwind colors where possible.
+* Remove obsolete styles instead of keeping compatibility copies.
+* Keep admin and user pages aligned to the same system.
 
 ## Component Reuse
 
@@ -225,7 +260,10 @@ Prefer existing shared components:
 * DetailRow
 * ImageBox
 * EmptyState
+* MediaListItem
+* PanelShell
 * SearchBar
+* SectionHeading
 * StatCard
 
 If a similar component already exists:
@@ -271,6 +309,8 @@ When improving existing pages:
 3. Simplify layouts.
 4. Improve consistency.
 5. Create new patterns only when necessary.
+6. Update shared components before page-local overrides.
+7. Keep the final styling in `theme.css` and shared components.
 
 Prefer evolutionary improvements over complete redesigns.
 

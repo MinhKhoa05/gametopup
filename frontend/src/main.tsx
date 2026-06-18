@@ -10,7 +10,6 @@ import { restorePersistedQueries, subscribeToPersistedQueries } from '@/shared/a
 import { bootstrapAuthSession } from '@/features/auth/server';
 import './styles/globals.css';
 import './styles/theme.css';
-import './styles/ui.css';
 
 const persister = createAsyncStoragePersister({
   storage: window.localStorage,

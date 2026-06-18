@@ -173,12 +173,12 @@ export function GameDetailPage() {
 
   return (
     <AppPageContainer className="py-5 sm:py-7 lg:py-8">
-      <div className="grid gap-6">
+      <div className="grid gap-10 lg:gap-12">
         <PageHero
           eyebrow="NẠP GAME"
           visual={
-            <div className="h-[72px] w-[72px] overflow-hidden rounded-[22px] border border-cyan-400/18 bg-white/[0.03] p-1.5 sm:h-[88px] sm:w-[88px]">
-              <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full rounded-[16px] object-cover" />
+            <div className="h-[72px] w-[72px] overflow-hidden rounded-[22px] border border-[color:var(--gt-border)] bg-[var(--gt-panel-soft)] shadow-[0_10px_24px_rgba(2,6,23,0.18)] sm:h-[88px] sm:w-[88px]">
+              <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full object-cover" />
             </div>
           }
           title={game.name}

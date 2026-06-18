@@ -32,7 +32,7 @@ export function Footer({ variant = 'full' }: { variant?: FooterVariant }) {
   const isMinimal = variant === 'minimal';
 
   const shellClassName = classNames(
-    'mt-auto border-t border-white/10 bg-[linear-gradient(180deg,rgba(4,10,22,0.08),rgba(4,10,22,0.96))]',
+    'gt-shell-surface mt-auto border-t gt-border',
     'pt-12 sm:pt-14',
     isMinimal ? 'pb-[calc(3rem+env(safe-area-inset-bottom,0px))]' : 'pb-[calc(4rem+env(safe-area-inset-bottom,0px))]',
   );
@@ -42,7 +42,7 @@ export function Footer({ variant = 'full' }: { variant?: FooterVariant }) {
       <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-8">
         <div
           className={classNames(
-            'grid gap-8 border-b border-white/10 pb-8 lg:gap-10',
+            'grid gap-8 border-b gt-border pb-8 lg:gap-10',
             isMinimal
               ? 'lg:grid-cols-[minmax(300px,1fr)_minmax(160px,0.52fr)_minmax(160px,0.52fr)_minmax(160px,0.52fr)]'
               : 'lg:grid-cols-[minmax(300px,1fr)_minmax(160px,0.48fr)_minmax(160px,0.48fr)_minmax(160px,0.48fr)_minmax(360px,1.25fr)]',
@@ -50,7 +50,7 @@ export function Footer({ variant = 'full' }: { variant?: FooterVariant }) {
         >
           <div className="grid max-w-[320px] gap-2">
             <BrandLogo className="w-fit" onClick={() => navigate(routes.home())} title={SITE.name} subtitle={SITE.tagline} />
-            <p className="max-w-[28ch] text-sm leading-6 text-slate-400 [text-wrap:balance]">{SITE.footerDescription}</p>
+            <p className="max-w-[28ch] text-sm leading-6 gt-text-muted [text-wrap:balance]">{SITE.footerDescription}</p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">
               {FOOTER_CONTACT_LINKS.map((social) => {
@@ -58,7 +58,7 @@ export function Footer({ variant = 'full' }: { variant?: FooterVariant }) {
                 return (
                   <a
                     key={social.label}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/40 hover:bg-cyan/10 hover:text-cyan-50"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border gt-border bg-[var(--gt-card)] gt-text-soft transition-all duration-200 hover:-translate-y-px hover:border-cyan/40 hover:bg-cyan/10 hover:text-cyan-50"
                     href={social.href}
                     aria-label={social.ariaLabel}
                     target={social.external ? '_blank' : undefined}
@@ -85,14 +85,14 @@ export function Footer({ variant = 'full' }: { variant?: FooterVariant }) {
 
               <div className="grid w-full max-w-none gap-3 lg:justify-self-start lg:pl-6 xl:pl-8">
                 <h3 className="text-lg font-black text-white">Nhận thông báo</h3>
-                <p className="max-w-[36ch] text-sm leading-6 text-slate-400 [text-wrap:balance]">
+                <p className="max-w-[36ch] text-sm leading-6 gt-text-muted [text-wrap:balance]">
                   Nhận tin khuyến mãi và cập nhật về game, gói nạp và các chương trình nổi bật.
                 </p>
 
-                <label className="flex h-10 items-center gap-3 rounded-[14px] border border-white/10 bg-[rgba(7,16,31,0.78)] px-4 text-slate-300 transition-all duration-200 hover:border-cyan/25 hover:bg-[rgba(15,29,51,0.92)] focus-within:border-cyan/60 focus-within:bg-[rgba(15,29,51,0.92)]">
+                <label className="gt-input-shell flex h-10 items-center gap-3 px-4">
                   <input
                     type="email"
-                    className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-slate-100 outline-none placeholder:text-slate-500"
+                    className="gt-input min-w-0 flex-1 p-0 text-sm placeholder:text-[var(--gt-text-disabled)]"
                     placeholder="Nhập email của bạn"
                     aria-label="Nhập email của bạn"
                   />
@@ -122,13 +122,13 @@ function FooterLinkColumn({
 }) {
   return (
     <div className="grid gap-2">
-      <h3 className="text-lg font-black text-white">{title}</h3>
+      <h3 className="text-lg font-black gt-text">{title}</h3>
       <div className="grid gap-2">
         {links.map((link) => (
           <button
             key={link.label}
             type="button"
-            className="w-fit border-0 bg-transparent p-0 text-left text-sm leading-6 text-slate-400 transition-colors hover:text-white"
+            className="w-fit border-0 bg-transparent p-0 text-left text-sm leading-6 gt-text-muted transition-colors hover:text-white"
             onClick={() => onNavigate(link.href)}
           >
             {link.label}

@@ -59,7 +59,7 @@ export function ImagePicker({
   return (
     <div
       className={classNames(
-        'relative overflow-hidden rounded-2xl border border-dashed border-slate-400/20 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.12),transparent_55%),rgba(15,23,42,0.72)]',
+        'gt-panel relative overflow-hidden border-dashed border-slate-400/20 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.12),transparent_55%),linear-gradient(180deg,var(--gt-panel-soft),var(--gt-panel))]',
         className,
       )}
     >
@@ -70,10 +70,10 @@ export function ImagePicker({
             <ImageBox alt={alt} fallbackSrc={fallbackSrc} src={previewSrc} className="h-full w-full object-cover" />
           </div>
         ) : (
-          <div className="grid min-h-44 place-items-center gap-2 px-6 py-8 text-center text-slate-400">
+          <div className="grid min-h-44 place-items-center gap-2 px-6 py-8 text-center gt-text-muted">
             <ImageOff size={28} />
             <span className="text-sm font-semibold">Bấm vào để chọn ảnh</span>
-            <span className="text-xs text-slate-500">Ảnh sẽ hiển thị preview ngay sau khi chọn.</span>
+            <span className="text-xs gt-text-disabled">Ảnh sẽ hiển thị preview ngay sau khi chọn.</span>
           </div>
         )}
       </button>

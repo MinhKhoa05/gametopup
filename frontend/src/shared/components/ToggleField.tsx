@@ -12,7 +12,7 @@ type ToggleFieldProps = {
 
 export function ToggleField({ checked, className, description, disabled, label, onChange }: ToggleFieldProps) {
   return (
-    <label className={classNames('flex items-start gap-2 font-semibold text-slate-200', className)}>
+    <label className={classNames('flex items-start gap-2 font-semibold gt-text-soft', className)}>
       <input
         checked={checked}
         disabled={disabled}
@@ -22,7 +22,7 @@ export function ToggleField({ checked, className, description, disabled, label, 
       />
       <span className="grid gap-1 leading-6">
         <span>{label}</span>
-        {description ? <span className="font-normal text-slate-400">{description}</span> : null}
+        {description ? <span className="font-normal gt-text-muted">{description}</span> : null}
       </span>
     </label>
   );

@@ -5,6 +5,7 @@ import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { SITE_IMAGES } from '@/app/config/site';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
+import { GamePackageCard } from '@/features/games/components/GamePackageCard';
 import { useGamesQuery } from '@/features/games/server';
 import { useMyOrdersQuery } from '@/features/orders/server';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
@@ -12,15 +13,12 @@ import { useWalletBalanceQuery } from '@/features/wallet/server';
 import { Badge, Button, EmptyState, IconBox, ImageBox, MediaListItem, PanelShell, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatRelativeTime } from '@/shared/lib/format';
 import type { Game } from '@/features/games/types';
+import type { GamePackage } from '@/features/games/types';
 import type { Order } from '@/features/orders/types';
 import type { ReactNode } from 'react';
 
-type PackageCard = {
+type PackageCard = GamePackage & {
   game: Game;
-  name: string;
-  salePrice: number;
-  imageUrl: string;
-  ctaLabel: string;
 };
 
 export function HomePage() {
@@ -42,43 +40,39 @@ export function HomePage() {
 
   return (
     <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
-        <div className="grid gap-6 lg:gap-8">
+        <div className="grid gap-10 lg:gap-12">
           <HeroSection onBrowse={() => navigate(routes.games())} onDeposit={() => navigate(routes.wallet())} />
 
           <FeaturedRail games={featuredGames} onPick={(game) => navigate(routes.gameDetail(game.id))} loading={isGamesLoading} />
 
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.82fr)]">
-            <PanelShell>
-              <div className="px-5 pt-5 sm:px-6 sm:pt-6">
-                <SectionHeading
-                  className="items-center"
-                  title="Gói nạp bán chạy"
-                  titleClassName="text-[1.45rem] sm:text-[1.7rem]"
-                  action={
-                    <Button variant="secondary" className="rounded-[14px] px-4 text-sm font-semibold" onClick={() => navigate(routes.games())}>
-                      Xem game
-                      <Search size={16} />
-                    </Button>
-                  }
-                />
-              </div>
+            <section className="grid gap-4">
+              <SectionHeading
+                className="items-center"
+                title="Gói nạp bán chạy"
+                titleClassName="text-[1.45rem] sm:text-[1.7rem]"
+                action={
+                  <Button variant="secondary" className="rounded-[14px] px-4 text-sm font-semibold" onClick={() => navigate(routes.games())}>
+                    Xem game
+                    <Search size={16} />
+                  </Button>
+                }
+              />
 
-              <div className="px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
-                {featuredPackages.length ? (
-                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {featuredPackages.map((pkg) => (
-                      <PackageCardView key={`${pkg.game.id}-${pkg.name}`} packageItem={pkg} onPick={() => navigate(routes.gameDetail(pkg.game.id))} />
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyState
-                    title="Chưa có gói nạp"
-                    description="Danh mục game sẽ xuất hiện ở đây sau khi hệ thống tải xong dữ liệu."
-                    variant="compact"
-                  />
-                )}
-              </div>
-            </PanelShell>
+              {featuredPackages.length ? (
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,214px))] justify-start gap-3 sm:gap-4">
+                  {featuredPackages.map((pkg) => (
+                    <GamePackageCard key={pkg.id} gamePackage={pkg} isSelected={false} onSelect={() => navigate(routes.gameDetail(pkg.game.id))} />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="Chưa có gói nạp"
+                  description="Danh mục game sẽ xuất hiện ở đây sau khi hệ thống tải xong dữ liệu."
+                  variant="compact"
+                />
+              )}
+            </section>
 
             <aside className="grid gap-6">
               <PanelShell className="overflow-hidden">
@@ -99,22 +93,20 @@ export function HomePage() {
                 </div>
               </PanelShell>
 
-              <PanelShell>
-                <div className="px-5 pt-5 sm:px-6 sm:pt-6">
-                  <SectionHeading
-                    className="items-center"
-                    title="Đơn hàng gần đây"
-                    titleClassName="text-[1.3rem]"
-                    action={
-                      <Button variant="secondary" className="rounded-[14px] px-4 text-sm font-semibold" onClick={() => navigate(routes.orders())}>
-                        Xem tất cả
-                        <ArrowRight size={16} />
-                      </Button>
-                    }
-                  />
-                </div>
+              <section className="grid gap-4">
+                <SectionHeading
+                  className="items-center"
+                  title="Đơn hàng gần đây"
+                  titleClassName="text-[1.3rem]"
+                  action={
+                    <Button variant="secondary" className="rounded-[14px] px-4 text-sm font-semibold" onClick={() => navigate(routes.orders())}>
+                      Xem tất cả
+                      <ArrowRight size={16} />
+                    </Button>
+                  }
+                />
 
-                <div className="grid gap-3 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+                <div className="grid gap-3">
                   {auth.status === 'authenticated' ? (
                     isOrdersLoading ? (
                       <RecentOrdersSkeleton />
@@ -139,7 +131,7 @@ export function HomePage() {
                     />
                   )}
                 </div>
-              </PanelShell>
+              </section>
             </aside>
           </div>
 
@@ -159,8 +151,8 @@ function HeroSection({
   onDeposit: () => void;
 }) {
   return (
-    <div className="grid gap-4 sm:gap-5">
-      <section className="overflow-hidden rounded-[28px] border border-white/[0.08] bg-[#020817] shadow-[0_24px_70px_rgba(2,6,23,0.28)]">
+      <div className="grid gap-5 sm:gap-6">
+      <section className="gt-panel overflow-hidden rounded-[28px]">
         <div className="relative aspect-[16/9] w-full">
           <img
             src={SITE_IMAGES.home.heroIllustration}
@@ -182,7 +174,7 @@ function HeroSection({
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-4 text-sm text-slate-400">
+      <div className="flex flex-wrap gap-4 text-sm gt-text-muted">
         <span className="inline-flex items-center gap-2">
           <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(34,197,94,0.5)]" />
           Hỗ trợ 24/7
@@ -206,12 +198,10 @@ function FeaturedRail({
   onPick: (game: Game) => void;
 }) {
   return (
-    <PanelShell>
-      <div className="px-5 pt-5 sm:px-6 sm:pt-6">
-        <SectionHeading title="Game nổi bật" titleClassName="text-[1.3rem]" />
-      </div>
+    <section className="grid gap-4">
+      <SectionHeading title="Game nổi bật" titleClassName="text-[1.3rem]" />
 
-      <div className="overflow-x-auto px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+      <div className="overflow-x-auto">
         {loading ? (
           <div className="flex gap-4">
             {Array.from({ length: 6 }).map((_, index) => (
@@ -230,48 +220,16 @@ function FeaturedRail({
                 className="group grid min-w-[84px] gap-2 text-left"
                 onClick={() => onPick(game)}
               >
-                <div className="relative h-[84px] w-[84px] overflow-hidden rounded-[22px] border border-white/[0.08] bg-slate-950 transition-all duration-200 group-hover:-translate-y-1 group-hover:border-cyan/30 group-hover:shadow-[0_16px_28px_rgba(2,6,23,0.16)]">
+                <div className="relative h-[84px] w-[84px] overflow-hidden rounded-[22px] border border-white/[0.08] bg-[var(--gt-bg-soft)] transition-all duration-200 group-hover:-translate-y-1 group-hover:border-cyan/30 group-hover:shadow-[0_16px_28px_rgba(2,6,23,0.16)]">
                   <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.05]" />
                 </div>
-                <span className="truncate text-xs font-semibold text-slate-300 group-hover:text-cyan-100">{game.name}</span>
+                <span className="truncate text-xs font-semibold gt-text-soft group-hover:text-cyan-100">{game.name}</span>
               </button>
             ))}
           </div>
         )}
       </div>
-    </PanelShell>
-  );
-}
-
-function PackageCardView({
-  packageItem,
-  onPick,
-}: {
-  packageItem: PackageCard;
-  onPick: () => void;
-}) {
-  return (
-    <article className="group grid gap-3 rounded-[20px] border border-white/[0.06] bg-[rgba(255,255,255,0.025)] p-3 transition-all duration-200 hover:-translate-y-1 hover:border-cyan/25 hover:bg-[rgba(255,255,255,0.045)] hover:shadow-[0_16px_30px_rgba(2,6,23,0.14)]">
-      <div className="relative aspect-[0.95/1] overflow-hidden rounded-[18px] bg-slate-950">
-        <ImageBox src={packageItem.imageUrl} alt={packageItem.game.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(2,6,23,0.84))]" />
-        <div className="absolute inset-0 ring-1 ring-inset ring-white/[0.03] transition-colors group-hover:ring-cyan/20" />
-      </div>
-
-      <div className="grid gap-2">
-        <strong className="truncate text-sm font-bold text-white">{packageItem.game.name}</strong>
-        <span className="text-sm font-semibold text-slate-300">{packageItem.name}</span>
-        <span className="pt-0.5 text-sm font-black text-cyan-100 gt-tabular">{formatCurrency(packageItem.salePrice)}</span>
-      </div>
-
-      <Button
-        variant="primary"
-        className="translate-y-3 justify-center rounded-[14px] px-4 text-sm font-bold opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"
-        onClick={onPick}
-      >
-        Nạp ngay
-      </Button>
-    </article>
+    </section>
   );
 }
 
@@ -294,7 +252,7 @@ function RecentOrderItem({ order }: { order: Order }) {
           {statusMeta.label}
         </Badge>
       }
-      className="bg-white/[0.03] hover:border-cyan/20 hover:bg-cyan/10"
+      className="hover:bg-[var(--gt-card-hover)]"
     />
   );
 }
@@ -303,7 +261,7 @@ function RecentOrdersSkeleton() {
   return (
     <div className="grid gap-3" aria-busy="true" aria-label="Đang tải đơn hàng gần đây">
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+        <div key={index} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[color:var(--gt-border)] bg-[var(--gt-card)] px-4 py-3">
           <div className="h-11 w-11 animate-pulse rounded-[16px] bg-white/6" />
           <div className="grid gap-2">
             <div className="h-3.5 w-48 animate-pulse rounded-full bg-white/6" />
@@ -323,11 +281,20 @@ function buildFeaturedPackages(games: Game[]): PackageCard[] {
   return games.map((game, index) => {
     const preset = PACKAGE_PRESETS[index % PACKAGE_PRESETS.length];
     return {
+      id: game.id * 1000 + index,
+      gameId: game.id,
       game,
       name: preset.nameFor(game.name),
+      description: null,
+      imageRelativePath: null,
       salePrice: preset.price,
+      originalPrice: preset.originalPrice,
+      importPrice: preset.price,
+      stockQuantity: 1,
+      isActive: true,
+      createdAt: '',
+      updatedAt: '',
       imageUrl: game.imageUrl,
-      ctaLabel: 'Nạp ngay',
     };
   });
 }
@@ -340,6 +307,7 @@ const PACKAGE_PRESETS = [
       return 'Gói nạp tiêu biểu';
     },
     price: 299000,
+    originalPrice: 349000,
   },
   {
     nameFor: (gameName: string) => {
@@ -348,6 +316,7 @@ const PACKAGE_PRESETS = [
       return 'Gói nạp nhanh';
     },
     price: 69000,
+    originalPrice: 79000,
   },
   {
     nameFor: (gameName: string) => {
@@ -356,6 +325,7 @@ const PACKAGE_PRESETS = [
       return 'Gói ưu đãi';
     },
     price: 49000,
+    originalPrice: 59000,
   },
   {
     nameFor: (gameName: string) => {
@@ -364,6 +334,7 @@ const PACKAGE_PRESETS = [
       return 'Gói cao cấp';
     },
     price: 1599000,
+    originalPrice: 1799000,
   },
 ] as const;
 
@@ -398,26 +369,26 @@ const BENEFITS = [
 
 function TrustSection() {
   return (
-    <section className="grid gap-5">
-      <div className="flex items-end justify-between gap-4">
-        <h2 className="m-0 text-[1.5rem] font-black tracking-[-0.03em] text-white sm:text-[1.7rem]">Vì sao chọn GameTopUp?</h2>
-      </div>
+    <section className="grid gap-6">
+      <SectionHeading
+        title="Vì sao chọn GameTopUp?"
+        titleClassName="text-[1.5rem] sm:text-[1.7rem]"
+        description="Một vài điểm cốt lõi để bạn nhìn nhanh trước khi quyết định."
+      />
 
-      <section className="gt-surface overflow-hidden rounded-[18px] border border-white/10 p-0">
-        <div className="grid divide-y divide-white/10 xl:grid-cols-4 xl:divide-x xl:divide-y-0">
-          {BENEFITS.map((item) => (
-            <article key={item.title} className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 px-7 py-5">
-              <IconBox size="sm" className="h-12 w-12 rounded-[16px] border-cyan/20 bg-cyan/10 text-cyan-50">
-                {item.icon}
-              </IconBox>
-              <div className="grid gap-1">
-                <h3 className="text-base font-black text-white">{item.title}</h3>
-                <p className="m-0 text-sm leading-6 text-slate-400">{item.description}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {BENEFITS.map((item) => (
+          <article key={item.title} className="gt-card grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-[20px] border border-white/[0.06] px-5 py-5">
+            <IconBox size="sm" className="h-12 w-12 rounded-[16px] border-cyan/20 bg-cyan/10 text-cyan-50">
+              {item.icon}
+            </IconBox>
+            <div className="grid gap-1">
+              <h3 className="text-base font-black text-white">{item.title}</h3>
+              <p className="m-0 text-sm leading-6 gt-text-muted">{item.description}</p>
+            </div>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }
@@ -457,11 +428,11 @@ const FAQ_ITEMS = [
 
 function FaqSection() {
   return (
-    <section className="grid gap-4">
+    <section className="grid gap-6">
       <div className="flex items-end justify-between gap-4">
         <div className="grid gap-1">
           <h2 className="m-0 text-[1.5rem] font-black tracking-[-0.03em] text-white sm:text-[1.7rem]">Quy trình & thắc mắc</h2>
-          <p className="m-0 text-sm leading-6 text-slate-400">Giải đáp nhanh những câu hỏi hay gặp trước khi bạn nạp game.</p>
+          <p className="m-0 text-sm leading-6 gt-text-muted">Giải đáp nhanh những câu hỏi hay gặp trước khi bạn nạp game.</p>
         </div>
       </div>
 
@@ -473,13 +444,13 @@ function FaqSection() {
             open={index === 0}
           >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left">
-              <span className="text-base font-bold text-white">{item.question}</span>
+              <span className="text-base font-bold gt-text">{item.question}</span>
               <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.03] text-cyan-100 transition-transform duration-200 group-open:rotate-180">
                 <ChevronDown size={16} />
               </span>
             </summary>
 
-            <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-400">{item.answer}</p>
+            <p className="mt-3 max-w-4xl text-sm leading-7 gt-text-muted">{item.answer}</p>
           </details>
         ))}
       </div>

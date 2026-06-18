@@ -30,12 +30,12 @@ export function EmptyState({
 }) {
   const variantClassName =
     variant === 'compact'
-      ? 'gt-surface-ink grid gap-2 rounded-2xl px-5 py-6 text-center'
+      ? 'gt-panel grid gap-2 px-5 py-6 text-center'
       : variant === 'spacious'
-        ? 'gt-surface-ink grid gap-3 rounded-2xl px-6 py-12 text-center'
+        ? 'gt-panel grid gap-3 px-6 py-12 text-center'
         : variant === 'flush'
-          ? 'grid gap-3 rounded-none border-x-0 border-b-0 border-t border-white/5 bg-transparent px-6 py-6 text-center'
-          : 'gt-surface-ink grid gap-3 rounded-2xl px-6 py-8 text-center';
+          ? 'grid gap-3 border-x-0 border-b-0 border-t border-white/5 bg-transparent px-6 py-6 text-center'
+          : 'gt-panel grid gap-3 px-6 py-8 text-center';
 
   return (
     <div className={classNames(variantClassName, className)} role="status">
@@ -44,8 +44,8 @@ export function EmptyState({
           {icon}
         </IconBox>
       ) : null}
-      {title ? <div className="m-0 text-[1.15rem] font-extrabold leading-[1.25] text-white">{title}</div> : null}
-      {description ? <div className="m-0 text-[0.9rem] leading-[1.55] text-slate-400">{description}</div> : null}
+      {title ? <div className="m-0 text-[1.15rem] font-extrabold leading-[1.25] gt-text">{title}</div> : null}
+      {description ? <div className="m-0 text-[0.9rem] leading-[1.55] gt-text-muted">{description}</div> : null}
       {children}
       {actionLabel && onAction ? (
         <Button type="button" variant="accent" className="mt-1.5" onClick={onAction}>

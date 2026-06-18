@@ -23,10 +23,10 @@ export function SectionHeading({
   return (
     <div className={classNames('flex items-start justify-between gap-4', className)}>
       <div className="grid min-w-0 gap-0.5">
-        <h2 className={classNames('m-0 text-[1.05rem] font-black leading-[1.15] text-white', titleClassName)}>{title}</h2>
-        {description ? <p className={classNames('m-0 text-sm leading-[1.5] text-slate-400', descriptionClassName)}>{description}</p> : null}
+        <h2 className={classNames('m-0 text-[1.05rem] font-black leading-[1.15] gt-text', titleClassName)}>{title}</h2>
+        {description ? <p className={classNames('m-0 text-sm leading-[1.5] gt-text-muted', descriptionClassName)}>{description}</p> : null}
       </div>
-      {action ? <div className={classNames('flex flex-none items-start justify-end text-sm font-extrabold text-cyan', actionClassName)}>{action}</div> : null}
+      {action ? <div className={classNames('flex flex-none items-start justify-end text-sm font-extrabold text-cyan-300', actionClassName)}>{action}</div> : null}
     </div>
   );
 }

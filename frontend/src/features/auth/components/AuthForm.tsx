@@ -80,7 +80,7 @@ export function AuthForm({ busy, mode, onSubmitAuth, switchHref, switchLabel, sw
         trailing={
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-transparent bg-transparent text-slate-300 transition-all duration-200 hover:-translate-y-px hover:bg-cyan/10 hover:text-cyan-50 focus-visible:-translate-y-px focus-visible:bg-cyan/10 focus-visible:text-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/40"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-transparent bg-transparent gt-text-muted transition-all duration-200 hover:-translate-y-px hover:bg-cyan/10 hover:text-cyan-50 focus-visible:-translate-y-px focus-visible:bg-cyan/10 focus-visible:text-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/40"
             onClick={() => setShowPassword((current) => !current)}
             aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
           >
@@ -109,7 +109,7 @@ export function AuthForm({ busy, mode, onSubmitAuth, switchHref, switchLabel, sw
         {busy ? 'Đang xử lý...' : isRegister ? 'Đăng ký' : 'Đăng nhập'}
       </Button>
 
-      <p className="text-center text-sm text-slate-400">
+      <p className="text-center text-sm gt-text-muted">
         {switchPrompt}{' '}
         <Link to={switchHref} className="font-semibold text-cyan-200 transition-colors hover:text-cyan-50">
           {switchLabel}

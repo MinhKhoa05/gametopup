@@ -30,30 +30,28 @@ export function HeaderAccountMenu({ items, triggerLabel }: HeaderAccountMenuProp
         type="button"
         aria-expanded={open}
         className={classNames(
-          'gt-interactive inline-flex min-h-10 items-center gap-2 rounded-2xl border px-2.5 py-2',
-          open
-            ? 'border-cyan/25 bg-cyan/10 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.12),0_0_18px_rgba(34,211,238,0.12)]'
-            : 'border-white/10 bg-white/[0.04] text-white',
+          'gt-button gt-button-secondary min-h-10 rounded-2xl px-2.5 py-2',
+          open && 'border-cyan/25 bg-cyan/10 text-cyan-50',
         )}
         onClick={() => setOpen((value) => !value)}
       >
         <span className="inline-flex size-7 items-center justify-center rounded-full border border-cyan/15 bg-cyan/10 text-[0.68rem] font-black uppercase tracking-[0.12em] text-cyan-50">
           {initials}
         </span>
-        <span className="hidden max-w-[140px] truncate text-sm font-semibold text-white sm:block">{triggerLabel}</span>
-        <ChevronDown size={14} className={classNames('text-slate-400 transition-transform duration-200', open && 'rotate-180')} />
+        <span className="hidden max-w-[140px] truncate text-sm font-semibold gt-text sm:block">{triggerLabel}</span>
+        <ChevronDown size={14} className={classNames('gt-text-muted transition-transform duration-200', open && 'rotate-180')} />
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 max-h-[calc(100vh-5rem)] w-72 overflow-y-auto overflow-x-hidden rounded-2xl border border-white/10 bg-[#091224]/95 py-2 shadow-[0_24px_56px_rgba(2,6,23,0.42)] backdrop-blur-xl sm:w-80">
-          <div className="border-b border-white/10 px-3 py-3">
+        <div className="gt-panel absolute right-0 z-50 mt-2 max-h-[calc(100vh-5rem)] w-72 overflow-y-auto overflow-x-hidden py-2 backdrop-blur-xl sm:w-80">
+          <div className="border-b gt-border px-3 py-3">
             <div className="flex items-center gap-3">
               <span className="inline-flex size-9 items-center justify-center rounded-full border border-cyan/15 bg-cyan/10 text-sm font-black uppercase tracking-[0.12em] text-cyan-50">
                 {initials}
               </span>
               <div className="min-w-0">
-                <span className="block truncate text-sm font-semibold leading-tight text-white">{triggerLabel}</span>
-                <span className="block text-xs text-slate-400">Đã đăng nhập</span>
+                <span className="block truncate text-sm font-semibold leading-tight gt-text">{triggerLabel}</span>
+                <span className="block text-xs gt-text-muted">Đã đăng nhập</span>
               </div>
             </div>
           </div>
@@ -66,7 +64,7 @@ export function HeaderAccountMenu({ items, triggerLabel }: HeaderAccountMenuProp
                   'flex w-full items-center gap-2 px-3 py-2 text-sm font-semibold transition-colors',
                   item.className === 'logout'
                     ? 'border-transparent text-red-300 hover:bg-red-500/10 hover:text-red-200'
-                    : 'border-transparent text-slate-300 hover:text-white',
+                    : 'border-transparent gt-text-muted hover:text-white',
                 )}
                 onClick={() => {
                   item.onClick();
@@ -76,7 +74,7 @@ export function HeaderAccountMenu({ items, triggerLabel }: HeaderAccountMenuProp
                 {item.icon}
                 {item.label}
               </button>
-              {item.dividerAfter ? <div className="my-1 h-px bg-gradient-to-r from-transparent via-slate-500/20 to-transparent" /> : null}
+              {item.dividerAfter ? <div className="my-1 h-px bg-gradient-to-r from-transparent via-[color:var(--gt-border)] to-transparent" /> : null}
             </div>
           ))}
         </div>

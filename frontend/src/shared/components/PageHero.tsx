@@ -13,14 +13,13 @@ export function PageHero({ className, description, eyebrow, title, visual }: Pag
   return (
     <section
       className={classNames(
-        'relative overflow-hidden rounded-[24px] border border-white/[0.08]',
-        'bg-[radial-gradient(circle_at_12%_20%,rgba(34,211,238,0.14),transparent_34%),linear-gradient(135deg,rgba(15,23,42,0.94),rgba(2,6,23,0.9))]',
-        'shadow-[0_24px_70px_rgba(2,6,23,0.28)]',
+        'gt-panel relative overflow-hidden',
+        'bg-[radial-gradient(circle_at_80%_20%,rgba(34,211,238,0.12),transparent_30rem)]',
         className,
       )}
     >
       <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-cyan-400/10 blur-3xl" />
-      <div className="pointer-events-none absolute right-12 bottom-0 h-24 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_30%,rgba(34,211,238,0.08),transparent_24rem)]" />
 
       <div className="relative flex items-center gap-4 px-6 py-7 sm:px-7 lg:px-8">
         <div className="flex items-center gap-4">
@@ -38,7 +37,7 @@ export function PageHero({ className, description, eyebrow, title, visual }: Pag
             </h1>
 
             {description ? (
-              <p className="mt-3 max-w-3xl text-[0.98rem] leading-7 text-slate-400">
+              <p className="mt-3 max-w-3xl text-[0.98rem] leading-7 gt-text-muted">
                 {description}
               </p>
             ) : null}

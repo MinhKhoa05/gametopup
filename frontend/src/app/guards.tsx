@@ -40,8 +40,8 @@ export function RequireAdmin({ children }: GuardProps) {
 
 function GuardLoadingState() {
   return (
-    <div className="flex min-h-[50vh] items-center justify-center px-4 py-10 text-slate-200">
-      <div className="rounded-3xl border border-white/10 bg-slate-950/70 px-6 py-4 text-sm shadow-xl shadow-black/20">
+    <div className="flex min-h-[50vh] items-center justify-center px-4 py-10 gt-text">
+      <div className="rounded-3xl border border-white/10 bg-[var(--gt-panel)] px-6 py-4 text-sm shadow-xl shadow-black/20">
         Đang kiểm tra phiên đăng nhập...
       </div>
     </div>

@@ -125,6 +125,21 @@ export function useAdminPackagesPageState({
     resetForm();
   }
 
+  async function updatePackage(
+    payload: {
+      id: number;
+      imageFile: File | null;
+      importPrice: number;
+      isActive: boolean;
+      name: string;
+      originalPrice: number;
+      salePrice: number;
+      stockQuantity: number;
+    },
+  ) {
+    await onUpdatePackage(payload);
+  }
+
   async function remove(item: GamePackage) {
     if (!window.confirm(`Xóa gói "${item.name}"?`)) return;
     await onDeletePackage(item.id);
@@ -145,5 +160,6 @@ export function useAdminPackagesPageState({
     setSelectedGameId,
     startEdit,
     submit,
+    updatePackage,
   };
 }

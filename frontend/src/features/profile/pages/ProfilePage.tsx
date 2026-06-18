@@ -90,11 +90,11 @@ function ProfileContent({ user }: { user: User }) {
   return (
     <div className="relative isolate overflow-hidden">
       <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
-        <div className="grid gap-6 lg:gap-7">
+        <div className="grid gap-10 lg:gap-12">
           <PageHero
             eyebrow="TÀI KHOẢN CỦA TÔI"
             visual={
-              <div className="grid size-[78px] place-items-center overflow-hidden rounded-full border border-cyan/20 bg-[radial-gradient(circle_at_30%_30%,rgba(34,211,238,0.24),rgba(34,211,238,0.08)_50%,rgba(7,16,31,0.92)_72%)] text-[1.65rem] font-black tracking-[-0.06em] text-white">
+              <div className="grid size-[78px] place-items-center overflow-hidden rounded-full border border-cyan/20 bg-[radial-gradient(circle_at_30%_30%,rgba(34,211,238,0.24),rgba(34,211,238,0.08)_50%,rgba(7,16,31,0.92)_72%)] text-[1.65rem] font-black tracking-[-0.06em] gt-text">
                 {user.avatarUrl ? <ImageBox src={user.avatarUrl} alt={displayName} className="size-full rounded-full object-cover" /> : getInitials(user.displayName ?? user.email, user.email)}
               </div>
             }
@@ -102,8 +102,8 @@ function ProfileContent({ user }: { user: User }) {
             description={`Thành viên từ ${joinedAtLabel}`}
           />
 
-          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.9fr)] xl:items-start">
-            <div className="grid gap-6">
+          <section className="grid gap-8 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.9fr)] xl:items-start">
+            <div className="grid gap-8">
               <PanelShell>
                 <div className="px-5 pt-5 sm:px-6 sm:pt-6">
                   <SectionHeading title="Thông tin hồ sơ" titleClassName="text-[1.35rem]" />
@@ -148,8 +148,8 @@ function ProfileContent({ user }: { user: User }) {
                         <LockKeyhole size={18} />
                       </span>
                       <div className="grid gap-1">
-                        <strong className="text-sm font-black text-white">Mật khẩu</strong>
-                        <span className="font-mono text-base tracking-[0.24em] text-slate-300">••••••••••••••</span>
+                        <strong className="text-sm font-black gt-text">Mật khẩu</strong>
+                        <span className="font-mono text-base tracking-[0.24em] gt-text-soft">••••••••••••••</span>
                       </div>
                     </div>
 
@@ -159,7 +159,7 @@ function ProfileContent({ user }: { user: User }) {
                       </Button>
                     </div>
 
-                    <div className="flex items-start gap-2 text-sm leading-6 text-slate-400">
+                    <div className="flex items-start gap-2 text-sm leading-6 gt-text-muted">
                       <ShieldCheck size={16} className="mt-0.5 shrink-0 text-slate-500" />
                       <span>Bạn nên dùng mật khẩu mạnh và không chia sẻ với người khác để bảo vệ tài khoản của bạn.</span>
                     </div>
@@ -168,7 +168,7 @@ function ProfileContent({ user }: { user: User }) {
               </PanelShell>
             </div>
 
-            <div className="grid gap-6">
+            <div className="grid gap-8">
               <VipCard cardRef={vipRef} tier={tier} totalDeposited={stats.totalDeposited} onMove={setVipTilt} tilt={vipTilt} />
               <FavoriteGamesSection favorites={favoriteGames} loading={loading} onBrowse={() => navigate(routes.games())} />
             </div>
@@ -227,14 +227,14 @@ const VipCard = ({
             <div className="flex items-start justify-between gap-4">
               <div className="grid gap-1">
                 <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-50/80">GTOP VIP CARD</p>
-                <h3 className="m-0 text-[1.55rem] font-black tracking-[-0.05em] text-white">Cấp độ: {tier.label}</h3>
+                <h3 className="m-0 text-[1.55rem] font-black tracking-[-0.05em] gt-text">Cấp độ: {tier.label}</h3>
               </div>
-              <div className="grid size-14 place-items-center rounded-[18px] border border-white/15 bg-white/10 text-[0.85rem] font-black text-white">
+              <div className="grid size-14 place-items-center rounded-[18px] border border-white/15 bg-white/10 text-[0.85rem] font-black gt-text">
                 VIP
               </div>
             </div>
 
-            <div className="grid gap-3 text-white">
+            <div className="grid gap-3 gt-text">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-sm text-white/80">Tổng nạp</span>
                 <strong className="text-[1.15rem] font-black gt-tabular">{formatCurrency(totalDeposited)}</strong>
@@ -297,13 +297,13 @@ function FavoriteGamesSection({
           >
             {favorites.map((game) => (
               <article key={game.gameKey} className="group grid gap-3 rounded-[22px] border border-white/[0.08] bg-[rgba(255,255,255,0.03)] p-3 transition-all duration-200 hover:-translate-y-1 hover:border-cyan/25 hover:bg-[rgba(255,255,255,0.045)]">
-                <div className="relative aspect-[1.35/1] overflow-hidden rounded-[18px] bg-slate-950">
+                <div className="relative aspect-[1.35/1] overflow-hidden rounded-[18px] bg-[var(--gt-bg-soft)]">
                   <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
                 </div>
 
                 <div className="grid gap-1">
                   <strong className="truncate text-sm font-bold text-white">{game.name}</strong>
-                  <span className="text-xs text-slate-400">{game.packageName}</span>
+                  <span className="text-xs gt-text-muted">{game.packageName}</span>
                   <span className="text-xs font-medium text-cyan-200">Đã nạp {game.count} lần</span>
                 </div>
               </article>
@@ -357,10 +357,10 @@ function TextField({
 }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-semibold text-slate-200">{label}</span>
+                <span className="text-sm font-semibold gt-text-soft">{label}</span>
       <div className="relative">
         <input
-          className="h-14 w-full rounded-[18px] border border-white/10 bg-[rgba(7,14,27,0.9)] px-4 pr-11 text-[1rem] font-semibold text-white outline-none transition-all duration-200 placeholder:text-slate-500 hover:border-cyan-300/30 hover:bg-[rgba(9,17,32,0.94)] focus:border-cyan-300/55 focus:bg-[rgba(9,17,32,0.98)] focus:shadow-[0_0_0_4px_rgba(34,211,238,0.08)]"
+          className="h-14 w-full rounded-[18px] border border-white/10 bg-[rgba(7,14,27,0.9)] px-4 pr-11 text-[1rem] font-semibold gt-text outline-none transition-all duration-200 placeholder:text-slate-500 hover:border-cyan-300/30 hover:bg-[rgba(9,17,32,0.94)] focus:border-cyan-300/55 focus:bg-[rgba(9,17,32,0.98)] focus:shadow-[0_0_0_4px_rgba(34,211,238,0.08)]"
           value={value}
           readOnly={readOnly}
           placeholder={placeholder}
@@ -457,14 +457,14 @@ function resolveVipTier(totalDeposited: number) {
 function ProfilePageLoading() {
   return (
     <AppPageContainer className="py-5 sm:py-7 lg:py-8" aria-busy="true" aria-label="Đang xác thực tài khoản">
-      <div className="grid gap-6 lg:gap-7">
+        <div className="grid gap-10 lg:gap-12">
         <div className="h-[220px] animate-pulse rounded-[30px] border border-white/10 bg-white/[0.03]" />
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.9fr)]">
-          <div className="grid gap-6">
+        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.9fr)]">
+          <div className="grid gap-8">
             <div className="h-[340px] animate-pulse rounded-[26px] border border-white/10 bg-white/[0.03]" />
             <div className="h-[260px] animate-pulse rounded-[26px] border border-white/10 bg-white/[0.03]" />
           </div>
-          <div className="grid gap-6">
+          <div className="grid gap-8">
             <div className="h-[360px] animate-pulse rounded-[26px] border border-white/10 bg-white/[0.03]" />
             <div className="h-[320px] animate-pulse rounded-[26px] border border-white/10 bg-white/[0.03]" />
           </div>

@@ -9,15 +9,15 @@ export function AuthHeader() {
   const navigate = useNavigate();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/8 bg-[linear-gradient(180deg,rgba(5,10,20,0.96)_0%,rgba(5,10,20,0.86)_100%)] backdrop-blur-xl">
+    <header className="gt-shell-surface fixed inset-x-0 top-0 z-50 border-b gt-border backdrop-blur-xl">
       <div className="mx-auto flex max-w-[1480px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <BrandLogo title={SITE.name} size="sm" onClick={() => navigate(ROUTE_PATHS.home)} />
 
         <Link
           to={routes.home()}
           className={classNames(
-            'inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition-colors duration-200',
-            'hover:text-slate-100 focus-visible:outline-none focus-visible:text-slate-100',
+            'inline-flex items-center gap-2 text-sm font-medium gt-text-muted transition-colors duration-200',
+            'hover:text-white focus-visible:outline-none focus-visible:text-white',
           )}
         >
           <ArrowLeft size={14} />

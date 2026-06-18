@@ -83,7 +83,7 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
 
     const parsedAmount = Number.parseInt(amount.replace(/\D/g, ''), 10);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setAmountError('Vui lÃ²ng nháº­p sá»‘ tiá»n há»£p lá»‡.');
+      setAmountError('Vui lòng nhập số tiền hợp lệ.');
       return;
     }
 
@@ -91,10 +91,10 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
       const created = await createDepositMutation.mutateAsync({ amount: parsedAmount });
       setRequest(created);
       setStep('payment');
-      toast.success('ÄÃ£ táº¡o yÃªu cáº§u náº¡p tiá»n.');
+      toast.success('Đã tạo yêu cầu nạp tiền.');
     } catch (error) {
       console.error(error);
-      toast.error('KhÃ´ng thá»ƒ táº¡o yÃªu cáº§u náº¡p tiá»n. Vui lÃ²ng thá»­ láº¡i.');
+      toast.error('Không thể tạo yêu cầu nạp tiền. Vui lòng thử lại.');
     }
   };
 
@@ -105,47 +105,47 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
       const confirmed = await confirmDepositMutation.mutateAsync({ requestId: request.id });
       setRequest(confirmed);
       setStep('success');
-      toast.success('ÄÃ£ xÃ¡c nháº­n chuyá»ƒn khoáº£n.');
+      toast.success('Đã xác nhận chuyển khoản.');
     } catch (error) {
       console.error(error);
-      toast.error('KhÃ´ng thá»ƒ xÃ¡c nháº­n chuyá»ƒn khoáº£n. Vui lÃ²ng thá»­ láº¡i.');
+      toast.error('Không thể xác nhận chuyển khoản. Vui lòng thử lại.');
     }
   };
 
   const handleCopy = async (key: string, value: string) => {
     if (!value.trim()) {
-      toast.error('KhÃ´ng cÃ³ ná»™i dung Ä‘á»ƒ sao chÃ©p.');
+      toast.error('Không có nội dung để sao chép.');
       return;
     }
 
     try {
       await navigator.clipboard.writeText(value);
       setCopiedKey(key);
-      toast.success('ÄÃ£ sao chÃ©p.');
+      toast.success('Đã sao chép.');
     } catch {
-      toast.error('KhÃ´ng thá»ƒ sao chÃ©p lÃºc nÃ y.');
+      toast.error('Không thể sao chép lúc này.');
     }
   };
 
   const title =
     step === 'amount'
-      ? 'Náº¡p tiá»n vÃ o vÃ­'
+      ? 'Nạp tiền vào ví'
       : step === 'payment'
-        ? 'QuÃ©t QR vÃ  chuyá»ƒn khoáº£n Ä‘Ãºng ná»™i dung'
-        : 'YÃªu cáº§u Ä‘Ã£ Ä‘Æ°á»£c gá»­i';
+        ? 'Quét QR và chuyển khoản đúng nội dung'
+        : 'Yêu cầu đã được gửi';
 
   const description =
     step === 'amount'
-      ? 'Nháº­p sá»‘ tiá»n cáº§n náº¡p'
+      ? 'Nhập số tiền cần nạp'
       : step === 'payment'
-        ? 'Kiá»ƒm tra thÃ´ng tin trÆ°á»›c khi chuyá»ƒn khoáº£n'
-        : 'Admin sáº½ kiá»ƒm tra vÃ  duyá»‡t giao dá»‹ch';
+        ? 'Kiểm tra thông tin trước khi chuyển khoản'
+        : 'Admin sẽ kiểm tra và duyệt giao dịch';
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 py-6">
       <button
-        aria-label="ÄÃ³ng"
-        className="absolute inset-0 cursor-default bg-slate-950/72 backdrop-blur-[6px]"
+        aria-label="Đóng"
+        className="absolute inset-0 cursor-default bg-[rgba(5,11,24,0.8)] backdrop-blur-[8px]"
         onClick={isBusy ? undefined : onClose}
         type="button"
       />
@@ -153,24 +153,24 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
       <div
         aria-modal="true"
         aria-labelledby="wallet-deposit-dialog-title"
-        className="relative z-10 w-full max-w-[840px] overflow-hidden rounded-[26px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.08),transparent_34%),linear-gradient(180deg,rgba(10,18,34,0.98),rgba(7,13,25,0.99))] shadow-[0_30px_90px_rgba(2,6,23,0.52)]"
+        className="gt-panel relative z-10 w-full max-w-[840px] overflow-hidden rounded-[26px] border gt-border shadow-[0_30px_90px_rgba(2,6,23,0.5)]"
         role="dialog"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-white/8 px-5 py-4 sm:px-6">
+        <div className="flex items-start justify-between gap-4 border-b gt-border px-5 py-4 sm:px-6">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-cyan-200/85">Náº¡p tiá»n vÃ o vÃ­</p>
-            <h2 id="wallet-deposit-dialog-title" className="mt-2 text-[1.2rem] font-black tracking-tight text-white">
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-[var(--gt-primary)]">Nạp tiền vào ví</p>
+            <h2 id="wallet-deposit-dialog-title" className="mt-2 text-[1.2rem] font-black tracking-tight gt-text">
               {title}
             </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
+            <p className="mt-2 text-sm leading-6 gt-text-muted">{description}</p>
           </div>
 
           <button
             ref={closeRef}
-            aria-label="ÄÃ³ng popup"
+            aria-label="Đóng popup"
             className={classNames(
-              'inline-flex size-10 shrink-0 items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.03] text-slate-300 transition-colors hover:border-white/15 hover:bg-white/[0.06] hover:text-white',
-              isBusy && 'cursor-not-allowed opacity-50 hover:border-white/10 hover:bg-white/[0.03] hover:text-slate-300',
+              'inline-flex size-10 shrink-0 items-center justify-center rounded-[14px] border gt-border bg-[var(--gt-card)] gt-text-soft transition-colors hover:border-[var(--gt-border-strong)] hover:bg-[var(--gt-card-hover)] hover:text-[var(--gt-text)]',
+              isBusy && 'cursor-not-allowed opacity-50 hover:border-[var(--gt-border)] hover:bg-[var(--gt-card)] hover:text-[var(--gt-text-soft)]',
             )}
             onClick={onClose}
             disabled={isBusy}
@@ -184,16 +184,16 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
           {step === 'amount' ? (
             <form className="grid gap-6 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:items-start" onSubmit={handleCreateRequest}>
               <section className="grid gap-5">
-                <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-                <div className="grid gap-1.5 py-3.5">
+                <div className="gt-card rounded-[18px] border gt-border px-4">
+                  <div className="grid gap-1.5 py-3.5">
                     <DetailRow label="Phương thức">Chuyển khoản QR</DetailRow>
                     <DetailRow label="Xử lý">Sau khi admin duyệt</DetailRow>
                   </div>
                 </div>
 
                 <div className="grid gap-2.5">
-                  <label htmlFor="wallet-deposit-amount" className="text-sm font-semibold text-slate-200">
-                    Sá»‘ tiá»n náº¡p
+                  <label htmlFor="wallet-deposit-amount" className="text-sm font-semibold gt-text-soft">
+                    Số tiền nạp
                   </label>
                   <div className="relative">
                     <input
@@ -207,17 +207,17 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                         setAmountError(null);
                       }}
                       placeholder="100.000"
-                      className="h-14 w-full rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 pr-12 text-[1rem] font-semibold tracking-[0.01em] text-white outline-none transition-all duration-200 placeholder:text-slate-500 hover:border-cyan-300/30 hover:bg-[rgba(255,255,255,0.05)] focus:border-cyan-300/55 focus:bg-[rgba(255,255,255,0.05)] focus:shadow-[0_0_0_4px_rgba(34,211,238,0.08)]"
+                      className="h-14 w-full rounded-[18px] border gt-border bg-[var(--gt-card)] px-4 pr-12 text-[1rem] font-semibold gt-text outline-none transition-all duration-200 placeholder:text-[var(--gt-text-disabled)] hover:border-[var(--gt-border-strong)] hover:bg-[var(--gt-card-hover)] focus:border-[var(--gt-primary-border)] focus:bg-[var(--gt-card-hover)] focus:shadow-[0_0_0_4px_rgba(34,211,238,0.08)]"
                     />
-                    <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-[0.95rem] font-semibold text-slate-400">
-                      Ä‘
+                    <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-[0.95rem] font-semibold gt-text-muted">
+                      đ
                     </span>
                   </div>
                   {amountError ? <p className="m-0 text-sm text-rose-300">{amountError}</p> : null}
                 </div>
 
                 <div className="grid gap-2">
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200/85">Gá»£i Ã½ nhanh</p>
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--gt-primary)]">Gợi ý nhanh</p>
                   <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                     {QUICK_AMOUNTS.map((value) => {
                       const selected = amount === String(value);
@@ -229,8 +229,8 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                           className={classNames(
                             'min-h-12 rounded-[14px] border px-3 py-3 text-sm font-semibold transition-all duration-200',
                             selected
-                              ? 'border-cyan-300/75 bg-cyan-400/12 text-cyan-50 shadow-[0_0_0_1px_rgba(34,211,238,0.16),0_0_22px_rgba(34,211,238,0.16)]'
-                              : 'border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/30 hover:bg-white/[0.05] hover:text-white',
+                              ? 'border-[var(--gt-primary-border)] bg-[var(--gt-primary-soft)] text-[var(--gt-text)]'
+                              : 'border-[var(--gt-border)] bg-[var(--gt-card)] gt-text-soft hover:border-[var(--gt-border-strong)] hover:bg-[var(--gt-card-hover)] hover:text-[var(--gt-text)]',
                           )}
                         >
                           {formatCurrency(value)}
@@ -241,27 +241,27 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                 </div>
               </section>
 
-              <section className="rounded-[22px] border border-white/[0.06] bg-white/[0.02] px-4 py-4 sm:px-5 sm:py-5">
+              <section className="gt-card rounded-[22px] px-4 py-4 sm:px-5 sm:py-5">
                 <div className="mb-3">
-                  <h3 className="text-[1.05rem] font-black tracking-tight text-white">ThÃ´ng tin</h3>
+                  <h3 className="text-[1.05rem] font-black tracking-tight gt-text">Thông tin</h3>
                 </div>
 
-                <div className="grid gap-0 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-                  <DetailRow label="Method">QR transfer</DetailRow>
-                  <DetailRow label="Process">After admin approval</DetailRow>
+                <div className="grid gap-0 rounded-[18px] border gt-border bg-[var(--gt-card)] px-4">
+                  <DetailRow label="Phương thức">Chuyển khoản QR</DetailRow>
+                  <DetailRow label="Xử lý">Sau khi admin duyệt</DetailRow>
                 </div>
 
-                <div className="mt-5 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4 py-3.5">
-                  <DetailRow label="Sá»‘ tiá»n chá»n">{amount ? formatCurrency(Number(amount)) : '---'}</DetailRow>
-                  <DetailRow label="Tráº¡ng thÃ¡i">ChÆ°a táº¡o yÃªu cáº§u</DetailRow>
+                <div className="mt-5 rounded-[18px] border gt-border bg-[var(--gt-card)] px-4 py-3.5">
+                  <DetailRow label="Số tiền chọn">{amount ? formatCurrency(Number(amount)) : '---'}</DetailRow>
+                  <DetailRow label="Trạng thái">Chưa tạo yêu cầu</DetailRow>
                 </div>
 
                 <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                   <Button className="sm:min-w-32" disabled={isBusy} variant="outline" onClick={onClose}>
-                    Há»§y
+                    Hủy
                   </Button>
                   <Button className="sm:min-w-40" disabled={isBusy || !amount.trim() || Number.parseInt(amount, 10) <= 0} variant="accent" type="submit">
-                    {createDepositMutation.isPending ? 'Äang táº¡o yÃªu cáº§u...' : 'Táº¡o yÃªu cáº§u náº¡p'}
+                    {createDepositMutation.isPending ? 'Đang tạo yêu cầu...' : 'Tạo yêu cầu nạp'}
                   </Button>
                 </div>
               </section>
@@ -269,31 +269,31 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
           ) : step === 'payment' && request ? (
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:items-start">
               <section className="space-y-4">
-                <div className="rounded-[22px] border border-cyan-400/10 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.14),transparent_42%),linear-gradient(180deg,rgba(9,14,30,0.94),rgba(8,13,28,0.98))] p-4">
+                <div className="rounded-[22px] border border-[var(--gt-border-accent)] bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.08),transparent_42%)] p-4">
                   <div className="mb-4 flex items-center justify-between gap-3">
-                    <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200/85">QR thanh toÃ¡n</p>
+                    <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--gt-primary)]">QR thanh toán</p>
                     <Badge tone="primary">VietQR</Badge>
                   </div>
 
                   <div className="grid place-items-center">
                     {request.qrImageUrl ? (
-                      <img src={request.qrImageUrl} alt="MÃ£ QR chuyá»ƒn khoáº£n VietQR" className="max-w-full rounded-[16px]" />
+                      <img src={request.qrImageUrl} alt="Mã QR chuyển khoản VietQR" className="max-w-full rounded-[16px]" />
                     ) : (
-                      <div className="grid place-items-center gap-2 py-8 text-center text-slate-400">
+                    <div className="grid place-items-center gap-2 py-8 text-center gt-text-muted">
                         <QrCode size={26} />
-                        <span>KhÃ´ng cÃ³ mÃ£ QR</span>
+                        <span>Không có mã QR</span>
                       </div>
                     )}
                   </div>
                 </div>
               </section>
 
-              <section className="rounded-[22px] border border-white/[0.06] bg-white/[0.02] px-4 py-4 sm:px-5 sm:py-5">
+              <section className="rounded-[22px] border gt-border bg-[var(--gt-card)] px-4 py-4 sm:px-5 sm:py-5">
                 <div className="mb-3">
-                  <h3 className="text-[1.05rem] font-black tracking-tight text-white">ThÃ´ng tin chuyá»ƒn khoáº£n</h3>
+                  <h3 className="text-[1.05rem] font-black tracking-tight gt-text">Thông tin chuyển khoản</h3>
                 </div>
 
-                <div className="grid gap-0 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
+                <div className="grid gap-0 rounded-[18px] border gt-border bg-[var(--gt-card)] px-4">
                   <DetailRow label="Số tiền">{formatCurrency(request.amount)}</DetailRow>
                   <DetailRow label="Ngân hàng">{resolveBankDisplayName(request.bankId)}</DetailRow>
                   <DetailRow label="Số tài khoản">{request.accountNo || '---'}</DetailRow>
@@ -305,16 +305,16 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-white/10 bg-white/[0.02] text-slate-200 hover:border-cyan-300/25 hover:bg-cyan-400/10 hover:text-cyan-50"
+                    className="border gt-border bg-[var(--gt-card)] gt-text-soft hover:border-[var(--gt-border-strong)] hover:bg-[var(--gt-card-hover)] hover:text-[var(--gt-text)]"
                     onClick={() => void handleCopy('content', request.transferContent)}
                   >
                     {copiedKey === 'content' ? <Check size={14} /> : <Copy size={14} />}
-                    Copy ná»™i dung
+                    Copy nội dung
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-white/10 bg-white/[0.02] text-slate-200 hover:border-cyan-300/25 hover:bg-cyan-400/10 hover:text-cyan-50"
+                    className="border gt-border bg-[var(--gt-card)] gt-text-soft hover:border-[var(--gt-border-strong)] hover:bg-[var(--gt-card-hover)] hover:text-[var(--gt-text)]"
                     onClick={() => void handleCopy('account', request.accountNo)}
                   >
                     {copiedKey === 'account' ? <Check size={14} /> : <Copy size={14} />}
@@ -322,43 +322,43 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                   </Button>
                 </div>
 
-                <p className="mt-4 rounded-[16px] border border-amber-400/12 bg-amber-400/8 p-4 text-sm leading-6 text-amber-100/90">
-                  LÆ°u Ã½: chuyá»ƒn khoáº£n Ä‘Ãºng ná»™i dung Ä‘á»ƒ admin Ä‘á»‘i soÃ¡t nhanh hÆ¡n.
+                <p className="mt-4 rounded-[16px] border border-[rgba(245,158,11,0.18)] bg-[rgba(245,158,11,0.10)] p-4 text-sm leading-6 text-[var(--gt-warning)]">
+                  Lưu ý: chuyển khoản đúng nội dung để admin đối soát nhanh hơn.
                 </p>
 
                 <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                   <Button className="sm:min-w-32" disabled={isBusy} variant="outline" onClick={onClose}>
-                    ÄÃ³ng
+                    Đóng
                   </Button>
                   <Button className="sm:min-w-44" disabled={isBusy} variant="accent" onClick={() => void handleConfirmTransfer()}>
-                    {confirmDepositMutation.isPending ? 'Äang xÃ¡c nháº­n...' : 'TÃ´i Ä‘Ã£ chuyá»ƒn khoáº£n'}
+                    {confirmDepositMutation.isPending ? 'Đang xác nhận...' : 'Tôi đã chuyển khoản'}
                   </Button>
                 </div>
               </section>
             </div>
           ) : (
             <div className="mx-auto grid max-w-[520px] gap-5 py-2 text-center">
-              <div className="mx-auto grid size-16 place-items-center rounded-[22px] border border-emerald-400/16 bg-emerald-400/10 text-emerald-300">
+              <div className="mx-auto grid size-16 place-items-center rounded-[22px] border border-[rgba(34,197,94,0.18)] bg-[rgba(34,197,94,0.10)] text-[var(--gt-success)]">
                 <CheckCircle2 size={34} />
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-[1.3rem] font-black tracking-tight text-white">YÃªu cáº§u Ä‘Ã£ Ä‘Æ°á»£c gá»­i</h3>
-                <p className="text-sm leading-6 text-slate-300">Admin sáº½ kiá»ƒm tra vÃ  duyá»‡t giao dá»‹ch.</p>
+                <h3 className="text-[1.3rem] font-black tracking-tight gt-text">Yêu cầu đã được gửi</h3>
+                <p className="text-sm leading-6 gt-text-soft">Admin sẽ kiểm tra và duyệt giao dịch.</p>
               </div>
 
-              <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4 text-left">
-                <DetailRow label="Sá»‘ tiá»n">{request ? formatCurrency(request.amount) : '---'}</DetailRow>
-                <DetailRow label="MÃ£ yÃªu cáº§u">{request?.code ?? '---'}</DetailRow>
-                <DetailRow label="Tráº¡ng thÃ¡i">{status?.label ?? 'Chá» duyá»‡t'}</DetailRow>
+              <div className="rounded-[18px] border gt-border bg-[var(--gt-card)] px-4 text-left">
+                <DetailRow label="Số tiền">{request ? formatCurrency(request.amount) : '---'}</DetailRow>
+                <DetailRow label="Mã yêu cầu">{request?.code ?? '---'}</DetailRow>
+                <DetailRow label="Trạng thái">{status?.label ?? 'Chờ duyệt'}</DetailRow>
               </div>
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
                 <Button className="sm:min-w-36" variant="outline" onClick={onClose}>
-                  ÄÃ³ng
+                  Đóng
                 </Button>
                 <Button className="sm:min-w-40" variant="accent" onClick={onViewHistory}>
-                  Xem lá»‹ch sá»­ náº¡p
+                  Xem lịch sử nạp
                 </Button>
               </div>
             </div>
@@ -372,13 +372,13 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
 function resolveBankDisplayName(bankId?: string): string {
   const normalized = bankId?.trim().toLowerCase();
   if (!normalized) {
-    return 'NgÃ¢n hÃ ng liÃªn káº¿t';
+    return 'Ngân hàng liên kết';
   }
 
   if (normalized === 'vcb' || normalized === 'vietcombank') return 'Vietcombank';
   if (normalized === 'mb' || normalized === 'mbbank') return 'MB Bank';
   if (normalized === 'acb') return 'ACB';
-  return bankId ?? 'NgÃ¢n hÃ ng liÃªn káº¿t';
+  return bankId ?? 'Ngân hàng liên kết';
 }
 
 

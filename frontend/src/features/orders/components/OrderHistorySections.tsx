@@ -170,12 +170,22 @@ function buildHistoryEntries(status: number, createdAt: string, updatedAt: strin
     return [
       {
         action: 'Đơn hàng đã được tạo',
-        description: 'Đơn hàng đã được ghi nhận thành công và đang chờ xử lý.',
+        description: 'Đã ghi nhận',
         time: createdTime,
       },
       {
-        action: 'Đơn hàng đã bị hủy',
-        description: 'Đơn hàng đã được hủy và không tiếp tục xử lý.',
+        action: 'Đang xử lý đơn hàng',
+        description: 'Đang thực hiện',
+        time: updatedTime,
+      },
+      {
+        action: 'Hoàn thành',
+        description: 'Đang chờ',
+        time: '',
+      },
+      {
+        action: 'Đã hủy',
+        description: 'Đã hủy',
         time: updatedTime,
       },
     ];
@@ -185,18 +195,23 @@ function buildHistoryEntries(status: number, createdAt: string, updatedAt: strin
     return [
       {
         action: 'Đơn hàng đã được tạo',
-        description: 'Đơn hàng đã được ghi nhận thành công và đang chờ xử lý.',
+        description: 'Đã ghi nhận',
         time: createdTime,
       },
       {
-        action: 'Đơn hàng chuyển sang trạng thái Đang xử lý',
-        description: 'Nhân viên đang thực hiện xử lý và nạp game cho khách hàng.',
+        action: 'Đang xử lý đơn hàng',
+        description: 'Đang thực hiện',
         time: processingTime,
       },
       {
-        action: 'Đơn hàng hoàn thành',
-        description: 'Đơn hàng đã được xử lý thành công.',
+        action: 'Hoàn thành',
+        description: 'Đã hoàn thành',
         time: updatedAt ? updatedTime : completedTime,
+      },
+      {
+        action: 'Đã hủy',
+        description: 'Đang chờ',
+        time: '',
       },
     ];
   }
@@ -205,13 +220,23 @@ function buildHistoryEntries(status: number, createdAt: string, updatedAt: strin
     return [
       {
         action: 'Đơn hàng đã được tạo',
-        description: 'Đơn hàng đã được ghi nhận thành công và đang chờ xử lý.',
+        description: 'Đã ghi nhận',
         time: createdTime,
       },
       {
-        action: 'Đơn hàng chuyển sang trạng thái Đang xử lý',
-        description: 'Nhân viên đang thực hiện xử lý và nạp game cho khách hàng.',
+        action: 'Đang xử lý đơn hàng',
+        description: 'Đang thực hiện',
         time: updatedTime,
+      },
+      {
+        action: 'Hoàn thành',
+        description: 'Đang chờ',
+        time: '',
+      },
+      {
+        action: 'Đã hủy',
+        description: 'Đang chờ',
+        time: '',
       },
     ];
   }
@@ -219,8 +244,23 @@ function buildHistoryEntries(status: number, createdAt: string, updatedAt: strin
   return [
     {
       action: 'Đơn hàng đã được tạo',
-      description: 'Đơn hàng đã được ghi nhận thành công và đang chờ xử lý.',
+      description: 'Đã ghi nhận',
       time: createdTime,
+    },
+    {
+      action: 'Đang xử lý đơn hàng',
+      description: 'Đang chờ',
+      time: '',
+    },
+    {
+      action: 'Hoàn thành',
+      description: 'Đang chờ',
+      time: '',
+    },
+    {
+      action: 'Đã hủy',
+      description: 'Đang chờ',
+      time: '',
     },
   ];
 }

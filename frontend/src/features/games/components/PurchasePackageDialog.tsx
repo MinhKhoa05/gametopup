@@ -101,7 +101,7 @@ export function PackagePurchaseDialog({ busy, game, isOpen, onClose, onConfirm, 
     <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 py-6">
       <button
         aria-label="Đóng"
-        className="absolute inset-0 cursor-default bg-slate-950/72 backdrop-blur-[6px]"
+        className="absolute inset-0 cursor-default bg-[rgba(5,11,24,0.8)] backdrop-blur-[8px]"
         onClick={busy ? undefined : onClose}
         type="button"
       />
@@ -109,13 +109,13 @@ export function PackagePurchaseDialog({ busy, game, isOpen, onClose, onConfirm, 
       <div
         aria-labelledby="purchase-confirm-title"
         aria-modal="true"
-        className="relative z-10 w-full max-w-[840px] overflow-hidden rounded-[26px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.08),transparent_34%),linear-gradient(180deg,rgba(10,18,34,0.98),rgba(7,13,25,0.99))] shadow-[0_30px_90px_rgba(2,6,23,0.52)]"
+        className="gt-panel relative z-10 w-full max-w-[840px] overflow-hidden rounded-[26px] border gt-border shadow-[0_30px_90px_rgba(2,6,23,0.52)]"
         role="dialog"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-white/8 px-5 py-4 sm:px-6">
+        <div className="flex items-start justify-between gap-4 border-b gt-border px-5 py-4 sm:px-6">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-cyan-200/85">Xác nhận đơn hàng</p>
-            <h2 id="purchase-confirm-title" className="mt-2 text-[1.2rem] font-black tracking-tight text-white">
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-[var(--gt-primary)]">Xác nhận đơn hàng</p>
+            <h2 id="purchase-confirm-title" className="mt-2 text-[1.2rem] font-black tracking-tight gt-text">
               Kiểm tra thông tin trước khi đặt
             </h2>
           </div>
@@ -124,8 +124,8 @@ export function PackagePurchaseDialog({ busy, game, isOpen, onClose, onConfirm, 
             ref={closeRef}
             aria-label="Đóng popup"
             className={classNames(
-              'inline-flex size-10 shrink-0 items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.03] text-slate-300 transition-colors hover:border-white/15 hover:bg-white/[0.06] hover:text-white',
-              busy && 'cursor-not-allowed opacity-50 hover:border-white/10 hover:bg-white/[0.03] hover:text-slate-300',
+              'inline-flex size-10 shrink-0 items-center justify-center rounded-[14px] border gt-border bg-[var(--gt-card)] gt-text-soft transition-colors hover:border-[var(--gt-border-strong)] hover:bg-[var(--gt-card-hover)] hover:text-[var(--gt-text)]',
+              busy && 'cursor-not-allowed opacity-50 hover:border-[var(--gt-border)] hover:bg-[var(--gt-card)] hover:text-[var(--gt-text-soft)]',
             )}
             onClick={onClose}
             disabled={busy}
@@ -139,28 +139,28 @@ export function PackagePurchaseDialog({ busy, game, isOpen, onClose, onConfirm, 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:items-start">
             <div className="grid gap-6">
               <section className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="relative h-[96px] w-[96px] shrink-0 overflow-hidden rounded-[16px] bg-slate-950/50">
+                  <div className="flex items-start gap-4">
+                    <div className="relative h-[96px] w-[96px] shrink-0 overflow-hidden rounded-[16px] border gt-border bg-[var(--gt-card)]">
                     <ImageBox src={selectedPackage.imageUrl} alt={selectedPackage.name} className="h-full w-full object-cover" />
                   </div>
 
                   <div className="min-w-0 flex-1 pt-1">
                     <div className="flex items-center gap-2">
-                      <BadgeCheck size={18} className="shrink-0 text-cyan-300" />
+                      <BadgeCheck size={18} className="shrink-0 text-[var(--gt-primary)]" />
                       <h3
-                        className="max-w-full overflow-hidden text-[1.05rem] font-black leading-[1.15] text-white [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]"
+                        className="max-w-full overflow-hidden text-[1.05rem] font-black leading-[1.15] gt-text [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]"
                         title={selectedPackage.name}
                       >
                         {selectedPackage.name}
                       </h3>
                     </div>
-                    <p className="mt-1.5 text-sm leading-6 text-slate-400">{game.name}</p>
+                    <p className="mt-1.5 text-sm leading-6 gt-text-muted">{game.name}</p>
                   </div>
                 </div>
 
-                <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
+                <div className="rounded-[18px] border gt-border bg-[var(--gt-card)] px-4">
                   <DetailRow label="Tên gói">{selectedPackage.name}</DetailRow>
-                  <DetailRow label="Giá gốc"><span className="line-through text-slate-500">{formatCurrency(selectedPackage.originalPrice)}</span></DetailRow>
+                  <DetailRow label="Giá gốc"><span className="line-through gt-text-disabled">{formatCurrency(selectedPackage.originalPrice)}</span></DetailRow>
                   <DetailRow label="Giá bán">{formatCurrency(salePrice)}</DetailRow>
                   <DetailRow label="Tiết kiệm">
                     {`${formatCurrency(selectedPackage.originalPrice - salePrice)} (-${Math.max(1, Math.round((1 - salePrice / selectedPackage.originalPrice) * 100))}%)`}
@@ -170,10 +170,10 @@ export function PackagePurchaseDialog({ busy, game, isOpen, onClose, onConfirm, 
 
               <section className="space-y-3">
                 <div>
-                  <h3 className="text-[1.08rem] font-black tracking-tight text-white">Thanh toán</h3>
+                  <h3 className="text-[1.08rem] font-black tracking-tight gt-text">Thanh toán</h3>
                 </div>
 
-                <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
+                <div className="rounded-[18px] border gt-border bg-[var(--gt-card)] px-4">
                   <DetailRow label="Số dư ví">{formatCurrency(walletBalance)}</DetailRow>
                   <DetailRow label="Số cần trả">{formatCurrency(salePrice)}</DetailRow>
                   <DetailRow label="Số dư sau mua">{formatCurrency(afterPayment)}</DetailRow>
@@ -181,20 +181,20 @@ export function PackagePurchaseDialog({ busy, game, isOpen, onClose, onConfirm, 
               </section>
             </div>
 
-            <div className="lg:border-l lg:border-white/[0.08] lg:pl-6 lg:self-stretch">
+            <div className="lg:border-l lg:border-[var(--gt-border)] lg:pl-6 lg:self-stretch">
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <h3 className="text-[1.08rem] font-black tracking-tight !text-cyan-100">Thông tin nhân vật</h3>
-                  <p className="text-sm leading-6 text-slate-400">Nhập UID / Server và tên nhân vật nếu có.</p>
+                  <h3 className="text-[1.08rem] font-black tracking-tight text-[var(--gt-text)]">Thông tin nhân vật</h3>
+                  <p className="text-sm leading-6 gt-text-muted">Nhập UID / Server và tên nhân vật nếu có.</p>
                 </div>
 
                 <div className="grid gap-4">
                   <label className="grid gap-2">
-                    <span className="text-sm font-semibold !text-sky-200">
+                    <span className="text-sm font-semibold gt-text-soft">
                       UID / Server <span className="text-rose-300">*</span>
                     </span>
                     <input
-                      className="h-12 rounded-[14px] border border-white/[0.08] bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-cyan-300/70 focus:bg-white/[0.04]"
+                      className="gt-input h-12 rounded-[14px] border gt-border bg-[var(--gt-panel)] px-4 text-sm gt-text outline-none transition-all placeholder:text-[var(--gt-text-disabled)] hover:border-[var(--gt-border-strong)] hover:bg-[var(--gt-panel-hover)] focus:border-[var(--gt-primary-border)] focus:bg-[var(--gt-panel-hover)] focus:shadow-[0_0_0_2px_rgba(34,211,238,0.075)]"
                       placeholder="Ví dụ: 12345678 / S1"
                       value={uidServer}
                       onChange={(event) => setUidServer(event.target.value)}
@@ -202,9 +202,9 @@ export function PackagePurchaseDialog({ busy, game, isOpen, onClose, onConfirm, 
                   </label>
 
                   <label className="grid gap-2">
-                    <span className="text-sm font-semibold !text-violet-200">Tên nhân vật</span>
+                    <span className="text-sm font-semibold gt-text-soft">Tên nhân vật</span>
                     <input
-                      className="h-12 rounded-[14px] border border-white/[0.08] bg-white/[0.03] px-4 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-cyan-300/70 focus:bg-white/[0.04]"
+                      className="gt-input h-12 rounded-[14px] border gt-border bg-[var(--gt-panel)] px-4 text-sm gt-text outline-none transition-all placeholder:text-[var(--gt-text-disabled)] hover:border-[var(--gt-border-strong)] hover:bg-[var(--gt-panel-hover)] focus:border-[var(--gt-primary-border)] focus:bg-[var(--gt-panel-hover)] focus:shadow-[0_0_0_2px_rgba(34,211,238,0.075)]"
                       placeholder="Không bắt buộc"
                       value={characterName}
                       onChange={(event) => setCharacterName(event.target.value)}
@@ -277,32 +277,32 @@ export function PurchaseSuccessDialog({ game, isOpen, onContinue, onViewOrders, 
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 py-6">
-      <button aria-label="Đóng" className="absolute inset-0 cursor-default bg-slate-950/72 backdrop-blur-[2px]" onClick={onContinue} type="button" />
+      <button aria-label="Đóng" className="absolute inset-0 cursor-default bg-[rgba(5,11,24,0.8)] backdrop-blur-[8px]" onClick={onContinue} type="button" />
 
       <div
         aria-labelledby="purchase-success-title"
         aria-modal="true"
-        className="relative z-10 w-full max-w-[520px] overflow-hidden rounded-[24px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.08),transparent_34%),linear-gradient(180deg,rgba(7,17,27,0.98),rgba(6,12,22,0.98))] shadow-[0_30px_90px_rgba(2,6,23,0.5)]"
+        className="gt-panel relative z-10 w-full max-w-[520px] overflow-hidden rounded-[24px] border gt-border shadow-[0_30px_90px_rgba(2,6,23,0.5)]"
         role="dialog"
       >
         <div className="px-5 py-5 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-200/85">Đã hoàn tất</p>
-              <h2 id="purchase-success-title" className="mt-2 text-[1.35rem] font-black tracking-tight text-white">
+              <p className="text-xs font-black uppercase tracking-[0.3em] text-[var(--gt-success)]">Đã hoàn tất</p>
+              <h2 id="purchase-success-title" className="mt-2 text-[1.35rem] font-black tracking-tight gt-text">
                 Đơn hàng đã được tạo
               </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                Chúng tôi đã ghi nhận đơn nạp cho <span className="font-semibold text-white">{game.name}</span>.
+              <p className="mt-2 text-sm leading-6 gt-text-soft">
+                Chúng tôi đã ghi nhận đơn nạp cho <span className="font-semibold gt-text">{game.name}</span>.
               </p>
             </div>
 
-            <div className="grid size-11 shrink-0 place-items-center rounded-[18px] border border-emerald-400/18 bg-emerald-400/8 text-emerald-300">
+            <div className="grid size-11 shrink-0 place-items-center rounded-[18px] border border-[rgba(34,197,94,0.18)] bg-[rgba(34,197,94,0.08)] text-[var(--gt-success)]">
               <BadgeCheck size={26} />
             </div>
           </div>
 
-          <div className="mt-5 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
+          <div className="mt-5 rounded-[18px] border gt-border bg-[var(--gt-card)] px-4">
             <DetailRow label="Gói nạp">{packageItem.name}</DetailRow>
             <DetailRow label="Giá gói">{formatCurrency(packageItem.salePrice)}</DetailRow>
             <DetailRow label="Tài khoản nạp">{purchaseInfo.uidServer}</DetailRow>

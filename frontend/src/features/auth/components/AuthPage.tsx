@@ -65,11 +65,11 @@ export function AuthPage({ mode }: AuthPageProps) {
             <h1 className="mt-5 text-[clamp(2rem,4vw,2.65rem)] font-black leading-[0.96] tracking-tight text-white">
               {meta.title}
             </h1>
-            <p className="mx-auto mt-3 max-w-[36ch] text-sm leading-6 text-slate-300 sm:text-[0.95rem]">{meta.description}</p>
+            <p className="mx-auto mt-3 max-w-[36ch] text-sm leading-6 gt-text-soft sm:text-[0.95rem]">{meta.description}</p>
           </div>
 
-          <div className="rounded-[28px] border border-white/10 bg-[rgba(6,11,22,0.92)] px-5 py-6 shadow-[0_28px_80px_rgba(2,6,23,0.45)] backdrop-blur-xl sm:px-7 sm:py-7">
-            <div className="flex items-center gap-3 text-[0.82rem] text-slate-400">
+          <div className="rounded-[28px] border gt-border bg-[var(--gt-panel)] px-5 py-6 shadow-[0_28px_80px_rgba(2,6,23,0.45)] backdrop-blur-xl sm:px-7 sm:py-7">
+            <div className="flex items-center gap-3 text-[0.82rem] gt-text-muted">
               <ShieldCheck size={15} className="shrink-0 text-cyan-300" />
               <span>Phiên đăng nhập được bảo vệ và lưu lịch sử giao dịch rõ ràng.</span>
             </div>
@@ -86,7 +86,7 @@ export function AuthPage({ mode }: AuthPageProps) {
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-white/6 bg-white/[0.025] px-5 py-4 text-sm text-slate-300 backdrop-blur-sm">
+          <div className="rounded-[24px] border gt-border bg-[var(--gt-card)] px-5 py-4 text-sm gt-text-soft backdrop-blur-sm">
             <div className="grid gap-3 sm:grid-cols-3">
               {meta.benefits.map((benefit) => (
                 <div key={benefit} className="flex items-center gap-2">

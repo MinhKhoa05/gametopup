@@ -21,53 +21,53 @@ export function GamePackageDetailPanel({ gameName, onPurchase, selectedPackage }
 
   return (
     <aside className="lg:sticky lg:top-20 lg:self-start">
-      <div className="rounded-[24px] border border-cyan-400/10 bg-[linear-gradient(180deg,rgba(10,18,34,0.96),rgba(7,13,25,0.99))] p-5 sm:p-6">
+      <div className="rounded-[24px] border gt-border bg-[var(--gt-panel)] p-5 sm:p-6">
         <div className="space-y-2">
-          <h2 className="text-[1.14rem] font-black tracking-tight text-white">CHI TIẾT GÓI NẠP</h2>
-          <p className="text-[0.95rem] leading-6 text-slate-400">Xem thông tin trước khi mua</p>
+          <h2 className="text-[1.14rem] font-black tracking-tight gt-text">Thông tin gói</h2>
+          <p className="text-[0.95rem] leading-6 gt-text-muted">Xem thông tin trước khi mua</p>
         </div>
 
         {selectedPackage ? (
           <div className="mt-6 grid gap-4">
             <div className="grid gap-3 pb-2">
               <div className="flex items-start gap-3.5">
-                <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-[14px] bg-slate-950/50">
+                <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-[16px] border gt-border bg-[var(--gt-card)]">
                   <ImageBox src={selectedPackage.imageUrl} alt={selectedPackage.name} className="h-full w-full object-cover" />
                 </div>
 
                 <div className="min-w-0 flex-1 pt-1.5">
                   <h3
-                    className="overflow-hidden text-[0.98rem] font-black leading-[1.18] text-white [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]"
+                    className="overflow-hidden text-[0.98rem] font-black leading-[1.18] gt-text [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]"
                     title={selectedPackage.name}
                   >
                     {selectedPackage.name}
                   </h3>
                   <p
-                    className="mt-1.5 overflow-hidden text-[0.92rem] leading-6 text-slate-400 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]"
+                    className="mt-1.5 overflow-hidden text-[0.92rem] leading-6 gt-text-muted [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]"
                     title={description}
                   >
                     {description}
                   </p>
                 </div>
               </div>
-              <div className="h-px w-full bg-white/[0.07]" />
+              <div className="h-px w-full bg-[var(--gt-border)]" />
             </div>
 
-            <div className="space-y-0 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
+            <div className="space-y-0 rounded-[18px] border gt-border bg-[var(--gt-card)] px-4">
               <DetailRow label="Giá GameTopUp">{formatCurrency(selectedPackage.salePrice)}</DetailRow>
-              {hasDiscount ? <DetailRow label="Giá trong game"><span className="line-through text-slate-500">{formatCurrency(selectedPackage.originalPrice)}</span></DetailRow> : null}
+              {hasDiscount ? <DetailRow label="Giá trong game"><span className="line-through gt-text-disabled">{formatCurrency(selectedPackage.originalPrice)}</span></DetailRow> : null}
               {hasDiscount ? (
                 <DetailRow label="Tiết kiệm">{`${formatCurrency(selectedPackage.originalPrice - selectedPackage.salePrice)} (-${discountPercent}%)`}</DetailRow>
               ) : null}
             </div>
 
-            <div className="space-y-0 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4">
-              <DetailRow label="Tình trạng">
-                <span className={classNames(isSoldOut ? 'text-rose-300' : isLowStock ? 'text-amber-300' : 'text-white')}>
+            <div className="space-y-0 rounded-[18px] border gt-border bg-[var(--gt-card)] px-4">
+              <DetailRow label="Khả dụng">
+                <span className={classNames(isSoldOut ? 'text-[var(--gt-danger)]' : isLowStock ? 'text-[var(--gt-warning)]' : 'gt-text')}>
                   {stockQuantity > 0 ? `Còn ${stockQuantity} suất` : 'Hết hàng'}
                 </span>
               </DetailRow>
-              <DetailRow label="Xử lý dự kiến">5–15 phút</DetailRow>
+              <DetailRow label="Thời gian xử lý">5–15 phút</DetailRow>
             </div>
 
             <Button type="button" variant="accent" className="w-full py-3.5" onClick={onPurchase} disabled={isSoldOut}>
@@ -75,7 +75,7 @@ export function GamePackageDetailPanel({ gameName, onPurchase, selectedPackage }
             </Button>
           </div>
         ) : (
-          <div className="mt-4 rounded-[18px] border border-white/[0.06] bg-white/[0.02] px-4 py-6 text-sm leading-6 text-slate-400">
+          <div className="mt-4 rounded-[18px] border gt-border bg-[var(--gt-card)] px-4 py-6 text-sm leading-6 gt-text-muted">
             Chọn một gói để xem chi tiết và tiếp tục mua.
           </div>
         )}

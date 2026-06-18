@@ -18,9 +18,9 @@ const sizeClasses: Record<IconBoxSize, string> = {
 };
 
 const toneClasses: Record<IconBoxTone, string> = {
-  primary: 'border-cyan/25 bg-cyan/10 text-cyan-50',
-  neutral: 'border-white/10 bg-white/[0.04] text-slate-200',
-  soft: 'border-white/8 bg-white/[0.025] text-slate-300',
+  primary: 'gt-icon-box-primary',
+  neutral: 'gt-icon-box-neutral',
+  soft: 'gt-icon-box-soft',
 };
 
 export function IconBox({ circle = false, round = false, size = 'md', tone = 'primary', className, children, ...props }: IconBoxProps) {
@@ -29,7 +29,7 @@ export function IconBox({ circle = false, round = false, size = 'md', tone = 'pr
   return (
     <div
       className={classNames(
-        'inline-flex flex-none items-center justify-center border',
+        'gt-icon-box',
         toneClasses[tone],
         sizeClasses[size],
         isRound ? 'rounded-full' : size === 'lg' ? 'rounded-2xl' : 'rounded-xl',

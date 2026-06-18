@@ -135,7 +135,7 @@ export function DashboardPanel({
   ];
 
   return (
-    <div className="grid min-w-0 gap-6 lg:gap-7">
+    <div className="grid min-w-0 gap-10 lg:gap-12">
       <PageHero
         eyebrow="ADMIN"
         visual={<DashboardHeroVisual metrics={metrics} depositCount={depositRequests.length} todayOrdersCount={todayOrdersCount} />}
@@ -150,7 +150,7 @@ export function DashboardPanel({
         <StatCard icon={<CircleDollarSign size={18} />} label="Doanh thu" supporting="Tổng ghi nhận hệ thống" tone="primary" value={formatCurrency(metrics.revenue)} />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.58fr)_minmax(320px,0.82fr)]">
+      <section className="grid gap-8 xl:grid-cols-[minmax(0,1.58fr)_minmax(320px,0.82fr)]">
         <PanelShell className="overflow-hidden">
           <div className="px-5 pt-5 sm:px-6 sm:pt-6">
             <SectionHeading
@@ -199,7 +199,7 @@ export function DashboardPanel({
           </div>
         </PanelShell>
 
-        <div className="grid gap-6">
+        <div className="grid gap-8">
           <PanelShell>
             <div className="px-5 pt-5 sm:px-6 sm:pt-6">
               <SectionHeading title="Tóm tắt vận hành" titleClassName="text-[1.25rem]" description="Những chỉ số quan trọng cần nhìn nhanh." />
@@ -326,9 +326,8 @@ function DashboardHeroVisual({
   return (
     <div className="relative w-full max-w-[320px]">
       <div className="pointer-events-none absolute -right-6 -top-6 size-28 rounded-full bg-cyan-400/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-4 left-4 h-20 w-44 rounded-full bg-blue-500/10 blur-3xl" />
 
-      <div className="relative grid gap-3 rounded-[26px] border border-white/[0.08] bg-[rgba(7,16,31,0.76)] p-4 shadow-[0_18px_34px_rgba(2,6,23,0.18)]">
+      <div className="gt-panel relative grid gap-3 rounded-[26px] p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="grid gap-1">
             <p className="m-0 text-[0.68rem] font-black uppercase tracking-[0.22em] text-cyan-100/80">Live control</p>
@@ -345,9 +344,9 @@ function DashboardHeroVisual({
           <MiniPulse label="Đơn hôm nay" value={todayOrdersCount.toString()} tone="success" />
         </div>
 
-        <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.03] p-3">
+        <div className="gt-card rounded-[18px] p-3">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs font-semibold text-slate-400">Nhịp giao dịch</span>
+            <span className="text-xs font-semibold gt-text-muted">Nhịp giao dịch</span>
             <span className="text-xs font-semibold text-cyan-100">7 ngày gần nhất</span>
           </div>
           <div className="mt-3 flex items-end gap-1.5">
@@ -382,17 +381,17 @@ function MiniPulse({
         : 'border-cyan-400/15 bg-cyan-500/10 text-cyan-100';
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[18px] border border-white/[0.06] bg-[rgba(255,255,255,0.03)] px-3 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-[18px] border border-white/[0.06] bg-[var(--gt-card)] px-3 py-3">
       <div className="flex items-center gap-3">
         <span className={classNames('inline-flex size-9 items-center justify-center rounded-[18px] border text-sm font-black', toneClass)}>
           {label.slice(0, 1)}
         </span>
         <div className="grid gap-0.5">
-          <strong className="text-sm font-bold text-white">{label}</strong>
-          <span className="text-xs text-slate-400">Theo dõi trực tiếp</span>
+          <strong className="text-sm font-bold gt-text">{label}</strong>
+          <span className="text-xs gt-text-muted">Theo dõi trực tiếp</span>
         </div>
       </div>
-      <strong className="text-lg font-black tracking-[-0.04em] text-white">{value}</strong>
+      <strong className="text-lg font-black tracking-[-0.04em] gt-text">{value}</strong>
     </div>
   );
 }

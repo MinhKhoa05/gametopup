@@ -21,7 +21,7 @@ export function AppLayout({
   isAuthRoute = false,
 }: AppLayoutProps) {
   return (
-    <div className="relative isolate flex min-h-screen flex-col bg-ink text-slate-100">
+    <div className="gt-app-shell relative isolate flex min-h-screen flex-col">
       <AppBackground />
       {!isAdminRoute && !isAuthRoute && header}
       {!isAdminRoute && isAuthRoute && authHeader}

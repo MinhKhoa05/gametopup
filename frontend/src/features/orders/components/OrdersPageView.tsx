@@ -29,14 +29,14 @@ export function OrdersPageView({
 }: OrdersPageState) {
   return (
     <>
-      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Tổng đơn" tone="primary" value={stats.total} icon={<ReceiptText size={18} />} />
         <StatCard label="Hoàn thành" tone="success" value={stats.completed} icon={<CheckCircle2 size={18} />} />
         <StatCard label="Đang xử lý" tone="warning" value={stats.processing} icon={<TimerReset size={18} />} />
         <StatCard label="Đã hủy" tone="danger" value={stats.canceled} icon={<XCircle size={18} />} />
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.92fr)] lg:items-start">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.92fr)] lg:items-start">
         <PanelShell>
           <div className="grid gap-4 px-5 pt-6 pb-2 sm:px-6 sm:pt-7 sm:pb-2.5 lg:px-7 lg:pt-8 lg:pb-3">
             <SearchBar
@@ -162,11 +162,8 @@ function OrderDetailPanel({
 }) {
   if (!orderItem) {
     return (
-      <PanelShell className="grid gap-4 p-5 lg:sticky lg:top-24">
-        <div className="grid gap-1">
-          <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">CHI TIẾT ĐƠN</p>
-          <h2 className="m-0 text-[1.25rem] font-black tracking-[-0.03em] text-white">Chọn một đơn hàng</h2>
-        </div>
+        <PanelShell className="grid gap-6 p-5 lg:sticky lg:top-24">
+        <h2 className="m-0 text-[1.25rem] font-black tracking-[-0.03em] text-white">Chọn một đơn hàng</h2>
         <EmptyState
           title="Chưa có đơn được chọn"
           description="Chi tiết, thông tin thanh toán và timeline sẽ hiện ở đây."
@@ -177,14 +174,11 @@ function OrderDetailPanel({
   }
 
   return (
-    <PanelShell className="grid gap-6 p-5 lg:sticky lg:top-24">
-      <div className="grid gap-1">
-        <p className="m-0 text-[0.72rem] font-bold tracking-[0.18em] text-cyan-100">CHI TIẾT ĐƠN</p>
-        <h2 className="m-0 text-[1.35rem] font-black tracking-[-0.03em] text-white">Đơn hàng đang chọn</h2>
-      </div>
+    <PanelShell className="grid gap-8 p-5 lg:sticky lg:top-24">
+      <h2 className="m-0 text-[1.35rem] font-black tracking-[-0.03em] text-white">Thông tin đơn hàng</h2>
 
       <div className="grid gap-0">
-        <div className="grid gap-4 border-b border-white/10 pb-5">
+        <div className="grid gap-4 border-b border-white/[0.12] pb-5">
           <div className="grid grid-cols-[104px_minmax(0,1fr)] gap-4 sm:grid-cols-[112px_minmax(0,1fr)]">
             <div className="relative aspect-square overflow-hidden rounded-[22px] bg-slate-950">
               <ImageBox src={orderItem.gameThumbnailSrc} alt={orderItem.gameName} className="h-full w-full object-cover" />
@@ -200,7 +194,7 @@ function OrderDetailPanel({
         </div>
       </div>
 
-      <div className="grid gap-3 border-b border-white/10 py-5">
+      <div className="grid gap-3 border-b border-white/[0.12] py-5">
         <DetailRow label="Mã đơn hàng">{orderItem.orderCode}</DetailRow>
         <DetailRow label="Số tiền">{orderItem.amountLabel}</DetailRow>
         <DetailRow label="Thông tin nhân vật">{formatGameInfo(orderItem.gameAccountInfo)}</DetailRow>
@@ -208,10 +202,8 @@ function OrderDetailPanel({
         <DetailRow label="Cập nhật gần nhất">{orderItem.updatedAtLabel}</DetailRow>
       </div>
 
-      <div className="grid gap-3 border-b border-white/10 py-5">
-        <div className="grid gap-1">
-          <h3 className="m-0 text-[1.05rem] font-black tracking-[-0.03em] text-white">Timeline đơn hàng</h3>
-        </div>
+      <div className="grid gap-3 border-b border-white/[0.12] py-5">
+        <h3 className="m-0 text-[1.05rem] font-black tracking-[-0.03em] text-white">Tình trạng đơn hàng</h3>
         <OrderTimeline steps={orderItem.timeline} />
       </div>
 
@@ -257,6 +249,7 @@ function OrderListItem({
           {item.statusLabel}
         </Badge>
       }
+      className="!bg-[rgba(255,255,255,0.045)] hover:!bg-[rgba(255,255,255,0.065)]"
       trailing={<strong className="text-[1.05rem] font-black tracking-[-0.03em] text-cyan-100 gt-tabular">{item.amountLabel}</strong>}
     />
   );
@@ -287,7 +280,10 @@ function OrderTimeline({ steps }: { steps: OrderHistoryItem['timeline'] }) {
 
           <div className="pb-1 pt-0.5">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <strong className="text-sm font-bold text-white">{step.label}</strong>
+              <div className="grid gap-1">
+                <strong className="text-sm font-bold text-white">{step.label}</strong>
+                {step.description ? <span className="text-[0.8rem] font-medium gt-text-muted">{step.description}</span> : null}
+              </div>
               <span
                 className={classNames(
                   'text-xs font-semibold',

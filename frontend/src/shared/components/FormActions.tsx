@@ -29,7 +29,7 @@ export function FormActions({
         className,
       )}
     >
-      {onCancel ? <Button onClick={onCancel}>{cancelLabel}</Button> : null}
+      {onCancel ? <Button variant="secondary" onClick={onCancel}>{cancelLabel}</Button> : null}
       <Button type="submit" variant="primary" disabled={disabled}>
         {submitIcon}
         {submitLabel}

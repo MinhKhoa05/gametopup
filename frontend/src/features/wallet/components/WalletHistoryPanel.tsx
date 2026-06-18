@@ -1,6 +1,6 @@
 import { ChevronDown, Clock3, Search, SlidersHorizontal, WalletCards } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Badge, EmptyState, FilterChipGroup, FilterSelectField, PanelShell, SectionHeading } from '@/shared/components';
+import { Badge, EmptyState, FilterChipGroup, FilterSelectField, IconBox, MediaListItem, PanelShell, SectionHeading } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency } from '@/shared/lib/format';
 import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
@@ -62,7 +62,6 @@ type TransactionMeta = {
   badgeTone: 'success' | 'danger' | 'primary';
   label: string;
   statusFilter: WalletLedgerStatusFilter;
-  deltaSign: 1 | -1;
 };
 
 const TRANSACTION_META_BY_TYPE: Record<WalletTransactionType, TransactionMeta> = {
@@ -70,25 +69,21 @@ const TRANSACTION_META_BY_TYPE: Record<WalletTransactionType, TransactionMeta> =
     badgeTone: 'success',
     label: 'Nạp tiền vào ví',
     statusFilter: 'credit',
-    deltaSign: 1,
   },
   2: {
     badgeTone: 'danger',
     label: 'Rút tiền',
     statusFilter: 'debit',
-    deltaSign: -1,
   },
   3: {
     badgeTone: 'primary',
     label: 'Mua game',
     statusFilter: 'debit',
-    deltaSign: -1,
   },
   4: {
     badgeTone: 'danger',
     label: 'Hoàn tiền',
     statusFilter: 'refund',
-    deltaSign: 1,
   },
 };
 
@@ -135,7 +130,7 @@ export function WalletHistoryPanel({
           onChange={onChange}
         />
 
-        <HistoryTable
+        <HistoryList
           mode={mode}
           rows={rows}
         />
@@ -175,7 +170,7 @@ export function buildWalletHistoryRows(depositRequests: DepositRequest[], transa
   const ledgerRows = transactions.map<LedgerHistoryRow>((transaction) => {
     const meta = TRANSACTION_META_BY_TYPE[transaction.type];
     const code = normalizeCode(`TX${transaction.id}`, 'TX');
-    const delta = meta.deltaSign === 1 ? transaction.amount : -transaction.amount;
+    const delta = transaction.amount;
     const searchText = [code, meta.label, transaction.description ?? '', formatCurrency(transaction.amount), formatCurrency(transaction.balanceAfter)].join(' ').toLowerCase();
 
     return {
@@ -314,7 +309,7 @@ function HistoryFiltersBar({
   );
 }
 
-function HistoryTable({
+function HistoryList({
   mode,
   rows,
 }: {
@@ -332,75 +327,71 @@ function HistoryTable({
   }
 
   return (
-    <div className="grid gap-0">
-      <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.7fr)] gap-4 border-b border-white/[0.08] px-1 pb-3 text-[0.78rem] font-bold uppercase tracking-[0.16em] text-slate-500 sm:grid">
-        {mode === 'deposit' ? (
-          <>
-            <span>Mã yêu cầu</span>
-            <span>Thời gian</span>
-            <span>Cổng nạp</span>
-            <span>Số tiền</span>
-            <span>Trạng thái</span>
-          </>
-        ) : (
-          <>
-            <span>Mã giao dịch</span>
-            <span>Thời gian</span>
-            <span>Loại giao dịch</span>
-            <span>Biến động</span>
-            <span>Số dư cuối</span>
-          </>
-        )}
-      </div>
-
-      <div className="divide-y divide-white/[0.06] border-y border-white/[0.08]">
-        {rows.map((row) => (
-          <HistoryRow key={`${row.kind}-${row.id}`} row={row} />
-        ))}
-      </div>
+    <div className="grid gap-3">
+      {rows.map((row) => (
+        <HistoryListItem key={`${row.kind}-${row.id}`} row={row} mode={mode} />
+      ))}
     </div>
   );
 }
 
-function HistoryRow({
+function HistoryListItem({
+  mode,
   row,
 }: {
+  mode: WalletHistoryView;
   row: WalletHistoryRow;
 }) {
   if (row.kind === 'deposit') {
     return (
-      <div className="grid gap-3 px-1 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.7fr)] sm:items-center">
-        <div className="min-w-0">
-          <strong className="block truncate text-sm font-black text-white">{row.code}</strong>
-        </div>
-        <span className="text-sm text-slate-400">{formatShortDateTime(row.createdAt)}</span>
-        <span className="text-sm font-semibold text-slate-200">{row.methodLabel}</span>
-        <strong className="text-sm font-black text-cyan-100 gt-tabular">{formatCurrency(row.amount)}</strong>
-        <div className="flex justify-start sm:justify-end">
+      <MediaListItem
+        leading={
+          <IconBox size="sm" tone="primary" className="rounded-[16px]">
+            <WalletCards size={16} />
+          </IconBox>
+        }
+        title={row.methodLabel}
+        subtitle={`${row.code} · ${row.bankLabel}`}
+        meta={formatShortDateTime(row.createdAt)}
+        titleAccessory={
           <Badge tone={row.statusBadge} className="rounded-full">
             {row.statusLabel}
           </Badge>
-        </div>
-      </div>
+        }
+        trailing={<strong className="text-[1.05rem] font-black tracking-[-0.03em] text-[var(--gt-primary-hover)] gt-tabular">{formatCurrency(row.amount)}</strong>}
+      />
     );
   }
 
   const sign = row.delta >= 0 ? '+' : '-';
-  const deltaClassName = row.delta >= 0 ? 'text-emerald-300' : 'text-rose-300';
+  const deltaClassName = row.delta >= 0 ? 'text-[var(--gt-success)]' : 'text-[var(--gt-danger)]';
+  const leadingTone = row.delta >= 0 ? 'soft' : 'neutral';
 
   return (
-    <div className="grid gap-3 px-1 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.7fr)] sm:items-center">
-      <div className="min-w-0">
-        <strong className="block truncate text-sm font-black text-white">{row.code}</strong>
-      </div>
-      <span className="text-sm text-slate-400">{formatShortDateTime(row.createdAt)}</span>
-      <span className="text-sm font-semibold text-slate-200">{row.title}</span>
-      <strong className={classNames('text-sm font-black gt-tabular', deltaClassName)}>
-        {sign}
-        {formatCurrency(Math.abs(row.delta))}
-      </strong>
-      <strong className="text-sm font-black text-cyan-100 gt-tabular">{formatCurrency(row.balanceAfter)}</strong>
-    </div>
+    <MediaListItem
+      leading={
+        <IconBox size="sm" tone={leadingTone} className="rounded-[16px]">
+          <Clock3 size={16} />
+        </IconBox>
+      }
+      title={row.title}
+      subtitle={`${row.code} · ${mode === 'ledger' ? 'Biến động số dư' : ''}`.trim()}
+      meta={formatShortDateTime(row.createdAt)}
+      titleAccessory={
+        <Badge tone={row.badgeTone === 'success' ? 'success' : row.badgeTone === 'danger' ? 'danger' : 'primary'} className="rounded-full">
+          {row.delta >= 0 ? 'Cộng tiền' : 'Trừ tiền'}
+        </Badge>
+      }
+      trailing={
+        <div className="grid justify-items-end gap-1">
+          <strong className={classNames('text-[1.05rem] font-black tracking-[-0.03em] gt-tabular', deltaClassName)}>
+            {sign}
+            {formatCurrency(Math.abs(row.delta))}
+          </strong>
+          <span className="text-xs font-semibold gt-text-disabled gt-tabular">{formatCurrency(row.balanceAfter)}</span>
+        </div>
+      }
+    />
   );
 }
 
@@ -414,10 +405,10 @@ function SearchField({
   value: string;
 }) {
   return (
-    <label className="flex min-h-16 items-center gap-3 rounded-[20px] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 text-slate-200 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-[rgba(255,255,255,0.05)] focus-within:border-cyan/60 focus-within:bg-[rgba(255,255,255,0.05)] focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]">
-      <Search size={18} className="shrink-0 text-slate-400" />
+    <label className="flex min-h-16 items-center gap-3 rounded-[20px] border gt-border bg-[var(--gt-card)] px-5 gt-text-soft transition-all duration-200 hover:-translate-y-px hover:border-[color:var(--gt-border-strong)] hover:bg-[var(--gt-card-hover)] focus-within:border-[color:var(--gt-border-accent)] focus-within:bg-[var(--gt-card-hover)] focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]">
+      <Search size={18} className="shrink-0 gt-text-muted" />
       <input
-        className="w-full border-0 bg-transparent p-0 text-sm text-white outline-none placeholder:text-slate-500 focus:ring-0"
+        className="w-full border-0 bg-transparent p-0 text-sm gt-text outline-none placeholder:text-[var(--gt-text-disabled)] focus:ring-0"
         placeholder={placeholder}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -445,7 +436,7 @@ function Pagination({
 
       {pages.map((page, index) =>
         page === 'ellipsis' ? (
-          <span key={`ellipsis-${index}`} className="inline-flex h-10 min-w-10 items-center justify-center px-2 text-sm font-bold text-slate-500">
+          <span key={`ellipsis-${index}`} className="inline-flex h-10 min-w-10 items-center justify-center px-2 text-sm font-bold gt-text-disabled">
             ...
           </span>
         ) : (
@@ -478,7 +469,7 @@ function PagerButton({
       type="button"
       aria-label={ariaLabel}
       disabled={disabled}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] border border-white/10 bg-[rgba(255,255,255,0.03)] text-slate-300 transition-all duration-200 hover:-translate-y-px hover:border-cyan/25 hover:bg-[rgba(255,255,255,0.05)] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+      className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] border gt-border bg-[var(--gt-card)] gt-text-soft transition-all duration-200 hover:-translate-y-px hover:border-[color:var(--gt-border-strong)] hover:bg-[var(--gt-card-hover)] hover:text-[var(--gt-text)] disabled:cursor-not-allowed disabled:opacity-40"
       onClick={onClick}
     >
       {children}
@@ -502,8 +493,8 @@ function PagerNumberButton({
       className={classNames(
         'inline-flex h-10 min-w-10 items-center justify-center rounded-[12px] border px-3 text-sm font-bold transition-all duration-200',
         active
-          ? 'border-cyan/30 bg-cyan-400 text-slate-950 shadow-[0_10px_22px_rgba(34,211,238,0.16)]'
-          : 'border-white/10 bg-[rgba(255,255,255,0.03)] text-slate-300 hover:-translate-y-px hover:border-cyan/25 hover:bg-[rgba(255,255,255,0.05)] hover:text-cyan-50',
+          ? 'border-[color:var(--gt-primary-border)] bg-[var(--gt-primary)] text-[var(--gt-primary-text)] shadow-[0_10px_22px_rgba(34,211,238,0.16)]'
+          : 'border gt-border bg-[var(--gt-card)] gt-text-soft hover:-translate-y-px hover:border-[color:var(--gt-border-strong)] hover:bg-[var(--gt-card-hover)] hover:text-[var(--gt-text)]',
       )}
       onClick={onClick}
     >
