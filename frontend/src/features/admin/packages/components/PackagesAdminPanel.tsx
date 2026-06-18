@@ -1,6 +1,7 @@
 import { CheckCircle2, EyeOff, PencilLine, Plus, Save, Trash2, X } from 'lucide-react';
 import { useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from 'react';
-import type { Game, GamePackage } from '@/features/games/types';
+import type { GamePackage } from '@/features/games/types';
+import type { AdminGameSummary } from '@/features/admin/games/api';
 import {
   Badge,
   Button,
@@ -80,7 +81,7 @@ export function PackagesAdminPanel({
   state,
 }: {
   busy: boolean;
-  games: Game[];
+  games: AdminGameSummary[];
   loading: boolean;
   state: PackagesAdminPanelState;
 }) {
@@ -571,7 +572,7 @@ function PackageFormPanel({
   busy: boolean;
   editing: GamePackage | null;
   form: PackagesAdminPanelState['form'];
-  games: Game[];
+  games: AdminGameSummary[];
   imageFile: File | null;
   onCancel: () => void;
   onImageFileChange: Dispatch<SetStateAction<File | null>>;

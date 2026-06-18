@@ -1,5 +1,6 @@
 using GameTopUp.BLL.DTOs.GamePackages;
 using GameTopUp.BLL.Exceptions;
+using GameTopUp.BLL.Mappers.Games;
 using GameTopUp.DAL.Entities.Games;
 using GameTopUp.DAL.Interfaces.Games;
 
@@ -20,9 +21,26 @@ public sealed class GamePackageService
 
     public Task<List<GamePackage>> GetPackagesByGameIdAsync(long gameId) => _packageRepository.GetByGameIdAsync(gameId);
 
+    public async Task<List<PublicGamePackageResponse>> GetPublicPackagesByGameIdAsync(long gameId)
+    {
+        var packages = await _packageRepository.GetByGameIdAsync(gameId);
+        return packages.Select(GameMapper.ToPublicResponse).ToList();
+    }
+
     public async Task<GamePackage> GetPackageByIdOrThrowAsync(long id)
     {
         return await _packageRepository.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCode.GamePackageNotFound);
+    }
+
+    public async Task<PublicGamePackageResponse> GetPublicPackageByIdOrThrowAsync(long id)
+    {
+        var package = await GetPackageByIdOrThrowAsync(id);
+        if (!package.IsActive)
+        {
+            throw new NotFoundException(ErrorCode.GamePackageNotFound);
+        }
+
+        return GameMapper.ToPublicResponse(package);
     }
 
     public async Task ReservePackageAsync(long packageId)

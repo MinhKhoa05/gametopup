@@ -2,23 +2,23 @@ import { CheckCircle2, CircleSlash, Clock3, Send, UserRound, WalletCards } from 
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
-import type { DepositRequestStatusInfo } from '@/features/wallet/lib/deposit-request-status';
-import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
-import type { DepositRequest } from '@/features/wallet/types';
+import type { DepositRequestStatusInfo } from '@/features/deposits/lib/deposit-request-status';
+import { getDepositRequestStatus } from '@/features/deposits/lib/deposit-request-status';
+import type { AdminDepositRequest } from '@/features/deposits/types';
 import { AdminListSkeleton } from '@/features/admin/components/AdminShared';
 
 type DepositRequestsAdminPanelState = {
   clearSelection: () => void;
   filter: 'all' | 'pending' | 'user-confirmed' | 'approved' | 'rejected';
-  filteredRequests: DepositRequest[];
+  filteredRequests: AdminDepositRequest[];
   filters: Array<{ key: 'all' | 'pending' | 'user-confirmed' | 'approved' | 'rejected'; label: string }>;
   query: string;
   resetFilters: () => void;
   reviewNote: string;
-  reviewRequest: (action: 'approve' | 'reject', request: DepositRequest, note?: string) => Promise<void>;
-  selectedRequest: DepositRequest | null;
+  reviewRequest: (action: 'approve' | 'reject', request: AdminDepositRequest, note?: string) => Promise<void>;
+  selectedRequest: AdminDepositRequest | null;
   selectedStatus: DepositRequestStatusInfo | null;
-  selectRequest: (request: DepositRequest) => void;
+  selectRequest: (request: AdminDepositRequest) => void;
   setFilter: (value: 'all' | 'pending' | 'user-confirmed' | 'approved' | 'rejected') => void;
   setQuery: (value: string) => void;
   setReviewNote: (value: string) => void;
@@ -32,7 +32,7 @@ export function DepositsAdminPanel({
 }: {
   busy: boolean;
   loading: boolean;
-  requests: DepositRequest[];
+  requests: AdminDepositRequest[];
   state: DepositRequestsAdminPanelState;
 }) {
   const pendingCount = requests.filter((request) => request.status === 1 || request.status === 2).length;
@@ -57,7 +57,7 @@ export function DepositsAdminPanel({
             }
           />
 
-          <SearchBar className="mb-1" value={state.query} onChange={state.setQuery} placeholder="Tìm theo mã, user, số tiền, nội dung chuyển khoản..." dense />
+          <SearchBar className="mb-1" value={state.query} onChange={state.setQuery} placeholder="Tìm theo mã, user, số tiền, trạng thái..." dense />
 
           <FilterChipGroup
             items={state.filters.map((item) => ({ value: item.key, label: item.label }))}
@@ -96,8 +96,8 @@ export function DepositsAdminPanel({
                         User #{request.userId} · {formatCurrency(request.amount)}
                       </>
                     }
-                    subtitle={request.transferContent}
-                    meta={`${request.code} · ${request.bankId ?? 'Không có ngân hàng'}${request.accountNo ? ` · ${request.accountNo}` : ''} · Tạo lúc ${formatDate(request.createdAt)}`}
+                    subtitle={request.code}
+                    meta={`User #${request.userId} · Tạo lúc ${formatDate(request.createdAt)}`}
                     titleAccessory={<Badge tone={status.tone}>{status.label}</Badge>}
                     trailing={
                       request.userConfirmedAt ? (
@@ -119,7 +119,7 @@ export function DepositsAdminPanel({
           <SectionHeading
             title="Chi tiết yêu cầu"
             titleClassName="text-[1.2rem]"
-            description="Xem thông tin chuyển khoản và xử lý thủ công."
+            description="Xem thông tin cần thiết để duyệt thủ công."
             action={state.selectedRequest ? <Badge tone={state.selectedStatus?.tone ?? 'neutral'}>{state.selectedStatus?.label}</Badge> : undefined}
           />
 
@@ -150,17 +150,13 @@ export function DepositsAdminPanel({
                 <div className="mt-3 grid gap-1.5 text-sm leading-6 text-slate-200">
                   <span className="font-semibold text-white">{formatCurrency(state.selectedRequest.amount)}</span>
                   <span className="break-words text-slate-200">{state.selectedRequest.code}</span>
-                  <span className="break-words text-slate-300">{state.selectedRequest.transferContent}</span>
                 </div>
               </div>
 
               <div className="grid gap-3 rounded-[20px] border border-white/[0.06] bg-white/[0.03] p-4">
                 <DetailRow label={<span className="inline-flex items-center gap-2"><WalletCards size={16} />Số tiền</span>}>{formatCurrency(state.selectedRequest.amount)}</DetailRow>
                 <DetailRow label={<span className="inline-flex items-center gap-2"><Send size={16} />Mã nạp</span>}>{state.selectedRequest.code}</DetailRow>
-                <DetailRow label={<span className="inline-flex items-center gap-2"><UserRound size={16} />Ngân hàng</span>}>{state.selectedRequest.bankId ?? '---'}</DetailRow>
-                <DetailRow label={<span className="inline-flex items-center gap-2"><WalletCards size={16} />Số tài khoản</span>}>{state.selectedRequest.accountNo ?? '---'}</DetailRow>
-                <DetailRow label={<span className="inline-flex items-center gap-2"><UserRound size={16} />Tên tài khoản</span>}>{state.selectedRequest.accountName ?? '---'}</DetailRow>
-                <DetailRow label={<span className="inline-flex items-center gap-2"><Send size={16} />Nội dung</span>}>{state.selectedRequest.transferContent}</DetailRow>
+                <DetailRow label={<span className="inline-flex items-center gap-2"><UserRound size={16} />Người gửi</span>}>User #{state.selectedRequest.userId}</DetailRow>
               </div>
 
               <div className="grid gap-2 text-sm leading-6 text-slate-200">
@@ -199,12 +195,12 @@ export function DepositsAdminPanel({
               ) : null}
 
               <div className="flex flex-wrap gap-2.5">
-                <Button className="min-h-11 px-4 py-2 text-sm" disabled={busy || !actionable} onClick={() => void state.reviewRequest('approve', state.selectedRequest as DepositRequest)}>
+                <Button className="min-h-11 px-4 py-2 text-sm" disabled={busy || !actionable} onClick={() => void state.reviewRequest('approve', state.selectedRequest as AdminDepositRequest)}>
                   <CheckCircle2 size={16} />
                   Duyệt yêu cầu
                 </Button>
 
-                <Button className="min-h-11 border-rose-400/25 bg-rose-500/10 text-rose-200 hover:border-rose-300/30 hover:bg-rose-500/15 hover:text-rose-100" disabled={busy || !actionable} onClick={() => void state.reviewRequest('reject', state.selectedRequest as DepositRequest)}>
+                <Button className="min-h-11 border-rose-400/25 bg-rose-500/10 text-rose-200 hover:border-rose-300/30 hover:bg-rose-500/15 hover:text-rose-100" disabled={busy || !actionable} onClick={() => void state.reviewRequest('reject', state.selectedRequest as AdminDepositRequest)}>
                   <CircleSlash size={16} />
                   Từ chối
                 </Button>

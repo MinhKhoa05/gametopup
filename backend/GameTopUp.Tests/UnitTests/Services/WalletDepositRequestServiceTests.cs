@@ -219,16 +219,15 @@ public class WalletDepositRequestServiceTests
     }
 
     [Fact]
-    public async Task MapToResponse_ShouldIncludeBankDetailsAndCurrentStatus()
+    public async Task MapToPublicResponse_ShouldIncludeBankDetailsAndCurrentStatus()
     {
         var request = WalletDepositRequest.Create(7, 100000m, "GTU-1406-40734", "GTU-1406-40734");
         request.Id = 99;
         request.Status = WalletDepositRequestStatus.UserConfirmed;
 
-        var response = _service.MapToResponse(request);
+        var response = _service.MapToPublicResponse(request);
 
         response.Id.Should().Be(99);
-        response.UserId.Should().Be(7);
         response.Amount.Should().Be(100000m);
         response.Code.Should().Be("GTU-1406-40734");
         response.TransferContent.Should().Be("GTU-1406-40734");

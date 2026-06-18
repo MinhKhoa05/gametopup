@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
-import { useMyDepositRequestsQuery, useWalletBalanceQuery, useWalletTransactionsQuery } from '@/features/wallet/server';
+import { useWalletOverviewQuery } from '@/features/wallet/server';
 import {
   WALLET_HISTORY_PAGE_SIZE,
   type WalletHistoryFilters,
@@ -16,9 +16,7 @@ import {
 export function useWalletPage() {
   const navigate = useNavigate();
   const auth = useAuthSession();
-  const balanceQuery = useWalletBalanceQuery(auth.status === 'authenticated');
-  const transactionsQuery = useWalletTransactionsQuery(auth.status === 'authenticated');
-  const depositRequestsQuery = useMyDepositRequestsQuery(auth.status === 'authenticated');
+  const overviewQuery = useWalletOverviewQuery(auth.status === 'authenticated');
 
   const [historyView, setHistoryView] = useState<WalletHistoryView>('deposit');
   const [historyPage, setHistoryPage] = useState(1);
@@ -31,9 +29,9 @@ export function useWalletPage() {
     status: 'all',
   });
 
-  const balance = balanceQuery.data ?? 0;
-  const transactions = transactionsQuery.data ?? [];
-  const depositRequests = depositRequestsQuery.data ?? [];
+  const balance = overviewQuery.data?.balance ?? 0;
+  const transactions = overviewQuery.data?.transactions ?? [];
+  const depositRequests = overviewQuery.data?.depositRequests ?? [];
 
   useEffect(() => {
     setHistoryPage(1);

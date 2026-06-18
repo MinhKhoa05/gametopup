@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GameTopUp.Api.Controllers;
 
+[Authorize]
 [Route("api/users")]
 public sealed class UserController : ApiControllerBase
 {
@@ -15,15 +16,6 @@ public sealed class UserController : ApiControllerBase
         _userService = userService;
     }
 
-    [Authorize(Roles = "Admin")]
-    [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-    {
-        var result = await _userService.GetAllAsync(page, pageSize);
-        return ApiOk(result);
-    }
-
-    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
@@ -31,7 +23,6 @@ public sealed class UserController : ApiControllerBase
         return ApiOk(user);
     }
 
-    [Authorize]
     [HttpGet("me")]
     public async Task<IActionResult> GetMyProfile()
     {
@@ -39,19 +30,10 @@ public sealed class UserController : ApiControllerBase
         return ApiOk(user);
     }
 
-    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] UpdateUserRequest request)
     {
         await _userService.UpdateProfileAsync(CurrentUser, id, request);
         return ApiOk(null, "User updated successfully.");
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(long id)
-    {
-        await _userService.DeleteAsync(id);
-        return ApiOk(null, "User deleted successfully.");
     }
 }

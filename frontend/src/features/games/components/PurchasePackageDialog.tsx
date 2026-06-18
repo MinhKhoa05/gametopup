@@ -3,7 +3,7 @@ import { BadgeCheck, X } from 'lucide-react';
 import { Button, ImageBox, DetailRow } from '@/shared/components';
 import { formatCurrency } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
-import type { Game, GamePackage } from '@/features/games/types';
+import type { PublicGame, PublicGamePackage } from '@/features/games/contracts';
 
 type PackagePurchaseDraft = {
   characterName: string;
@@ -12,20 +12,20 @@ type PackagePurchaseDraft = {
 
 type PackagePurchaseDialogProps = {
   busy: boolean;
-  game: Game;
+  game: PublicGame;
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (draft: PackagePurchaseDraft) => void;
-  selectedPackage: GamePackage;
+  selectedPackage: PublicGamePackage;
   walletBalance: number;
 };
 
 type PurchaseSuccessDialogProps = {
-  game: Game;
+  game: PublicGame;
   isOpen: boolean;
   onContinue: () => void;
   onViewOrders: () => void;
-  packageItem: GamePackage;
+  packageItem: PublicGamePackage;
   purchaseInfo: {
     characterName: string;
     uidServer: string;

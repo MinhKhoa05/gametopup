@@ -4,6 +4,9 @@ using GameTopUp.BLL.Interfaces;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.BLL.Services.Games;
+using GameTopUp.BLL.Queries.Games;
+using GameTopUp.BLL.Queries.Orders;
+using GameTopUp.BLL.Queries.Wallets;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Interfaces.Auth;
@@ -94,6 +97,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<WalletService>();
         services.AddScoped<WalletDepositRequestService>();
+        services.AddScoped<AdminGameQuery>();
+        services.AddScoped<MyOrderSummaryQuery>();
+        services.AddScoped<AdminOrderSummaryQuery>();
+        services.AddScoped<WalletDepositRequestQuery>();
+        services.AddScoped<AdminDepositRequestQuery>();
+        services.AddScoped<WalletOverviewQuery>();
 
         return services;
     }

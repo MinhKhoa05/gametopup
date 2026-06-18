@@ -3,8 +3,9 @@ import type { ReactNode } from 'react';
 import { Badge, EmptyState, FilterChipGroup, FilterSelectField, IconBox, MediaListItem, PanelShell, SectionHeading } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency } from '@/shared/lib/format';
-import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
-import type { DepositRequest, WalletTransaction, WalletTransactionType } from '@/features/wallet/types';
+import { getDepositRequestStatus } from '@/features/deposits/lib/deposit-request-status';
+import type { WalletDepositRequest } from '@/features/deposits/types';
+import type { WalletTransaction, WalletTransactionType } from '@/features/wallet/types';
 
 export const WALLET_HISTORY_PAGE_SIZE = 8;
 
@@ -141,7 +142,7 @@ export function WalletHistoryPanel({
   );
 }
 
-export function buildWalletHistoryRows(depositRequests: DepositRequest[], transactions: WalletTransaction[]) {
+export function buildWalletHistoryRows(depositRequests: WalletDepositRequest[], transactions: WalletTransaction[]) {
   const depositRows = depositRequests.map<DepositHistoryRow>((request) => {
     const status = getDepositRequestStatus(request.status);
     const statusFilter: WalletDepositStatusFilter =
@@ -206,7 +207,7 @@ export function sortWalletHistoryRows(rows: WalletHistoryRow[], sort: WalletHist
   }
 }
 
-export function getBankOptions(depositRequests: DepositRequest[]) {
+export function getBankOptions(depositRequests: WalletDepositRequest[]) {
   const seen = new Map<string, string>();
   for (const request of depositRequests) {
     const value = request.bankId.trim();

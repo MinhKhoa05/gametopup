@@ -56,10 +56,10 @@ public sealed class OrderAccessTests : BaseIntegrationTest
 
         using var adminClient = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
 
-        var orderResponse = await adminClient.GetAsync($"/api/orders/{order.Id}");
+        var orderResponse = await adminClient.GetAsync($"/api/admin/orders/{order.Id}");
         orderResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var historyResponse = await adminClient.GetAsync($"/api/orders/{order.Id}/history");
+        var historyResponse = await adminClient.GetAsync($"/api/admin/orders/{order.Id}/history");
         historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }

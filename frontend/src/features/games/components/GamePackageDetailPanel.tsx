@@ -1,21 +1,20 @@
 import { Button, ImageBox, DetailRow } from '@/shared/components';
 import { formatCurrency } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
-import type { GamePackage } from '@/features/games/types';
+import type { PublicGamePackage } from '@/features/games/contracts';
 
 type GamePackageDetailPanelProps = {
   gameName: string;
   onPurchase: () => void;
-  selectedPackage: GamePackage | null;
+  selectedPackage: PublicGamePackage | null;
 };
 
 export function GamePackageDetailPanel({ gameName, onPurchase, selectedPackage }: GamePackageDetailPanelProps) {
   const hasDiscount = !!selectedPackage && selectedPackage.originalPrice > selectedPackage.salePrice;
   const discountPercent =
     selectedPackage && hasDiscount ? Math.max(1, Math.round((1 - selectedPackage.salePrice / selectedPackage.originalPrice) * 100)) : 0;
-  const stockQuantity = selectedPackage?.stockQuantity ?? 0;
-  const isSoldOut = !!selectedPackage && stockQuantity <= 0;
-  const isLowStock = !!selectedPackage && stockQuantity > 0 && stockQuantity <= 5;
+  const isAvailable = selectedPackage?.isAvailable ?? false;
+  const statusLabel = isAvailable ? 'Còn hàng' : 'Hết hàng';
   const description =
     selectedPackage?.description?.trim() || `Nhận ${selectedPackage?.name ?? 'gói nạp'} cho ${gameName}.`;
 
@@ -62,16 +61,14 @@ export function GamePackageDetailPanel({ gameName, onPurchase, selectedPackage }
             </div>
 
             <div className="space-y-0 rounded-[18px] border gt-border bg-[var(--gt-card)] px-4">
-              <DetailRow label="Khả dụng">
-                <span className={classNames(isSoldOut ? 'text-[var(--gt-danger)]' : isLowStock ? 'text-[var(--gt-warning)]' : 'gt-text')}>
-                  {stockQuantity > 0 ? `Còn ${stockQuantity} suất` : 'Hết hàng'}
-                </span>
+              <DetailRow label="Tình trạng">
+                <span className={classNames(isAvailable ? 'text-[var(--gt-success)]' : 'text-[var(--gt-danger)]')}>{statusLabel}</span>
               </DetailRow>
               <DetailRow label="Thời gian xử lý">5–15 phút</DetailRow>
             </div>
 
-            <Button type="button" variant="accent" className="w-full py-3.5" onClick={onPurchase} disabled={isSoldOut}>
-              {isSoldOut ? 'Hết hàng' : 'Mua ngay'}
+            <Button type="button" variant="accent" className="w-full py-3.5" onClick={onPurchase} disabled={!isAvailable}>
+              {isAvailable ? 'Mua ngay' : 'Hết hàng'}
             </Button>
           </div>
         ) : (

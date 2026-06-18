@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getGamePackagesByGame } from './api';
-import type { GamePackage } from '@/features/games/types';
+import type { PublicGamePackage } from '@/features/games/contracts';
 
 const GAME_PACKAGES_STALE_TIME = 1000 * 60 * 10;
 
@@ -9,13 +9,13 @@ export const packagesKeys = {
   byGame: (gameId: number | null | undefined) => ['packages', 'by-game', gameId ?? null] as const,
 };
 
-export function useGamePackagesQuery<TData = GamePackage[]>(
+export function useGamePackagesQuery<TData = PublicGamePackage[]>(
   gameId: number | null | undefined,
   options?: {
-    select?: (packages: GamePackage[]) => TData;
+    select?: (packages: PublicGamePackage[]) => TData;
   },
 ) {
-  return useQuery<GamePackage[], Error, TData>({
+  return useQuery<PublicGamePackage[], Error, TData>({
     queryKey: packagesKeys.byGame(gameId),
     queryFn: () => getGamePackagesByGame(gameId as number),
     enabled: typeof gameId === 'number',

@@ -7,18 +7,17 @@ import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { GamePackageCard } from '@/features/games/components/GamePackageCard';
 import { useGamesQuery } from '@/features/games/server';
+import type { PublicGame, PublicGamePackage } from '@/features/games/contracts';
 import { useMyOrdersQuery } from '@/features/orders/server';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
 import { useWalletBalanceQuery } from '@/features/wallet/server';
 import { Badge, Button, EmptyState, IconBox, ImageBox, MediaListItem, PanelShell, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatRelativeTime } from '@/shared/lib/format';
-import type { Game } from '@/features/games/types';
-import type { GamePackage } from '@/features/games/types';
 import type { Order } from '@/features/orders/types';
 import type { ReactNode } from 'react';
 
-type PackageCard = GamePackage & {
-  game: Game;
+type PackageCard = PublicGamePackage & {
+  game: PublicGame;
 };
 
 export function HomePage() {
@@ -28,9 +27,8 @@ export function HomePage() {
   const walletQuery = useWalletBalanceQuery(auth.status === 'authenticated');
   const ordersQuery = useMyOrdersQuery(auth.status === 'authenticated');
 
-  const activeGames = useMemo(() => (gamesQuery.data ?? []).filter((game) => game.isActive), [gamesQuery.data]);
-  const featuredGames = useMemo(() => activeGames.slice(0, 8), [activeGames]);
-  const featuredPackages = useMemo(() => buildFeaturedPackages(activeGames.slice(0, 6)), [activeGames]);
+  const featuredGames = useMemo(() => (gamesQuery.data ?? []).slice(0, 8), [gamesQuery.data]);
+  const featuredPackages = useMemo(() => buildFeaturedPackages(featuredGames.slice(0, 6)), [featuredGames]);
   const recentOrders = (ordersQuery.data ?? []).slice(0, 4);
   const walletBalance = walletQuery.data ?? 0;
 
@@ -193,9 +191,9 @@ function FeaturedRail({
   loading,
   onPick,
 }: {
-  games: Game[];
+  games: PublicGame[];
   loading: boolean;
-  onPick: (game: Game) => void;
+  onPick: (game: PublicGame) => void;
 }) {
   return (
     <section className="grid gap-4">
@@ -277,23 +275,18 @@ function RecentOrdersSkeleton() {
   );
 }
 
-function buildFeaturedPackages(games: Game[]): PackageCard[] {
+function buildFeaturedPackages(games: PublicGame[]): PackageCard[] {
   return games.map((game, index) => {
     const preset = PACKAGE_PRESETS[index % PACKAGE_PRESETS.length];
     return {
       id: game.id * 1000 + index,
-      gameId: game.id,
       game,
       name: preset.nameFor(game.name),
       description: null,
-      imageRelativePath: null,
       salePrice: preset.price,
       originalPrice: preset.originalPrice,
-      importPrice: preset.price,
-      stockQuantity: 1,
-      isActive: true,
-      createdAt: '',
-      updatedAt: '',
+      isAvailable: true,
+      stockStatus: 'in_stock',
       imageUrl: game.imageUrl,
     };
   });

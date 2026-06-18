@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useCancelOrderMutation, useMyOrdersQuery } from '@/features/orders/server';
-import { useGamesQuery } from '@/features/games/server';
 import { buildOrderHistoryItems, type OrderHistoryItem } from '@/features/orders/components/OrderHistorySections';
 
 const PAGE_SIZE = 6;
@@ -33,7 +32,6 @@ export const STATUS_OPTIONS: Array<{ label: string; value: StatusGroup }> = [
 
 export function useOrdersPage() {
   const ordersQuery = useMyOrdersQuery();
-  const gamesQuery = useGamesQuery();
   const cancelOrderMutation = useCancelOrderMutation();
 
   const [filters, setFilters] = useState<OrderFilters>(DEFAULT_FILTERS);
@@ -41,8 +39,7 @@ export function useOrdersPage() {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
   const orders = ordersQuery.data ?? [];
-  const games = gamesQuery.data ?? [];
-  const orderItems = useMemo(() => buildOrderHistoryItems(orders, games), [games, orders]);
+  const orderItems = useMemo(() => buildOrderHistoryItems(orders), [orders]);
 
   const gameOptions = useMemo(() => {
     const unique = new Map<string, string>();

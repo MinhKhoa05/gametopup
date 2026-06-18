@@ -1,7 +1,7 @@
 import { ArrowRight, CheckCircle2, EyeOff, PencilLine, Plus, Save, X } from 'lucide-react';
 import { useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Game, GamePackage } from '@/features/games/types';
+import type { AdminGameSummary } from '../api';
 import { routes } from '@/app/router/routes';
 import {
   Badge,
@@ -25,20 +25,20 @@ import { AdminListSkeleton } from '@/features/admin/components/AdminShared';
 import { classNames } from '@/shared/lib/classNames';
 
 type GamesAdminPanelState = {
-  editing: Game | null;
-  filteredGames: Game[];
+  editing: AdminGameSummary | null;
+  filteredGames: AdminGameSummary[];
   form: {
     isActive: boolean;
     name: string;
   };
   imageFile: File | null;
   query: string;
-  remove: (game: Game) => Promise<void>;
+  remove: (game: AdminGameSummary) => Promise<void>;
   resetForm: () => void;
   setForm: Dispatch<SetStateAction<{ isActive: boolean; name: string }>>;
   setImageFile: Dispatch<SetStateAction<File | null>>;
   setQuery: Dispatch<SetStateAction<string>>;
-  startEdit: (game: Game) => void;
+  startEdit: (game: AdminGameSummary) => void;
   submit: (event: FormEvent) => Promise<void>;
 };
 
@@ -50,26 +50,16 @@ const detailInputClassName = classNames(inputClassName, 'h-11 rounded-[14px] tex
 export function GamesAdminPanel({
   busy,
   loading,
-  packages,
   state,
 }: {
   busy: boolean;
   loading: boolean;
-  packages: GamePackage[];
-  packagesLoading: boolean;
   state: GamesAdminPanelState;
 }) {
   const navigate = useNavigate();
   const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
   const [panelMode, setPanelMode] = useState<PanelMode>('empty');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-
-  const packageCountByGameId = useMemo(() => {
-    return packages.reduce<Record<number, number>>((accumulator, item) => {
-      accumulator[item.gameId] = (accumulator[item.gameId] ?? 0) + 1;
-      return accumulator;
-    }, {});
-  }, [packages]);
 
   const visibleGames = useMemo(() => {
     return state.filteredGames.filter((game) => {
@@ -91,13 +81,13 @@ export function GamesAdminPanel({
     setPanelMode('create');
   };
 
-  const openEditForm = (game: Game) => {
+  const openEditForm = (game: AdminGameSummary) => {
     setSelectedGameId(game.id);
     state.startEdit(game);
     setPanelMode('edit');
   };
 
-  const openQuickToggleForm = (game: Game) => {
+  const openQuickToggleForm = (game: AdminGameSummary) => {
     openEditForm(game);
     state.setForm((current) => ({ ...current, isActive: !game.isActive }));
   };
@@ -108,7 +98,7 @@ export function GamesAdminPanel({
     setPanelMode(selectedGame ? 'view' : 'empty');
   };
 
-  const togglePreview = (game: Game) => {
+  const togglePreview = (game: AdminGameSummary) => {
     setSelectedGameId(game.id);
     setPanelMode('view');
   };
@@ -171,7 +161,7 @@ export function GamesAdminPanel({
                     selected={game.id === selectedGameId}
                     leading={<ImageBox src={game.imageUrl} alt={game.name} className="object-cover" />}
                     title={game.name}
-                    subtitle={`${packageCountByGameId[game.id] ?? 0} gói · ${game.isActive ? 'Đang bán' : 'Đang ẩn'}`}
+                    subtitle={`${game.packageCount} gói · ${game.isActive ? 'Đang bán' : 'Đang ẩn'}`}
                     titleAccessory={
                       <Badge tone={game.isActive ? 'success' : 'neutral'} icon={game.isActive ? <CheckCircle2 size={14} /> : <X size={14} />}>
                         {game.isActive ? 'Bật' : 'Tắt'}
@@ -214,7 +204,7 @@ export function GamesAdminPanel({
                 />
 
                 <form className="grid gap-4" onSubmit={state.submit}>
-                  <GameSummaryCard item={selectedGame} packageCount={packageCountByGameId[selectedGame.id] ?? 0} />
+                  <GameSummaryCard item={selectedGame} packageCount={selectedGame.packageCount} />
 
                   <div className="grid gap-0 rounded-[20px] border gt-border bg-[var(--gt-card)] px-4">
                     <DetailRow label="Mã game">#{selectedGame.id}</DetailRow>
@@ -240,7 +230,7 @@ export function GamesAdminPanel({
                         />
                       </div>
                     </DetailRow>
-                    <DetailRow label="Số gói nạp">{packageCountByGameId[selectedGame.id] ?? 0} gói</DetailRow>
+                    <DetailRow label="Số gói nạp">{selectedGame.packageCount} gói</DetailRow>
                     <DetailRow label="Ngày tạo">{formatDate(selectedGame.createdAt)}</DetailRow>
                     <DetailRow label="Cập nhật">{formatDate(selectedGame.updatedAt)}</DetailRow>
                   </div>
@@ -266,7 +256,7 @@ export function GamesAdminPanel({
                 />
 
                 <div className="grid gap-4">
-                  <GameSummaryCard item={selectedGame} packageCount={packageCountByGameId[selectedGame.id] ?? 0} />
+                  <GameSummaryCard item={selectedGame} packageCount={selectedGame.packageCount} />
 
                   <div className="grid gap-0 rounded-[20px] border gt-border bg-[var(--gt-card)] px-4">
                     <DetailRow label="Mã game">#{selectedGame.id}</DetailRow>
@@ -276,7 +266,7 @@ export function GamesAdminPanel({
                         {selectedGame.isActive ? 'Đang bán' : 'Đang ẩn'}
                       </Badge>
                     </DetailRow>
-                    <DetailRow label="Số gói nạp">{packageCountByGameId[selectedGame.id] ?? 0} gói</DetailRow>
+                    <DetailRow label="Số gói nạp">{selectedGame.packageCount} gói</DetailRow>
                     <DetailRow label="Ngày tạo">{formatDate(selectedGame.createdAt)}</DetailRow>
                     <DetailRow label="Cập nhật">{formatDate(selectedGame.updatedAt)}</DetailRow>
                   </div>
@@ -317,7 +307,7 @@ export function GamesAdminPanel({
   );
 }
 
-function GameSummaryCard({ item, packageCount }: { item: Game; packageCount: number }) {
+function GameSummaryCard({ item, packageCount }: { item: AdminGameSummary; packageCount: number }) {
   return (
     <div className="grid gap-4 rounded-[24px] border gt-border bg-[var(--gt-panel)] p-5">
       <div className="flex items-center gap-4">
@@ -351,7 +341,7 @@ function GameFormPanel({
   setForm,
 }: {
   busy: boolean;
-  editing: Game | null;
+  editing: AdminGameSummary | null;
   form: GamesAdminPanelState['form'];
   imageFile: File | null;
   onCancel: () => void;

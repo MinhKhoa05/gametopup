@@ -24,7 +24,7 @@ public sealed class OrderAuthorizationTests : BaseIntegrationTest
 
         using var memberClient = CreateAuthenticatedClient(member.Id, member.DisplayName, member.Email, member.Role);
 
-        var purchaseResponse = await memberClient.PostJsonAsync("/api/orders/purchase", new PurchaseOrderRequestDTO
+        var purchaseResponse = await memberClient.PostJsonAsync("/api/orders", new PurchaseOrderRequestDTO
         {
             GamePackageId = package.Id,
             GameAccountInfo = "hero-authz"
@@ -32,7 +32,7 @@ public sealed class OrderAuthorizationTests : BaseIntegrationTest
         var purchaseBody = await purchaseResponse.ReadApiResponseAsync<long>();
         var orderId = purchaseBody.Data;
 
-        var pickResponse = await memberClient.PostAsync($"/api/orders/{orderId}/pick", null);
+        var pickResponse = await memberClient.PostAsync($"/api/admin/orders/{orderId}/pick", null);
 
         pickResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }

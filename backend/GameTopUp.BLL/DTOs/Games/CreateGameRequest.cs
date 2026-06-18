@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace GameTopUp.BLL.DTOs.Games;
 
@@ -8,6 +9,7 @@ public sealed class CreateGameRequest
     [MinLength(1)]
     public string Name { get; set; } = string.Empty;
 
+    public IFormFile? ImageFile { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
     public string? ImageRelativePath { get; set; }
 

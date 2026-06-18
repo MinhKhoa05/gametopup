@@ -1,4 +1,5 @@
 using GameTopUp.BLL.DTOs.Games;
+using GameTopUp.BLL.DTOs.Images;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Interfaces;
 using GameTopUp.BLL.Services.Games;
@@ -20,44 +21,45 @@ public sealed class GameUseCase
 
     public async Task<Game> CreateGameWithImageAsync(CreateGameRequest request, IFormFile image)
     {
-        if (image == null || image.Length == 0)
+        request.ImageFile = image;
+        return await CreateGameAsync(request);
+    }
+
+    public async Task<Game> CreateGameAsync(CreateGameRequest request)
+    {
+        ImageStorageResult? uploadedImage = null;
+
+        if (request.ImageFile is not null)
         {
-            throw new BusinessException(ErrorCode.ImageRequired);
+            if (request.ImageFile.Length == 0)
+            {
+                throw new BusinessException(ErrorCode.ImageRequired);
+            }
+
+            uploadedImage = await _imageStorageService.UploadAsync(request.ImageFile, "games");
+            request.ImageUrl = uploadedImage.Url;
+            request.ImageRelativePath = uploadedImage.RelativePath;
         }
 
-        var storedImage = await _imageStorageService.UploadAsync(image, "games");
-        request.ImageUrl = storedImage.Url;
-        request.ImageRelativePath = storedImage.RelativePath;
+        try
+        {
+            return await _gameService.CreateGameAsync(request);
+        }
+        catch
+        {
+            if (uploadedImage is not null)
+            {
+                await _imageStorageService.DeleteAsync(uploadedImage.RelativePath);
+            }
 
-        return await _gameService.CreateGameAsync(request);
+            throw;
+        }
     }
 
     public async Task<Game> UpdateGameWithImageAsync(long id, UpdateGameRequest request, IFormFile? image)
     {
-        var existingGame = await _gameService.GetGameByIdAsync(id);
-        var previousImageUrl = existingGame.ImageUrl;
-        var previousImageRelativePath = existingGame.ImageRelativePath;
-
-        if (image is not null && image.Length > 0)
-        {
-            var storedImage = await _imageStorageService.UploadAsync(image, "games");
-            request.ImageUrl = storedImage.Url;
-            request.ImageRelativePath = storedImage.RelativePath;
-        }
-        else
-        {
-            request.ImageUrl ??= existingGame.ImageUrl;
-            request.ImageRelativePath ??= existingGame.ImageRelativePath;
-        }
-
-        var updated = await _gameService.UpdateGameAsync(id, request);
-
-        if (!string.IsNullOrWhiteSpace(request.ImageUrl) && request.ImageUrl != previousImageUrl)
-        {
-            await _imageStorageService.DeleteAsync(previousImageRelativePath);
-        }
-
-        return updated;
+        request.ImageFile = image;
+        return await UpdateGameAsync(id, request);
     }
 
     public async Task<Game> UpdateGameAsync(long id, UpdateGameRequest request)
@@ -65,14 +67,45 @@ public sealed class GameUseCase
         var existingGame = await _gameService.GetGameByIdAsync(id);
         var previousImageUrl = existingGame.ImageUrl;
         var previousImageRelativePath = existingGame.ImageRelativePath;
-        var updated = await _gameService.UpdateGameAsync(id, request);
+        ImageStorageResult? uploadedImage = null;
 
-        if (!string.IsNullOrWhiteSpace(request.ImageUrl) && request.ImageUrl != previousImageUrl)
+        if (request.ImageFile is not null)
         {
-            await _imageStorageService.DeleteAsync(previousImageRelativePath);
+            if (request.ImageFile.Length == 0)
+            {
+                throw new BusinessException(ErrorCode.ImageRequired);
+            }
+
+            uploadedImage = await _imageStorageService.UploadAsync(request.ImageFile, "games");
+            request.ImageUrl = uploadedImage.Url;
+            request.ImageRelativePath = uploadedImage.RelativePath;
+        }
+        else
+        {
+            request.ImageUrl ??= existingGame.ImageUrl;
+            request.ImageRelativePath ??= existingGame.ImageRelativePath;
         }
 
-        return updated;
+        try
+        {
+            var updated = await _gameService.UpdateGameAsync(id, request);
+
+            if (!string.IsNullOrWhiteSpace(request.ImageUrl) && request.ImageUrl != previousImageUrl)
+            {
+                await _imageStorageService.DeleteAsync(previousImageRelativePath);
+            }
+
+            return updated;
+        }
+        catch
+        {
+            if (uploadedImage is not null)
+            {
+                await _imageStorageService.DeleteAsync(uploadedImage.RelativePath);
+            }
+
+            throw;
+        }
     }
 
     public async Task DeleteGameAsync(long id)

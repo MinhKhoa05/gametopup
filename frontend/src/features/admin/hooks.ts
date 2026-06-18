@@ -4,7 +4,7 @@ import { gamesKeys } from '@/features/games/server';
 import { packagesKeys } from '@/features/packages/server';
 import { adminDepositsKeys } from './deposits/api';
 import { useAdminDepositRequestsSection } from './deposits/hooks';
-import { useAdminGamesSection } from './games/hooks';
+import { adminGamesKeys, useAdminGamesSection } from './games/hooks';
 import { adminOrdersKeys } from './orders/api';
 import { useAdminOrdersSection } from './orders/hooks';
 import { adminPackagesKeys } from './packages/api';
@@ -13,8 +13,9 @@ import { adminUsersKeys } from './users/api';
 import { useAdminUsersSection } from './users/hooks';
 import { walletKeys } from '@/features/wallet/server';
 import type { User } from '@/features/auth/types';
-import type { Game, GamePackage } from '@/features/games/types';
-import type { Order } from '@/features/orders/types';
+import type { GamePackage } from '@/features/games/types';
+import type { AdminGameSummary } from './games/api';
+import type { AdminOrderSummary } from '@/features/orders/types';
 import { useAdminGamesPageState } from './games/hooks';
 import { useAdminPackagesPageState } from './packages/hooks';
 import { useAdminOrdersPageState } from './orders/hooks';
@@ -38,9 +39,9 @@ export function useAdminMetrics({
   orders,
   users,
 }: {
-  games: Game[];
+  games: AdminGameSummary[];
   packages: GamePackage[];
-  orders: Order[];
+  orders: AdminOrderSummary[];
   users: User[];
 }) {
   const metrics = useMemo(() => {
@@ -84,6 +85,7 @@ export function useAdminPage({ user }: { user: User | null }) {
   const refreshAll = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: gamesKeys.all }),
+      queryClient.invalidateQueries({ queryKey: adminGamesKeys.all }),
       queryClient.invalidateQueries({ queryKey: packagesKeys.all }),
       queryClient.invalidateQueries({ queryKey: adminDepositsKeys.all }),
       queryClient.invalidateQueries({ queryKey: adminOrdersKeys.all }),

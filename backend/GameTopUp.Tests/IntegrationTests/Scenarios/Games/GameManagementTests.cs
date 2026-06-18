@@ -24,7 +24,7 @@ public sealed class GameManagementTests : BaseIntegrationTest
         var admin = await Factory.SeedAdminAsync();
         using var client = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
 
-        var createResponse = await client.PostMultipartAsync("/api/games/with-image",
+        var createResponse = await client.PostMultipartAsync("/api/admin/games",
             new Dictionary<string, string>
             {
                 ["Name"] = "  Mobile Legends  ",
@@ -44,7 +44,7 @@ public sealed class GameManagementTests : BaseIntegrationTest
         imageResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         imageResponse.Content.Headers.ContentType?.MediaType.Should().Be("image/png");
 
-        var updateResponse = await client.PutMultipartAsync($"/api/games/{createBody.Data.Id}/with-image",
+        var updateResponse = await client.PutMultipartAsync($"/api/admin/games/{createBody.Data.Id}",
             new Dictionary<string, string>
             {
                 ["Name"] = "  MLBB  ",
@@ -59,11 +59,32 @@ public sealed class GameManagementTests : BaseIntegrationTest
         updateBody.Data.IsActive.Should().BeFalse();
         updateBody.Data.ImageUrl.Should().NotBe(createBody.Data.ImageUrl);
 
-        var deleteResponse = await client.DeleteAsync($"/api/games/{createBody.Data.Id}");
+        var deleteResponse = await client.DeleteAsync($"/api/admin/games/{createBody.Data.Id}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var getResponse = await client.GetAsync($"/api/games/{createBody.Data.Id}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [DockerFact]
+    public async Task AdminGamesListShouldIncludePackageCountAndInactiveGames()
+    {
+        var admin = await Factory.SeedAdminAsync();
+        var activeGame = await Factory.SeedGameAsync(name: "Active Game");
+        var inactiveGame = await Factory.SeedGameAsync(name: "Inactive Game", isActive: false);
+        await Factory.SeedGamePackageAsync(activeGame.Id, salePrice: 1000m, stockQuantity: 2);
+        await Factory.SeedGamePackageAsync(activeGame.Id, salePrice: 1500m, stockQuantity: 1);
+        await Factory.SeedGamePackageAsync(inactiveGame.Id, salePrice: 2000m, stockQuantity: 1);
+
+        using var client = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
+
+        var response = await client.GetAsync("/api/admin/games");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadApiResponseAsync<List<AdminGameSummaryResponse>>();
+        body.Success.Should().BeTrue();
+        body.Data.Should().Contain(game => game.Id == activeGame.Id && game.PackageCount == 2);
+        body.Data.Should().Contain(game => game.Id == inactiveGame.Id && game.PackageCount == 1);
     }
 
     [DockerFact]
@@ -73,22 +94,27 @@ public sealed class GameManagementTests : BaseIntegrationTest
         var game = await Factory.SeedGameAsync();
         using var client = CreateAuthenticatedClient(member.Id, member.DisplayName, member.Email, member.Role);
 
-        var createGameResponse = await client.PostJsonAsync("/api/games", new CreateGameRequest
-        {
-            Name = "Restricted Game",
-            IsActive = true
-        });
+        var createGameResponse = await client.PostMultipartAsync("/api/admin/games",
+            new Dictionary<string, string>
+            {
+                ["Name"] = "Restricted Game",
+                ["IsActive"] = "true"
+            },
+            CreateImagePart("image/png", Encoding.UTF8.GetBytes("png-bytes")));
         createGameResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 
-        var createPackageResponse = await client.PostJsonAsync("/api/game-packages", new CreateGamePackageRequest
-        {
-            Name = "Restricted Package",
-            GameId = game.Id,
-            SalePrice = 1000m,
-            OriginalPrice = 900m,
-            ImportPrice = 800m,
-            StockQuantity = 1
-        });
+        var createPackageResponse = await client.PostMultipartAsync("/api/admin/game-packages",
+            new Dictionary<string, string>
+            {
+                ["Name"] = "Restricted Package",
+                ["GameId"] = game.Id.ToString(),
+                ["SalePrice"] = "1000",
+                ["OriginalPrice"] = "900",
+                ["ImportPrice"] = "800",
+                ["StockQuantity"] = "1",
+                ["IsActive"] = "true"
+            },
+            CreateImagePart("image/png", Encoding.UTF8.GetBytes("png-bytes")));
         createPackageResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -98,7 +124,7 @@ public sealed class GameManagementTests : BaseIntegrationTest
         var admin = await Factory.SeedAdminAsync();
         using var client = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
 
-        var response = await client.PostMultipartAsync("/api/games/with-image",
+        var response = await client.PostMultipartAsync("/api/admin/games",
             new Dictionary<string, string>
             {
                 ["Name"] = "Unsupported Image Game",
@@ -119,15 +145,18 @@ public sealed class GameManagementTests : BaseIntegrationTest
         var inactiveGame = await Factory.SeedGameAsync(isActive: false);
         using var client = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
 
-        var response = await client.PostJsonAsync("/api/game-packages", new CreateGamePackageRequest
-        {
-            Name = "Inactive Game Package",
-            GameId = inactiveGame.Id,
-            SalePrice = 1000m,
-            OriginalPrice = 900m,
-            ImportPrice = 800m,
-            StockQuantity = 1
-        });
+        var response = await client.PostMultipartAsync("/api/admin/game-packages",
+            new Dictionary<string, string>
+            {
+                ["Name"] = "Inactive Game Package",
+                ["GameId"] = inactiveGame.Id.ToString(),
+                ["SalePrice"] = "1000",
+                ["OriginalPrice"] = "900",
+                ["ImportPrice"] = "800",
+                ["StockQuantity"] = "1",
+                ["IsActive"] = "true"
+            },
+            CreateImagePart("image/png", Encoding.UTF8.GetBytes("png-bytes")));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var body = await response.ReadApiResponseAsync<object>();
@@ -143,10 +172,12 @@ public sealed class GameManagementTests : BaseIntegrationTest
         var package = await Factory.SeedGamePackageAsync(game.Id, salePrice: 1000m, stockQuantity: 2);
         using var client = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
 
-        var response = await client.PutJsonAsync($"/api/game-packages/{package.Id}", new UpdateGamePackageRequest
-        {
-            StockQuantity = -1
-        });
+        var response = await client.PutMultipartAsync($"/api/admin/game-packages/{package.Id}",
+            new Dictionary<string, string>
+            {
+                ["StockQuantity"] = "-1"
+            },
+            CreateImagePart("image/png", Encoding.UTF8.GetBytes("png-bytes")));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var body = await response.ReadApiResponseAsync<object>();

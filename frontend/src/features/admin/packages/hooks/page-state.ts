@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { filterByQuery } from '@/shared/lib/search';
-import type { Game, GamePackage } from '@/features/games/types';
+import type { GamePackage } from '@/features/games/types';
+import type { AdminGameSummary } from '@/features/admin/games/api';
 
 const emptyPackageForm = {
   gameId: 0,
@@ -19,7 +20,7 @@ export function useAdminPackagesPageState({
   onDeletePackage,
   onUpdatePackage,
 }: {
-  games: Game[];
+  games: AdminGameSummary[];
   packages: GamePackage[];
   onCreatePackage: (payload: {
     gameId: number;

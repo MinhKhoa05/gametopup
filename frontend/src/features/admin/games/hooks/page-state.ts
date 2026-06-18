@@ -1,6 +1,6 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { filterByQuery } from '@/shared/lib/search';
-import type { Game } from '@/features/games/types';
+import type { AdminGameSummary } from '../api';
 
 export function useAdminGamesPageState({
   games,
@@ -8,12 +8,12 @@ export function useAdminGamesPageState({
   onDeleteGame,
   onUpdateGame,
 }: {
-  games: Game[];
+  games: AdminGameSummary[];
   onCreateGame: (payload: { imageFile: File | null; isActive: boolean; name: string }) => Promise<void>;
   onDeleteGame: (id: number) => Promise<void>;
   onUpdateGame: (payload: { id: number; imageFile: File | null; isActive: boolean; name: string }) => Promise<void>;
 }) {
-  const [editing, setEditing] = useState<Game | null>(null);
+  const [editing, setEditing] = useState<AdminGameSummary | null>(null);
   const [form, setForm] = useState({
     isActive: true,
     name: '',
@@ -23,7 +23,7 @@ export function useAdminGamesPageState({
 
   const filteredGames = useMemo(() => filterByQuery(games, query, (game) => game.name), [games, query]);
 
-  function startEdit(game: Game) {
+  function startEdit(game: AdminGameSummary) {
     setEditing(game);
     setForm({ isActive: game.isActive, name: game.name });
     setImageFile(null);
@@ -49,7 +49,7 @@ export function useAdminGamesPageState({
     resetForm();
   }
 
-  async function remove(game: Game) {
+  async function remove(game: AdminGameSummary) {
     if (!window.confirm(`Xóa game "${game.name}"?`)) return;
     await onDeleteGame(game.id);
   }

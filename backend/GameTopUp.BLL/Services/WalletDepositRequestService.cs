@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Wallets;
 using GameTopUp.BLL.Exceptions;
+using GameTopUp.BLL.Mappers.Wallets;
 using GameTopUp.BLL.Options;
 using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.DAL.Interfaces.Wallets;
@@ -23,7 +24,7 @@ public sealed class WalletDepositRequestService
         _vietQrSettings = vietQrOptions.Value;
     }
 
-    public async Task<DepositRequestResponseDTO> CreateAsync(UserContext context, decimal amount)
+    public async Task<WalletDepositRequestResponseDTO> CreateAsync(UserContext context, decimal amount)
     {
         ValidateAmount(amount);
         ValidateVietQrSettings();
@@ -33,22 +34,10 @@ public sealed class WalletDepositRequestService
         var request = WalletDepositRequest.Create(context.UserId, amount, code, transferContent);
 
         request.Id = await _repository.CreateAsync(request);
-        return MapToResponse(request);
+        return MapToPublicResponse(request);
     }
 
-    public async Task<List<DepositRequestResponseDTO>> GetByUserAsync(UserContext context, WalletDepositRequestStatus? status = null)
-    {
-        var requests = await _repository.GetByUserIdAsync(context.UserId, status);
-        return requests.Select(MapToResponse).ToList();
-    }
-
-    public async Task<List<DepositRequestResponseDTO>> GetAllAsync(WalletDepositRequestStatus? status = null)
-    {
-        var requests = await _repository.GetAllAsync(status);
-        return requests.Select(MapToResponse).ToList();
-    }
-
-    public async Task<DepositRequestResponseDTO> ConfirmTransferAsync(long requestId, UserContext context)
+    public async Task<WalletDepositRequestResponseDTO> ConfirmTransferAsync(long requestId, UserContext context)
     {
         var request = await _repository.GetWithLockByIdAsync(requestId)
             ?? throw new NotFoundException(ErrorCode.DepositRequestNotFound, $"Deposit request #{requestId} was not found.");
@@ -60,7 +49,7 @@ public sealed class WalletDepositRequestService
 
         if (request.Status == WalletDepositRequestStatus.UserConfirmed)
         {
-            return MapToResponse(request);
+            return MapToPublicResponse(request);
         }
 
         if (request.Status != WalletDepositRequestStatus.Pending)
@@ -71,7 +60,7 @@ public sealed class WalletDepositRequestService
         request.MarkUserConfirmed(DateTime.UtcNow);
 
         await _repository.UpdateAsync(request);
-        return MapToResponse(request);
+        return MapToPublicResponse(request);
     }
 
     public async Task<WalletDepositRequest> GetWithLockByIdOrThrowAsync(long requestId)
@@ -114,27 +103,14 @@ public sealed class WalletDepositRequestService
         await _repository.UpdateAsync(request);
     }
 
-    public DepositRequestResponseDTO MapToResponse(WalletDepositRequest request)
+    public WalletDepositRequestResponseDTO MapToPublicResponse(WalletDepositRequest request)
     {
-        return new DepositRequestResponseDTO
-        {
-            Id = request.Id,
-            UserId = request.UserId,
-            Amount = request.Amount,
-            Code = request.Code,
-            TransferContent = request.TransferContent,
-            QrImageUrl = BuildQrImageUrl(),
-            BankId = _vietQrSettings.BankId,
-            AccountNo = _vietQrSettings.AccountNo,
-            AccountName = _vietQrSettings.AccountName,
-            Status = request.Status,
-            UserConfirmedAt = request.UserConfirmedAt,
-            ReviewedBy = request.ReviewedBy,
-            ReviewedAt = request.ReviewedAt,
-            AdminNote = request.AdminNote,
-            CreatedAt = request.CreatedAt,
-            UpdatedAt = request.UpdatedAt
-        };
+        return WalletMapper.ToPublicDepositRequestResponse(request, _vietQrSettings);
+    }
+
+    public AdminDepositRequestResponseDTO MapToAdminResponse(WalletDepositRequest request)
+    {
+        return WalletMapper.ToAdminDepositRequestResponse(request);
     }
 
     private void ValidateAmount(decimal amount)
@@ -158,15 +134,6 @@ public sealed class WalletDepositRequestService
         {
             throw new BusinessException(ErrorCode.VietQrSettingsMissing);
         }
-    }
-
-    private string BuildQrImageUrl()
-    {
-        var bankId = Uri.EscapeDataString(_vietQrSettings.BankId.Trim());
-        var accountNo = Uri.EscapeDataString(_vietQrSettings.AccountNo.Trim());
-        var template = string.IsNullOrWhiteSpace(_vietQrSettings.Template) ? "compact2" : _vietQrSettings.Template.Trim();
-
-        return $"https://img.vietqr.io/image/{bankId}-{accountNo}-{template}.png";
     }
 
     private static string CreateDepositCode()

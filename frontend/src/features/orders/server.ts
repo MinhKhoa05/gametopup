@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { cancelOrder, getMyOrders, purchaseOrder } from './api';
+import { cancelOrder, createOrder, getMyOrders } from './api';
 import { walletKeys } from '@/features/wallet/server';
-import type { CancelOrderInput, PurchaseOrderInput } from './types';
+import type { CancelOrderInput, CreateOrderInput } from './types';
 
 export const orderKeys = {
   all: ['orders'] as const,
-  myOrders: ['orders', 'me'] as const,
+  myOrders: ['orders', 'my'] as const,
 };
 
 export function useMyOrdersQuery(enabled = true) {
@@ -17,11 +17,11 @@ export function useMyOrdersQuery(enabled = true) {
   });
 }
 
-export function usePurchaseOrderMutation() {
+export function useCreateOrderMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: PurchaseOrderInput) => purchaseOrder(payload),
+    mutationFn: (payload: CreateOrderInput) => createOrder(payload),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       queryClient.invalidateQueries({ queryKey: walletKeys.all });

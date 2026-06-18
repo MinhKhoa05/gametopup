@@ -28,7 +28,7 @@ public sealed class OrderFlowTests : BaseIntegrationTest
         using var memberClient = CreateAuthenticatedClient(member.Id, member.DisplayName, member.Email, member.Role);
         using var adminClient = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
 
-        var purchaseResponse = await memberClient.PostJsonAsync("/api/orders/purchase", new PurchaseOrderRequestDTO
+        var purchaseResponse = await memberClient.PostJsonAsync("/api/orders", new PurchaseOrderRequestDTO
         {
             GamePackageId = package.Id,
             GameAccountInfo = "  hero-account-01  "
@@ -40,7 +40,7 @@ public sealed class OrderFlowTests : BaseIntegrationTest
         var orderId = purchaseBody.Data;
         orderId.Should().BeGreaterThan(0);
 
-        var pickResponse = await adminClient.PostAsync($"/api/orders/{orderId}/pick", null);
+        var pickResponse = await adminClient.PostAsync($"/api/admin/orders/{orderId}/pick", null);
         pickResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var pickBody = await pickResponse.ReadApiResponseAsync<OrderActionResponseDTO>();
         pickBody.Success.Should().BeTrue();
@@ -50,7 +50,7 @@ public sealed class OrderFlowTests : BaseIntegrationTest
         pickBody.Data.ToStatus.Should().Be(OrderStatus.Processing);
         pickBody.Data.AssignTo.Should().Be(admin.Id);
 
-        var completeResponse = await adminClient.PostAsync($"/api/orders/{orderId}/complete", null);
+        var completeResponse = await adminClient.PostAsync($"/api/admin/orders/{orderId}/complete", null);
         completeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var completeBody = await completeResponse.ReadApiResponseAsync<OrderActionResponseDTO>();
         completeBody.Success.Should().BeTrue();
@@ -98,14 +98,14 @@ public sealed class OrderFlowTests : BaseIntegrationTest
         using var memberClient = CreateAuthenticatedClient(member.Id, member.DisplayName, member.Email, member.Role);
         using var adminClient = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
 
-        var purchaseResponse = await memberClient.PostJsonAsync("/api/orders/purchase", new PurchaseOrderRequestDTO
+        var purchaseResponse = await memberClient.PostJsonAsync("/api/orders", new PurchaseOrderRequestDTO
         {
             GamePackageId = package.Id,
             GameAccountInfo = "idempotent-pick-account"
         });
         var orderId = (await purchaseResponse.ReadApiResponseAsync<long>()).Data;
 
-        var firstPickResponse = await adminClient.PostAsync($"/api/orders/{orderId}/pick", null);
+        var firstPickResponse = await adminClient.PostAsync($"/api/admin/orders/{orderId}/pick", null);
         firstPickResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var firstPickBody = await firstPickResponse.ReadApiResponseAsync<OrderActionResponseDTO>();
         firstPickBody.Data.Should().NotBeNull();
@@ -117,7 +117,7 @@ public sealed class OrderFlowTests : BaseIntegrationTest
         var historyCountAfterFirstPick = await Factory.GetOrderHistoryCountAsync(orderId);
         historyCountAfterFirstPick.Should().Be(2);
 
-        var secondPickResponse = await adminClient.PostAsync($"/api/orders/{orderId}/pick", null);
+        var secondPickResponse = await adminClient.PostAsync($"/api/admin/orders/{orderId}/pick", null);
         secondPickResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var secondPickBody = await secondPickResponse.ReadApiResponseAsync<OrderActionResponseDTO>();
         secondPickBody.Data.Should().NotBeNull();
@@ -153,7 +153,7 @@ public sealed class OrderFlowTests : BaseIntegrationTest
         var purchaseOne = Task.Run(async () =>
         {
             await gate.Task;
-            return await clientOne.PostJsonAsync("/api/orders/purchase", new PurchaseOrderRequestDTO
+            return await clientOne.PostJsonAsync("/api/orders", new PurchaseOrderRequestDTO
             {
                 GamePackageId = package.Id,
                 GameAccountInfo = "buyer-one-account"
@@ -163,7 +163,7 @@ public sealed class OrderFlowTests : BaseIntegrationTest
         var purchaseTwo = Task.Run(async () =>
         {
             await gate.Task;
-            return await clientTwo.PostJsonAsync("/api/orders/purchase", new PurchaseOrderRequestDTO
+            return await clientTwo.PostJsonAsync("/api/orders", new PurchaseOrderRequestDTO
             {
                 GamePackageId = package.Id,
                 GameAccountInfo = "buyer-two-account"
@@ -221,7 +221,7 @@ public sealed class OrderFlowTests : BaseIntegrationTest
 
         using var memberClient = CreateAuthenticatedClient(member.Id, member.DisplayName, member.Email, member.Role);
 
-        var purchaseResponse = await memberClient.PostJsonAsync("/api/orders/purchase", new PurchaseOrderRequestDTO
+        var purchaseResponse = await memberClient.PostJsonAsync("/api/orders", new PurchaseOrderRequestDTO
         {
             GamePackageId = package.Id,
             GameAccountInfo = "hero-restore-test"

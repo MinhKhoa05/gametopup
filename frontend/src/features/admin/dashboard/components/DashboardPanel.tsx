@@ -13,11 +13,12 @@ import {
 import { routes } from '@/app/router/routes';
 import { AdminSkeleton } from '@/features/admin/components/AdminShared';
 import type { User } from '@/features/auth/types';
-import type { Game, GamePackage } from '@/features/games/types';
-import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
-import type { DepositRequest } from '@/features/wallet/types';
+import type { GamePackage } from '@/features/games/types';
+import type { AdminGameSummary } from '@/features/admin/games/api';
+import { getDepositRequestStatus } from '@/features/deposits/lib/deposit-request-status';
+import type { AdminDepositRequest } from '@/features/deposits/types';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
-import type { Order } from '@/features/orders/types';
+import type { AdminOrderSummary } from '@/features/orders/types';
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, IconBox, ImageBox, MediaListItem, PageHero, PanelShell, SearchBar, SectionHeading, StatCard } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
@@ -89,11 +90,11 @@ export function DashboardPanel({
   packages,
   users,
 }: {
-  depositRequests: DepositRequest[];
-  games: Game[];
+  depositRequests: AdminDepositRequest[];
+  games: AdminGameSummary[];
   loading: boolean;
   metrics: AdminCatalogMetrics;
-  orders: Order[];
+  orders: AdminOrderSummary[];
   packages: GamePackage[];
   users: User[];
 }) {
@@ -444,9 +445,9 @@ function buildQueueItems({
   orders,
   packages,
 }: {
-  depositRequests: DepositRequest[];
-  games: Game[];
-  orders: Order[];
+  depositRequests: AdminDepositRequest[];
+  games: AdminGameSummary[];
+  orders: AdminOrderSummary[];
   packages: GamePackage[];
 }) {
   const gameById = new Map(games.map((game) => [game.id, game]));
@@ -486,12 +487,12 @@ function buildQueueItems({
       actionHref: routes.admin('deposits'),
       amountLabel: amount,
       createdAt: request.createdAt,
-      description: `${request.code} · ${request.bankId}`,
+      description: `User #${request.userId} · ${request.code}`,
       id: `deposit-${request.id}`,
       imageAlt: '',
       imageUrl: null,
       kind: 'deposit',
-      searchText: [request.code, request.bankId, request.accountName, request.accountNo, statusMeta.label, amount].join(' ').toLowerCase(),
+      searchText: [request.code, request.userId, statusMeta.label, amount].join(' ').toLowerCase(),
       sortValue: new Date(request.createdAt).getTime(),
       statusIcon: statusMeta.icon,
       statusLabel: statusMeta.label,
@@ -503,7 +504,7 @@ function buildQueueItems({
   return [...orderItems, ...depositItems].sort((left, right) => right.sortValue - left.sortValue);
 }
 
-function buildWatchItems(packages: GamePackage[], games: Game[]) {
+function buildWatchItems(packages: GamePackage[], games: AdminGameSummary[]) {
   const gameById = new Map(games.map((game) => [game.id, game]));
 
   return packages
@@ -533,7 +534,7 @@ function buildRecentUsers(users: User[]) {
     .slice(0, 4);
 }
 
-function countOrdersToday(orders: Order[]) {
+function countOrdersToday(orders: AdminOrderSummary[]) {
   const today = new Date();
 
   return orders.filter((order) => {

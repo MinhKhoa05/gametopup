@@ -6,13 +6,11 @@ import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import type { User } from '@/features/auth/types';
 import { formatUserRoleLabel, isAdminUserRole } from '@/features/auth/userRole';
-import type { Game } from '@/features/games/types';
-import { useGamesQuery } from '@/features/games/server';
 import { buildOrderHistoryItems } from '@/features/orders/components/OrderHistorySections';
 import type { Order } from '@/features/orders/types';
 import { useMyOrdersQuery } from '@/features/orders/server';
 import { useUpdateMyProfileMutation } from '@/features/profile/server';
-import { useWalletBalanceQuery, useWalletTransactionsQuery } from '@/features/wallet/server';
+import { useWalletOverviewQuery } from '@/features/wallet/server';
 import { Button, EmptyState, ImageBox, PanelShell, PageHero, SectionHeading } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency } from '@/shared/lib/format';
@@ -42,10 +40,8 @@ export function ProfilePage() {
 
 function ProfileContent({ user }: { user: User }) {
   const navigate = useNavigate();
-  const walletQuery = useWalletBalanceQuery(true);
-  const walletTransactionsQuery = useWalletTransactionsQuery(true);
+  const walletOverviewQuery = useWalletOverviewQuery(true);
   const ordersQuery = useMyOrdersQuery();
-  const gamesQuery = useGamesQuery();
   const updateProfileMutation = useUpdateMyProfileMutation();
   const [draftName, setDraftName] = useState('');
   const vipRef = useRef<HTMLDivElement | null>(null);
@@ -61,7 +57,7 @@ function ProfileContent({ user }: { user: User }) {
 
   const stats = useMemo(() => {
     const orders = ordersQuery.data ?? [];
-    const transactions = walletTransactionsQuery.data ?? [];
+    const transactions = walletOverviewQuery.data?.transactions ?? [];
 
     const completedOrders = orders.filter((order) => order.status === 3).length;
     const totalDeposited = transactions.reduce((sum, transaction) => (transaction.type === 1 ? sum + transaction.amount : sum), 0);
@@ -70,13 +66,13 @@ function ProfileContent({ user }: { user: User }) {
       completedOrders,
       ordersCount: orders.length,
       totalDeposited,
-      walletBalance: walletQuery.data ?? 0,
+      walletBalance: walletOverviewQuery.data?.balance ?? 0,
     };
-  }, [ordersQuery.data, walletQuery.data, walletTransactionsQuery.data]);
+  }, [ordersQuery.data, walletOverviewQuery.data]);
 
   const tier = resolveVipTier(stats.totalDeposited);
-  const favoriteGames = useMemo(() => buildFavoriteGames(ordersQuery.data ?? [], gamesQuery.data ?? []), [gamesQuery.data, ordersQuery.data]);
-  const loading = (walletQuery.isPending && walletQuery.data == null) || (walletTransactionsQuery.isPending && walletTransactionsQuery.data == null) || (ordersQuery.isPending && ordersQuery.data == null) || (gamesQuery.isPending && gamesQuery.data == null);
+  const favoriteGames = useMemo(() => buildFavoriteGames(ordersQuery.data ?? []), [ordersQuery.data]);
+  const loading = (walletOverviewQuery.isPending && walletOverviewQuery.data == null) || (ordersQuery.isPending && ordersQuery.data == null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -411,9 +407,9 @@ function getInitials(displayName: string, fallbackEmail: string) {
   return base.slice(0, 2).toUpperCase();
 }
 
-function buildFavoriteGames(orders: Order[], games: Game[]) {
+function buildFavoriteGames(orders: Order[]) {
   const grouped = new Map<string, FavoriteGameCard>();
-  const historyItems = buildOrderHistoryItems(orders, games);
+  const historyItems = buildOrderHistoryItems(orders);
 
   for (const item of historyItems) {
     const existing = grouped.get(item.gameKey);

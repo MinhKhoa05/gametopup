@@ -1,6 +1,6 @@
 import { CheckCircle2, CircleSlash, Clock3, Send, TriangleAlert, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import type { Order } from '@/features/orders/types';
+import type { AdminOrderSummary } from '@/features/orders/types';
 import type { User } from '@/features/auth/types';
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, ImageBox, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
@@ -10,7 +10,7 @@ import { DEFAULT_IMAGE_SRC } from '@/shared/lib/image';
 type OrdersAdminPanelState = {
   filters: Array<{ key: 'all' | 'pending' | 'processing' | 'completed' | 'cancelled'; label: string }>;
   filter: 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
-  filteredOrders: Order[];
+  filteredOrders: AdminOrderSummary[];
   query: string;
   setFilter: (value: 'all' | 'pending' | 'processing' | 'completed' | 'cancelled') => void;
   setQuery: (value: string) => void;
@@ -32,7 +32,7 @@ export function OrdersAdminPanel({
   onCancelOrder: (orderId: number) => Promise<void>;
   onCompleteOrder: (orderId: number) => Promise<void>;
   onPickOrder: (orderId: number) => Promise<void>;
-  orders: Order[];
+  orders: AdminOrderSummary[];
   state: OrdersAdminPanelState;
 }) {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
@@ -84,7 +84,7 @@ export function OrdersAdminPanel({
               {state.filteredOrders.map((order) => {
                 const isSelected = order.id === selectedOrder?.id;
                 const statusMeta = getOrderStatusMeta(order.status);
-                const total = order.total ?? order.unitPrice;
+                const total = order.total;
 
                 return (
                   <MediaListItem
@@ -184,7 +184,7 @@ export function OrdersAdminPanel({
   );
 }
 
-function summarizeOrders(orders: Order[]) {
+function summarizeOrders(orders: AdminOrderSummary[]) {
   return orders.reduce(
     (result, order) => {
       result.total += 1;
@@ -199,11 +199,11 @@ function summarizeOrders(orders: Order[]) {
   );
 }
 
-function canPick(order: Order) {
+function canPick(order: AdminOrderSummary) {
   return order.status === 1;
 }
 
-function canAct(order: Order, currentAdminId: number | null) {
+function canAct(order: AdminOrderSummary, currentAdminId: number | null) {
   return order.status === 2 && order.assignedTo === currentAdminId;
 }
 

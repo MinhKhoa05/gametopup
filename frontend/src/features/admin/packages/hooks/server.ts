@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { toast } from 'sonner';
 import { gamesKeys } from '@/features/games/server';
 import { packagesKeys } from '@/features/packages/server';
+import { adminGamesKeys } from '@/features/admin/games/hooks';
 import { adminPackagesKeys, createAdminPackage, deleteAdminPackage, getAdminPackages, updateAdminPackage } from '../api';
 import type { AdminPackageInput, AdminPackageUpdateInput } from '../api';
 
@@ -23,6 +24,7 @@ export function useCreateAdminPackageMutation() {
     mutationFn: (payload: Omit<AdminPackageInput, 'id'>) => createAdminPackage(payload),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: gamesKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminGamesKeys.all });
       queryClient.invalidateQueries({ queryKey: packagesKeys.all });
       queryClient.invalidateQueries({ queryKey: adminPackagesKeys.all });
       toast.success('Đã tạo gói nạp mới.');
@@ -37,6 +39,7 @@ export function useUpdateAdminPackageMutation() {
     mutationFn: (payload: AdminPackageUpdateInput) => updateAdminPackage(payload),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: gamesKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminGamesKeys.all });
       queryClient.invalidateQueries({ queryKey: packagesKeys.all });
       queryClient.invalidateQueries({ queryKey: adminPackagesKeys.all });
       toast.success('Đã cập nhật gói nạp.');
@@ -51,6 +54,7 @@ export function useDeleteAdminPackageMutation() {
     mutationFn: (payload: Required<Pick<AdminPackageInput, 'id'>>) => deleteAdminPackage(payload),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: gamesKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminGamesKeys.all });
       queryClient.invalidateQueries({ queryKey: packagesKeys.all });
       queryClient.invalidateQueries({ queryKey: adminPackagesKeys.all });
       toast.success('Đã xóa gói nạp.');

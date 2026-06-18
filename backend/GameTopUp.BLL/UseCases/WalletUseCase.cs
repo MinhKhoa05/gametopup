@@ -23,17 +23,17 @@ public sealed class WalletUseCase
         _database = database;
     }
 
-    public Task<DepositRequestResponseDTO> CreateDepositRequestAsync(UserContext context, decimal amount)
+    public Task<WalletDepositRequestResponseDTO> CreateDepositRequestAsync(UserContext context, decimal amount)
     {
         return _depositRequestService.CreateAsync(context, amount);
     }
 
-    public async Task<DepositRequestResponseDTO> ConfirmDepositTransferAsync(long requestId, UserContext user)
+    public async Task<WalletDepositRequestResponseDTO> ConfirmDepositTransferAsync(long requestId, UserContext user)
     {
         return await _database.ExecuteInTransactionAsync(() => _depositRequestService.ConfirmTransferAsync(requestId, user));
     }
 
-    public async Task<DepositRequestResponseDTO> ApproveDepositRequestAsync(long requestId, UserContext admin, string? note = null)
+    public async Task<AdminDepositRequestResponseDTO> ApproveDepositRequestAsync(long requestId, UserContext admin, string? note = null)
     {
         return await _database.ExecuteInTransactionAsync(async () =>
         {
@@ -41,7 +41,7 @@ public sealed class WalletUseCase
 
             if (request.Status == WalletDepositRequestStatus.Approved)
             {
-                return _depositRequestService.MapToResponse(request);
+                return _depositRequestService.MapToAdminResponse(request);
             }
 
             if (request.Status != WalletDepositRequestStatus.UserConfirmed)
@@ -52,17 +52,17 @@ public sealed class WalletUseCase
             await _walletService.DepositFromVietQrAsync(request.UserId, request.Amount, request.Code);
             await _depositRequestService.MarkApprovedAsync(request, admin, note);
 
-            return _depositRequestService.MapToResponse(request);
+            return _depositRequestService.MapToAdminResponse(request);
         });
     }
 
-    public async Task<DepositRequestResponseDTO> RejectDepositRequestAsync(long requestId, UserContext admin, string? note = null)
+    public async Task<AdminDepositRequestResponseDTO> RejectDepositRequestAsync(long requestId, UserContext admin, string? note = null)
     {
         return await _database.ExecuteInTransactionAsync(async () =>
         {
             var request = await _depositRequestService.GetWithLockByIdOrThrowAsync(requestId);
             await _depositRequestService.MarkRejectedAsync(request, admin, note);
-            return _depositRequestService.MapToResponse(request);
+            return _depositRequestService.MapToAdminResponse(request);
         });
     }
 }

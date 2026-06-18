@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
-import type { DepositRequest } from '@/features/wallet/types';
+import { getDepositRequestStatus } from '@/features/deposits/lib/deposit-request-status';
+import type { AdminDepositRequest } from '@/features/deposits/types';
 
 type DepositRequestFilter = 'all' | 'pending' | 'user-confirmed' | 'approved' | 'rejected';
 
@@ -19,7 +19,7 @@ export function useAdminDepositRequestsPageState({
 }: {
   onApproveRequest: (payload: { note?: string; requestId: number }) => Promise<void>;
   onRejectRequest: (payload: { note?: string; requestId: number }) => Promise<void>;
-  requests: DepositRequest[];
+  requests: AdminDepositRequest[];
 }) {
   const [filter, setFilter] = useState<DepositRequestFilter>('all');
   const [query, setQuery] = useState('');
@@ -45,10 +45,6 @@ export function useAdminDepositRequestsPageState({
         String(request.userId),
         String(request.amount),
         request.code,
-        request.transferContent,
-        request.bankId ?? '',
-        request.accountNo ?? '',
-        request.accountName ?? '',
         getDepositRequestStatus(request.status).label,
       ]
         .join(' ')
@@ -68,7 +64,7 @@ export function useAdminDepositRequestsPageState({
     setReviewNote(firstRequest.adminNote ?? '');
   }, [filteredRequests, selectedRequest]);
 
-  function selectRequest(request: DepositRequest) {
+  function selectRequest(request: AdminDepositRequest) {
     setSelectedRequestId(request.id);
     setReviewNote(request.adminNote ?? '');
   }
@@ -83,7 +79,7 @@ export function useAdminDepositRequestsPageState({
     setQuery('');
   }
 
-  async function reviewRequest(action: 'approve' | 'reject', request: DepositRequest, note = reviewNote) {
+  async function reviewRequest(action: 'approve' | 'reject', request: AdminDepositRequest, note = reviewNote) {
     const payload = {
       note: note.trim() || undefined,
       requestId: request.id,

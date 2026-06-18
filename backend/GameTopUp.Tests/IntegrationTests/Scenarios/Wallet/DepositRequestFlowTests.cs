@@ -25,30 +25,30 @@ public sealed class DepositRequestFlowTests : BaseIntegrationTest
         using var memberClient = CreateAuthenticatedClient(member.Id, member.DisplayName, member.Email, member.Role);
         using var adminClient = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
 
-        var createResponse = await memberClient.PostJsonAsync("/api/wallet/deposit-requests", new CreateDepositRequest
+        var createResponse = await memberClient.PostJsonAsync("/api/deposits", new CreateDepositRequest
         {
             Amount = 100000m
         });
 
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        var createBody = await createResponse.ReadApiResponseAsync<DepositRequestResponseDTO>();
+        var createBody = await createResponse.ReadApiResponseAsync<WalletDepositRequestResponseDTO>();
         createBody.Success.Should().BeTrue();
         createBody.Data.Should().NotBeNull();
         var requestId = createBody.Data!.Id;
         createBody.Data.Status.Should().Be(WalletDepositRequestStatus.Pending);
 
-        var confirmResponse = await memberClient.PostAsync($"/api/wallet/deposit-requests/{requestId}/confirm-transfer", null);
+        var confirmResponse = await memberClient.PostAsync($"/api/deposits/{requestId}/confirm", null);
         confirmResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var confirmBody = await confirmResponse.ReadApiResponseAsync<DepositRequestResponseDTO>();
+        var confirmBody = await confirmResponse.ReadApiResponseAsync<WalletDepositRequestResponseDTO>();
         confirmBody.Data.Should().NotBeNull();
         confirmBody.Data!.Status.Should().Be(WalletDepositRequestStatus.UserConfirmed);
 
-        var approveResponse = await adminClient.PostJsonAsync($"/api/wallet/deposit-requests/{requestId}/approve", new ReviewDepositRequest
+        var approveResponse = await adminClient.PostJsonAsync($"/api/admin/deposits/{requestId}/approve", new ReviewDepositRequest
         {
             Note = "verified"
         });
         approveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var approveBody = await approveResponse.ReadApiResponseAsync<DepositRequestResponseDTO>();
+        var approveBody = await approveResponse.ReadApiResponseAsync<AdminDepositRequestResponseDTO>();
         approveBody.Data.Should().NotBeNull();
         approveBody.Data!.Status.Should().Be(WalletDepositRequestStatus.Approved);
         approveBody.Data.ReviewedBy.Should().Be(admin.Id);
@@ -61,7 +61,7 @@ public sealed class DepositRequestFlowTests : BaseIntegrationTest
         var transactions = await Factory.GetWalletTransactionsAsync(member.Id);
         transactions.Should().ContainSingle(transaction => transaction.Type == WalletTransactionType.Deposit && transaction.Amount == 100000m);
 
-        var approveAgainResponse = await adminClient.PostJsonAsync($"/api/wallet/deposit-requests/{requestId}/approve", new ReviewDepositRequest
+        var approveAgainResponse = await adminClient.PostJsonAsync($"/api/admin/deposits/{requestId}/approve", new ReviewDepositRequest
         {
             Note = "verified again"
         });
@@ -82,16 +82,15 @@ public sealed class DepositRequestFlowTests : BaseIntegrationTest
 
         using var memberClient = CreateAuthenticatedClient(member.Id, member.DisplayName, member.Email, member.Role);
 
-        var allResponse = await memberClient.GetAsync("/api/wallet/deposit-requests/me");
+        var allResponse = await memberClient.GetAsync("/api/deposits");
         allResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var allBody = await allResponse.ReadApiResponseAsync<List<DepositRequestResponseDTO>>();
+        var allBody = await allResponse.ReadApiResponseAsync<List<WalletDepositRequestResponseDTO>>();
         allBody.Data.Should().NotBeNull();
-        allBody.Data!.Should().OnlyContain(request => request.UserId == member.Id);
         allBody.Data.Should().HaveCount(2);
 
-        var filteredResponse = await memberClient.GetAsync($"/api/wallet/deposit-requests/me?status={WalletDepositRequestStatus.UserConfirmed}");
+        var filteredResponse = await memberClient.GetAsync($"/api/deposits?status={WalletDepositRequestStatus.UserConfirmed}");
         filteredResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var filteredBody = await filteredResponse.ReadApiResponseAsync<List<DepositRequestResponseDTO>>();
+        var filteredBody = await filteredResponse.ReadApiResponseAsync<List<WalletDepositRequestResponseDTO>>();
         filteredBody.Data.Should().NotBeNull();
         filteredBody.Data!.Should().ContainSingle(request => request.Status == WalletDepositRequestStatus.UserConfirmed);
     }
@@ -102,13 +101,13 @@ public sealed class DepositRequestFlowTests : BaseIntegrationTest
         var member = await Factory.SeedUserAsync(UserRole.Member);
         using var memberClient = CreateAuthenticatedClient(member.Id, member.DisplayName, member.Email, member.Role);
 
-        var zeroResponse = await memberClient.PostJsonAsync("/api/wallet/deposit-requests", new CreateDepositRequest
+        var zeroResponse = await memberClient.PostJsonAsync("/api/deposits", new CreateDepositRequest
         {
             Amount = 0m
         });
         zeroResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var decimalResponse = await memberClient.PostJsonAsync("/api/wallet/deposit-requests", new CreateDepositRequest
+        var decimalResponse = await memberClient.PostJsonAsync("/api/deposits", new CreateDepositRequest
         {
             Amount = 100000.5m
         });
@@ -123,7 +122,7 @@ public sealed class DepositRequestFlowTests : BaseIntegrationTest
         var request = await Factory.SeedDepositRequestAsync(owner.Id, 50000m, WalletDepositRequestStatus.Pending);
         using var attackerClient = CreateAuthenticatedClient(attacker.Id, attacker.DisplayName, attacker.Email, attacker.Role);
 
-        var response = await attackerClient.PostAsync($"/api/wallet/deposit-requests/{request.Id}/confirm-transfer", null);
+        var response = await attackerClient.PostAsync($"/api/deposits/{request.Id}/confirm", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -137,16 +136,16 @@ public sealed class DepositRequestFlowTests : BaseIntegrationTest
 
         using var adminClient = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
 
-        var pendingRejectResponse = await adminClient.PostJsonAsync($"/api/wallet/deposit-requests/{pending.Id}/reject", new ReviewDepositRequest
+        var pendingRejectResponse = await adminClient.PostJsonAsync($"/api/admin/deposits/{pending.Id}/reject", new ReviewDepositRequest
         {
             Note = "invalid proof"
         });
         pendingRejectResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var pendingRejectBody = await pendingRejectResponse.ReadApiResponseAsync<DepositRequestResponseDTO>();
+        var pendingRejectBody = await pendingRejectResponse.ReadApiResponseAsync<AdminDepositRequestResponseDTO>();
         pendingRejectBody.Data.Should().NotBeNull();
         pendingRejectBody.Data!.Status.Should().Be(WalletDepositRequestStatus.Rejected);
 
-        var approvedRejectResponse = await adminClient.PostJsonAsync($"/api/wallet/deposit-requests/{approved.Id}/reject", new ReviewDepositRequest
+        var approvedRejectResponse = await adminClient.PostJsonAsync($"/api/admin/deposits/{approved.Id}/reject", new ReviewDepositRequest
         {
             Note = "too late"
         });
@@ -162,7 +161,7 @@ public sealed class DepositRequestFlowTests : BaseIntegrationTest
         var request = await Factory.SeedDepositRequestAsync((await Factory.SeedUserAsync()).Id, 50000m, WalletDepositRequestStatus.Pending);
         using var adminClient = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
 
-        var response = await adminClient.PostJsonAsync($"/api/wallet/deposit-requests/{request.Id}/approve", new ReviewDepositRequest
+        var response = await adminClient.PostJsonAsync($"/api/admin/deposits/{request.Id}/approve", new ReviewDepositRequest
         {
             Note = "cannot approve yet"
         });
@@ -179,7 +178,7 @@ public sealed class DepositRequestFlowTests : BaseIntegrationTest
         var member = await Factory.SeedUserAsync(UserRole.Member);
         using var memberClient = CreateAuthenticatedClient(member.Id, member.DisplayName, member.Email, member.Role);
 
-        var response = await memberClient.GetAsync("/api/wallet/deposit-requests");
+        var response = await memberClient.GetAsync("/api/admin/deposits");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -192,7 +191,7 @@ public sealed class DepositRequestFlowTests : BaseIntegrationTest
 
         using var memberClient = CreateAuthenticatedClient(member.Id, member.DisplayName, member.Email, member.Role);
 
-        var response = await memberClient.PostJsonAsync($"/api/wallet/deposit-requests/{request.Id}/approve", new ReviewDepositRequest
+        var response = await memberClient.PostJsonAsync($"/api/admin/deposits/{request.Id}/approve", new ReviewDepositRequest
         {
             Note = "not allowed"
         });

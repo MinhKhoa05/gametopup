@@ -1,4 +1,4 @@
-import type { Order } from '@/features/orders/types';
+import type { AdminOrderSummary } from '@/features/orders/types';
 
 export type DashboardDay = {
   iso: string;
@@ -6,7 +6,7 @@ export type DashboardDay = {
   value: number;
 };
 
-export function buildRevenueSeries(orders: Order[]) {
+export function buildRevenueSeries(orders: AdminOrderSummary[]) {
   const days = buildLastDays(7);
   const valuesByDay = new Map<string, number>();
 

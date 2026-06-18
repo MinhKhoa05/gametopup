@@ -74,7 +74,7 @@ public sealed class UserProfileTests : BaseIntegrationTest
         var target = await Factory.SeedUserAsync(UserRole.Member);
         using var client = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
 
-        var deleteResponse = await client.DeleteAsync($"/api/users/{target.Id}");
+        var deleteResponse = await client.DeleteAsync($"/api/admin/users/{target.Id}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var deleted = await Factory.GetUserAsync(target.Id);

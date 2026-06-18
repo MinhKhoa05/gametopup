@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { CheckCircle2, Clock3, ClipboardList, History, TimerReset, XCircle } from 'lucide-react';
-import type { Game } from '@/features/games/types';
 import type { Order } from '@/features/orders/types';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
 import { formatCurrency, formatDate, formatRelativeTime } from '@/shared/lib/format';
@@ -82,9 +81,9 @@ const ORDER_VISUAL_FALLBACKS = [
   },
 ] as const;
 
-export function buildOrderHistoryItems(orders: Order[], games: Game[]): OrderHistoryItem[] {
+export function buildOrderHistoryItems(orders: Order[]): OrderHistoryItem[] {
   return orders.map((order, index) => {
-    const visual = resolveVisual(order, index, games);
+    const visual = resolveVisual(order, index);
     const amount = order.total ?? order.unitPrice;
     const status = getOrderStatusMeta(order.status, getOrderStatusIcon(order.status));
     const createdAtLabel = formatDate(order.createdAt);
@@ -302,27 +301,17 @@ function shiftMinutes(value: string, minutes: number) {
   return new Date(date.getTime() + minutes * 60 * 1000).toISOString();
 }
 
-function resolveVisual(order: Order, index: number, games: Game[]) {
-  if (games.length) {
-    const game = games[(order.gamePackageId + index) % games.length];
-    if (game) {
-      return {
-        accent: ORDER_VISUAL_FALLBACKS[index % ORDER_VISUAL_FALLBACKS.length].accent,
-        gameKey: `game-${game.id}`,
-        gameName: game.name,
-        imageUrl: game.imageUrl,
-        packageName: getPackageLabel(game.name, index),
-      };
-    }
-  }
-
+function resolveVisual(order: Order, index: number) {
   const fallback = ORDER_VISUAL_FALLBACKS[index % ORDER_VISUAL_FALLBACKS.length];
+  const gameName = order.gameName?.trim() || fallback.gameName;
+  const packageName = order.packageName?.trim() || getPackageLabel(gameName, index);
+
   return {
     accent: fallback.accent,
-    gameKey: fallback.gameKey,
-    gameName: fallback.gameName,
-    imageUrl: null,
-    packageName: fallback.packageName,
+    gameKey: order.gameId ? `game-${order.gameId}` : fallback.gameKey,
+    gameName,
+    imageUrl: order.gameImageUrl ?? null,
+    packageName,
   };
 }
 

@@ -30,7 +30,7 @@ public static class MultipartFormDataHttpClientExtensions
             content.Add(new StringContent(field.Value), field.Key);
         }
 
-        content.Add(fileContent, "image", "image.png");
+        content.Add(fileContent, "imageFile", "image.png");
         return content;
     }
 }

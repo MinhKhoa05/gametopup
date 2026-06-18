@@ -4,9 +4,9 @@ import { toast } from 'sonner';
 import { Badge, Button, DetailRow } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency } from '@/shared/lib/format';
-import { getDepositRequestStatus } from '@/features/wallet/lib/deposit-request-status';
-import { useConfirmDepositTransferMutation, useCreateDepositRequestMutation } from '@/features/wallet/server';
-import type { DepositRequest } from '@/features/wallet/types';
+import { getDepositRequestStatus } from '@/features/deposits/lib/deposit-request-status';
+import { useConfirmDepositTransferMutation, useCreateDepositRequestMutation } from '@/features/deposits/server';
+import type { WalletDepositRequest } from '@/features/deposits/types';
 
 type WalletDepositDialogProps = {
   isOpen: boolean;
@@ -26,7 +26,7 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
   const [amount, setAmount] = useState('100000');
   const [amountError, setAmountError] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [request, setRequest] = useState<DepositRequest | null>(null);
+  const [request, setRequest] = useState<WalletDepositRequest | null>(null);
   const isBusy = createDepositMutation.isPending || confirmDepositMutation.isPending;
 
   const formattedAmount = useMemo(() => (amount ? formatCurrency(Number(amount)) : ''), [amount]);

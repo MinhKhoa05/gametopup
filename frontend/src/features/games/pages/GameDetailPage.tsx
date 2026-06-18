@@ -6,8 +6,9 @@ import { SiteCredits } from '@/app/site-shell/SiteCredits';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { useGamesQuery } from '@/features/games/server';
+import type { PublicGame } from '@/features/games/contracts';
 import { useGamePackagesQuery } from '@/features/packages/server';
-import { usePurchaseOrderMutation } from '@/features/orders/server';
+import { useCreateOrderMutation } from '@/features/orders/server';
 import { useWalletBalanceQuery } from '@/features/wallet/server';
 import { EmptyState, ImageBox, PageHero } from '@/shared/components';
 import { GameDetailPageSkeleton } from '@/features/games/components/GameDetailLayout';
@@ -53,7 +54,7 @@ export function GameDetailPage() {
   const { gameId: gameIdParam } = useParams<{ gameId?: string }>();
   const auth = useAuthSession();
   const gamesQuery = useGamesQuery();
-  const purchaseOrderMutation = usePurchaseOrderMutation();
+  const createOrderMutation = useCreateOrderMutation();
   const walletQuery = useWalletBalanceQuery(auth.status === 'authenticated');
   const [draftState, dispatch] = useReducer(draftReducer, initialDraftState);
   const [isConfirmOpen, setConfirmOpen] = useState(false);
@@ -63,7 +64,7 @@ export function GameDetailPage() {
 
   const gameId = Number(gameIdParam);
 
-  const game = useMemo(() => {
+  const game = useMemo<PublicGame | null>(() => {
     if (!gameId) {
       return null;
     }
@@ -104,7 +105,7 @@ export function GameDetailPage() {
   const selectedPackage = packages.find((item) => item.id === draftState.selectedPackageId) ?? null;
   const walletBalance = walletQuery.data ?? 0;
   const walletLoading = walletQuery.isPending && !walletQuery.data;
-  const busy = purchaseOrderMutation.isPending;
+  const busy = createOrderMutation.isPending;
   const canRequestPurchase = !!selectedPackage && !walletLoading && auth.status === 'authenticated' && selectedPackage.salePrice <= walletBalance;
 
   const handleRequestPurchase = () => {
@@ -145,7 +146,7 @@ export function GameDetailPage() {
 
     void (async () => {
       try {
-        const orderId = await purchaseOrderMutation.mutateAsync({
+        const orderId = await createOrderMutation.mutateAsync({
           gamePackageId: selectedPackage.id,
           gameAccountInfo,
         });

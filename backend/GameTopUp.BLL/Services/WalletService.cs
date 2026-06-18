@@ -1,6 +1,7 @@
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Wallets;
 using GameTopUp.BLL.Exceptions;
+using GameTopUp.BLL.Mappers.Wallets;
 using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.DAL.Interfaces.Wallets;
 
@@ -28,7 +29,7 @@ public sealed class WalletService
     public async Task<List<WalletTransactionInfo>> GetTransactionsAsync(UserContext context)
     {
         var transactions = await _transactionRepository.GetByUserIdAsync(context.UserId);
-        return transactions.Select(MapToInfo).ToList();
+        return transactions.Select(WalletMapper.ToTransactionResponse).ToList();
     }
 
     public async Task<TransactionResponseDTO> DepositAsync(long userId, decimal amount)
@@ -121,21 +122,5 @@ public sealed class WalletService
 
         var transactionId = await _transactionRepository.CreateAsync(transaction);
         return new TransactionResponseDTO { TransactionId = transactionId };
-    }
-
-    private static WalletTransactionInfo MapToInfo(WalletTransaction transaction)
-    {
-        return new WalletTransactionInfo
-        {
-            Id = transaction.Id,
-            UserId = transaction.UserId,
-            Amount = transaction.Amount,
-            BalanceBefore = transaction.BalanceBefore,
-            BalanceAfter = transaction.BalanceAfter,
-            Type = transaction.Type,
-            Description = transaction.Description,
-            ReferenceId = transaction.OrderId,
-            CreatedAt = transaction.CreatedAt
-        };
     }
 }

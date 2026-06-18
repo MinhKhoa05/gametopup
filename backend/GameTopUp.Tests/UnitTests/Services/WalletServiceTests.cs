@@ -208,13 +208,12 @@ public class WalletServiceTests
         transactions.Should().ContainSingle();
         var transaction = transactions.Single();
         transaction.Id.Should().Be(15);
-        transaction.UserId.Should().Be(7);
         transaction.Amount.Should().Be(250m);
         transaction.BalanceBefore.Should().Be(100m);
         transaction.BalanceAfter.Should().Be(350m);
         transaction.Type.Should().Be(WalletTransactionType.Deposit);
         transaction.Description.Should().Be("Deposit wallet: 250 VND");
-        transaction.ReferenceId.Should().BeNull();
+        transaction.OrderId.Should().BeNull();
         transaction.CreatedAt.Should().Be(new DateTime(2025, 01, 02, 03, 04, 05, DateTimeKind.Utc));
     }
 }

@@ -1,4 +1,5 @@
 using GameTopUp.BLL.DTOs.GamePackages;
+using GameTopUp.BLL.DTOs.Images;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Interfaces;
 using GameTopUp.BLL.Services.Games;
@@ -20,44 +21,45 @@ public sealed class GamePackageUseCase
 
     public async Task<GamePackage> CreatePackageWithImageAsync(CreateGamePackageRequest request, IFormFile image)
     {
-        if (image == null || image.Length == 0)
+        request.ImageFile = image;
+        return await CreatePackageAsync(request);
+    }
+
+    public async Task<GamePackage> CreatePackageAsync(CreateGamePackageRequest request)
+    {
+        ImageStorageResult? uploadedImage = null;
+
+        if (request.ImageFile is not null)
         {
-            throw new BusinessException(ErrorCode.ImageRequired);
+            if (request.ImageFile.Length == 0)
+            {
+                throw new BusinessException(ErrorCode.ImageRequired);
+            }
+
+            uploadedImage = await _imageStorageService.UploadAsync(request.ImageFile, "game-packages");
+            request.ImageUrl = uploadedImage.Url;
+            request.ImageRelativePath = uploadedImage.RelativePath;
         }
 
-        var storedImage = await _imageStorageService.UploadAsync(image, "game-packages");
-        request.ImageUrl = storedImage.Url;
-        request.ImageRelativePath = storedImage.RelativePath;
+        try
+        {
+            return await _packageService.CreatePackageAsync(request);
+        }
+        catch
+        {
+            if (uploadedImage is not null)
+            {
+                await _imageStorageService.DeleteAsync(uploadedImage.RelativePath);
+            }
 
-        return await _packageService.CreatePackageAsync(request);
+            throw;
+        }
     }
 
     public async Task<GamePackage> UpdatePackageWithImageAsync(long id, UpdateGamePackageRequest request, IFormFile? image)
     {
-        var existingPackage = await _packageService.GetPackageByIdOrThrowAsync(id);
-        var previousImageUrl = existingPackage.ImageUrl;
-        var previousImageRelativePath = existingPackage.ImageRelativePath;
-
-        if (image is not null && image.Length > 0)
-        {
-            var storedImage = await _imageStorageService.UploadAsync(image, "game-packages");
-            request.ImageUrl = storedImage.Url;
-            request.ImageRelativePath = storedImage.RelativePath;
-        }
-        else
-        {
-            request.ImageUrl ??= existingPackage.ImageUrl;
-            request.ImageRelativePath ??= existingPackage.ImageRelativePath;
-        }
-
-        var updated = await _packageService.UpdatePackageAsync(id, request);
-
-        if (!string.IsNullOrWhiteSpace(request.ImageUrl) && request.ImageUrl != previousImageUrl)
-        {
-            await _imageStorageService.DeleteAsync(previousImageRelativePath);
-        }
-
-        return updated;
+        request.ImageFile = image;
+        return await UpdatePackageAsync(id, request);
     }
 
     public async Task<GamePackage> UpdatePackageAsync(long id, UpdateGamePackageRequest request)
@@ -65,14 +67,45 @@ public sealed class GamePackageUseCase
         var existingPackage = await _packageService.GetPackageByIdOrThrowAsync(id);
         var previousImageUrl = existingPackage.ImageUrl;
         var previousImageRelativePath = existingPackage.ImageRelativePath;
-        var updated = await _packageService.UpdatePackageAsync(id, request);
+        ImageStorageResult? uploadedImage = null;
 
-        if (!string.IsNullOrWhiteSpace(request.ImageUrl) && request.ImageUrl != previousImageUrl)
+        if (request.ImageFile is not null)
         {
-            await _imageStorageService.DeleteAsync(previousImageRelativePath);
+            if (request.ImageFile.Length == 0)
+            {
+                throw new BusinessException(ErrorCode.ImageRequired);
+            }
+
+            uploadedImage = await _imageStorageService.UploadAsync(request.ImageFile, "game-packages");
+            request.ImageUrl = uploadedImage.Url;
+            request.ImageRelativePath = uploadedImage.RelativePath;
+        }
+        else
+        {
+            request.ImageUrl ??= existingPackage.ImageUrl;
+            request.ImageRelativePath ??= existingPackage.ImageRelativePath;
         }
 
-        return updated;
+        try
+        {
+            var updated = await _packageService.UpdatePackageAsync(id, request);
+
+            if (!string.IsNullOrWhiteSpace(request.ImageUrl) && request.ImageUrl != previousImageUrl)
+            {
+                await _imageStorageService.DeleteAsync(previousImageRelativePath);
+            }
+
+            return updated;
+        }
+        catch
+        {
+            if (uploadedImage is not null)
+            {
+                await _imageStorageService.DeleteAsync(uploadedImage.RelativePath);
+            }
+
+            throw;
+        }
     }
 
     public async Task DeletePackageAsync(long id)

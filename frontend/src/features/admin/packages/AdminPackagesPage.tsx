@@ -1,10 +1,10 @@
-import { useGamesQuery } from '@/features/games/server';
+import { useAdminGamesQuery } from '@/features/admin/games/hooks';
 import { useAdminPackagesPageState, useAdminPackagesSection } from './hooks';
 import { PackagesAdminPanel } from '@/features/admin/packages/components/PackagesAdminPanel';
 
 export function AdminPackagesPage() {
   const section = useAdminPackagesSection();
-  const gamesQuery = useGamesQuery();
+  const gamesQuery = useAdminGamesQuery();
   const games = gamesQuery.data ?? [];
   const state = useAdminPackagesPageState({
     games,
