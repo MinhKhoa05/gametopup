@@ -2,10 +2,10 @@ using System.Net;
 using System.Text;
 using FluentAssertions;
 using GameTopUp.BLL.DTOs.GamePackages;
-using GameTopUp.BLL.DTOs.Games;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.DAL.Entities.Games;
 using GameTopUp.DAL.Entities.Users;
+using GameTopUp.DAL.Queries;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 using GameTopUp.Tests.IntegrationTests.Support;
 
@@ -81,7 +81,7 @@ public sealed class GameManagementTests : BaseIntegrationTest
         var response = await client.GetAsync("/api/admin/games");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.ReadApiResponseAsync<List<AdminGameSummaryResponse>>();
+        var body = await response.ReadApiResponseAsync<List<AdminGameSummaryRow>>();
         body.Success.Should().BeTrue();
         body.Data.Should().Contain(game => game.Id == activeGame.Id && game.PackageCount == 2);
         body.Data.Should().Contain(game => game.Id == inactiveGame.Id && game.PackageCount == 1);

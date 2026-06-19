@@ -1,6 +1,5 @@
 using GameTopUp.BLL.DTOs.GamePackages;
 using GameTopUp.BLL.Services.Games;
-using GameTopUp.BLL.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,12 +10,10 @@ namespace GameTopUp.Api.Controllers.Admin;
 public sealed class AdminGamePackageController : ApiControllerBase
 {
     private readonly GamePackageService _packageService;
-    private readonly GamePackageUseCase _packageUseCase;
 
-    public AdminGamePackageController(GamePackageService packageService, GamePackageUseCase packageUseCase)
+    public AdminGamePackageController(GamePackageService packageService)
     {
         _packageService = packageService;
-        _packageUseCase = packageUseCase;
     }
 
     [HttpGet]
@@ -31,7 +28,7 @@ public sealed class AdminGamePackageController : ApiControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromForm] CreateGamePackageRequest request)
     {
-        var package = await _packageUseCase.CreatePackageAsync(request);
+        var package = await _packageService.CreatePackageAsync(request);
         return ApiCreated(package);
     }
 
@@ -40,14 +37,14 @@ public sealed class AdminGamePackageController : ApiControllerBase
     [HttpPut("{id:long}")]
     public async Task<IActionResult> Update(long id, [FromForm] UpdateGamePackageRequest request)
     {
-        var package = await _packageUseCase.UpdatePackageAsync(id, request);
+        var package = await _packageService.UpdatePackageAsync(id, request);
         return ApiOk(package);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeletePackage(long id)
     {
-        await _packageUseCase.DeletePackageAsync(id);
+        await _packageService.DeletePackageAsync(id);
         return ApiOk();
     }
 }

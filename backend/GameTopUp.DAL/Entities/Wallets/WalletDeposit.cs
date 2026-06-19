@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GameTopUp.DAL.Entities.Wallets;
 
-[Table("wallet_deposit_requests")]
-public class WalletDepositRequest
+[Table("wallet_deposits")]
+public class WalletDeposit
 {
     [Key]
     public long Id { get; set; }
@@ -17,7 +17,7 @@ public class WalletDepositRequest
 
     public string TransferContent { get; set; } = string.Empty;
 
-    public WalletDepositRequestStatus Status { get; set; } = WalletDepositRequestStatus.Pending;
+    public WalletDepositStatus Status { get; set; } = WalletDepositStatus.Pending;
 
     public DateTime? UserConfirmedAt { get; set; }
 
@@ -31,7 +31,7 @@ public class WalletDepositRequest
 
     public DateTime UpdatedAt { get; set; }
 
-    public static WalletDepositRequest Create(
+    public static WalletDeposit Create(
         long userId,
         decimal amount,
         string code,
@@ -39,13 +39,13 @@ public class WalletDepositRequest
     {
         var now = DateTime.UtcNow;
 
-        return new WalletDepositRequest
+        return new WalletDeposit
         {
             UserId = userId,
             Amount = amount,
             Code = code,
             TransferContent = transferContent,
-            Status = WalletDepositRequestStatus.Pending,
+            Status = WalletDepositStatus.Pending,
             CreatedAt = now,
             UpdatedAt = now
         };
@@ -53,14 +53,14 @@ public class WalletDepositRequest
 
     public void MarkUserConfirmed(DateTime now)
     {
-        Status = WalletDepositRequestStatus.UserConfirmed;
+        Status = WalletDepositStatus.UserConfirmed;
         UserConfirmedAt = now;
         UpdatedAt = now;
     }
 
     public void MarkApproved(long reviewedBy, string? note, DateTime now)
     {
-        Status = WalletDepositRequestStatus.Approved;
+        Status = WalletDepositStatus.Approved;
         ReviewedBy = reviewedBy;
         ReviewedAt = now;
         AdminNote = note;
@@ -69,7 +69,7 @@ public class WalletDepositRequest
 
     public void MarkRejected(long reviewedBy, string? note, DateTime now)
     {
-        Status = WalletDepositRequestStatus.Rejected;
+        Status = WalletDepositStatus.Rejected;
         ReviewedBy = reviewedBy;
         ReviewedAt = now;
         AdminNote = note;

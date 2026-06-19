@@ -108,8 +108,8 @@ CREATE TABLE IF NOT EXISTS wallet_transactions (
     INDEX idx_tx_user_sort (user_id, created_at)
 ) ENGINE=InnoDB;
 
--- 6.1 Table: wallet_deposit_requests
-CREATE TABLE IF NOT EXISTS wallet_deposit_requests (
+-- 6.1 Table: wallet_deposits
+CREATE TABLE IF NOT EXISTS wallet_deposits (
     id BIGINT SIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT SIGNED NOT NULL,
     amount DECIMAL(18, 2) NOT NULL,
@@ -122,10 +122,10 @@ CREATE TABLE IF NOT EXISTS wallet_deposit_requests (
     admin_note TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_deposit_request_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_deposit_request_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
-    INDEX idx_deposit_requests_user_sort (user_id, created_at),
-    INDEX idx_deposit_requests_status_sort (status, created_at)
+    CONSTRAINT fk_deposit_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_deposit_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_deposits_user_sort (user_id, created_at),
+    INDEX idx_deposits_status_sort (status, created_at)
 ) ENGINE=InnoDB;
 
 -- 8. Table: order_history

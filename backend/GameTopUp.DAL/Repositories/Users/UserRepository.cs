@@ -27,18 +27,7 @@ public sealed class UserRepository : IUserRepository
             "UPDATE users SET password_hash = @PasswordHash WHERE id = @UserId",
             new { PasswordHash = newPasswordHash, UserId = userId });
 
-    public Task<IEnumerable<User>> GetAllAsync(int page, int pageSize)
-    {
-        return GetAllInternalAsync(page, pageSize);
-    }
-
-    public Task<int> DeleteAsync(long userId) =>
-        _database.ExecuteAsync("UPDATE users SET is_active = 0 WHERE id = @UserId", new { UserId = userId });
-
-    public Task<bool> ExistsByEmailAsync(string email) =>
-        _database.ExecuteScalarAsync<bool>("SELECT EXISTS(SELECT 1 FROM users WHERE email = @Email)", new { Email = email });
-
-    private async Task<IEnumerable<User>> GetAllInternalAsync(int page, int pageSize)
+    public async Task<IEnumerable<User>> GetAllAsync(int page, int pageSize)
     {
         var offset = (page - 1) * pageSize;
         var users = await _database.QueryAsync<User>(
@@ -47,4 +36,10 @@ public sealed class UserRepository : IUserRepository
 
         return users;
     }
+
+    public Task<int> DeleteAsync(long userId) =>
+        _database.ExecuteAsync("UPDATE users SET is_active = 0 WHERE id = @UserId", new { UserId = userId });
+
+    public Task<bool> ExistsByEmailAsync(string email) =>
+        _database.ExecuteScalarAsync<bool>("SELECT EXISTS(SELECT 1 FROM users WHERE email = @Email)", new { Email = email });
 }

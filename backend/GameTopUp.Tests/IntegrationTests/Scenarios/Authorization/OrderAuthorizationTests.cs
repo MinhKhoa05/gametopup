@@ -1,6 +1,7 @@
 using System.Net;
 using FluentAssertions;
 using GameTopUp.BLL.DTOs.Orders;
+using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.DAL.Entities.Users;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 using GameTopUp.Tests.IntegrationTests.Support;
@@ -29,8 +30,8 @@ public sealed class OrderAuthorizationTests : BaseIntegrationTest
             GamePackageId = package.Id,
             GameAccountInfo = "hero-authz"
         });
-        var purchaseBody = await purchaseResponse.ReadApiResponseAsync<long>();
-        var orderId = purchaseBody.Data;
+        var purchaseBody = await purchaseResponse.ReadApiResponseAsync<Order>();
+        var orderId = purchaseBody.Data!.Id;
 
         var pickResponse = await memberClient.PostAsync($"/api/admin/orders/{orderId}/pick", null);
 

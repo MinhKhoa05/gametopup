@@ -4,9 +4,6 @@ using GameTopUp.BLL.Interfaces;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.BLL.Services.Games;
-using GameTopUp.BLL.Queries.Games;
-using GameTopUp.BLL.Queries.Orders;
-using GameTopUp.BLL.Queries.Wallets;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Interfaces.Auth;
@@ -19,6 +16,8 @@ using GameTopUp.DAL.Repositories.Games;
 using GameTopUp.DAL.Repositories.Orders;
 using GameTopUp.DAL.Repositories.Users;
 using GameTopUp.DAL.Repositories.Wallets;
+using GameTopUp.DAL.Queries;
+using GameTopUp.DAL.Queries.Orders;
 
 namespace GameTopUp.Api.Extensions;
 
@@ -80,7 +79,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOrderHistoryRepository, OrderHistoryRepository>();
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
-        services.AddScoped<IWalletDepositRequestRepository, WalletDepositRequestRepository>();
+        services.AddScoped<IWalletDepositRepository, WalletDepositRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         return services;
@@ -90,20 +89,16 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<UserService>();
         services.AddScoped<GameService>();
+        services.AddScoped<GameQuery>();
         services.AddScoped<GamePackageService>();
         services.AddScoped<OrderService>();
         services.AddScoped<PasswordService>();
         services.AddScoped<TokenService>();
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<WalletService>();
-        services.AddScoped<WalletDepositRequestService>();
-        services.AddScoped<AdminGameQuery>();
-        services.AddScoped<MyOrderSummaryQuery>();
-        services.AddScoped<AdminOrderSummaryQuery>();
-        services.AddScoped<OrderTimelineQuery>();
-        services.AddScoped<WalletDepositRequestQuery>();
-        services.AddScoped<AdminDepositRequestQuery>();
-        services.AddScoped<WalletOverviewQuery>();
+        services.AddScoped<WalletDepositService>();
+        services.AddScoped<WalletDepositUseCase>();
+        services.AddScoped<OrderQuery>();
 
         return services;
     }
@@ -111,10 +106,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddUseCases(this IServiceCollection services)
     {
         services.AddScoped<AuthUseCase>();
-        services.AddScoped<GameUseCase>();
-        services.AddScoped<GamePackageUseCase>();
         services.AddScoped<OrderUseCase>();
-        services.AddScoped<WalletUseCase>();
         return services;
     }
 

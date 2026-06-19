@@ -35,29 +35,57 @@ public sealed class OrderFlowTests : BaseIntegrationTest
         });
 
         purchaseResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        var purchaseBody = await purchaseResponse.ReadApiResponseAsync<long>();
+        var purchaseBody = await purchaseResponse.ReadApiResponseAsync<Order>();
         purchaseBody.Success.Should().BeTrue();
-        var orderId = purchaseBody.Data;
+        purchaseBody.Data.Should().NotBeNull();
+        var orderId = purchaseBody.Data!.Id;
         orderId.Should().BeGreaterThan(0);
+
+        var orderAfterPurchase = await Factory.GetOrderAsync(orderId);
+        orderAfterPurchase.Should().NotBeNull();
+        orderAfterPurchase!.Status.Should().Be(OrderStatus.Pending);
+        orderAfterPurchase.GameAccountInfo.Should().Be("hero-account-01");
+        orderAfterPurchase.UserId.Should().Be(member.Id);
+
+        var historiesAfterPurchase = await Factory.GetOrderHistoriesAsync(orderId);
+        historiesAfterPurchase.Should().HaveCount(1);
+        historiesAfterPurchase.Single().FromStatus.Should().Be(OrderStatus.Pending);
+        historiesAfterPurchase.Single().ToStatus.Should().Be(OrderStatus.Pending);
+        historiesAfterPurchase.Single().Note.Should().Be("Order created in pending state.");
+
+        var walletAfterPurchase = await Factory.GetWalletAsync(member.Id);
+        walletAfterPurchase.Should().NotBeNull();
+        walletAfterPurchase!.Balance.Should().Be(750m);
+
+        var packageAfterPurchase = await Factory.GetGamePackageAsync(package.Id);
+        packageAfterPurchase.Should().NotBeNull();
+        packageAfterPurchase!.StockQuantity.Should().Be(2);
 
         var pickResponse = await adminClient.PostAsync($"/api/admin/orders/{orderId}/pick", null);
         pickResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var pickBody = await pickResponse.ReadApiResponseAsync<OrderActionResponseDTO>();
+        var pickBody = await pickResponse.ReadApiResponseAsync<Order>();
         pickBody.Success.Should().BeTrue();
         pickBody.Data.Should().NotBeNull();
-        pickBody.Data!.Changed.Should().BeTrue();
-        pickBody.Data.FromStatus.Should().Be(OrderStatus.Pending);
-        pickBody.Data.ToStatus.Should().Be(OrderStatus.Processing);
-        pickBody.Data.AssignTo.Should().Be(admin.Id);
+        pickBody.Data!.Status.Should().Be(OrderStatus.Processing);
+        pickBody.Data.AssignedTo.Should().Be(admin.Id);
+
+        var orderAfterPick = await Factory.GetOrderAsync(orderId);
+        orderAfterPick.Should().NotBeNull();
+        orderAfterPick!.Status.Should().Be(OrderStatus.Processing);
+        orderAfterPick.AssignedTo.Should().Be(admin.Id);
+        orderAfterPick.AssignedAt.Should().NotBeNull();
+
+        var historiesAfterPick = await Factory.GetOrderHistoriesAsync(orderId);
+        historiesAfterPick.Should().HaveCount(2);
+        historiesAfterPick.Select(history => history.ToStatus).Should().Contain(OrderStatus.Processing);
 
         var completeResponse = await adminClient.PostAsync($"/api/admin/orders/{orderId}/complete", null);
         completeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var completeBody = await completeResponse.ReadApiResponseAsync<OrderActionResponseDTO>();
+        var completeBody = await completeResponse.ReadApiResponseAsync<Order>();
         completeBody.Success.Should().BeTrue();
         completeBody.Data.Should().NotBeNull();
-        completeBody.Data!.Changed.Should().BeTrue();
-        completeBody.Data.FromStatus.Should().Be(OrderStatus.Processing);
-        completeBody.Data.ToStatus.Should().Be(OrderStatus.Completed);
+        completeBody.Data!.Status.Should().Be(OrderStatus.Completed);
+        completeBody.Data.AssignedTo.Should().Be(admin.Id);
 
         var order = await Factory.GetOrderAsync(orderId);
         order.Should().NotBeNull();
@@ -78,6 +106,7 @@ public sealed class OrderFlowTests : BaseIntegrationTest
 
         var histories = await Factory.GetOrderHistoriesAsync(orderId);
         histories.Should().HaveCount(3);
+        histories.First().Note.Should().Be($"Admin {admin.DisplayName} completed the order.");
         histories.Select(history => history.ToStatus).Should().BeEquivalentTo(new[]
         {
             OrderStatus.Completed,
@@ -103,28 +132,24 @@ public sealed class OrderFlowTests : BaseIntegrationTest
             GamePackageId = package.Id,
             GameAccountInfo = "idempotent-pick-account"
         });
-        var orderId = (await purchaseResponse.ReadApiResponseAsync<long>()).Data;
+        var orderId = (await purchaseResponse.ReadApiResponseAsync<Order>()).Data!.Id;
 
         var firstPickResponse = await adminClient.PostAsync($"/api/admin/orders/{orderId}/pick", null);
         firstPickResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var firstPickBody = await firstPickResponse.ReadApiResponseAsync<OrderActionResponseDTO>();
+        var firstPickBody = await firstPickResponse.ReadApiResponseAsync<Order>();
         firstPickBody.Data.Should().NotBeNull();
-        firstPickBody.Data!.Changed.Should().BeTrue();
-        firstPickBody.Data.FromStatus.Should().Be(OrderStatus.Pending);
-        firstPickBody.Data.ToStatus.Should().Be(OrderStatus.Processing);
-        firstPickBody.Data.AssignTo.Should().Be(admin.Id);
+        firstPickBody.Data!.Status.Should().Be(OrderStatus.Processing);
+        firstPickBody.Data.AssignedTo.Should().Be(admin.Id);
 
         var historyCountAfterFirstPick = await Factory.GetOrderHistoryCountAsync(orderId);
         historyCountAfterFirstPick.Should().Be(2);
 
         var secondPickResponse = await adminClient.PostAsync($"/api/admin/orders/{orderId}/pick", null);
         secondPickResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var secondPickBody = await secondPickResponse.ReadApiResponseAsync<OrderActionResponseDTO>();
+        var secondPickBody = await secondPickResponse.ReadApiResponseAsync<Order>();
         secondPickBody.Data.Should().NotBeNull();
-        secondPickBody.Data!.Changed.Should().BeFalse();
-        secondPickBody.Data.FromStatus.Should().BeNull();
-        secondPickBody.Data.ToStatus.Should().Be(OrderStatus.Processing);
-        secondPickBody.Data.AssignTo.Should().Be(admin.Id);
+        secondPickBody.Data!.Status.Should().Be(OrderStatus.Processing);
+        secondPickBody.Data.AssignedTo.Should().Be(admin.Id);
 
         var order = await Factory.GetOrderAsync(orderId);
         order.Should().NotBeNull();
@@ -227,17 +252,15 @@ public sealed class OrderFlowTests : BaseIntegrationTest
             GameAccountInfo = "hero-restore-test"
         });
 
-        var purchaseBody = await purchaseResponse.ReadApiResponseAsync<long>();
-        var orderId = purchaseBody.Data;
+        var purchaseBody = await purchaseResponse.ReadApiResponseAsync<Order>();
+        var orderId = purchaseBody.Data!.Id;
 
         var cancelResponse = await memberClient.PostAsync($"/api/orders/{orderId}/cancel", null);
         cancelResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var cancelBody = await cancelResponse.ReadApiResponseAsync<OrderActionResponseDTO>();
+        var cancelBody = await cancelResponse.ReadApiResponseAsync<Order>();
         cancelBody.Success.Should().BeTrue();
         cancelBody.Data.Should().NotBeNull();
-        cancelBody.Data!.Changed.Should().BeTrue();
-        cancelBody.Data.FromStatus.Should().Be(OrderStatus.Pending);
-        cancelBody.Data.ToStatus.Should().Be(OrderStatus.Cancelled);
+        cancelBody.Data!.Status.Should().Be(OrderStatus.Cancelled);
 
         var historyCountAfterFirstCancel = await Factory.GetOrderHistoryCountAsync(orderId);
         historyCountAfterFirstCancel.Should().Be(2);
@@ -260,12 +283,10 @@ public sealed class OrderFlowTests : BaseIntegrationTest
 
         var secondCancelResponse = await memberClient.PostAsync($"/api/orders/{orderId}/cancel", null);
         secondCancelResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var secondCancelBody = await secondCancelResponse.ReadApiResponseAsync<OrderActionResponseDTO>();
+        var secondCancelBody = await secondCancelResponse.ReadApiResponseAsync<Order>();
         secondCancelBody.Data.Should().NotBeNull();
-        secondCancelBody.Data!.Changed.Should().BeFalse();
-        secondCancelBody.Data.FromStatus.Should().BeNull();
-        secondCancelBody.Data.ToStatus.Should().Be(OrderStatus.Cancelled);
-        secondCancelBody.Data.AssignTo.Should().BeNull();
+        secondCancelBody.Data!.Status.Should().Be(OrderStatus.Cancelled);
+        secondCancelBody.Data.AssignedTo.Should().BeNull();
 
         var walletAfterSecondCancel = await Factory.GetWalletAsync(member.Id);
         walletAfterSecondCancel.Should().NotBeNull();

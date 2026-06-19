@@ -1,6 +1,6 @@
 namespace GameTopUp.DAL.Entities.Wallets;
 
-public enum WalletDepositRequestStatus
+public enum WalletDepositStatus
 {
     Pending = 1,
     UserConfirmed = 2,

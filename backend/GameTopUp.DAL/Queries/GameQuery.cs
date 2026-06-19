@@ -1,20 +1,18 @@
 using Dapper;
-using GameTopUp.BLL.DTOs.Games;
-using GameTopUp.BLL.Mappers.Games;
 using GameTopUp.DAL.Database;
 
-namespace GameTopUp.BLL.Queries.Games;
+namespace GameTopUp.DAL.Queries;
 
-public sealed class AdminGameQuery
+public sealed class GameQuery
 {
     private readonly DatabaseContext _database;
 
-    public AdminGameQuery(DatabaseContext database)
+    public GameQuery(DatabaseContext database)
     {
         _database = database;
     }
 
-    public async Task<List<AdminGameSummaryResponse>> GetAllAsync()
+    public async Task<List<AdminGameSummaryRow>> GetAdminSummaryAsync()
     {
         await _database.EnsureOpenAsync();
 
@@ -34,6 +32,17 @@ public sealed class AdminGameQuery
                   """;
 
         var rows = await _database.Connection.QueryAsync<AdminGameSummaryRow>(sql);
-        return rows.Select(GameMapper.ToAdminSummaryResponse).ToList();
+        return rows.ToList();
     }
+}
+
+public sealed class AdminGameSummaryRow
+{
+    public long Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string ImageUrl { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
+    public int PackageCount { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

@@ -2,7 +2,7 @@ using GameTopUp.DAL.Entities.Wallets;
 
 namespace GameTopUp.BLL.DTOs.Wallets;
 
-public sealed class WalletDepositRequestResponseDTO
+public sealed class WalletDepositResponseDTO
 {
     public long Id { get; set; }
     public decimal Amount { get; set; }
@@ -12,7 +12,7 @@ public sealed class WalletDepositRequestResponseDTO
     public string BankId { get; set; } = string.Empty;
     public string AccountNo { get; set; } = string.Empty;
     public string AccountName { get; set; } = string.Empty;
-    public WalletDepositRequestStatus Status { get; set; }
+    public WalletDepositStatus Status { get; set; }
     public DateTime? UserConfirmedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

@@ -1,6 +1,6 @@
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Wallets;
-using GameTopUp.BLL.Queries.Wallets;
+using GameTopUp.BLL.Services;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Entities.Wallets;
 using Microsoft.AspNetCore.Authorization;
@@ -12,33 +12,33 @@ namespace GameTopUp.Api.Controllers.Admin;
 [Route("api/admin/deposits")]
 public sealed class AdminDepositController : ApiControllerBase
 {
-    private readonly WalletUseCase _walletUseCase;
-    private readonly AdminDepositRequestQuery _depositRequestQuery;
+    private readonly WalletDepositUseCase _walletDepositUseCase;
+    private readonly WalletDepositService _depositService;
 
-    public AdminDepositController(WalletUseCase walletUseCase, AdminDepositRequestQuery depositRequestQuery)
+    public AdminDepositController(WalletDepositUseCase walletDepositUseCase, WalletDepositService depositService)
     {
-        _walletUseCase = walletUseCase;
-        _depositRequestQuery = depositRequestQuery;
+        _walletDepositUseCase = walletDepositUseCase;
+        _depositService = depositService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetDepositRequests([FromQuery] WalletDepositRequestStatus? status = null)
+    public async Task<IActionResult> GetDepositRequests([FromQuery] WalletDepositStatus? status = null)
     {
-        var requests = await _depositRequestQuery.GetAllAsync(status);
+        var requests = await _depositService.GetAllAsync(status);
         return ApiOk(requests);
     }
 
     [HttpPost("{requestId}/approve")]
     public async Task<IActionResult> ApproveDepositRequest(long requestId, [FromBody] ReviewDepositRequest? request = null)
     {
-        var response = await _walletUseCase.ApproveDepositRequestAsync(requestId, CurrentUser, request?.Note);
+        var response = await _walletDepositUseCase.ApproveDepositRequestAsync(requestId, CurrentUser, request?.Note);
         return ApiOk(response);
     }
 
     [HttpPost("{requestId}/reject")]
     public async Task<IActionResult> RejectDepositRequest(long requestId, [FromBody] ReviewDepositRequest? request = null)
     {
-        var response = await _walletUseCase.RejectDepositRequestAsync(requestId, CurrentUser, request?.Note);
+        var response = await _walletDepositUseCase.RejectDepositRequestAsync(requestId, CurrentUser, request?.Note);
         return ApiOk(response);
     }
 }

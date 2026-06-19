@@ -116,24 +116,24 @@ public class EntityBehaviorTests
     }
 
     [Fact]
-    public void WalletDepositRequestCreate_ShouldStartPendingAndAllowTransitions()
+    public void WalletDepositCreate_ShouldStartPendingAndAllowTransitions()
     {
-        var request = WalletDepositRequest.Create(7, 100000m, "GTU7", "NAP GTU7");
+        var request = WalletDeposit.Create(7, 100000m, "GTU7", "NAP GTU7");
         var confirmedAt = DateTime.UtcNow;
 
-        request.Status.Should().Be(WalletDepositRequestStatus.Pending);
+        request.Status.Should().Be(WalletDepositStatus.Pending);
 
         request.MarkUserConfirmed(confirmedAt);
-        request.Status.Should().Be(WalletDepositRequestStatus.UserConfirmed);
+        request.Status.Should().Be(WalletDepositStatus.UserConfirmed);
         request.UserConfirmedAt.Should().Be(confirmedAt);
 
         request.MarkApproved(1, "ok", confirmedAt.AddMinutes(1));
-        request.Status.Should().Be(WalletDepositRequestStatus.Approved);
+        request.Status.Should().Be(WalletDepositStatus.Approved);
         request.ReviewedBy.Should().Be(1);
         request.AdminNote.Should().Be("ok");
 
         request.MarkRejected(2, "nope", confirmedAt.AddMinutes(2));
-        request.Status.Should().Be(WalletDepositRequestStatus.Rejected);
+        request.Status.Should().Be(WalletDepositStatus.Rejected);
         request.ReviewedBy.Should().Be(2);
         request.AdminNote.Should().Be("nope");
     }

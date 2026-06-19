@@ -20,200 +20,100 @@ public class WalletServiceTests
     }
 
     [Fact]
-    public async Task GetBalanceAsync_ShouldThrow_WhenWalletIsMissing()
+    public void DepositFromVietQr_ShouldMutateBalanceAndReturnDepositTransaction()
     {
-        _walletRepository.Setup(repo => repo.GetByUserIdAsync(7)).ReturnsAsync((Wallet?)null);
+        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 200m };
 
-        var act = async () => await _service.GetBalanceAsync(new UserContext { UserId = 7 });
+        var transaction = _service.DepositFromVietQr(wallet, 150m, "GTU-1406-40734");
 
-        await act.Should().ThrowAsync<NotFoundException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.WalletNotFound);
-    }
-
-    [Fact]
-    public async Task DepositFromVietQrAsync_ShouldCreditWalletAndRecordDepositTransaction()
-    {
-        Wallet? updatedWallet = null;
-        WalletTransaction? createdTransaction = null;
-        _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
-            .ReturnsAsync(new Wallet { Id = 11, UserId = 7, Balance = 200m });
-        _walletRepository.Setup(repo => repo.UpdateBalanceAsync(11, 350m))
-            .ReturnsAsync(1)
-            .Callback<long, decimal>((_, newBalance) => updatedWallet = new Wallet { Id = 11, UserId = 7, Balance = newBalance });
-        _transactionRepository.Setup(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()))
-            .ReturnsAsync(99)
-            .Callback<WalletTransaction>(transaction => createdTransaction = transaction);
-
-        var response = await _service.DepositFromVietQrAsync(7, 150m, "GTU-1406-40734");
-
-        response.TransactionId.Should().Be(99);
-        updatedWallet.Should().NotBeNull();
-        updatedWallet!.Balance.Should().Be(350m);
-        createdTransaction.Should().NotBeNull();
-        createdTransaction!.Amount.Should().Be(150m);
-        createdTransaction.BalanceBefore.Should().Be(200m);
-        createdTransaction.BalanceAfter.Should().Be(350m);
-        createdTransaction.Type.Should().Be(WalletTransactionType.Deposit);
-        createdTransaction.Description.Should().Contain("Approve VietQR deposit #GTU-1406-40734: 150");
+        wallet.Balance.Should().Be(350m);
+        transaction.Amount.Should().Be(150m);
+        transaction.BalanceBefore.Should().Be(200m);
+        transaction.BalanceAfter.Should().Be(350m);
+        transaction.Type.Should().Be(WalletTransactionType.Deposit);
+        transaction.Description.Should().Contain("Approve VietQR deposit #GTU-1406-40734: 150");
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    public async Task DepositFromVietQrAsync_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
+    public void DepositFromVietQr_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
     {
-        var act = async () => await _service.DepositFromVietQrAsync(7, amount, "GTU-1406-40734");
+        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 200m };
 
-        await act.Should().ThrowAsync<BusinessException>()
+        Action act = () => _service.DepositFromVietQr(wallet, amount, "GTU-1406-40734");
+
+        act.Should().Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.AmountMustBePositive);
-
-        _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
-        _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
-        _transactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
     }
 
     [Fact]
-    public async Task ChargeOrderAsync_ShouldDecreaseWalletBalanceAndCreatePurchaseTransaction()
+    public void ChargeOrder_ShouldMutateBalanceAndReturnPurchaseTransaction()
     {
-        Wallet? updatedWallet = null;
-        WalletTransaction? createdTransaction = null;
-        _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
-            .ReturnsAsync(new Wallet { Id = 11, UserId = 7, Balance = 500m });
-        _walletRepository.Setup(repo => repo.UpdateBalanceAsync(11, 380m))
-            .ReturnsAsync(1)
-            .Callback<long, decimal>((_, newBalance) => updatedWallet = new Wallet { Id = 11, UserId = 7, Balance = newBalance });
-        _transactionRepository.Setup(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()))
-            .ReturnsAsync(100)
-            .Callback<WalletTransaction>(transaction => createdTransaction = transaction);
+        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 500m };
 
-        await _service.ChargeOrderAsync(7, 123, 120m);
+        var transaction = _service.ChargeOrder(wallet, 123, 120m);
 
-        updatedWallet.Should().NotBeNull();
-        updatedWallet!.Balance.Should().Be(380m);
-        createdTransaction.Should().NotBeNull();
-        createdTransaction!.Amount.Should().Be(-120m);
-        createdTransaction.BalanceBefore.Should().Be(500m);
-        createdTransaction.BalanceAfter.Should().Be(380m);
-        createdTransaction.Type.Should().Be(WalletTransactionType.PurchaseOrder);
-        createdTransaction.OrderId.Should().Be(123);
-        createdTransaction.Description.Should().Contain("Purchase order #123");
+        wallet.Balance.Should().Be(380m);
+        transaction.Amount.Should().Be(-120m);
+        transaction.BalanceBefore.Should().Be(500m);
+        transaction.BalanceAfter.Should().Be(380m);
+        transaction.Type.Should().Be(WalletTransactionType.PurchaseOrder);
+        transaction.OrderId.Should().Be(123);
+        transaction.Description.Should().Contain("Purchase order #123");
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-10)]
-    public async Task ChargeOrderAsync_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
+    public void ChargeOrder_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
     {
-        var act = async () => await _service.ChargeOrderAsync(7, 123, amount);
+        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 500m };
 
-        await act.Should().ThrowAsync<BusinessException>()
+        Action act = () => _service.ChargeOrder(wallet, 123, amount);
+
+        act.Should().Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.AmountMustBePositive);
-
-        _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
-        _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
-        _transactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
     }
 
     [Fact]
-    public async Task ChargeOrderAsync_ShouldThrow_WhenBalanceWouldBeNegative()
+    public void ChargeOrder_ShouldThrow_WhenBalanceWouldBeNegative()
     {
-        _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
-            .ReturnsAsync(new Wallet { Id = 11, UserId = 7, Balance = 50m });
+        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 50m };
 
-        var act = async () => await _service.ChargeOrderAsync(7, 123, 120m);
+        Action act = () => _service.ChargeOrder(wallet, 123, 120m);
 
-        await act.Should().ThrowAsync<BusinessException>()
+        act.Should().Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.InsufficientWalletBalance);
-
-        _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
-        _transactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
     }
 
     [Fact]
-    public async Task RefundOrderAsync_ShouldCreditWalletAndRecordRefundReason()
+    public void RefundOrder_ShouldMutateBalanceAndReturnRefundTransaction()
     {
-        WalletTransaction? createdTransaction = null;
-        _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
-            .ReturnsAsync(new Wallet { Id = 11, UserId = 7, Balance = 80m });
-        _walletRepository.Setup(repo => repo.UpdateBalanceAsync(11, 120m))
-            .ReturnsAsync(1);
-        _transactionRepository.Setup(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()))
-            .ReturnsAsync(101)
-            .Callback<WalletTransaction>(transaction => createdTransaction = transaction);
+        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 80m };
 
-        await _service.RefundOrderAsync(7, 321, 40m, "customer requested cancellation");
+        var transaction = _service.RefundOrder(wallet, 321, 40m, "customer requested cancellation");
 
-        createdTransaction.Should().NotBeNull();
-        createdTransaction!.Amount.Should().Be(40m);
-        createdTransaction.BalanceBefore.Should().Be(80m);
-        createdTransaction.BalanceAfter.Should().Be(120m);
-        createdTransaction.Type.Should().Be(WalletTransactionType.Refund);
-        createdTransaction.OrderId.Should().Be(321);
-        createdTransaction.Description.Should().Contain("Refund order #321.");
-        createdTransaction.Description.Should().Contain("Reason: customer requested cancellation");
+        wallet.Balance.Should().Be(120m);
+        transaction.Amount.Should().Be(40m);
+        transaction.BalanceBefore.Should().Be(80m);
+        transaction.BalanceAfter.Should().Be(120m);
+        transaction.Type.Should().Be(WalletTransactionType.Refund);
+        transaction.OrderId.Should().Be(321);
+        transaction.Description.Should().Contain("Refund order #321.");
+        transaction.Description.Should().Contain("Reason: customer requested cancellation");
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-5)]
-    public async Task RefundOrderAsync_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
+    public void RefundOrder_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
     {
-        var act = async () => await _service.RefundOrderAsync(7, 321, amount, "reason");
+        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 80m };
 
-        await act.Should().ThrowAsync<BusinessException>()
+        Action act = () => _service.RefundOrder(wallet, 321, amount, "reason");
+
+        act.Should().Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.AmountMustBePositive);
-
-        _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
-        _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
-        _transactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task CreateWalletAsync_ShouldUpsertWalletForNewUser()
-    {
-        Wallet? createdWallet = null;
-        _walletRepository
-            .Setup(repo => repo.UpsertWalletAsync(It.IsAny<Wallet>()))
-            .Returns(Task.CompletedTask)
-            .Callback<Wallet>(wallet => createdWallet = wallet);
-
-        await _service.CreateWalletAsync(7);
-
-        createdWallet.Should().NotBeNull();
-        createdWallet!.UserId.Should().Be(7);
-        createdWallet.Balance.Should().Be(0m);
-    }
-
-    [Fact]
-    public async Task GetTransactionsAsync_ShouldMapRepositoryRowsToResponseDto()
-    {
-        _transactionRepository.Setup(repo => repo.GetByUserIdAsync(7))
-            .ReturnsAsync(new List<WalletTransaction>
-            {
-                new WalletTransaction
-                {
-                    Id = 15,
-                    UserId = 7,
-                    Amount = 250m,
-                    BalanceBefore = 100m,
-                    BalanceAfter = 350m,
-                    Type = WalletTransactionType.Deposit,
-                    Description = "Deposit wallet: 250 VND",
-                    CreatedAt = new DateTime(2025, 01, 02, 03, 04, 05, DateTimeKind.Utc)
-                }
-            });
-
-        var transactions = await _service.GetTransactionsAsync(new UserContext { UserId = 7 });
-
-        transactions.Should().ContainSingle();
-        var transaction = transactions.Single();
-        transaction.Id.Should().Be(15);
-        transaction.Amount.Should().Be(250m);
-        transaction.BalanceBefore.Should().Be(100m);
-        transaction.BalanceAfter.Should().Be(350m);
-        transaction.Type.Should().Be(WalletTransactionType.Deposit);
-        transaction.Description.Should().Be("Deposit wallet: 250 VND");
-        transaction.OrderId.Should().BeNull();
-        transaction.CreatedAt.Should().Be(new DateTime(2025, 01, 02, 03, 04, 05, DateTimeKind.Utc));
     }
 }

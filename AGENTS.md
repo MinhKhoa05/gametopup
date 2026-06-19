@@ -1,10 +1,8 @@
 # AGENTS.md
 
-This file provides the minimum project-specific context needed to work effectively in this repository.
-
 Use available skills for planning, implementation, testing, review, refactoring, security, and documentation.
 
-Use this file for GameTopUp-specific constraints, priorities, and preferences.
+Read this file before making non-trivial changes.
 
 ---
 
@@ -12,328 +10,161 @@ Use this file for GameTopUp-specific constraints, priorities, and preferences.
 
 GameTopUp is a full-stack platform for intermediary game top-up services.
 
-The application has two faces:
+Core domains:
 
-* User App
-  * Browse games
-  * Place orders
-  * Manage wallet
-  * Track order history
+* Orders
+* Wallets
+* Deposits
+* Inventory
+* Payments
 
-* Admin App
-  * Manage orders
-  * Review deposits
-  * Manage users
-  * Manage catalog data
+Business-critical areas:
 
-Core business flows:
-
+* Wallet balances
 * Order lifecycle
-* Wallet and balance tracking
+* Deposit approval
 * Inventory reservation
-* Payment processing
-* Deposit workflows
 * Audit history
 
-If a change touches these areas, preserve existing behavior and consistency guarantees unless the task explicitly requires otherwise.
+Preserve correctness when modifying these areas.
 
 ---
 
-# Product Mental Model
+# Project Priorities
 
-* Home, Games, Wallet, Orders, and Profile form the primary customer experience.
-* Admin is not a separate product.
-* Admin is a management layer built on top of the same product experience.
-* Reuse existing patterns before creating new ones.
+Correctness
+>
+Consistency
+>
+Maintainability
+>
+Performance
+>
+Abstraction
 
----
-
-# Design Principles
-
-* Consistency over novelty.
-* Reuse > Extend > Create.
-* Admin = User Design System + Management Features.
-* Layout patterns matter more than visual effects.
-* Redesign should simplify, not reinvent.
-* Consistency is a feature.
-* Keep props, tones, and variants simple.
-* Prefer a small shared set of common styles.
-* Standardize first, then reuse.
+Prefer explicit business flows over architectural purity.
 
 ---
 
-# Technology
+# Backend Rules
 
-## Backend
+Use available architecture, testing, review, and refactoring skills when appropriate.
 
-* .NET 8
-* ASP.NET Core Web API
-* Dapper
-* Dommel
-* MariaDB
-* JWT Authentication
-* BCrypt
-* Mapster
-* xUnit
+Rules:
 
-## Frontend
+* UseCases coordinate workflows.
+* Services contain business rules.
+* Repositories handle persistence.
+* Repository access from UseCases is allowed.
+* Prefer explicit workflows over hidden orchestration.
+* Prefer readability over indirection.
+* Avoid wrapper layers that add no business value.
 
-* React
-* TypeScript
-* Vite
-* TanStack Query
-* Zustand
-* React Router
-* Tailwind CSS
+For complex workflows:
 
----
+UseCase
+-> Repository
+-> Service
+-> Repository
 
-# What Matters Here
+is preferred over unnecessary forwarding layers.
 
-Operational correctness matters more than architectural purity.
+For simple CRUD/query flows:
 
-Priorities:
+Controller
+-> Service
+-> Repository
 
-1. Correctness
-2. Consistency
-3. Maintainability
-4. Performance
-5. Abstraction
+is preferred when no transaction orchestration is needed.
 
-Key constraints:
+For transaction-heavy flows with lock, multiple repos, or history writes, keep orchestration explicit in UseCase instead of hiding it behind service wrappers.
 
-* Preserve transactional correctness.
-* Keep wallet, order, stock, and payment flows auditable.
-* Favor explicit business flow over abstraction.
-* Optimize for clarity over cleverness.
+Flow-level idempotency belongs in workflows.
+
+Business validation belongs in services.
 
 ---
 
-# Project Areas
-
-* backend/ contains backend services, repositories, business logic, and tests.
-* frontend/ contains the React application.
-* README.md and README.vi.md provide product overview and setup instructions.
-
----
-
-# Working Guidelines
-
-Before non-trivial work:
-
-1. Read this file first.
-2. Preserve behavior.
-3. Preserve consistency.
-4. Reuse existing patterns.
-5. Verify changes before finishing.
-
----
-
-# Backend Constraints
-
-When modifying:
-
-* Wallet
-* Orders
-* Inventory
-* Deposits
-* Payments
+# Business Rules
 
 Always preserve:
 
-* Transaction boundaries
-* Locking behavior
-* Audit trails
-* Balance history
-* State transitions
+* Transaction correctness
+* Balance consistency
+* State transition rules
+* Audit history
+* Idempotency guarantees
+* Inventory consistency
 
-Prefer correctness over abstraction.
-
-Do not simplify critical flows in ways that weaken consistency guarantees.
-
----
-
-# Frontend Preferences
-
-* Keep UI consistent with existing pages.
-* Prefer practical and explicit component APIs.
-* Keep business flows easy to trace.
-* Favor readability over flexibility.
-* Avoid abstractions that hide behavior.
+Never weaken consistency guarantees for simplicity.
 
 ---
 
-# UI Guidelines
+# Frontend Rules
 
-## Core Rules
+Use available UI, design, accessibility, and refactoring skills when appropriate.
 
-* Reuse before creating.
-* Match Wallet, Orders, Games, and Profile.
-* Consistency over creativity.
-* Admin = User Design System + Management Features.
-* Prefer simple product layouts over dashboard layouts.
-* Avoid visual clutter.
+Rules:
 
----
-
-## Layout Patterns
-
-Prefer existing page structures before inventing new layouts.
-
-Common pattern:
-
-PageHero
--> Stats
--> Filters / Controls
--> Main Content
--> Detail Panel
-
-Not every page requires every section.
-
-Prefer established patterns from:
-
-* Wallet
-* Orders
-* Games
-* Profile
+* Reuse > Extend > Create
+* Consistency over novelty
+* Simplicity over flexibility
+* Readability over cleverness
+* Match existing patterns before introducing new ones
+* Avoid abstractions that hide behavior
 
 ---
 
-## Visual Language
+# UI System
 
-* Dark navy/slate surfaces with cyan as the primary accent.
-* Mostly solid surfaces.
-* Soft corners.
-* Subtle borders.
-* Minimal shadows.
-* Comfortable spacing.
-
-Visual hierarchy is more important than decoration.
-
----
-
-## Current Design System
-
-Current frontend state:
-
-* `frontend/src/styles/theme.css` is the single source of truth for colors and surface tokens.
-* Legacy theme files and duplicate styling layers have been removed.
-* Shared components already consume semantic tokens.
-* Admin and user pages share the same dark visual language.
-
-How the UI now behaves:
-
-* The app uses a dark navy base with cyan as the main accent.
-* Most surfaces are solid and quiet.
-* Panels blend into the shell instead of looking like separate bright cards.
-* Cards sit slightly above panels.
-* Hover and active states use the same surface treatment.
-* Navigation items stay visibly selected after route changes.
-* Decorative gradients are reserved for hero or summary sections.
-* Borders stay subtle and should not compete with content.
-
-Component conventions:
-
-* Reuse `Button`, `Badge`, `FilterChip`, `DetailRow`, `SearchBar`, `StatCard`, `EmptyState`, `PanelShell`, `PageHero`, and `MediaListItem` before creating new variants.
-* Badge and FilterChip must remain visually different.
-* Badge shape is a small rectangle with about 6px to 8px radius.
-* FilterChip shape is a pill.
-* Primary buttons use cyan.
-* Secondary buttons stay dark and restrained.
-* Ghost buttons stay muted.
-
-When changing UI:
-
-* Update shared components first.
-* Use semantic tokens instead of hardcoded Tailwind colors where possible.
-* Remove obsolete styles instead of keeping compatibility copies.
-* Keep admin and user pages aligned to the same system.
-
-## Component Reuse
-
-Prefer existing shared components:
-
-* PageHero
-* Badge
-* Button
-* FilterChip
-* DetailRow
-* ImageBox
-* EmptyState
-* MediaListItem
-* PanelShell
-* SearchBar
-* SectionHeading
-* StatCard
-
-If a similar component already exists:
-
-* Reuse it.
-* Extend it if necessary.
-* Create a new one only as a last resort.
-
----
-
-## Admin Pages
-
-Admin pages should feel like natural extensions of User pages.
-
-Admin = User Design System + Management Features.
+Admin and User experiences should feel like parts of the same product.
 
 Do not introduce a separate Admin design language.
 
----
+Visual language:
 
-## Avoid
+* Dark surfaces
+* Cyan primary accent
+* Subtle borders
+* Soft corners
+* Minimal visual noise
 
-Do not:
+Visual hierarchy is more important than decoration.
 
-* Build generic SaaS dashboards.
-* Introduce a different Admin design system.
-* Add unnecessary charts.
-* Add analytics-heavy layouts by default.
-* Create new UI patterns when existing ones can be reused.
-* Redesign solely for visual novelty.
-* Increase complexity without UX benefit.
-
-If a page feels visually disconnected from User pages, treat that as a bug.
+Prefer existing design patterns before introducing new ones.
 
 ---
 
-## UI Refactoring
-
-When improving existing pages:
-
-1. Preserve behavior.
-2. Preserve successful patterns.
-3. Simplify layouts.
-4. Improve consistency.
-5. Create new patterns only when necessary.
-6. Update shared components before page-local overrides.
-7. Keep the final styling in `theme.css` and shared components.
-
-Prefer evolutionary improvements over complete redesigns.
-
----
-
-# Refactoring Preferences
+# Refactoring Rules
 
 * Preserve behavior first.
 * Reduce real duplication only.
-* Prefer explicit code over indirection.
-* Avoid theoretical reuse.
-* Keep critical flows easy to follow.
+* Avoid speculative abstractions.
+* Keep critical workflows easy to follow.
+* Remove obsolete code when replacing it.
+
+---
+
+# Working Rules
+
+Before non-trivial work:
+
+1. Understand existing patterns.
+2. Preserve behavior.
+3. Preserve consistency.
+4. Reuse before creating.
+5. Verify changes before finishing.
 
 ---
 
 # Documentation
 
-Document decisions that are expensive to reverse or easy to forget:
+Document changes that are expensive to reverse:
 
-* Architecture changes
-* API contract changes
 * Schema changes
+* API contract changes
 * Transaction-flow changes
 * State-transition changes
+* Major architectural decisions
 
 Prefer readable code over excessive documentation.

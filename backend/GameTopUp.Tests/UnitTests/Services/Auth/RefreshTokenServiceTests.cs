@@ -17,14 +17,14 @@ public class RefreshTokenServiceTests
     }
 
     [Fact]
-    public async Task SaveRefreshTokenAsync_ShouldPersistCreatedRefreshToken()
+    public async Task CreateAsync_ShouldPersistCreatedRefreshToken()
     {
         RefreshToken? created = null;
         _repository.Setup(repo => repo.CreateAsync(It.IsAny<RefreshToken>()))
             .ReturnsAsync(12)
             .Callback<RefreshToken>(token => created = token);
 
-        await _service.SaveRefreshTokenAsync(7, "HASH", TimeSpan.FromDays(7));
+        await _service.CreateAsync(7, "HASH", TimeSpan.FromDays(7));
 
         created.Should().NotBeNull();
         created!.UserId.Should().Be(7);
@@ -34,19 +34,19 @@ public class RefreshTokenServiceTests
     }
 
     [Fact]
-    public async Task RevokeTokenAsync_ShouldReturnNull_WhenTokenDoesNotExist()
+    public async Task RevokeValidTokenAsync_ShouldReturnNull_WhenTokenDoesNotExist()
     {
         _repository.Setup(repo => repo.GetByTokenHashAsync("HASH"))
             .ReturnsAsync((RefreshToken?)null);
 
-        var result = await _service.RevokeTokenAsync("HASH");
+        var result = await _service.RevokeValidTokenAsync("HASH");
 
         result.Should().BeNull();
         _repository.Verify(repo => repo.RevokeTokenAsync(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
-    public async Task RevokeTokenAsync_ShouldReturnNull_WhenTokenWasAlreadyRevoked()
+    public async Task RevokeValidTokenAsync_ShouldReturnNull_WhenTokenWasAlreadyRevoked()
     {
         _repository.Setup(repo => repo.GetByTokenHashAsync("HASH"))
             .ReturnsAsync(new RefreshToken
@@ -58,14 +58,14 @@ public class RefreshTokenServiceTests
                 RevokedAt = DateTime.UtcNow
             });
 
-        var result = await _service.RevokeTokenAsync("HASH");
+        var result = await _service.RevokeValidTokenAsync("HASH");
 
         result.Should().BeNull();
         _repository.Verify(repo => repo.RevokeTokenAsync(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
-    public async Task RevokeTokenAsync_ShouldReturnNull_WhenTokenExpired()
+    public async Task RevokeValidTokenAsync_ShouldReturnNull_WhenTokenExpired()
     {
         _repository.Setup(repo => repo.GetByTokenHashAsync("HASH"))
             .ReturnsAsync(new RefreshToken
@@ -76,14 +76,14 @@ public class RefreshTokenServiceTests
                 ExpiresAt = DateTime.UtcNow.AddMinutes(-1)
             });
 
-        var result = await _service.RevokeTokenAsync("HASH");
+        var result = await _service.RevokeValidTokenAsync("HASH");
 
         result.Should().BeNull();
         _repository.Verify(repo => repo.RevokeTokenAsync(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
-    public async Task RevokeTokenAsync_ShouldReturnToken_WhenRevocationSucceeds()
+    public async Task RevokeValidTokenAsync_ShouldReturnToken_WhenRevocationSucceeds()
     {
         var token = new RefreshToken
         {
@@ -97,7 +97,7 @@ public class RefreshTokenServiceTests
         _repository.Setup(repo => repo.RevokeTokenAsync("HASH"))
             .ReturnsAsync(true);
 
-        var result = await _service.RevokeTokenAsync("HASH");
+        var result = await _service.RevokeValidTokenAsync("HASH");
 
         result.Should().BeSameAs(token);
         _repository.Verify(repo => repo.RevokeTokenAsync("HASH"), Times.Once);

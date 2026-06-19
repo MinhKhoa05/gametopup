@@ -2,37 +2,40 @@ using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Auths;
 using GameTopUp.BLL.DTOs.Users;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.BLL.Mappers.Users;
+using GameTopUp.BLL.Mappers;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities.Users;
+using GameTopUp.DAL.Entities.Wallets;
+using GameTopUp.DAL.Interfaces.Users;
+using GameTopUp.DAL.Interfaces.Wallets;
 
 namespace GameTopUp.BLL.UseCases;
 
 public sealed class AuthUseCase
 {
-    private readonly UserService _userService;
+    private readonly IUserRepository _userRepository;
+    private readonly IWalletRepository _walletRepository;
     private readonly TokenService _tokenService;
     private readonly PasswordService _passwordService;
-    private readonly WalletService _walletService;
     private readonly RefreshTokenService _refreshTokenService;
     private readonly DatabaseContext _database;
 
     private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
 
     public AuthUseCase(
-        UserService userService,
+        IUserRepository userRepository,
+        IWalletRepository walletRepository,
         TokenService tokenService,
         PasswordService passwordService,
-        WalletService walletService,
         RefreshTokenService refreshTokenService,
         DatabaseContext database)
     {
-        _userService = userService;
+        _userRepository = userRepository;
+        _walletRepository = walletRepository;
         _tokenService = tokenService;
         _passwordService = passwordService;
-        _walletService = walletService;
         _refreshTokenService = refreshTokenService;
         _database = database;
     }
@@ -40,18 +43,24 @@ public sealed class AuthUseCase
     public async Task RegisterAsync(CreateUserRequest request)
     {
         _passwordService.Validate(request.Password);
-        request.Password = _passwordService.Hash(request.Password);
+        var passwordHash = _passwordService.Hash(request.Password);
 
         await _database.ExecuteInTransactionAsync(async () =>
         {
-            var userId = await _userService.CreateUserAsync(request);
-            await _walletService.CreateWalletAsync(userId);
+            if (await _userRepository.ExistsByEmailAsync(request.Email))
+            {
+                throw new BusinessException(ErrorCode.EmailExists);
+            }
+
+            var user = User.Create(request.DisplayName, request.Email, passwordHash);
+            var userId = await _userRepository.CreateAsync(user);
+            await _walletRepository.UpsertWalletAsync(Wallet.CreateForUser(userId));
         });
     }
 
     public async Task<AuthResponseDTO> LoginAsync(LoginRequest request)
     {
-        var user = await _userService.GetByEmailAsync(request.Email);
+        var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user is null || !_passwordService.Verify(request.Password, user.PasswordHash))
         {
             throw new BusinessException(ErrorCode.InvalidCredentials);
@@ -62,7 +71,7 @@ public sealed class AuthUseCase
         {
             AccessToken = tokens.AccessToken,
             RefreshToken = tokens.RefreshToken,
-            User = UserMapper.ToResponse(user)
+            User = user.MapTo<UserResponseDTO>()
         };
     }
 
@@ -72,13 +81,13 @@ public sealed class AuthUseCase
 
         return await _database.ExecuteInTransactionAsync(async () =>
         {
-            var refreshToken = await _refreshTokenService.RevokeTokenAsync(hash);
+            var refreshToken = await _refreshTokenService.RevokeValidTokenAsync(hash);
             if (refreshToken is null)
             {
                 throw new BusinessException(ErrorCode.InvalidRefreshToken);
             }
 
-            var user = await _userService.GetByIdOrThrowAsync(refreshToken.UserId);
+            var user = await GetUserOrThrowAsync(refreshToken.UserId);
             var tokens = await IssueTokenPairAsync(MapToContext(user));
 
             return new AuthResponseDTO
@@ -94,7 +103,7 @@ public sealed class AuthUseCase
         try
         {
             var hash = _tokenService.HashToken(refreshToken);
-            await _refreshTokenService.RevokeTokenAsync(hash);
+            await _refreshTokenService.RevokeValidTokenAsync(hash);
         }
         catch
         {
@@ -111,13 +120,13 @@ public sealed class AuthUseCase
 
         _passwordService.Validate(request.NewPassword);
 
-        var user = await _userService.GetByIdOrThrowAsync(context.UserId);
+        var user = await GetUserOrThrowAsync(context.UserId);
         if (!_passwordService.Verify(request.CurrentPassword, user.PasswordHash))
         {
             throw new BusinessException(ErrorCode.CurrentPasswordIncorrect);
         }
 
-        await _userService.UpdatePasswordAsync(context.UserId, _passwordService.Hash(request.NewPassword));
+        await _userRepository.UpdatePasswordAsync(context.UserId, _passwordService.Hash(request.NewPassword));
     }
 
     private async Task<(string AccessToken, string RefreshToken)> IssueTokenPairAsync(UserContext user)
@@ -127,9 +136,15 @@ public sealed class AuthUseCase
         var refreshToken = _tokenService.GenerateRefreshToken();
         var refreshTokenHash = _tokenService.HashToken(refreshToken);
 
-        await _refreshTokenService.SaveRefreshTokenAsync(user.UserId, refreshTokenHash, RefreshTokenLifetime);
+        await _refreshTokenService.CreateAsync(user.UserId, refreshTokenHash, RefreshTokenLifetime);
 
         return (accessToken, refreshToken);
+    }
+
+    private async Task<User> GetUserOrThrowAsync(long userId)
+    {
+        return await _userRepository.GetByIdAsync(userId)
+            ?? throw new NotFoundException(ErrorCode.UserNotFound);
     }
 
     private static UserContext MapToContext(User user)

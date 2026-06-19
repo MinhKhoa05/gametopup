@@ -12,12 +12,12 @@ public sealed class RefreshTokenService
         _repository = repository;
     }
 
-    public async Task SaveRefreshTokenAsync(long userId, string tokenHash, TimeSpan lifetime)
+    public async Task CreateAsync(long userId, string tokenHash, TimeSpan lifetime)
     {
         await _repository.CreateAsync(RefreshToken.Create(userId, tokenHash, lifetime));
     }
 
-    public async Task<RefreshToken?> RevokeTokenAsync(string tokenHash)
+    public async Task<RefreshToken?> RevokeValidTokenAsync(string tokenHash)
     {
         var refreshToken = await _repository.GetByTokenHashAsync(tokenHash);
         if (refreshToken is null || refreshToken.RevokedAt is not null || refreshToken.ExpiresAt < DateTime.UtcNow)

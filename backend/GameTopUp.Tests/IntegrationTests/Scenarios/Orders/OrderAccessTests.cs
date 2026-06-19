@@ -38,17 +38,11 @@ public sealed class OrderAccessTests : BaseIntegrationTest
         var ownHistoryBody = await ownHistoryResponse.ReadApiResponseAsync<List<OrderHistory>>();
         ownHistoryBody.Data.Should().NotBeNull();
 
-        var ownTimelineResponse = await ownerClient.GetAsync($"/api/orders/{ownedOrder.Id}/timeline");
-        ownTimelineResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
         var foreignOrderResponse = await ownerClient.GetAsync($"/api/orders/{foreignOrder.Id}");
         foreignOrderResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 
         var foreignHistoryResponse = await ownerClient.GetAsync($"/api/orders/{foreignOrder.Id}/history");
         foreignHistoryResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-
-        var foreignTimelineResponse = await ownerClient.GetAsync($"/api/orders/{foreignOrder.Id}/timeline");
-        foreignTimelineResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [DockerFact]

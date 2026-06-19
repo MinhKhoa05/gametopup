@@ -92,11 +92,8 @@ public enum ErrorCode
     [Display(Name = "You cannot modify another user's order.")]
     CannotModifyOthersOrder,
 
-    [Display(Name = "Completed order cannot be cancelled.")]
-    CompletedOrderCannotBeCancelled,
-
-    [Display(Name = "Processing order cannot be cancelled.")]
-    ProcessingOrderCannotBeCancelled,
+    [Display(Name = "Order cannot be cancelled.")]
+    OrderCannotBeCancelled,
 
     [Display(Name = "Stock quantity must be greater than 0.")]
     StockQuantityMustBePositive,

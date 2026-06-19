@@ -7,9 +7,9 @@ using GameTopUp.DAL.Entities.Users;
 using Microsoft.Extensions.DependencyInjection;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 using WalletTransactionType = GameTopUp.DAL.Entities.Wallets.WalletTransactionType;
-using WalletDepositRequestStatus = GameTopUp.DAL.Entities.Wallets.WalletDepositRequestStatus;
+using WalletDepositStatus = GameTopUp.DAL.Entities.Wallets.WalletDepositStatus;
 using WalletEntity = GameTopUp.DAL.Entities.Wallets.Wallet;
-using WalletDepositRequestEntity = GameTopUp.DAL.Entities.Wallets.WalletDepositRequest;
+using WalletDepositEntity = GameTopUp.DAL.Entities.Wallets.WalletDeposit;
 using WalletTransactionEntity = GameTopUp.DAL.Entities.Wallets.WalletTransaction;
 
 namespace GameTopUp.Tests.IntegrationTests.Support;
@@ -164,15 +164,15 @@ public static partial class TestDatabaseExtensions
         });
     }
 
-    public static Task<WalletDepositRequestEntity> SeedDepositRequestAsync(
+    public static Task<WalletDepositEntity> SeedDepositRequestAsync(
         this CustomWebApplicationFactory factory,
         long userId,
         decimal amount = 100m,
-        WalletDepositRequestStatus status = WalletDepositRequestStatus.Pending,
-        Action<WalletDepositRequestEntity>? customize = null)
+        WalletDepositStatus status = WalletDepositStatus.Pending,
+        Action<WalletDepositEntity>? customize = null)
     {
         var requestCode = $"DEP-{UniqueCode(12)}".ToUpperInvariant();
-        var request = WalletDepositRequestEntity.Create(
+        var request = WalletDepositEntity.Create(
             userId,
             amount,
             requestCode,
@@ -183,7 +183,7 @@ public static partial class TestDatabaseExtensions
 
         return factory.WithDbAsync(async db =>
         {
-            var id = await db.InsertAsync<WalletDepositRequestEntity, long>(request);
+            var id = await db.InsertAsync<WalletDepositEntity, long>(request);
             if (id == default)
             {
                 throw new InvalidOperationException("Deposit request insert returned no id.");

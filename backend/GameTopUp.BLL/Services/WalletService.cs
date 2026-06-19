@@ -1,7 +1,7 @@
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Wallets;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.BLL.Mappers.Wallets;
+using GameTopUp.BLL.Mappers;
 using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.DAL.Interfaces.Wallets;
 
@@ -18,8 +18,6 @@ public sealed class WalletService
         _transactionRepository = transactionRepository;
     }
 
-    public Task CreateWalletAsync(long userId) => _walletRepository.UpsertWalletAsync(Wallet.CreateForUser(userId));
-
     public async Task<decimal> GetBalanceAsync(UserContext context)
     {
         var wallet = await _walletRepository.GetByUserIdAsync(context.UserId);
@@ -29,93 +27,81 @@ public sealed class WalletService
     public async Task<List<WalletTransactionInfo>> GetTransactionsAsync(UserContext context)
     {
         var transactions = await _transactionRepository.GetByUserIdAsync(context.UserId);
-        return transactions.Select(WalletMapper.ToTransactionResponse).ToList();
+        return transactions.Select(transaction => transaction.MapTo<WalletTransactionInfo>()).ToList();
     }
 
-    public async Task<TransactionResponseDTO> DepositFromVietQrAsync(long userId, decimal amount, string depositCode)
+    public WalletTransaction DepositFromVietQr(Wallet wallet, decimal amount, string depositCode)
     {
-        return await CreditAsync(userId, amount, WalletTransactionType.Deposit, $"Approve VietQR deposit #{depositCode}: {amount:N0} VND");
-    }
-
-    public async Task ChargeOrderAsync(long userId, long orderId, decimal amount)
-    {
-        await DebitAsync(userId, amount, WalletTransactionType.PurchaseOrder, $"Purchase order #{orderId}", orderId);
-    }
-
-    public async Task RefundOrderAsync(long userId, long orderId, decimal amount, string? reason = null)
-    {
-        var description = $"Refund order #{orderId}." + (string.IsNullOrWhiteSpace(reason) ? string.Empty : $" Reason: {reason}");
-        await CreditAsync(userId, amount, WalletTransactionType.Refund, description, orderId);
-    }
-
-    private async Task<TransactionResponseDTO> CreditAsync(
-        long userId,
-        decimal amount,
-        WalletTransactionType type,
-        string description,
-        long? orderId = null)
-    {
-        if (amount <= 0)
-        {
-            throw new BusinessException(ErrorCode.AmountMustBePositive);
-        }
-
-        return await ApplyBalanceChangeAsync(userId, amount, type, description, orderId);
-    }
-
-    private async Task<TransactionResponseDTO> DebitAsync(
-        long userId,
-        decimal amount,
-        WalletTransactionType type,
-        string description,
-        long? orderId = null)
-    {
-        if (amount <= 0)
-        {
-            throw new BusinessException(ErrorCode.AmountMustBePositive);
-        }
-
-        return await ApplyBalanceChangeAsync(userId, -amount, type, description, orderId);
-    }
-
-    private async Task<TransactionResponseDTO> ApplyBalanceChangeAsync(
-        long userId,
-        decimal balanceChange,
-        WalletTransactionType type,
-        string description,
-        long? orderId = null)
-    {
-        if (balanceChange == 0)
-        {
-            throw new BusinessException(ErrorCode.AmountMustBePositive);
-        }
-
-        var wallet = await _walletRepository.GetWithLockByUserIdAsync(userId)
-            ?? throw new NotFoundException(ErrorCode.WalletNotFound);
+        EnsurePositiveAmount(amount);
 
         var balanceBefore = wallet.Balance;
-        var balanceAfter = balanceBefore + balanceChange;
+        var balanceAfter = balanceBefore + amount;
+        var transaction = WalletTransaction.Create(
+            wallet.UserId,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            WalletTransactionType.Deposit,
+            $"Approve VietQR deposit #{depositCode}: {amount:N0} VND");
+        wallet.Balance = balanceAfter;
+        return transaction;
+    }
 
+    public WalletTransaction ChargeOrder(Wallet wallet, long orderId, decimal amount)
+    {
+        EnsurePositiveAmount(amount);
+
+        var balanceBefore = wallet.Balance;
+        var balanceAfter = balanceBefore - amount;
+
+        EnsureBalanceNotNegative(balanceAfter);
+
+        var transaction = WalletTransaction.Create(
+            wallet.UserId,
+            -amount,
+            balanceBefore,
+            balanceAfter,
+            WalletTransactionType.PurchaseOrder,
+            $"Purchase order #{orderId}",
+            orderId);
+            
+        wallet.Balance = balanceAfter;
+        return transaction;
+    }
+
+    public WalletTransaction RefundOrder(Wallet wallet, long orderId, decimal amount, string? reason = null)
+    {
+        EnsurePositiveAmount(amount);
+
+        var description = $"Refund order #{orderId}." + (string.IsNullOrWhiteSpace(reason) ? string.Empty : $" Reason: {reason}");
+        var balanceBefore = wallet.Balance;
+        var balanceAfter = balanceBefore + amount;
+        var transaction = WalletTransaction.Create(
+            wallet.UserId,
+            amount,
+            balanceBefore,
+            balanceAfter,
+            WalletTransactionType.Refund,
+            description,
+            orderId);
+        wallet.Balance = balanceAfter;
+        return transaction;
+    }
+
+    private static void EnsurePositiveAmount(decimal amount)
+    {
+        if (amount <= 0)
+        {
+            throw new BusinessException(ErrorCode.AmountMustBePositive);
+        }
+    }
+
+    private static void EnsureBalanceNotNegative(decimal balanceAfter)
+    {
         if (balanceAfter < 0)
         {
             throw new BusinessException(ErrorCode.InsufficientWalletBalance);
         }
-
-        wallet.Balance = balanceAfter;
-        wallet.UpdatedAt = DateTime.UtcNow;
-
-        await _walletRepository.UpdateBalanceAsync(wallet.Id, wallet.Balance);
-
-        var transaction = WalletTransaction.Create(
-            wallet.UserId,
-            balanceChange,
-            balanceBefore,
-            balanceAfter,
-            type,
-            description,
-            orderId);
-
-        var transactionId = await _transactionRepository.CreateAsync(transaction);
-        return new TransactionResponseDTO { TransactionId = transactionId };
     }
+
 }

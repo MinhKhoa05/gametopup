@@ -25,7 +25,6 @@ public class AuthUseCaseTests : IDisposable
     private readonly Mock<IUserRepository> _userRepository = new();
     private readonly Mock<IRefreshTokenRepository> _refreshTokenRepository = new();
     private readonly Mock<IWalletRepository> _walletRepository = new();
-    private readonly Mock<IWalletTransactionRepository> _walletTransactionRepository = new();
     private readonly DatabaseContext _database;
     private readonly AuthUseCase _useCase;
     private readonly PasswordService _passwordService = new();
@@ -42,15 +41,13 @@ public class AuthUseCaseTests : IDisposable
             ExpireMinutes = 30
         }));
 
-        var userService = new UserService(_userRepository.Object);
-        var walletService = new WalletService(_walletRepository.Object, _walletTransactionRepository.Object);
         var refreshTokenService = new RefreshTokenService(_refreshTokenRepository.Object);
 
         _useCase = new AuthUseCase(
-            userService,
+            _userRepository.Object,
+            _walletRepository.Object,
             _tokenService,
             _passwordService,
-            walletService,
             refreshTokenService,
             _database);
     }

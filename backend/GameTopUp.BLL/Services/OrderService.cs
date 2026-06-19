@@ -1,9 +1,8 @@
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.DTOs.Orders;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.DAL.Entities.Games;
 using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.DAL.Interfaces.Orders;
+using GameTopUp.DAL.Queries.Orders;
 
 namespace GameTopUp.BLL.Services;
 
@@ -11,58 +10,40 @@ public sealed class OrderService
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IOrderHistoryRepository _orderHistoryRepository;
+    private readonly OrderQuery _orderQuery;
 
-    public OrderService(IOrderRepository orderRepository, IOrderHistoryRepository orderHistoryRepository)
+    public OrderService(
+        IOrderRepository orderRepository,
+        IOrderHistoryRepository orderHistoryRepository,
+        OrderQuery orderQuery)
     {
         _orderRepository = orderRepository;
         _orderHistoryRepository = orderHistoryRepository;
+        _orderQuery = orderQuery;
     }
 
-    public Task<List<Order>> GetOrdersByUserAsync(UserContext context, OrderStatus? status = null) =>
-        _orderRepository.GetByUserIdAsync(context.UserId, status);
+    public async Task<List<MyOrderSummaryRow>> GetMyOrderSummariesAsync(long userId, OrderStatus? status = null)
+    {
+        return await _orderQuery.GetMySummaryAsync(userId, status);
+    }
 
-    public Task<List<Order>> GetAllOrdersAsync(OrderStatus? status = null) =>
-        _orderRepository.GetAllAsync(status);
+    public async Task<List<AdminOrderSummaryRow>> GetAdminOrderSummariesAsync(OrderStatus? status = null)
+    {
+        return await _orderQuery.GetAdminSummaryAsync(status);
+    }
 
     public Task<List<OrderHistory>> GetHistoriesAsync(long orderId) =>
         _orderHistoryRepository.GetByOrderIdAsync(orderId);
 
-    public async Task<Order> GetByIdOrThrowAsync(long orderId, bool withLock = false)
+    public async Task<Order> GetOrderByIdOrThrowAsync(long orderId)
     {
-        var order = withLock
-            ? await _orderRepository.GetWithLockByIdAsync(orderId)
-            : await _orderRepository.GetByIdAsync(orderId);
+        var order = await _orderRepository.GetByIdAsync(orderId);
 
         return order ?? throw new NotFoundException(ErrorCode.OrderNotFound, $"Order #{orderId} was not found.");
     }
 
-    public Task<Order> GetWithLockByIdOrThrowAsync(long orderId) => GetByIdOrThrowAsync(orderId, withLock: true);
-
-    public async Task<long> CreateOrderAsync(UserContext context, GamePackage package, string gameAccountInfo)
+    public OrderHistory PickOrder(Order order, UserContext actor)
     {
-        var order = Order.Create(context.UserId, package.Id, package.SalePrice, gameAccountInfo, OrderStatus.Pending);
-
-        var newOrderId = await _orderRepository.CreateAsync(order);
-        order.Id = newOrderId;
-
-        await _orderHistoryRepository.CreateAsync(
-            OrderHistory.Create(
-                newOrderId,
-                OrderStatus.Pending,
-                OrderStatus.Pending,
-                context.UserId,
-                "Order created in pending state."));
-
-        return newOrderId;
-    }
-
-    public async Task<OrderChangeResult> PickOrderAsync(Order order, UserContext admin)
-    {
-        if (order.Status == OrderStatus.Processing && order.AssignedTo == admin.UserId)
-        {
-            return OrderChangeResult.Unchanged(order);
-        }
-
         if (order.Status == OrderStatus.Processing)
         {
             throw new BusinessException(ErrorCode.OrderAlreadyAssigned);
@@ -73,94 +54,98 @@ public sealed class OrderService
             throw new BusinessException(ErrorCode.OrderNotReadyForPick);
         }
 
-        var fromStatus = order.Status;
-        order.MarkProcessing(admin.UserId);
-
-        await SaveChangeAsync(order, fromStatus, $"Admin {admin.DisplayName} picked the order.", admin);
-        return OrderChangeResult.ChangedStatus(order, fromStatus);
+        order.MarkProcessing(actor.UserId);
+        
+        return OrderHistory.Create(
+            order.Id,
+            OrderStatus.Pending,
+            order.Status,
+            actor.UserId,
+            $"Admin {actor.DisplayName} picked the order.",
+            actor.IsAdmin);
     }
 
-    public async Task<OrderChangeResult> CompleteOrderAsync(Order order, UserContext admin)
+    public OrderHistory CompleteOrder(Order order, UserContext actor)
     {
-        var fromStatus = order.Status;
-
-        if (order.Status == OrderStatus.Completed)
-        {
-            return OrderChangeResult.Unchanged(order);
-        }
-
         if (order.Status != OrderStatus.Processing)
         {
             throw new BusinessException(ErrorCode.OrderStatusInvalidToComplete);
         }
         
-        if (order.AssignedTo != admin.UserId)
+        if (order.AssignedTo != actor.UserId)
         {
             throw new BusinessException(ErrorCode.CannotModifyOthersOrder);
         }
 
         order.MarkCompleted();
-        await SaveChangeAsync(order, fromStatus, $"Admin {admin.DisplayName} completed the order.", admin);
-        return OrderChangeResult.ChangedStatus(order, fromStatus);
+        
+        return OrderHistory.Create(
+            order.Id,
+            OrderStatus.Processing,
+            order.Status,
+            actor.UserId,
+            $"Admin {actor.DisplayName} completed the order.",
+            actor.IsAdmin);
     }
 
-    public async Task<OrderChangeResult> CancelOrderAsync(Order order, UserContext actor, string? reason = null)
+    public OrderHistory CancelOrder(Order order, UserContext actor, string? reason = null)
     {
-        if (order.Status == OrderStatus.Cancelled)
-        {
-            return OrderChangeResult.Unchanged(order);
-        }
+        EnsureOrderCanCancel(order, actor);
 
+        var fromStatus = order.Status;
+        order.MarkCancelled();
+        var note = "Order cancelled." + (string.IsNullOrWhiteSpace(reason) ? string.Empty : $" Reason: {reason}");
+
+        return OrderHistory.Create(
+            order.Id,
+            fromStatus,
+            order.Status,
+            actor.UserId,
+            note,
+            actor.IsAdmin);
+    }
+
+    private static void EnsureOrderCanCancel(Order order, UserContext actor)
+    {
         if (order.Status == OrderStatus.Completed)
         {
-            throw new BusinessException(ErrorCode.CompletedOrderCannotBeCancelled);
+            throw new BusinessException(ErrorCode.OrderCannotBeCancelled);
         }
 
-        if (actor.UserId == order.UserId)
+        if (actor.IsAdmin)
         {
-            if (order.Status != OrderStatus.Pending)
-            {
-                throw new ForbiddenException(ErrorCode.ProcessingOrderCannotBeCancelled);
-            }
+            EnsureAdminCanCancel(order, actor);
+            return;
         }
-        else if (actor.IsAdmin)
-        {
-            var canCancelPendingOrder = order.Status == OrderStatus.Pending;
-            var canCancelProcessingOrder = order.Status == OrderStatus.Processing && order.AssignedTo == actor.UserId;
 
-            if (!canCancelPendingOrder && !canCancelProcessingOrder)
-            {
-                throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
-            }
-        }
-        else
+        EnsureUserCanCancel(order, actor);
+    }
+
+    private static void EnsureUserCanCancel(Order order, UserContext actor)
+    {
+        if (actor.UserId != order.UserId)
         {
             throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
         }
 
-        var fromStatus = order.Status;
-        order.MarkCancelled();
-        await SaveChangeAsync(order, fromStatus, BuildCancelNote(reason), actor);
-        return OrderChangeResult.ChangedStatus(order, fromStatus);
+        if (order.Status != OrderStatus.Pending)
+        {
+            throw new ForbiddenException(ErrorCode.OrderCannotBeCancelled);
+        }
     }
 
-    private async Task SaveChangeAsync(Order order, OrderStatus fromStatus, string note, UserContext actor)
+    private static void EnsureAdminCanCancel(Order order, UserContext admin)
     {
-        await _orderRepository.UpdateAsync(order);
+        var canCancelPendingOrder = order.Status == OrderStatus.Pending;
+        var canCancelProcessingOrder = order.Status == OrderStatus.Processing && order.AssignedTo == admin.UserId;
 
-        await _orderHistoryRepository.CreateAsync(
-            OrderHistory.Create(
-                order.Id,
-                fromStatus,
-                order.Status,
-                actor.UserId,
-                note,
-                actor.IsAdmin));
+        if (!canCancelPendingOrder && !canCancelProcessingOrder)
+        {
+            throw new ForbiddenException(
+                ErrorCode.CannotModifyOthersOrder,
+                order.Status == OrderStatus.Processing
+                    ? "Không thể hủy đơn hàng của người khác."
+                    : "Không thể hủy đơn hàng ở trạng thái hiện tại.");
+        }
     }
-
-    private static string BuildCancelNote(string? reason)
-    {
-        return "Order cancelled." + (string.IsNullOrWhiteSpace(reason) ? string.Empty : $" Reason: {reason}");
-    }
-
 }

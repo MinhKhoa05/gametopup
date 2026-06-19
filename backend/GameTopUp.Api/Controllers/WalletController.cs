@@ -1,7 +1,5 @@
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.Queries.Wallets;
 using GameTopUp.BLL.Services;
-using GameTopUp.BLL.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,12 +10,10 @@ namespace GameTopUp.Api.Controllers;
 public sealed class WalletController : ApiControllerBase
 {
     private readonly WalletService _walletService;
-    private readonly WalletOverviewQuery _walletOverviewQuery;
 
-    public WalletController(WalletService walletService, WalletOverviewQuery walletOverviewQuery)
+    public WalletController(WalletService walletService)
     {
         _walletService = walletService;
-        _walletOverviewQuery = walletOverviewQuery;
     }
 
     [HttpGet]
@@ -32,12 +28,5 @@ public sealed class WalletController : ApiControllerBase
     {
         var transactions = await _walletService.GetTransactionsAsync(CurrentUser);
         return ApiOk(transactions);
-    }
-
-    [HttpGet("overview")]
-    public async Task<IActionResult> GetWalletOverview()
-    {
-        var overview = await _walletOverviewQuery.GetByUserAsync(CurrentUser);
-        return ApiOk(overview);
     }
 }

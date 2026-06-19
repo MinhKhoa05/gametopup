@@ -8,7 +8,7 @@ public sealed class AdminDepositRequestResponseDTO
     public long UserId { get; set; }
     public decimal Amount { get; set; }
     public string Code { get; set; } = string.Empty;
-    public WalletDepositRequestStatus Status { get; set; }
+    public WalletDepositStatus Status { get; set; }
     public DateTime? UserConfirmedAt { get; set; }
     public long? ReviewedBy { get; set; }
     public DateTime? ReviewedAt { get; set; }

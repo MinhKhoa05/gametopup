@@ -5,9 +5,9 @@ using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.DAL.Entities.Users;
 using Microsoft.Extensions.DependencyInjection;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
-using WalletDepositRequestStatus = GameTopUp.DAL.Entities.Wallets.WalletDepositRequestStatus;
+using WalletDepositStatus = GameTopUp.DAL.Entities.Wallets.WalletDepositStatus;
 using WalletEntity = GameTopUp.DAL.Entities.Wallets.Wallet;
-using WalletDepositRequestEntity = GameTopUp.DAL.Entities.Wallets.WalletDepositRequest;
+using WalletDepositEntity = GameTopUp.DAL.Entities.Wallets.WalletDeposit;
 using WalletTransactionEntity = GameTopUp.DAL.Entities.Wallets.WalletTransaction;
 
 namespace GameTopUp.Tests.IntegrationTests.Support;
@@ -29,8 +29,8 @@ public static partial class TestDatabaseExtensions
     public static Task<Order?> GetOrderAsync(this CustomWebApplicationFactory factory, long orderId) =>
         factory.WithDbAsync(db => db.GetByIdAsync<Order>(orderId));
 
-    public static Task<WalletDepositRequestEntity?> GetDepositRequestAsync(this CustomWebApplicationFactory factory, long requestId) =>
-        factory.WithDbAsync(db => db.GetByIdAsync<WalletDepositRequestEntity>(requestId));
+    public static Task<WalletDepositEntity?> GetDepositRequestAsync(this CustomWebApplicationFactory factory, long requestId) =>
+        factory.WithDbAsync(db => db.GetByIdAsync<WalletDepositEntity>(requestId));
 
     public static Task<List<WalletTransactionEntity>> GetWalletTransactionsAsync(this CustomWebApplicationFactory factory, long userId) =>
         factory.WithDbAsync(db => db.QueryAsync<WalletTransactionEntity>("SELECT * FROM wallet_transactions WHERE user_id = @UserId ORDER BY created_at DESC", new { UserId = userId }));
@@ -59,16 +59,16 @@ public static partial class TestDatabaseExtensions
     public static Task<List<GamePackage>> GetGamePackagesByGameAsync(this CustomWebApplicationFactory factory, long gameId) =>
         factory.WithDbAsync(db => db.QueryAsync<GamePackage>("SELECT * FROM game_packages WHERE game_id = @GameId AND is_active = 1 ORDER BY created_at DESC", new { GameId = gameId }));
 
-    public static Task<List<WalletDepositRequestEntity>> GetDepositRequestsAsync(this CustomWebApplicationFactory factory, WalletDepositRequestStatus? status = null) =>
+    public static Task<List<WalletDepositEntity>> GetDepositRequestsAsync(this CustomWebApplicationFactory factory, WalletDepositStatus? status = null) =>
         factory.WithDbAsync(db =>
-            db.QueryAsync<WalletDepositRequestEntity>(
-                "SELECT * FROM wallet_deposit_requests WHERE (@Status IS NULL OR status = @Status) ORDER BY created_at DESC",
+            db.QueryAsync<WalletDepositEntity>(
+                "SELECT * FROM wallet_deposits WHERE (@Status IS NULL OR status = @Status) ORDER BY created_at DESC",
                 new { Status = status }));
 
-    public static Task<List<WalletDepositRequestEntity>> GetDepositRequestsByUserAsync(this CustomWebApplicationFactory factory, long userId, WalletDepositRequestStatus? status = null) =>
+    public static Task<List<WalletDepositEntity>> GetDepositRequestsByUserAsync(this CustomWebApplicationFactory factory, long userId, WalletDepositStatus? status = null) =>
         factory.WithDbAsync(db =>
-            db.QueryAsync<WalletDepositRequestEntity>(
-                "SELECT * FROM wallet_deposit_requests WHERE user_id = @UserId AND (@Status IS NULL OR status = @Status) ORDER BY created_at DESC",
+            db.QueryAsync<WalletDepositEntity>(
+                "SELECT * FROM wallet_deposits WHERE user_id = @UserId AND (@Status IS NULL OR status = @Status) ORDER BY created_at DESC",
                 new { UserId = userId, Status = status }));
 
     public static Task<RefreshToken?> GetRefreshTokenAsync(this CustomWebApplicationFactory factory, string tokenHash) =>

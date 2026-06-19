@@ -1,9 +1,12 @@
 using FluentAssertions;
 using GameTopUp.BLL.DTOs.GamePackages;
+using GameTopUp.BLL.DTOs.Images;
 using GameTopUp.BLL.Exceptions;
+using GameTopUp.BLL.Interfaces;
 using GameTopUp.BLL.Services.Games;
 using GameTopUp.DAL.Entities.Games;
 using GameTopUp.DAL.Interfaces.Games;
+using Microsoft.AspNetCore.Http;
 using Moq;
 
 namespace GameTopUp.Tests.UnitTests.Services;
@@ -12,11 +15,12 @@ public class GamePackageServiceTests
 {
     private readonly Mock<IGamePackageRepository> _packageRepository = new();
     private readonly Mock<IGameRepository> _gameRepository = new();
+    private readonly Mock<IImageStorageService> _imageStorageService = new();
     private readonly GamePackageService _service;
 
     public GamePackageServiceTests()
     {
-        _service = new GamePackageService(_packageRepository.Object, _gameRepository.Object);
+        _service = new GamePackageService(_packageRepository.Object, _gameRepository.Object, _imageStorageService.Object);
     }
 
     [Fact]
@@ -80,6 +84,40 @@ public class GamePackageServiceTests
 
         await act.Should().ThrowAsync<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.PackageOutOfStock);
+    }
+
+    [Fact]
+    public async Task GetActivePackageByIdOrThrowAsync_ShouldThrow_WhenPackageIsInactive()
+    {
+        _packageRepository
+            .Setup(repo => repo.GetByIdAsync(5))
+            .ReturnsAsync(new GamePackage
+            {
+                Id = 5,
+                IsActive = false
+            });
+
+        var act = async () => await _service.GetActivePackageByIdOrThrowAsync(5);
+
+        await act.Should().ThrowAsync<BusinessException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.GamePackageInactive);
+    }
+
+    [Fact]
+    public async Task GetActivePackageByIdOrThrowAsync_ShouldReturnPackage_WhenPackageIsActive()
+    {
+        _packageRepository
+            .Setup(repo => repo.GetByIdAsync(5))
+            .ReturnsAsync(new GamePackage
+            {
+                Id = 5,
+                IsActive = true
+            });
+
+        var package = await _service.GetActivePackageByIdOrThrowAsync(5);
+
+        package.Id.Should().Be(5);
+        package.IsActive.Should().BeTrue();
     }
 
     [Fact]
@@ -164,6 +202,41 @@ public class GamePackageServiceTests
     }
 
     [Fact]
+    public async Task CreatePackageAsync_ShouldUploadImageAndCleanupOnFailure()
+    {
+        _gameRepository
+            .Setup(repo => repo.GetByIdAsync(10))
+            .ReturnsAsync(new Game
+            {
+                Id = 10,
+                IsActive = true
+            });
+        _imageStorageService.Setup(service => service.UploadAsync(It.IsAny<IFormFile>(), "game-packages"))
+            .ReturnsAsync(new ImageStorageResult
+            {
+                Url = "https://cdn.test/packages/vip.png",
+                RelativePath = "/packages/vip.png"
+            });
+        _packageRepository.Setup(repo => repo.CreateAsync(It.IsAny<GamePackage>()))
+            .ThrowsAsync(new InvalidOperationException("boom"));
+
+        var image = new FormFile(new MemoryStream(new byte[] { 1 }), 0, 1, "image", "vip.png");
+        var act = async () => await _service.CreatePackageAsync(new CreateGamePackageRequest
+        {
+            Name = "VIP",
+            GameId = 10,
+            SalePrice = 1000,
+            OriginalPrice = 800,
+            ImportPrice = 500,
+            StockQuantity = 5,
+            ImageFile = image
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        _imageStorageService.Verify(service => service.DeleteAsync("/packages/vip.png"), Times.Once);
+    }
+
+    [Fact]
     public async Task UpdatePackageAsync_ShouldThrow_WhenPackageDoesNotExist()
     {
         _packageRepository
@@ -223,6 +296,45 @@ public class GamePackageServiceTests
     }
 
     [Fact]
+    public async Task UpdatePackageAsync_ShouldUploadImageAndDeleteOldFile()
+    {
+        _packageRepository
+            .Setup(repo => repo.GetByIdAsync(5))
+            .ReturnsAsync(new GamePackage
+            {
+                Id = 5,
+                Name = "Old Name",
+                ImageUrl = "old-url",
+                ImageRelativePath = "/packages/old.png",
+                GameId = 10,
+                SalePrice = 100m,
+                OriginalPrice = 90m,
+                ImportPrice = 80m,
+                StockQuantity = 2,
+                IsActive = true
+            });
+        _imageStorageService.Setup(service => service.UploadAsync(It.IsAny<IFormFile>(), "game-packages"))
+            .ReturnsAsync(new ImageStorageResult
+            {
+                Url = "new-url",
+                RelativePath = "/packages/new.png"
+            });
+        _packageRepository
+            .Setup(repo => repo.UpdateAsync(It.IsAny<GamePackage>()))
+            .ReturnsAsync(true);
+
+        var image = new FormFile(new MemoryStream(new byte[] { 9 }), 0, 1, "image", "new.png");
+        var package = await _service.UpdatePackageAsync(5, new UpdateGamePackageRequest
+        {
+            ImageFile = image
+        });
+
+        package.ImageUrl.Should().Be("new-url");
+        package.ImageRelativePath.Should().Be("/packages/new.png");
+        _imageStorageService.Verify(service => service.DeleteAsync("/packages/old.png"), Times.Once);
+    }
+
+    [Fact]
     public async Task DeletePackageAsync_ShouldThrow_WhenPackageDoesNotExist()
     {
         _packageRepository
@@ -236,14 +348,15 @@ public class GamePackageServiceTests
     }
 
     [Fact]
-    public async Task DeletePackageAsync_ShouldDelete_WhenPackageExists()
+    public async Task DeletePackageAsync_ShouldDeleteImageAndPackage()
     {
         _packageRepository
             .Setup(repo => repo.GetByIdAsync(5))
             .ReturnsAsync(new GamePackage
             {
                 Id = 5,
-                IsActive = true
+                IsActive = true,
+                ImageRelativePath = "/packages/old.png"
             });
         _packageRepository
             .Setup(repo => repo.DeleteAsync(5))
@@ -252,6 +365,7 @@ public class GamePackageServiceTests
         await _service.DeletePackageAsync(5);
 
         _packageRepository.Verify(repo => repo.DeleteAsync(5), Times.Once);
+        _imageStorageService.Verify(service => service.DeleteAsync("/packages/old.png"), Times.Once);
     }
 
     [Fact]

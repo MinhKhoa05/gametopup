@@ -1,6 +1,5 @@
 using GameTopUp.BLL.DTOs.Games;
-using GameTopUp.BLL.Queries.Games;
-using GameTopUp.BLL.UseCases;
+using GameTopUp.BLL.Services.Games;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,19 +9,17 @@ namespace GameTopUp.Api.Controllers.Admin;
 [Route("api/admin/games")]
 public sealed class AdminGameController : ApiControllerBase
 {
-    private readonly GameUseCase _gameUseCase;
-    private readonly AdminGameQuery _gameQuery;
+    private readonly GameService _gameService;
 
-    public AdminGameController(GameUseCase gameUseCase, AdminGameQuery gameQuery)
+    public AdminGameController(GameService gameService)
     {
-        _gameUseCase = gameUseCase;
-        _gameQuery = gameQuery;
+        _gameService = gameService;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAllGames()
     {
-        var games = await _gameQuery.GetAllAsync();
+        var games = await _gameService.GetAdminGameSummariesAsync();
         return ApiOk(games);
     }
 
@@ -31,7 +28,7 @@ public sealed class AdminGameController : ApiControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromForm] CreateGameRequest request)
     {
-        var game = await _gameUseCase.CreateGameAsync(request);
+        var game = await _gameService.CreateGameAsync(request);
         return ApiCreated(game);
     }
 
@@ -40,14 +37,14 @@ public sealed class AdminGameController : ApiControllerBase
     [HttpPut("{id:long}")]
     public async Task<IActionResult> Update(long id, [FromForm] UpdateGameRequest request)
     {
-        var game = await _gameUseCase.UpdateGameAsync(id, request);
+        var game = await _gameService.UpdateGameAsync(id, request);
         return ApiOk(game);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGame(long id)
     {
-        await _gameUseCase.DeleteGameAsync(id);
+        await _gameService.DeleteGameAsync(id);
         return ApiOk();
     }
 }

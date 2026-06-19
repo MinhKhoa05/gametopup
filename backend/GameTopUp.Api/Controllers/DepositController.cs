@@ -1,5 +1,5 @@
 using GameTopUp.BLL.DTOs.Wallets;
-using GameTopUp.BLL.Queries.Wallets;
+using GameTopUp.BLL.Services;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Entities.Wallets;
 using Microsoft.AspNetCore.Authorization;
@@ -11,33 +11,35 @@ namespace GameTopUp.Api.Controllers;
 [Route("api/deposits")]
 public sealed class DepositController : ApiControllerBase
 {
-    private readonly WalletUseCase _walletUseCase;
-    private readonly WalletDepositRequestQuery _depositRequestQuery;
+    private readonly WalletDepositService _depositRequestService;
+    private readonly WalletDepositUseCase _walletDepositUseCase;
 
-    public DepositController(WalletUseCase walletUseCase, WalletDepositRequestQuery depositRequestQuery)
+    public DepositController(
+        WalletDepositService depositRequestService,
+        WalletDepositUseCase walletDepositUseCase)
     {
-        _walletUseCase = walletUseCase;
-        _depositRequestQuery = depositRequestQuery;
+        _depositRequestService = depositRequestService;
+        _walletDepositUseCase = walletDepositUseCase;
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateDepositRequest([FromBody] CreateDepositRequest request)
     {
-        var response = await _walletUseCase.CreateDepositRequestAsync(CurrentUser, request.Amount);
+        var response = await _depositRequestService.CreateAsync(CurrentUser, request.Amount);
         return ApiCreated(response);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetMyDepositRequests([FromQuery] WalletDepositRequestStatus? status = null)
+    public async Task<IActionResult> GetMyDepositRequests([FromQuery] WalletDepositStatus? status = null)
     {
-        var requests = await _depositRequestQuery.GetByUserAsync(CurrentUser, status);
+        var requests = await _depositRequestService.GetByUserAsync(CurrentUser, status);
         return ApiOk(requests);
     }
 
     [HttpPost("{requestId}/confirm")]
     public async Task<IActionResult> ConfirmDepositTransfer(long requestId)
     {
-        var response = await _walletUseCase.ConfirmDepositTransferAsync(requestId, CurrentUser);
+        var response = await _walletDepositUseCase.ConfirmDepositTransferAsync(requestId, CurrentUser);
         return ApiOk(response);
     }
 }
