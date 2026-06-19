@@ -2,6 +2,7 @@ using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Auths;
 using GameTopUp.BLL.DTOs.Users;
 using GameTopUp.BLL.Exceptions;
+using GameTopUp.BLL.Mappers.Users;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.DAL.Database;
@@ -61,7 +62,7 @@ public sealed class AuthUseCase
         {
             AccessToken = tokens.AccessToken,
             RefreshToken = tokens.RefreshToken,
-            User = MapToResponse(user)
+            User = UserMapper.ToResponse(user)
         };
     }
 
@@ -139,20 +140,6 @@ public sealed class AuthUseCase
             DisplayName = user.DisplayName,
             Email = user.Email,
             Role = user.Role
-        };
-    }
-
-    private static UserResponseDTO MapToResponse(User user)
-    {
-        return new UserResponseDTO
-        {
-            Id = user.Id,
-            DisplayName = user.DisplayName,
-            Email = user.Email,
-            Role = user.Role.ToString(),
-            IsActive = user.IsActive,
-            CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
         };
     }
 }

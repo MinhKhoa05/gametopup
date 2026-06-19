@@ -26,6 +26,6 @@ public sealed class AdminUserController : ApiControllerBase
     public async Task<IActionResult> Delete(long id)
     {
         await _userService.DeleteAsync(id);
-        return ApiOk(null, "User deleted successfully.");
+        return ApiOk();
     }
 }

@@ -13,13 +13,12 @@ public sealed class ApiResponse
     {
     }
 
-    public static ApiResponse Ok(object? data = null, string? message = null)
+    public static ApiResponse Ok(object? data = null)
     {
         return new ApiResponse
         {
             Success = true,
-            Data = data,
-            Message = message
+            Data = data
         };
     }
 

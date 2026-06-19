@@ -9,5 +9,4 @@ public sealed class PublicGamePackageResponse
     public decimal SalePrice { get; set; }
     public decimal OriginalPrice { get; set; }
     public bool IsAvailable { get; set; }
-    public string StockStatus { get; set; } = "out_of_stock";
 }

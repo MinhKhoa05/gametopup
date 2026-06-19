@@ -32,7 +32,7 @@ public sealed class AdminGameController : ApiControllerBase
     public async Task<IActionResult> Create([FromForm] CreateGameRequest request)
     {
         var game = await _gameUseCase.CreateGameAsync(request);
-        return ApiCreated(game, "Game created successfully.");
+        return ApiCreated(game);
     }
 
     [Consumes("multipart/form-data")]
@@ -41,13 +41,13 @@ public sealed class AdminGameController : ApiControllerBase
     public async Task<IActionResult> Update(long id, [FromForm] UpdateGameRequest request)
     {
         var game = await _gameUseCase.UpdateGameAsync(id, request);
-        return ApiOk(game, "Game updated successfully.");
+        return ApiOk(game);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGame(long id)
     {
         await _gameUseCase.DeleteGameAsync(id);
-        return ApiOk(null, "Game deleted successfully.");
+        return ApiOk();
     }
 }

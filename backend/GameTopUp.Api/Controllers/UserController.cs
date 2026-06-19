@@ -1,4 +1,5 @@
 using GameTopUp.BLL.DTOs.Users;
+using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,6 +35,18 @@ public sealed class UserController : ApiControllerBase
     public async Task<IActionResult> Update(long id, [FromBody] UpdateUserRequest request)
     {
         await _userService.UpdateProfileAsync(CurrentUser, id, request);
-        return ApiOk(null, "User updated successfully.");
+        return ApiOk();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(long id)
+    {
+        if (!CurrentUser.IsAdmin)
+        {
+            throw new ForbiddenException(ErrorCode.Forbidden);
+        }
+
+        await _userService.DeleteAsync(id);
+        return ApiOk();
     }
 }

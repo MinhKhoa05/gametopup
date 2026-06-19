@@ -30,7 +30,7 @@ public sealed class GamePackageFlowTests : BaseIntegrationTest
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.ReadApiResponseAsync<List<PublicGamePackageResponse>>();
         body.Success.Should().BeTrue();
-        body.Data.Should().ContainSingle(package => package.Id == activePackage.Id && package.IsAvailable && package.StockStatus == "in_stock");
+        body.Data.Should().ContainSingle(package => package.Id == activePackage.Id && package.IsAvailable);
     }
 
     [DockerFact]

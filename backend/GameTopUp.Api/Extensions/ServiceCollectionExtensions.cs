@@ -100,6 +100,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AdminGameQuery>();
         services.AddScoped<MyOrderSummaryQuery>();
         services.AddScoped<AdminOrderSummaryQuery>();
+        services.AddScoped<OrderTimelineQuery>();
         services.AddScoped<WalletDepositRequestQuery>();
         services.AddScoped<AdminDepositRequestQuery>();
         services.AddScoped<WalletOverviewQuery>();

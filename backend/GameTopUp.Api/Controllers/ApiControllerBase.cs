@@ -9,11 +9,11 @@ namespace GameTopUp.Api.Controllers;
 [ApiController]
 public abstract class ApiControllerBase : ControllerBase
 {
-    protected IActionResult ApiOk(object? data = null, string? message = null) =>
-        Ok(ApiResponse.Ok(data, message));
+    protected IActionResult ApiOk(object? data = null) =>
+        Ok(ApiResponse.Ok(data));
 
-    protected IActionResult ApiCreated(object? data = null, string? message = null) =>
-        StatusCode(StatusCodes.Status201Created, ApiResponse.Ok(data, message));
+    protected IActionResult ApiCreated(object? data = null) =>
+        StatusCode(StatusCodes.Status201Created, ApiResponse.Ok(data));
 
     protected UserContext CurrentUser
     {

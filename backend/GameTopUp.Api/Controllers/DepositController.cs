@@ -24,7 +24,7 @@ public sealed class DepositController : ApiControllerBase
     public async Task<IActionResult> CreateDepositRequest([FromBody] CreateDepositRequest request)
     {
         var response = await _walletUseCase.CreateDepositRequestAsync(CurrentUser, request.Amount);
-        return ApiCreated(response, "Deposit request created successfully.");
+        return ApiCreated(response);
     }
 
     [HttpGet]
@@ -38,6 +38,6 @@ public sealed class DepositController : ApiControllerBase
     public async Task<IActionResult> ConfirmDepositTransfer(long requestId)
     {
         var response = await _walletUseCase.ConfirmDepositTransferAsync(requestId, CurrentUser);
-        return ApiOk(response, "Transfer confirmation recorded.");
+        return ApiOk(response);
     }
 }

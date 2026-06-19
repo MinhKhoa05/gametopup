@@ -1,10 +1,10 @@
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Orders;
 using GameTopUp.BLL.Exceptions;
+using GameTopUp.BLL.Mappers.Orders;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Games;
 using GameTopUp.DAL.Database;
-using GameTopUp.DAL.Entities.Orders;
 
 namespace GameTopUp.BLL.UseCases;
 
@@ -58,7 +58,7 @@ public sealed class OrderUseCase
         {
             var order = await _orderService.GetWithLockByIdOrThrowAsync(orderId);
             var result = await _orderService.PickOrderAsync(order, adminContext);
-            return MapToActionResponse(result);
+            return OrderMapper.ToActionResponse(result);
         });
     }
 
@@ -68,7 +68,7 @@ public sealed class OrderUseCase
         {
             var order = await _orderService.GetWithLockByIdOrThrowAsync(orderId);
             var result = await _orderService.CompleteOrderAsync(order, adminContext);
-            return MapToActionResponse(result);
+            return OrderMapper.ToActionResponse(result);
         });
     }
 
@@ -81,27 +81,13 @@ public sealed class OrderUseCase
 
             if (!result.Changed)
             {
-                return MapToActionResponse(result);
+                return OrderMapper.ToActionResponse(result);
             }
 
             await _packageService.RestorePackageAsync(order.GamePackageId);
             await _walletService.RefundOrderAsync(order.UserId, order.Id, order.Total, reason);
 
-            return MapToActionResponse(result);
+            return OrderMapper.ToActionResponse(result);
         });
-    }
-
-    private static OrderActionResponseDTO MapToActionResponse(OrderChangeResult result)
-    {
-        return new OrderActionResponseDTO
-        {
-            OrderId = result.Order.Id,
-            FromStatus = result.FromStatus,
-            ToStatus = result.Order.Status,
-            Changed = result.Changed,
-            AssignTo = result.Order.AssignedTo,
-            AssignAt = result.Order.AssignedAt,
-            UpdatedAt = result.Order.UpdatedAt
-        };
     }
 }

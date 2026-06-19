@@ -1,6 +1,8 @@
 using GameTopUp.BLL.DTOs.Wallets;
+using GameTopUp.BLL.Mappers;
 using GameTopUp.BLL.Options;
 using GameTopUp.DAL.Entities.Wallets;
+using Mapster;
 
 namespace GameTopUp.BLL.Mappers.Wallets;
 
@@ -8,56 +10,24 @@ public static class WalletMapper
 {
     public static WalletTransactionInfo ToTransactionResponse(WalletTransaction transaction)
     {
-        return new WalletTransactionInfo
-        {
-            Id = transaction.Id,
-            Amount = transaction.Amount,
-            BalanceBefore = transaction.BalanceBefore,
-            BalanceAfter = transaction.BalanceAfter,
-            Type = transaction.Type,
-            Description = transaction.Description,
-            OrderId = transaction.OrderId,
-            CreatedAt = transaction.CreatedAt
-        };
+        return transaction.Adapt<WalletTransactionInfo>(BackendMapsterConfig.Config);
     }
 
     public static WalletDepositRequestResponseDTO ToPublicDepositRequestResponse(
         WalletDepositRequest request,
         VietQrSettings settings)
     {
-        return new WalletDepositRequestResponseDTO
-        {
-            Id = request.Id,
-            Amount = request.Amount,
-            Code = request.Code,
-            TransferContent = request.TransferContent,
-            QrImageUrl = BuildQrImageUrl(settings),
-            BankId = settings.BankId,
-            AccountNo = settings.AccountNo,
-            AccountName = settings.AccountName,
-            Status = request.Status,
-            UserConfirmedAt = request.UserConfirmedAt,
-            CreatedAt = request.CreatedAt,
-            UpdatedAt = request.UpdatedAt
-        };
+        var response = request.Adapt<WalletDepositRequestResponseDTO>(BackendMapsterConfig.Config);
+        response.QrImageUrl = BuildQrImageUrl(settings);
+        response.BankId = settings.BankId;
+        response.AccountNo = settings.AccountNo;
+        response.AccountName = settings.AccountName;
+        return response;
     }
 
     public static AdminDepositRequestResponseDTO ToAdminDepositRequestResponse(WalletDepositRequest request)
     {
-        return new AdminDepositRequestResponseDTO
-        {
-            Id = request.Id,
-            UserId = request.UserId,
-            Amount = request.Amount,
-            Code = request.Code,
-            Status = request.Status,
-            UserConfirmedAt = request.UserConfirmedAt,
-            ReviewedBy = request.ReviewedBy,
-            ReviewedAt = request.ReviewedAt,
-            AdminNote = request.AdminNote,
-            CreatedAt = request.CreatedAt,
-            UpdatedAt = request.UpdatedAt
-        };
+        return request.Adapt<AdminDepositRequestResponseDTO>(BackendMapsterConfig.Config);
     }
 
     public static string BuildQrImageUrl(VietQrSettings settings)

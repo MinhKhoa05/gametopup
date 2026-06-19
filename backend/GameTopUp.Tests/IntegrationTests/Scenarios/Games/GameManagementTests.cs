@@ -88,6 +88,24 @@ public sealed class GameManagementTests : BaseIntegrationTest
     }
 
     [DockerFact]
+    public async Task AdminShouldListAllGamePackages()
+    {
+        var admin = await Factory.SeedAdminAsync();
+        var game = await Factory.SeedGameAsync();
+        await Factory.SeedGamePackageAsync(game.Id, salePrice: 1000m, stockQuantity: 2);
+
+        using var client = CreateAuthenticatedClient(admin.Id, admin.DisplayName, admin.Email, admin.Role);
+
+        var response = await client.GetAsync("/api/admin/game-packages");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadApiResponseAsync<List<GamePackage>>();
+        body.Success.Should().BeTrue();
+        body.Data.Should().NotBeNull();
+        body.Data!.Should().ContainSingle(item => item.GameId == game.Id);
+    }
+
+    [DockerFact]
     public async Task MemberShouldBeForbidden_WhenCreatingGameOrPackage()
     {
         var member = await Factory.SeedUserAsync(UserRole.Member);

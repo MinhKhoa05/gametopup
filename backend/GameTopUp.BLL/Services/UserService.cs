@@ -1,6 +1,7 @@
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Users;
 using GameTopUp.BLL.Exceptions;
+using GameTopUp.BLL.Mappers.Users;
 using GameTopUp.DAL.Entities.Users;
 using GameTopUp.DAL.Interfaces.Users;
 
@@ -40,13 +41,13 @@ public sealed class UserService
     {
         EnsureCanAccessUser(actor, userId);
         var user = await GetByIdOrThrowAsync(userId);
-        return MapToResponse(user);
+        return UserMapper.ToResponse(user);
     }
 
     public async Task<IEnumerable<UserResponseDTO>> GetAllAsync(int page, int pageSize)
     {
         var users = await _repository.GetAllAsync(page, pageSize);
-        return users.Select(MapToResponse);
+        return users.Select(UserMapper.ToResponse);
     }
 
     public Task UpdateProfileAsync(UserContext actor, long id, UpdateUserRequest request)
@@ -57,20 +58,6 @@ public sealed class UserService
     public Task DeleteAsync(long id)
     {
         return DeleteInternalAsync(id);
-    }
-
-    private static UserResponseDTO MapToResponse(User user)
-    {
-        return new UserResponseDTO
-        {
-            Id = user.Id,
-            DisplayName = user.DisplayName,
-            Email = user.Email,
-            Role = user.Role.ToString(),
-            IsActive = user.IsActive,
-            CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
-        };
     }
 
     private async Task UpdateProfileInternalAsync(UserContext actor, long id, UpdateUserRequest request)

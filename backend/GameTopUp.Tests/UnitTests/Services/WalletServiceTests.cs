@@ -31,7 +31,7 @@ public class WalletServiceTests
     }
 
     [Fact]
-    public async Task DepositAsync_ShouldCreditWalletAndRecordDepositTransaction()
+    public async Task DepositFromVietQrAsync_ShouldCreditWalletAndRecordDepositTransaction()
     {
         Wallet? updatedWallet = null;
         WalletTransaction? createdTransaction = null;
@@ -44,7 +44,7 @@ public class WalletServiceTests
             .ReturnsAsync(99)
             .Callback<WalletTransaction>(transaction => createdTransaction = transaction);
 
-        var response = await _service.DepositAsync(7, 150m);
+        var response = await _service.DepositFromVietQrAsync(7, 150m, "GTU-1406-40734");
 
         response.TransactionId.Should().Be(99);
         updatedWallet.Should().NotBeNull();
@@ -54,15 +54,15 @@ public class WalletServiceTests
         createdTransaction.BalanceBefore.Should().Be(200m);
         createdTransaction.BalanceAfter.Should().Be(350m);
         createdTransaction.Type.Should().Be(WalletTransactionType.Deposit);
-        createdTransaction.Description.Should().Contain("Deposit wallet: 150");
+        createdTransaction.Description.Should().Contain("Approve VietQR deposit #GTU-1406-40734: 150");
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    public async Task DepositAsync_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
+    public async Task DepositFromVietQrAsync_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
     {
-        var act = async () => await _service.DepositAsync(7, amount);
+        var act = async () => await _service.DepositFromVietQrAsync(7, amount, "GTU-1406-40734");
 
         await act.Should().ThrowAsync<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.AmountMustBePositive);

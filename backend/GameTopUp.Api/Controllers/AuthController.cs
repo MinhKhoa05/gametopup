@@ -26,7 +26,7 @@ public sealed class AuthController : ApiControllerBase
     public async Task<IActionResult> Register(CreateUserRequest request)
     {
         await _auth.RegisterAsync(request);
-        return ApiCreated(null, "Registered successfully.");
+        return ApiCreated();
     }
 
     [HttpPost("login")]
@@ -34,7 +34,7 @@ public sealed class AuthController : ApiControllerBase
     {
         var response = await _auth.LoginAsync(request);
         SetAuthCookies(response);
-        return ApiOk(response, "Logged in successfully.");
+        return ApiOk(response);
     }
 
     [Authorize]
@@ -42,7 +42,7 @@ public sealed class AuthController : ApiControllerBase
     public async Task<IActionResult> ChangePassword(PasswordChangeRequest request)
     {
         await _auth.ChangePasswordAsync(CurrentUser, request);
-        return ApiOk(null, "Password changed successfully.");
+        return ApiOk();
     }
 
     [HttpPost("refresh")]
@@ -56,7 +56,7 @@ public sealed class AuthController : ApiControllerBase
 
         var response = await _auth.RefreshAsync(refreshToken);
         SetAuthCookies(response);
-        return ApiOk(response, "Token refreshed successfully.");
+        return ApiOk(response);
     }
 
     [Authorize]
@@ -70,7 +70,7 @@ public sealed class AuthController : ApiControllerBase
         }
 
         DeleteAuthCookies();
-        return ApiOk(null, "Logged out successfully.");
+        return ApiOk();
     }
 
     private void SetAuthCookies(AuthResponseDTO authResponse)

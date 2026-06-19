@@ -16,19 +16,21 @@ public sealed class OrderController : ApiControllerBase
     private readonly OrderUseCase _orderUseCase;
     private readonly OrderService _orderService;
     private readonly MyOrderSummaryQuery _orderSummaryQuery;
+    private readonly OrderTimelineQuery _orderTimelineQuery;
 
-    public OrderController(OrderUseCase orderUseCase, OrderService orderService, MyOrderSummaryQuery orderSummaryQuery)
+    public OrderController(OrderUseCase orderUseCase, OrderService orderService, MyOrderSummaryQuery orderSummaryQuery, OrderTimelineQuery orderTimelineQuery)
     {
         _orderUseCase = orderUseCase;
         _orderService = orderService;
         _orderSummaryQuery = orderSummaryQuery;
+        _orderTimelineQuery = orderTimelineQuery;
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateOrder([FromBody] PurchaseOrderRequestDTO request)
     {
         var orderId = await _orderUseCase.PurchaseOrderAsync(CurrentUser, request);
-        return ApiCreated(orderId, "Order purchased successfully.");
+        return ApiCreated(orderId);
     }
 
     [HttpGet]
@@ -46,6 +48,14 @@ public sealed class OrderController : ApiControllerBase
         return ApiOk(histories);
     }
 
+    [HttpGet("{orderId}/timeline")]
+    public async Task<IActionResult> GetOrderTimeline(long orderId)
+    {
+        await EnsureCanAccessOrderAsync(orderId);
+        var timeline = await _orderTimelineQuery.GetByOrderIdAsync(orderId);
+        return ApiOk(timeline);
+    }
+
     [HttpGet("{orderId}")]
     public async Task<IActionResult> GetOrderById(long orderId)
     {
@@ -58,7 +68,7 @@ public sealed class OrderController : ApiControllerBase
     public async Task<IActionResult> CancelOrder(long orderId)
     {
         var result = await _orderUseCase.CancelOrderAsync(orderId, CurrentUser);
-        return ApiOk(result, "Order cancelled successfully.");
+        return ApiOk(result);
     }
 
     private async Task EnsureCanAccessOrderAsync(long orderId)

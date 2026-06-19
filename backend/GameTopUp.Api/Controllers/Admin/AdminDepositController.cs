@@ -32,13 +32,13 @@ public sealed class AdminDepositController : ApiControllerBase
     public async Task<IActionResult> ApproveDepositRequest(long requestId, [FromBody] ReviewDepositRequest? request = null)
     {
         var response = await _walletUseCase.ApproveDepositRequestAsync(requestId, CurrentUser, request?.Note);
-        return ApiOk(response, "Deposit request approved successfully.");
+        return ApiOk(response);
     }
 
     [HttpPost("{requestId}/reject")]
     public async Task<IActionResult> RejectDepositRequest(long requestId, [FromBody] ReviewDepositRequest? request = null)
     {
         var response = await _walletUseCase.RejectDepositRequestAsync(requestId, CurrentUser, request?.Note);
-        return ApiOk(response, "Deposit request rejected successfully.");
+        return ApiOk(response);
     }
 }

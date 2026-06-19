@@ -48,20 +48,20 @@ public sealed class AdminOrderController : ApiControllerBase
     public async Task<IActionResult> PickOrder(long orderId)
     {
         var result = await _orderUseCase.PickOrderAsync(orderId, CurrentUser);
-        return ApiOk(result, "Order picked successfully.");
+        return ApiOk(result);
     }
 
     [HttpPost("{orderId}/complete")]
     public async Task<IActionResult> CompleteOrder(long orderId)
     {
         var result = await _orderUseCase.CompleteOrderAsync(orderId, CurrentUser);
-        return ApiOk(result, "Order completed successfully.");
+        return ApiOk(result);
     }
 
     [HttpPost("{orderId}/cancel")]
     public async Task<IActionResult> CancelOrder(long orderId)
     {
         var result = await _orderUseCase.CancelOrderAsync(orderId, CurrentUser);
-        return ApiOk(result, "Order cancelled successfully.");
+        return ApiOk(result);
     }
 }

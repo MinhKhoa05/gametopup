@@ -32,11 +32,6 @@ public sealed class WalletService
         return transactions.Select(WalletMapper.ToTransactionResponse).ToList();
     }
 
-    public async Task<TransactionResponseDTO> DepositAsync(long userId, decimal amount)
-    {
-        return await CreditAsync(userId, amount, WalletTransactionType.Deposit, $"Deposit wallet: {amount:N0} VND");
-    }
-
     public async Task<TransactionResponseDTO> DepositFromVietQrAsync(long userId, decimal amount, string depositCode)
     {
         return await CreditAsync(userId, amount, WalletTransactionType.Deposit, $"Approve VietQR deposit #{depositCode}: {amount:N0} VND");
