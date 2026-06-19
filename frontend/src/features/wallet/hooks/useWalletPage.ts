@@ -26,7 +26,7 @@ export function useWalletPage() {
     bank: 'all',
     sort: 'newest',
     time: 'all',
-    status: 'all',
+    status: 'active',
   });
 
   const balance = overviewQuery.data?.balance ?? 0;
@@ -38,7 +38,7 @@ export function useWalletPage() {
   }, [historyFilters, historyView]);
 
   useEffect(() => {
-    setHistoryFilters((current) => ({ ...current, bank: 'all', status: 'all' }));
+    setHistoryFilters((current) => ({ ...current, bank: 'all', status: historyView === 'deposit' ? 'active' : 'all' }));
   }, [historyView]);
 
   const historyRows = useMemo(() => buildWalletHistoryRows(depositRequests, transactions), [depositRequests, transactions]);
@@ -54,7 +54,8 @@ export function useWalletPage() {
         if (historyView === 'deposit' && row.kind === 'deposit' && row.bankId !== historyFilters.bank) return false;
         if (historyView === 'ledger' && row.kind === 'ledger' && row.statusFilter !== historyFilters.bank) return false;
       }
-      if (historyFilters.status !== 'all' && row.statusFilter !== historyFilters.status) return false;
+      if (historyFilters.status === 'active' && row.kind === 'deposit' && row.statusFilter === 'success') return false;
+      if (historyFilters.status !== 'active' && historyFilters.status !== 'all' && row.statusFilter !== historyFilters.status) return false;
       if (historyFilters.time !== 'all' && !matchesTimeFilter(row.createdAt, historyFilters.time)) return false;
       if (!keyword) return true;
       return row.searchText.includes(keyword);

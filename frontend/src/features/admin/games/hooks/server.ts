@@ -13,7 +13,7 @@ export function useCreateAdminGameMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: Omit<AdminGameInput, 'id'>) => createAdminGame(payload),
+    mutationFn: createAdminGame,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: gamesKeys.all });
       queryClient.invalidateQueries({ queryKey: adminGamesKeys.all });
@@ -41,7 +41,7 @@ export function useDeleteAdminGameMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: Required<Pick<AdminGameInput, 'id'>>) => deleteAdminGame(payload),
+    mutationFn: deleteAdminGame,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: gamesKeys.all });
       queryClient.invalidateQueries({ queryKey: adminGamesKeys.all });

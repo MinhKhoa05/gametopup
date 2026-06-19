@@ -4,7 +4,6 @@ import { gamesKeys } from '@/features/games/server';
 import { packagesKeys } from '@/features/packages/server';
 import { adminGamesKeys } from '@/features/admin/games/hooks';
 import { adminPackagesKeys, createAdminPackage, deleteAdminPackage, getAdminPackages, updateAdminPackage } from '../api';
-import type { AdminPackageInput, AdminPackageUpdateInput } from '../api';
 
 const STALE_TIME = 1000 * 60 * 5;
 
@@ -21,7 +20,7 @@ export function useCreateAdminPackageMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: Omit<AdminPackageInput, 'id'>) => createAdminPackage(payload),
+    mutationFn: createAdminPackage,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: gamesKeys.all });
       queryClient.invalidateQueries({ queryKey: adminGamesKeys.all });
@@ -36,7 +35,7 @@ export function useUpdateAdminPackageMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: AdminPackageUpdateInput) => updateAdminPackage(payload),
+    mutationFn: updateAdminPackage,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: gamesKeys.all });
       queryClient.invalidateQueries({ queryKey: adminGamesKeys.all });
@@ -51,7 +50,7 @@ export function useDeleteAdminPackageMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: Required<Pick<AdminPackageInput, 'id'>>) => deleteAdminPackage(payload),
+    mutationFn: deleteAdminPackage,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: gamesKeys.all });
       queryClient.invalidateQueries({ queryKey: adminGamesKeys.all });

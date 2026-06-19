@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 import { AUTH_USER_QUERY_KEY, clearAuthSessionCache } from '@/features/auth/server';
 import type { User } from '@/features/auth/types';
 import { adminUsersKeys, deleteAdminUser, getAdminUsers, updateAdminUser } from '../api';
-import type { AdminUserDeleteInput, AdminUserUpdateInput } from '../api';
 
 export function useAdminUsersQuery() {
   return useQuery({
@@ -16,7 +15,7 @@ export function useUpdateAdminUserMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: AdminUserUpdateInput) => updateAdminUser(payload),
+    mutationFn: updateAdminUser,
     onSuccess(_, variables) {
       queryClient.invalidateQueries({ queryKey: adminUsersKeys.all });
       queryClient.setQueryData<User | null>(AUTH_USER_QUERY_KEY, (current) => {
@@ -41,7 +40,7 @@ export function useDeleteAdminUserMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: AdminUserDeleteInput) => deleteAdminUser(payload),
+    mutationFn: deleteAdminUser,
     onSuccess(_, variables) {
       queryClient.invalidateQueries({ queryKey: adminUsersKeys.all });
       const currentUser = queryClient.getQueryData<User | null>(AUTH_USER_QUERY_KEY);

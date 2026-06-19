@@ -8,6 +8,7 @@ import {
   DetailRow,
   EmptyState,
   Field,
+  FilterChipGroup,
   FilterSelectField,
   FormActions,
   ImageBox,
@@ -244,23 +245,16 @@ export function PackagesAdminPanel({
 
             <div className="grid gap-2">
               <span className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-slate-500">Trạng thái</span>
-              <div className="flex flex-wrap gap-2.5">
-                {[
+              <FilterChipGroup
+                ariaLabel="Lọc trạng thái gói"
+                items={[
                   { label: 'Tất cả', value: 'all' },
                   { label: 'Đang bán', value: 'active' },
                   { label: 'Đang ẩn', value: 'inactive' },
-                ].map((item) => (
-                  <Button
-                    key={item.value}
-                    size="sm"
-                    variant={statusFilter === item.value ? 'primary' : 'outline'}
-                    className={classNames('rounded-full px-4', statusFilter === item.value ? '' : 'text-slate-300')}
-                    onClick={() => setStatusFilter(item.value as StatusFilter)}
-                  >
-                    {item.label}
-                  </Button>
-                ))}
-              </div>
+                ]}
+                onChange={(value) => setStatusFilter(value as StatusFilter)}
+                value={statusFilter}
+              />
             </div>
 
             {loading && visiblePackages.length === 0 ? (
@@ -335,14 +329,6 @@ export function PackagesAdminPanel({
                   <PackageSummaryCard gameName={selectedPackageGame?.name ?? `Game #${selectedPackage.gameId}`} item={selectedPackage} />
 
                   <div className="grid gap-0 rounded-[20px] border gt-border bg-[var(--gt-card)] px-4">
-                    <DetailRow label="Mã gói">#{selectedPackage.id}</DetailRow>
-                    <DetailRow label="Game">
-                      <Field
-                        readOnly
-                        value={selectedPackageGame?.name ?? `Game #${selectedPackage.gameId}`}
-                        className={classNames(detailInputClassName, 'w-full max-w-[320px]')}
-                      />
-                    </DetailRow>
                     <DetailRow label="Tên gói">
                       <div className="grid justify-items-end gap-1">
                         <input
@@ -449,8 +435,6 @@ export function PackagesAdminPanel({
                         />
                       </div>
                     </DetailRow>
-                    <DetailRow label="Ngày tạo">{formatDate(selectedPackage.createdAt)}</DetailRow>
-                    <DetailRow label="Cập nhật">{formatDate(selectedPackage.updatedAt)}</DetailRow>
                   </div>
 
                   <div className="flex flex-wrap gap-2.5">
@@ -478,19 +462,14 @@ export function PackagesAdminPanel({
 
                   <div className="grid gap-0 rounded-[20px] border gt-border bg-[var(--gt-card)] px-4">
                     <DetailRow label="Mã gói">#{selectedPackage.id}</DetailRow>
-                    <DetailRow label="Game">{selectedPackageGame?.name ?? `#${selectedPackage.gameId}`}</DetailRow>
-                    <DetailRow label="Giá gốc">{formatCurrency(selectedPackage.originalPrice)}</DetailRow>
                     <DetailRow label="Giá bán">{formatCurrency(selectedPackage.salePrice)}</DetailRow>
+                    <DetailRow label="Giá gốc">{formatCurrency(selectedPackage.originalPrice)}</DetailRow>
+                    <DetailRow label="Giá nhập">{formatCurrency(selectedPackage.importPrice)}</DetailRow>
+                    <DetailRow label="Tồn kho">{selectedPackage.stockQuantity}</DetailRow>
                     <DetailRow label="Tiết kiệm">
                       {selectedPackage.originalPrice > 0
                         ? `${formatCurrency(Math.max(0, selectedPackage.originalPrice - selectedPackage.salePrice))} (${selectedPackageDiscount}%)`
                         : '0đ'}
-                    </DetailRow>
-                    <DetailRow label="Tồn kho">{selectedPackage.stockQuantity}</DetailRow>
-                    <DetailRow label="Trạng thái">
-                      <Badge tone={selectedPackage.isActive ? 'success' : 'neutral'}>
-                        {selectedPackage.isActive ? 'Đang bán' : 'Đang ẩn'}
-                      </Badge>
                     </DetailRow>
                     <DetailRow label="Ngày tạo">{formatDate(selectedPackage.createdAt)}</DetailRow>
                     <DetailRow label="Cập nhật">{formatDate(selectedPackage.updatedAt)}</DetailRow>
@@ -504,6 +483,7 @@ export function PackagesAdminPanel({
                     <Button
                       variant="outline"
                       className="justify-center rounded-[16px] px-4 border-amber-400/20 bg-amber-500/10 text-amber-200 hover:border-amber-300/30 hover:bg-amber-500/15 hover:text-amber-100"
+                      disabled={busy}
                       onClick={handleQuickToggle}
                     >
                       <EyeOff size={16} />
@@ -512,6 +492,7 @@ export function PackagesAdminPanel({
                     <Button
                       variant="outline"
                       className="justify-center rounded-[16px] px-4 border-rose-400/20 bg-rose-500/10 text-rose-200 hover:border-rose-300/30 hover:bg-rose-500/15 hover:text-rose-100"
+                      disabled={busy}
                       onClick={async () => {
                         if (!window.confirm(`Xóa gói nạp "${selectedPackage.name}"?`)) return;
                         await state.remove(selectedPackage);
@@ -537,7 +518,7 @@ export function PackagesAdminPanel({
 
 function PackageSummaryCard({ gameName, item }: { gameName: string; item: GamePackage }) {
   return (
-    <div className="grid gap-4 rounded-[24px] border gt-border bg-[var(--gt-panel)] p-5">
+    <div className="grid gap-4 rounded-[24px] border border-cyan/15 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(8,24,39,0.86))] p-5 shadow-[0_18px_48px_rgba(2,6,23,0.2)]">
       <div className="flex items-center gap-4">
         <div className="relative h-[96px] w-[96px] shrink-0 overflow-hidden rounded-[18px] border gt-border bg-[var(--gt-card)]">
           <ImageBox src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
@@ -550,7 +531,6 @@ function PackageSummaryCard({ gameName, item }: { gameName: string; item: GamePa
           <p className="mt-1.5 text-[0.92rem] leading-6 gt-text-muted">{gameName}</p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Badge tone={item.isActive ? 'success' : 'neutral'}>{item.isActive ? 'Đang bán' : 'Đang ẩn'}</Badge>
-            <span className="text-xs font-semibold uppercase tracking-[0.16em] gt-text-disabled">#{item.id}</span>
           </div>
         </div>
       </div>

@@ -134,7 +134,7 @@ function ProfileContent({ user }: { user: User }) {
 
               <PanelShell>
                 <div className="px-5 pt-5 sm:px-6 sm:pt-6">
-                  <SectionHeading title="Đổi mật khẩu" titleClassName="text-[1.35rem]" />
+                  <SectionHeading title="Bảo mật tài khoản" titleClassName="text-[1.35rem]" />
                 </div>
 
                 <div className="grid gap-4 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
@@ -149,16 +149,20 @@ function ProfileContent({ user }: { user: User }) {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-end gap-3 rounded-[16px] border border-white/10 bg-[rgba(7,16,31,0.65)] px-4 py-3">
-                      <Button type="button" variant="secondary" className="rounded-[16px] px-4" disabled>
-                        Đổi mật khẩu
-                      </Button>
-                    </div>
-
                     <div className="flex items-start gap-2 text-sm leading-6 gt-text-muted">
                       <ShieldCheck size={16} className="mt-0.5 shrink-0 text-slate-500" />
                       <span>Bạn nên dùng mật khẩu mạnh và không chia sẻ với người khác để bảo vệ tài khoản của bạn.</span>
                     </div>
+
+                    <details className="group rounded-[16px] border border-white/10 bg-[rgba(7,16,31,0.65)] px-4 py-3">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold gt-text-soft">
+                        <span>Thiết lập bảo mật</span>
+                        <ChevronRight size={16} className="transition-transform group-open:rotate-90" />
+                      </summary>
+                      <p className="mt-3 text-sm leading-6 gt-text-muted">
+                        Chức năng đổi mật khẩu sẽ hiển thị tại đây khi hệ thống hỗ trợ thao tác này.
+                      </p>
+                    </details>
                   </div>
                 </div>
               </PanelShell>

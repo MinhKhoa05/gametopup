@@ -77,7 +77,7 @@ export function UsersAdminPanel({
                     }
                     title={<>{user.displayName ?? user.email}{isSelf ? ' (bạn)' : ''}</>}
                     subtitle={user.email}
-                    meta={`${userRoleLabel} · ${user.createdAt ? formatDate(user.createdAt) : 'Chưa có ngày tạo'}`}
+                    meta={user.createdAt ? formatDate(user.createdAt) : 'Chưa có ngày tạo'}
                     titleAccessory={<Badge tone={user.isActive !== false ? 'success' : 'neutral'} icon={user.isActive !== false ? <CheckCircle2 size={14} /> : <X size={14} />}>{user.isActive !== false ? 'Bật' : 'Tắt'}</Badge>}
                     trailing={<Badge tone={isAdminRole ? 'primary' : 'neutral'} icon={<UserCheck2 size={14} />}>{userRoleLabel}</Badge>}
                   />

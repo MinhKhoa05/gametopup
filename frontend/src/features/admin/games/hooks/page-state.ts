@@ -54,6 +54,10 @@ export function useAdminGamesPageState({
     await onDeleteGame(game.id);
   }
 
+  async function updateGame(payload: { id: number; imageFile: File | null; isActive: boolean; name: string }) {
+    await onUpdateGame(payload);
+  }
+
   return {
     editing,
     filteredGames,
@@ -67,5 +71,6 @@ export function useAdminGamesPageState({
     setQuery,
     startEdit,
     submit,
+    updateGame,
   };
 }

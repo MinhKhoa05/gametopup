@@ -2,7 +2,6 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { toast } from 'sonner';
 import { walletKeys } from '@/features/wallet/server';
 import { adminDepositsKeys, approveAdminDepositRequest, getAdminDepositRequests, rejectAdminDepositRequest } from '../api';
-import type { AdminDepositReviewInput } from '../api';
 
 const STALE_TIME = 1000 * 60 * 5;
 
@@ -19,7 +18,7 @@ export function useApproveAdminDepositRequestMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: AdminDepositReviewInput) => approveAdminDepositRequest(payload),
+    mutationFn: approveAdminDepositRequest,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: adminDepositsKeys.all });
       queryClient.invalidateQueries({ queryKey: walletKeys.all });
@@ -32,7 +31,7 @@ export function useRejectAdminDepositRequestMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: AdminDepositReviewInput) => rejectAdminDepositRequest(payload),
+    mutationFn: rejectAdminDepositRequest,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: adminDepositsKeys.all });
       queryClient.invalidateQueries({ queryKey: walletKeys.all });

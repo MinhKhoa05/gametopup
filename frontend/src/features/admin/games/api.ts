@@ -1,4 +1,5 @@
 import { api } from '@/shared/api/client';
+import { appendFormValue } from '@/shared/api/formData';
 import type { ApiResponse } from '@/shared/types/api';
 
 export type AdminGameSummary = {
@@ -17,14 +18,6 @@ export type AdminGameInput = {
   imageFile: File | null;
   isActive: boolean;
 };
-
-function appendFormValue(formData: FormData, key: string, value: string | number | boolean | File | null | undefined) {
-  if (value === undefined || value === null) {
-    return;
-  }
-
-  formData.append(key, value instanceof File ? value : String(value));
-}
 
 function buildGameFormData(payload: Omit<AdminGameInput, 'id'>) {
   const formData = new FormData();

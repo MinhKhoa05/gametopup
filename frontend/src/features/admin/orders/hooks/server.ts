@@ -2,7 +2,6 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { toast } from 'sonner';
 import { orderKeys } from '@/features/orders/server';
 import { adminOrdersKeys, cancelAdminOrder, completeAdminOrder, getAdminOrders, pickAdminOrder } from '../api';
-import type { AdminOrderActionInput } from '../api';
 
 const STALE_TIME = 1000 * 30;
 
@@ -19,7 +18,7 @@ export function usePickAdminOrderMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: AdminOrderActionInput) => pickAdminOrder(payload),
+    mutationFn: pickAdminOrder,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: adminOrdersKeys.all });
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
@@ -32,7 +31,7 @@ export function useCompleteAdminOrderMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: AdminOrderActionInput) => completeAdminOrder(payload),
+    mutationFn: completeAdminOrder,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: adminOrdersKeys.all });
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
@@ -45,7 +44,7 @@ export function useCancelAdminOrderMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: AdminOrderActionInput) => cancelAdminOrder(payload),
+    mutationFn: cancelAdminOrder,
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: adminOrdersKeys.all });
       queryClient.invalidateQueries({ queryKey: orderKeys.all });

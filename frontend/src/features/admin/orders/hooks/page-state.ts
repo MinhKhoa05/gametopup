@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import type { AdminOrderSummary } from '@/features/orders/types';
 
-type OrderFilter = 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
+type OrderFilter = 'active' | 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
 
 const ORDER_FILTER_OPTIONS: Array<{ key: OrderFilter; label: string }> = [
+  { key: 'active', label: 'Cần xử lý' },
   { key: 'all', label: 'Tất cả' },
   { key: 'pending', label: 'Chờ xử lý' },
   { key: 'processing', label: 'Đang xử lý' },
@@ -20,13 +21,14 @@ const ORDER_STATUS_LABEL_BY_STATUS: Record<number, string> = {
 
 export function useAdminOrdersPageState(orders: AdminOrderSummary[]) {
   const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<OrderFilter>('all');
+  const [filter, setFilter] = useState<OrderFilter>('active');
 
   const filteredOrders = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
     return orders.filter((order) => {
       const matchesFilter =
+        (filter === 'active' && (order.status === 1 || order.status === 2)) ||
         filter === 'all' ||
         (filter === 'pending' && order.status === 1) ||
         (filter === 'processing' && order.status === 2) ||

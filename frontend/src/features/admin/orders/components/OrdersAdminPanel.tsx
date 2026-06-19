@@ -7,12 +7,14 @@ import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { getOrderStatusMeta as getSharedOrderStatusMeta } from '@/features/orders/lib/orderStatus';
 import { DEFAULT_IMAGE_SRC } from '@/shared/lib/image';
 
+type OrderFilter = 'active' | 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
+
 type OrdersAdminPanelState = {
-  filters: Array<{ key: 'all' | 'pending' | 'processing' | 'completed' | 'cancelled'; label: string }>;
-  filter: 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
+  filters: Array<{ key: OrderFilter; label: string }>;
+  filter: OrderFilter;
   filteredOrders: AdminOrderSummary[];
   query: string;
-  setFilter: (value: 'all' | 'pending' | 'processing' | 'completed' | 'cancelled') => void;
+  setFilter: (value: OrderFilter) => void;
   setQuery: (value: string) => void;
 };
 
@@ -41,7 +43,8 @@ export function OrdersAdminPanel({
     () => state.filteredOrders.find((order) => order.id === selectedOrderId) ?? state.filteredOrders[0] ?? null,
     [selectedOrderId, state.filteredOrders],
   );
-
+  const selectedStatus = selectedOrder ? getOrderStatusMeta(selectedOrder.status) : null;
+  const selectedActionState = selectedOrder ? getOrderActionState(selectedOrder, currentUser?.id ?? null) : null;
   const summary = useMemo(() => summarizeOrders(orders), [orders]);
 
   return (
@@ -51,30 +54,28 @@ export function OrdersAdminPanel({
           <SectionHeading
             title="Đơn hàng"
             titleClassName="text-[1.2rem]"
-            description="Xử lý đơn theo trạng thái, giữ đúng luồng tiếp nhận → hoàn thành → đóng."
+            description="Ưu tiên đơn cần xử lý trước, rồi mở chi tiết để thao tác."
             action={
               <div className="flex flex-wrap gap-2">
-                <Badge tone="warning">Chờ xử lý {summary.pending}</Badge>
+                <Badge tone="warning">Chờ {summary.pending}</Badge>
                 <Badge tone="primary">Đang xử lý {summary.processing}</Badge>
-                <Badge tone="success">Thành công {summary.completed}</Badge>
-                <Badge tone="danger">Đã hủy {summary.cancelled}</Badge>
+                <Badge tone="success">Xong {summary.completed}</Badge>
+                <Badge tone="danger">Hủy {summary.cancelled}</Badge>
               </div>
             }
           />
 
           <SearchBar
             value={state.query}
-            placeholder="Tìm kiếm đơn hàng, mã đơn..."
-            onChange={(value) => {
-              state.setQuery(value);
-            }}
+            placeholder="Tìm mã đơn, user, gói, tài khoản game..."
+            onChange={state.setQuery}
             dense
           />
 
           <FilterChipGroup
             items={state.filters.map((option) => ({ value: option.key, label: option.label }))}
             value={state.filter}
-            onChange={(value) => state.setFilter(value as typeof state.filter)}
+            onChange={(value) => state.setFilter(value as OrderFilter)}
           />
 
           {loading ? (
@@ -84,7 +85,6 @@ export function OrdersAdminPanel({
               {state.filteredOrders.map((order) => {
                 const isSelected = order.id === selectedOrder?.id;
                 const statusMeta = getOrderStatusMeta(order.status);
-                const total = order.total;
 
                 return (
                   <MediaListItem
@@ -96,7 +96,7 @@ export function OrdersAdminPanel({
                     subtitle={`User #${order.userId} · Gói #${order.gamePackageId}`}
                     meta={`${order.gameAccountInfo} · ${formatDate(order.createdAt)}`}
                     titleAccessory={<Badge tone={statusMeta.tone} icon={statusMeta.icon}>{statusMeta.label}</Badge>}
-                    trailing={<strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">{formatCurrency(total)}</strong>}
+                    trailing={<strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">{formatCurrency(order.total ?? order.unitPrice)}</strong>}
                   />
                 );
               })}
@@ -112,70 +112,77 @@ export function OrdersAdminPanel({
           <SectionHeading
             title="Xử lý đơn hàng"
             titleClassName="text-[1.2rem]"
-            description="Nhận đơn, hoàn thành hoặc huỷ nếu đơn đang ở trạng thái phù hợp."
-            action={selectedOrder ? <Badge tone={getOrderStatusMeta(selectedOrder.status).tone}>{getOrderStatusMeta(selectedOrder.status).label}</Badge> : undefined}
+            description="Kiểm tra nhanh rồi thao tác bước tiếp theo."
+            action={selectedStatus ? <Badge tone={selectedStatus.tone}>{selectedStatus.label}</Badge> : undefined}
           />
 
           {!selectedOrder ? (
             <EmptyState title="Chưa chọn đơn hàng" description="Chọn một đơn bên trái để xem chi tiết và thao tác." />
           ) : (
             <div className="grid gap-4">
-              <div className="rounded-[20px] border border-cyan/15 bg-cyan/10 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-cyan">Đang xem</p>
-                    <strong className="mt-1 block text-xl font-black text-white">#{selectedOrder.id}</strong>
-                    <span className="mt-1 block text-sm text-slate-300">User #{selectedOrder.userId}</span>
+              <div className="overflow-hidden rounded-[22px] border border-cyan/20 bg-[linear-gradient(135deg,rgba(34,211,238,0.16),rgba(15,23,42,0.72))] p-4 shadow-[0_18px_48px_rgba(2,6,23,0.24)]">
+                <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-4">
+                  <div className="overflow-hidden rounded-[18px] border border-white/[0.08] bg-slate-950/30">
+                    <ImageBox src={DEFAULT_IMAGE_SRC} alt="" className="aspect-square object-cover" />
                   </div>
-                  <Badge tone={getOrderStatusMeta(selectedOrder.status).tone} icon={getOrderStatusMeta(selectedOrder.status).icon}>
-                    {getOrderStatusMeta(selectedOrder.status).label}
-                  </Badge>
+                  <div className="min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-cyan">Đơn #{selectedOrder.id}</p>
+                        <strong className="mt-1 block text-2xl font-black tracking-[-0.04em] text-white">{formatCurrency(selectedOrder.total ?? selectedOrder.unitPrice)}</strong>
+                        <span className="mt-1 block truncate text-sm text-slate-300">User #{selectedOrder.userId} · Gói #{selectedOrder.gamePackageId}</span>
+                      </div>
+                      <Badge tone={selectedStatus?.tone ?? 'neutral'} icon={selectedStatus?.icon} className="shrink-0 rounded-full">
+                        {selectedStatus?.label}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="mt-3 grid gap-1.5 text-sm leading-6 text-slate-200">
-                  <span className="font-semibold text-white">{formatCurrency(selectedOrder.total ?? selectedOrder.unitPrice)}</span>
-                  <span className="break-words text-slate-200">{selectedOrder.gameAccountInfo}</span>
+                <div className="mt-4 rounded-[16px] border border-white/[0.08] bg-slate-950/24 px-3 py-2.5">
+                  <span className="block text-[0.72rem] font-bold uppercase tracking-[0.14em] text-slate-400">UID / Server / Nhân vật</span>
+                  <strong className="mt-1 block break-words text-sm font-black text-white">{selectedOrder.gameAccountInfo}</strong>
                 </div>
               </div>
 
-              <div className="grid gap-2 rounded-[20px] border border-white/[0.06] bg-white/[0.03] p-4 text-sm text-slate-200">
-                <DetailRow label="User">{`#${selectedOrder.userId}`}</DetailRow>
-                <DetailRow label="Gói">{`#${selectedOrder.gamePackageId}`}</DetailRow>
-                <DetailRow label="Tài khoản game">{selectedOrder.gameAccountInfo}</DetailRow>
-                <DetailRow label="Giao cho">{selectedOrder.assignedTo ? `#${selectedOrder.assignedTo}` : 'Chưa phân công'}</DetailRow>
-                <DetailRow label="Tạo lúc">{formatDate(selectedOrder.createdAt)}</DetailRow>
-                <DetailRow label="Cập nhật">{formatDate(selectedOrder.updatedAt)}</DetailRow>
-                <DetailRow label="Giá đơn vị">{formatCurrency(selectedOrder.unitPrice)}</DetailRow>
+              {selectedActionState?.kind === 'pick' || selectedActionState?.kind === 'act' ? (
+                <div className="flex flex-wrap gap-2.5">
+                  {selectedActionState.kind === 'pick' ? (
+                    <Button variant="accent" disabled={busy} onClick={() => void onPickOrder(selectedOrder.id)}>
+                      <Send size={16} />
+                      Tiếp nhận
+                    </Button>
+                  ) : null}
+
+                  {selectedActionState.kind === 'act' ? (
+                    <>
+                      <Button variant="accent" disabled={busy} onClick={() => void onCompleteOrder(selectedOrder.id)}>
+                        <CheckCircle2 size={16} />
+                        Hoàn thành
+                      </Button>
+                      <Button variant="secondary" disabled={busy} onClick={() => void onCancelOrder(selectedOrder.id)}>
+                        <CircleSlash size={16} />
+                        Hủy đơn
+                      </Button>
+                    </>
+                  ) : null}
+                </div>
+              ) : null}
+
+              <div className="grid gap-2 rounded-[20px] border border-white/[0.07] bg-[rgba(255,255,255,0.035)] px-4 text-sm text-slate-200">
+                <DetailRow label="Ngày tạo">{formatDate(selectedOrder.createdAt)}</DetailRow>
+                <DetailRow label="Người xử lý">{selectedOrder.assignedTo ? `#${selectedOrder.assignedTo}` : 'Chưa phân công'}</DetailRow>
+                <DetailRow label="Cập nhật lần cuối">{formatDate(selectedOrder.updatedAt)}</DetailRow>
               </div>
 
-              <div className="grid gap-2 text-sm leading-6 text-slate-200">
-                {selectedOrder.assignedTo && currentUser?.id && selectedOrder.assignedTo !== currentUser.id && selectedOrder.status === 2 ? (
-                  <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.03] px-4 py-3">Đơn này đang được admin khác xử lý. Mình chỉ xem được trạng thái.</div>
-                ) : null}
-
-                {selectedOrder.status === 2 && selectedOrder.assignedTo === currentUser?.id ? (
-                  <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.03] px-4 py-3">Đơn này đang ở tay mình, có thể hoàn thành hoặc huỷ nếu cần.</div>
-                ) : null}
-
-                {!canPick(selectedOrder) && !canAct(selectedOrder, currentUser?.id ?? null) ? (
-                  <div className="rounded-[18px] border border-white/[0.06] bg-white/[0.03] px-4 py-3">Hiện tại không có thao tác phù hợp cho trạng thái này.</div>
-                ) : null}
-              </div>
-
-              <div className="flex flex-wrap gap-2.5">
-                <Button variant="accent" disabled={busy || !canPick(selectedOrder)} onClick={() => void onPickOrder(selectedOrder.id)}>
-                  <Send size={16} />
-                  Tiếp nhận
-                </Button>
-                <Button variant="secondary" disabled={busy || !canAct(selectedOrder, currentUser?.id ?? null)} onClick={() => void onCompleteOrder(selectedOrder.id)}>
-                  <CheckCircle2 size={16} />
-                  Hoàn thành
-                </Button>
-                <Button variant="secondary" disabled={busy || !canAct(selectedOrder, currentUser?.id ?? null)} onClick={() => void onCancelOrder(selectedOrder.id)}>
-                  <CircleSlash size={16} />
-                  Huỷ đơn
-                </Button>
-              </div>
+              {selectedActionState ? (
+                <div className="grid gap-2 rounded-[20px] border border-white/[0.07] bg-[rgba(255,255,255,0.035)] px-4 py-4">
+                  <span className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-slate-400">Ghi chú xử lý</span>
+                  <div className="rounded-[18px] border border-cyan/10 bg-cyan/5 px-4 py-3 text-sm font-medium leading-6 text-cyan-50">
+                    {selectedActionState.message}
+                  </div>
+                </div>
+              ) : null}
             </div>
           )}
         </div>
@@ -187,15 +194,13 @@ export function OrdersAdminPanel({
 function summarizeOrders(orders: AdminOrderSummary[]) {
   return orders.reduce(
     (result, order) => {
-      result.total += 1;
-      result.value += order.total ?? order.unitPrice;
       if (order.status === 1) result.pending += 1;
       if (order.status === 2) result.processing += 1;
       if (order.status === 3) result.completed += 1;
       if (order.status === 4) result.cancelled += 1;
       return result;
     },
-    { total: 0, value: 0, pending: 0, processing: 0, completed: 0, cancelled: 0 },
+    { pending: 0, processing: 0, completed: 0, cancelled: 0 },
   );
 }
 
@@ -205,6 +210,34 @@ function canPick(order: AdminOrderSummary) {
 
 function canAct(order: AdminOrderSummary, currentAdminId: number | null) {
   return order.status === 2 && order.assignedTo === currentAdminId;
+}
+
+function getOrderActionState(order: AdminOrderSummary, currentAdminId: number | null) {
+  if (canPick(order)) {
+    return {
+      kind: 'pick' as const,
+      message: 'Đơn đang chờ. Nếu thông tin đúng, tiếp nhận để bắt đầu xử lý.',
+    };
+  }
+
+  if (canAct(order, currentAdminId)) {
+    return {
+      kind: 'act' as const,
+      message: 'Đơn đang ở tay bạn. Hoàn thành khi đã giao xong, hoặc hủy nếu không thể xử lý.',
+    };
+  }
+
+  if (order.status === 2 && order.assignedTo && order.assignedTo !== currentAdminId) {
+    return {
+      kind: 'locked' as const,
+      message: `Đơn này đang được admin #${order.assignedTo} xử lý.`,
+    };
+  }
+
+  return {
+    kind: 'none' as const,
+    message: 'Không có thao tác nào cho trạng thái hiện tại.',
+  };
 }
 
 function getOrderStatusMeta(status: number) {

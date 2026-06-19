@@ -1,9 +1,9 @@
-import { ChevronDown, CheckCircle2, Gamepad2, Headphones, ReceiptText, SlidersHorizontal, TimerReset, XCircle, CalendarRange } from 'lucide-react';
+import { ChevronDown, CheckCircle2, Clock3, Gamepad2, ReceiptText, SlidersHorizontal, TimerReset, XCircle, CalendarRange } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, FilterSelectField, ImageBox, MediaListItem, PanelShell, SearchBar, StatCard } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { type OrderHistoryItem } from '@/features/orders/components/OrderHistorySections';
-import type { OrderStatus } from '@/features/orders/types';
+import type { OrderStatus, OrderTimelineResponse, OrderTimelineState, OrderTimelineStep } from '@/features/orders/types';
 import {
   STATUS_OPTIONS,
   type OrderFilters,
@@ -20,6 +20,9 @@ export function OrdersPageView({
   isLoading,
   pageItems,
   selectedOrder,
+  selectedOrderTimeline,
+  selectedOrderTimelineError,
+  selectedOrderTimelineLoading,
   selectedOrderId,
   setFilters,
   setPage,
@@ -145,7 +148,14 @@ export function OrdersPageView({
           </div>
         </PanelShell>
 
-        <OrderDetailPanel busy={cancelBusy} onCancel={handleCancel} orderItem={selectedOrder} />
+        <OrderDetailPanel
+          busy={cancelBusy}
+          onCancel={handleCancel}
+          orderItem={selectedOrder}
+          timeline={selectedOrderTimeline}
+          timelineError={selectedOrderTimelineError}
+          timelineLoading={selectedOrderTimelineLoading}
+        />
       </div>
     </>
   );
@@ -155,14 +165,20 @@ function OrderDetailPanel({
   busy,
   onCancel,
   orderItem,
+  timeline,
+  timelineError,
+  timelineLoading,
 }: {
   busy: boolean;
   onCancel: (orderId: number) => Promise<void>;
   orderItem: OrderHistoryItem | null;
+  timeline: OrderTimelineResponse | null;
+  timelineError: boolean;
+  timelineLoading: boolean;
 }) {
   if (!orderItem) {
     return (
-        <PanelShell className="grid gap-6 p-5 lg:sticky lg:top-24">
+      <PanelShell className="grid gap-6 p-5 lg:sticky lg:top-24">
         <h2 className="m-0 text-[1.25rem] font-black tracking-[-0.03em] text-white">Chọn một đơn hàng</h2>
         <EmptyState
           title="Chưa có đơn được chọn"
@@ -172,6 +188,8 @@ function OrderDetailPanel({
       </PanelShell>
     );
   }
+
+  const timelineSteps = timeline ? buildTimelineSteps(timeline) : [];
 
   return (
     <PanelShell className="grid gap-8 p-5 lg:sticky lg:top-24">
@@ -204,24 +222,27 @@ function OrderDetailPanel({
 
       <div className="grid gap-3 border-b border-white/[0.12] py-5">
         <h3 className="m-0 text-[1.05rem] font-black tracking-[-0.03em] text-white">Tình trạng đơn hàng</h3>
-        <OrderTimeline steps={orderItem.timeline} />
+        {timelineLoading ? (
+          <div className="grid gap-3 rounded-[18px] border border-white/[0.08] bg-white/[0.02] p-4 text-sm gt-text-muted">
+            Đang tải timeline...
+          </div>
+        ) : timelineError || !timeline ? (
+          <EmptyState title="Không tải được timeline" description="Hãy thử chọn lại đơn hàng để tải lịch sử." variant="compact" />
+        ) : (
+          <OrderTimeline steps={timelineSteps} />
+        )}
       </div>
 
-      <div className="grid gap-3 pt-2 sm:grid-cols-2">
+      <div className="grid gap-3 pt-2">
         {canCancelOrder(orderItem.order.status) ? (
           <Button variant="secondary" className="justify-center rounded-[16px] px-5 text-sm font-bold" disabled={busy} onClick={() => void onCancel(orderItem.order.id)}>
             {busy ? 'Đang xử lý...' : 'Hủy đơn hàng'}
           </Button>
         ) : (
-          <Button variant="secondary" className="justify-center rounded-[16px] px-5 text-sm font-bold" disabled>
-            Không thể hủy
-          </Button>
+          <div className="rounded-[16px] border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm leading-6 gt-text-muted">
+            Đơn ở trạng thái này không còn hỗ trợ hủy trực tiếp.
+          </div>
         )}
-
-        <Button variant="outline" className="justify-center rounded-[16px] px-5 text-sm font-bold text-slate-200">
-          <Headphones size={16} />
-          Liên hệ hỗ trợ
-        </Button>
       </div>
     </PanelShell>
   );
@@ -255,7 +276,7 @@ function OrderListItem({
   );
 }
 
-function OrderTimeline({ steps }: { steps: OrderHistoryItem['timeline'] }) {
+function OrderTimeline({ steps }: { steps: OrderTimelineStep[] }) {
   return (
     <div className="relative grid gap-6 pl-0.5">
       <div className="absolute left-[19px] top-1 bottom-1 w-px rounded-full bg-gradient-to-b from-cyan-300/20 via-white/12 to-white/0" />
@@ -274,7 +295,7 @@ function OrderTimeline({ steps }: { steps: OrderHistoryItem['timeline'] }) {
                       : 'border-slate-700 bg-slate-800 text-slate-500',
               )}
             >
-              {step.icon}
+              {getTimelineIcon(step.state)}
             </div>
           </div>
 
@@ -296,7 +317,7 @@ function OrderTimeline({ steps }: { steps: OrderHistoryItem['timeline'] }) {
                         : 'text-slate-500',
                 )}
               >
-                {step.time ?? getTimelineTimeLabel(step.state)}
+                {step.time ? formatClock(step.time) : getTimelineTimeLabel(step.state)}
               </span>
             </div>
           </div>
@@ -304,6 +325,101 @@ function OrderTimeline({ steps }: { steps: OrderHistoryItem['timeline'] }) {
       ))}
     </div>
   );
+}
+
+function buildTimelineSteps(timeline: OrderTimelineResponse): OrderTimelineStep[] {
+  const eventByStatus = new Map(timeline.events.map((event) => [event.toStatus, event]));
+  const steps: OrderTimelineStep[] = [
+    buildTimelineStep({
+      defaultDescription: 'Đã ghi nhận',
+      label: 'Đơn hàng đã được tạo',
+      note: eventByStatus.get(1)?.note,
+      state: timeline.status === 1 ? 'current' : 'complete',
+      time: eventByStatus.get(1)?.createdAt ?? timeline.createdAt,
+    }),
+  ];
+
+  if (timeline.status === 4) {
+    const processingEvent = eventByStatus.get(2);
+    if (processingEvent) {
+      steps.push(
+        buildTimelineStep({
+          defaultDescription: 'Nhân viên đang thực hiện xử lý đơn hàng.',
+          label: 'Đang xử lý đơn hàng',
+          note: processingEvent.note,
+          state: 'complete',
+          time: processingEvent.createdAt,
+        }),
+      );
+    }
+
+    steps.push(
+      buildTimelineStep({
+        defaultDescription: 'Đã hủy',
+        label: 'Đơn hàng đã bị hủy',
+        note: eventByStatus.get(4)?.note,
+        state: 'danger',
+        time: eventByStatus.get(4)?.createdAt ?? timeline.updatedAt,
+      }),
+    );
+
+    return steps;
+  }
+
+  steps.push(
+    buildTimelineStep({
+      defaultDescription: 'Nhân viên đang thực hiện xử lý đơn hàng.',
+      label: 'Đang xử lý đơn hàng',
+      note: eventByStatus.get(2)?.note,
+      state: getProcessingTimelineState(timeline.status),
+      time: timeline.status >= 2 ? eventByStatus.get(2)?.createdAt ?? timeline.assignedAt ?? timeline.updatedAt : null,
+    }),
+  );
+
+  steps.push(
+    buildTimelineStep({
+      defaultDescription: timeline.status === 3 ? 'Đã hoàn thành' : 'Đang chờ',
+      label: 'Hoàn thành',
+      note: eventByStatus.get(3)?.note,
+      state: timeline.status === 3 ? 'complete' : 'upcoming',
+      time: timeline.status === 3 ? eventByStatus.get(3)?.createdAt ?? timeline.updatedAt : null,
+    }),
+  );
+
+  return steps;
+}
+
+function buildTimelineStep({
+  defaultDescription,
+  label,
+  note,
+  state,
+  time,
+}: {
+  defaultDescription: string;
+  label: string;
+  note?: string | null;
+  state: OrderTimelineState;
+  time?: string | null;
+}): OrderTimelineStep {
+  return {
+    description: note?.trim() || defaultDescription,
+    label,
+    state,
+    time,
+  };
+}
+
+function getProcessingTimelineState(status: OrderStatus): OrderTimelineState {
+  if (status === 1) {
+    return 'upcoming';
+  }
+
+  if (status === 2) {
+    return 'current';
+  }
+
+  return 'complete';
 }
 
 function Pagination({
@@ -417,7 +533,7 @@ function formatGameInfo(value: string) {
   return value.trim() || '—';
 }
 
-function getTimelineTimeLabel(state: OrderHistoryItem['timeline'][number]['state']) {
+function getTimelineTimeLabel(state: OrderTimelineState) {
   if (state === 'current') {
     return 'Hiện tại';
   }
@@ -431,6 +547,22 @@ function getTimelineTimeLabel(state: OrderHistoryItem['timeline'][number]['state
   }
 
   return 'Sắp tới';
+}
+
+function getTimelineIcon(state: OrderTimelineState) {
+  if (state === 'complete') {
+    return <CheckCircle2 size={14} />;
+  }
+
+  if (state === 'current') {
+    return <TimerReset size={14} />;
+  }
+
+  if (state === 'danger') {
+    return <XCircle size={14} />;
+  }
+
+  return <Clock3 size={14} />;
 }
 
 function getPaginationPages(currentPage: number, totalPages: number) {
@@ -451,4 +583,17 @@ function getPaginationPages(currentPage: number, totalPages: number) {
 
 function canCancelOrder(status: OrderStatus) {
   return status === 1 || status === 2;
+}
+
+function formatClock(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '--:--';
+  }
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
 }

@@ -3,13 +3,12 @@ import { toast } from 'sonner';
 import { AUTH_USER_QUERY_KEY } from '@/features/auth/server';
 import type { User } from '@/features/auth/types';
 import { updateMyProfile } from './api';
-import type { UpdateMyProfileInput } from './api';
 
 export function useUpdateMyProfileMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: UpdateMyProfileInput) => updateMyProfile(payload),
+    mutationFn: updateMyProfile,
     onSuccess(_, variables) {
       queryClient.setQueryData<User | null>(AUTH_USER_QUERY_KEY, (current) => {
         if (!current) {

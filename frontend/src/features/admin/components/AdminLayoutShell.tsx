@@ -1,6 +1,6 @@
-import { Boxes, CalendarDays, ChevronRight, History, LayoutDashboard, Menu, MoonStar, Settings2, Users, WalletCards, X } from 'lucide-react';
-import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Badge, Button, EmptyState, IconBox, SearchBar } from '@/shared/components';
+import { Boxes, CalendarDays, ChevronRight, LayoutDashboard, Menu, Users, WalletCards, X } from 'lucide-react';
+import { type CSSProperties, type ReactNode } from 'react';
+import { Badge, EmptyState, IconBox } from '@/shared/components';
 import { BrandLogo } from '@/app/site-shell/BrandLogo';
 import { HeaderAccountMenu } from '@/app/site-shell/HeaderAccountMenu';
 import { classNames } from '@/shared/lib/classNames';
@@ -75,14 +75,16 @@ export function AdminSectionShell({
           </div>
 
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-            <Button size="sm" variant="outline" className="rounded-full border gt-border bg-[var(--gt-card)] px-4 gt-text-soft hover:bg-[var(--gt-card-hover)] hover:text-[var(--gt-text)]">
+            <span className="inline-flex min-h-9 items-center gap-2 rounded-full border gt-border bg-[var(--gt-card)] px-4 text-sm font-semibold gt-text-soft">
               <CalendarDays size={14} />
               7 ngày qua
-            </Button>
+            </span>
 
-            <Badge tone={busy || loading ? 'primary' : 'success'} icon={<LayoutDashboard size={14} />} className="rounded-full px-3.5 py-2">
-              {busy || loading ? 'Đang đồng bộ' : 'Sẵn sàng'}
-            </Badge>
+            {busy || loading ? (
+              <Badge tone="primary" icon={<LayoutDashboard size={14} />} className="rounded-full px-3.5 py-2">
+                Đang đồng bộ
+              </Badge>
+            ) : null}
           </div>
         </div>
       </section>
@@ -115,7 +117,6 @@ export function AdminDesktopLayout({
   onToggleSidebar: () => void;
   userName: string;
 }) {
-  const [searchValue, setSearchValue] = useState('');
   const sidebarWidth = brandCollapsed ? '92px' : '300px';
 
   return (
@@ -142,7 +143,7 @@ export function AdminDesktopLayout({
 
       <header className="sticky top-0 z-40 flex items-center border-b gt-border bg-[var(--gt-shell)]/80 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
         <div className="flex w-full items-center justify-between gap-3">
-          <div className="flex min-w-0 flex-1 items-center gap-2 lg:max-w-[720px] xl:max-w-[920px]">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <button
               type="button"
               aria-label="Đóng hoặc mở sidebar"
@@ -151,16 +152,6 @@ export function AdminDesktopLayout({
             >
               <Menu size={16} strokeWidth={2.4} />
             </button>
-
-            <SearchBar
-              dense
-              ariaLabel="Tìm kiếm nhanh"
-              className="min-w-0 flex-1"
-              onChange={setSearchValue}
-              placeholder="Tìm kiếm nhanh..."
-              size={16}
-              value={searchValue}
-            />
           </div>
 
           <div className="ml-auto flex flex-none items-center gap-2">
@@ -172,15 +163,6 @@ export function AdminDesktopLayout({
             >
               <CalendarDays size={17} className={loading ? 'animate-spin' : ''} />
             </button>
-
-            <button
-              type="button"
-              className="gt-button gt-button-secondary inline-flex size-10 items-center justify-center rounded-[18px] gt-text-muted"
-              title="Thông báo"
-            >
-              <MoonStar size={17} />
-            </button>
-
             <HeaderAccountMenu items={accountMenuItems} triggerLabel={userName} />
           </div>
         </div>
@@ -250,15 +232,6 @@ export function AdminMobileLayout({
             >
               <CalendarDays size={17} className={loading ? 'animate-spin' : ''} />
             </button>
-
-            <button
-              type="button"
-            className="gt-button gt-button-secondary inline-flex size-10 items-center justify-center rounded-[18px] gt-text-muted"
-              title="Thông báo"
-            >
-              <MoonStar size={17} />
-            </button>
-
             <HeaderAccountMenu items={accountMenuItems} triggerLabel={userName} />
           </div>
         </div>
@@ -296,38 +269,6 @@ function AdminSidebarDesktop({
           />
         ))}
       </nav>
-
-      <div className={classNames('grid gap-1.5 border-t gt-border', compact ? 'pt-3' : 'mt-4 pt-4')}>
-        {!compact ? <div className="px-2 pt-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] gt-text-disabled">Hệ thống</div> : null}
-        <SidebarNavItem collapsed={compact} icon={<Settings2 size={17} />} label="Cài đặt" secondary />
-        <SidebarNavItem collapsed={compact} icon={<History size={17} />} label="Nhật ký hoạt động" secondary />
-      </div>
-
-      {compact ? (
-        <button
-          type="button"
-          aria-label="Chế độ tối"
-          className="relative mx-auto mt-auto h-7 w-12 rounded-full border gt-border bg-[var(--gt-card)] p-0.5"
-          disabled
-        >
-          <span className="block size-6 rounded-full bg-[var(--gt-primary)] shadow-[0_2px_10px_rgba(15,23,42,0.18)]" />
-        </button>
-      ) : (
-        <div className="mt-auto flex items-center justify-between gap-3 rounded-[18px] border gt-border bg-[var(--gt-card)] px-3 py-2.5">
-          <div className="flex items-center gap-2.5">
-            <MoonStar size={15} className="gt-text-muted" />
-            <span className="text-sm font-medium gt-text-soft">Chế độ tối</span>
-          </div>
-          <button
-            type="button"
-            aria-label="Chế độ tối"
-            className="relative h-7 w-12 rounded-full border gt-border bg-[var(--gt-card)] p-0.5"
-            disabled
-          >
-            <span className="block size-6 rounded-full bg-[var(--gt-primary)] shadow-[0_2px_10px_rgba(15,23,42,0.18)]" />
-          </button>
-        </div>
-      )}
     </aside>
   );
 }
@@ -390,29 +331,6 @@ function AdminSidebarMobile({
             />
           ))}
         </nav>
-
-        <div className="mt-4 grid gap-1.5 border-t gt-border pt-4">
-          <div className="px-2 pt-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] gt-text-disabled">Hệ thống</div>
-          <SidebarNavItem icon={<Settings2 size={17} />} label="Cài đặt" secondary />
-          <SidebarNavItem icon={<History size={17} />} label="Nhật ký hoạt động" secondary />
-        </div>
-
-        <div className="mt-auto border-t gt-border pt-4">
-          <div className="flex items-center justify-between gap-3 rounded-[18px] border gt-border bg-[var(--gt-card)] px-3 py-2.5">
-            <div className="flex items-center gap-2.5">
-              <MoonStar size={15} className="gt-text-muted" />
-              <span className="text-sm font-medium gt-text-soft">Chế độ tối</span>
-            </div>
-            <button
-              type="button"
-              aria-label="Chế độ tối"
-              className="relative h-7 w-12 rounded-full border gt-border bg-[var(--gt-card)] p-0.5"
-              disabled
-            >
-              <span className="block size-6 rounded-full bg-[var(--gt-primary)] shadow-[0_2px_10px_rgba(15,23,42,0.18)]" />
-            </button>
-          </div>
-        </div>
       </aside>
     </div>
   );

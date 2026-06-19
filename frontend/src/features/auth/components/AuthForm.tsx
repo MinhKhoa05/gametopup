@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, UserRound } from 'lucide-react';
 import { Button, Field } from '@/shared/components';
+import { getRememberedAuthEmail } from '../server';
 import type { AuthMode } from '../hooks/useAuthSession';
 import type { AuthFormData } from '../types';
 
@@ -15,11 +16,11 @@ type AuthFormProps = {
 };
 
 export function AuthForm({ busy, mode, onSubmitAuth, switchHref, switchLabel, switchPrompt }: AuthFormProps) {
-  const [form, setForm] = useState<AuthFormData>({
+  const [form, setForm] = useState<AuthFormData>(() => ({
     displayName: '',
-    email: '',
+    email: getRememberedAuthEmail(),
     password: '',
-  });
+  }));
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');

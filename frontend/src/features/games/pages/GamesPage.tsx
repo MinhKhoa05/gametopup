@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gamepad2, Heart, Sparkles } from 'lucide-react';
+import { Gamepad2, SlidersHorizontal, Sparkles, Smartphone } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { routes } from '@/app/router/routes';
 import type { PublicGame } from '@/features/games/contracts';
@@ -19,25 +19,16 @@ import {
 import { Badge, Button, EmptyState, FilterChipGroup, FilterSelectField, IconBox, ImageBox, PanelShell, PageHero, SearchBar } from '@/shared/components';
 
 const PLATFORM_OPTIONS: Array<{ value: CatalogPlatformFilter; label: string }> = [
-  { value: 'all', label: 'Nền tảng: Tất cả' },
-  { value: 'mobile', label: 'Nền tảng: Mobile' },
-  { value: 'pc', label: 'Nền tảng: PC' },
-  { value: 'console', label: 'Nền tảng: Console' },
-];
-
-const CATEGORY_OPTIONS: Array<{ value: CatalogCategoryFilter; label: string }> = [
-  { value: 'all', label: 'Danh mục: Tất cả' },
-  { value: 'featured', label: 'Danh mục: Nổi bật' },
-  { value: 'mobile', label: 'Danh mục: Mobile' },
-  { value: 'pc', label: 'Danh mục: PC' },
-  { value: 'console', label: 'Danh mục: Console' },
-  { value: 'international', label: 'Danh mục: Quốc tế' },
+  { value: 'all', label: 'Tất cả' },
+  { value: 'mobile', label: 'Mobile' },
+  { value: 'pc', label: 'PC' },
+  { value: 'console', label: 'Console' },
 ];
 
 const SORT_OPTIONS: Array<{ value: CatalogSortKey; label: string }> = [
-  { value: 'featured', label: 'Sắp xếp: Phổ biến' },
-  { value: 'newest', label: 'Sắp xếp: Mới nhất' },
-  { value: 'name', label: 'Sắp xếp: Tên A-Z' },
+  { value: 'featured', label: 'Phổ biến' },
+  { value: 'newest', label: 'Mới nhất' },
+  { value: 'name', label: 'Tên A-Z' },
 ];
 
 const QUICK_TAGS: Array<{ value: CatalogCategoryFilter; label: string }> = [
@@ -46,6 +37,7 @@ const QUICK_TAGS: Array<{ value: CatalogCategoryFilter; label: string }> = [
   { value: 'mobile', label: 'Mobile' },
   { value: 'pc', label: 'PC' },
   { value: 'console', label: 'Console' },
+  { value: 'international', label: 'Quốc tế' },
 ];
 
 export function GamesPage() {
@@ -93,23 +85,31 @@ export function GamesPage() {
 
           <PanelShell>
             <div className="grid gap-4 px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
-              <div className="grid gap-3 xl:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                 <SearchBar value={query} onChange={setQuery} placeholder="Tìm kiếm game..." />
-                <FilterSelectField value={platformFilter} onChange={(value) => setPlatformFilter(value as CatalogPlatformFilter)}>
+                <FilterChipGroup items={QUICK_TAGS} value={categoryFilter} onChange={(value) => setCategoryFilter(value as CatalogCategoryFilter)} />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
+                <FilterSelectField
+                  value={platformFilter}
+                  icon={<Smartphone size={16} />}
+                  label="Nền tảng"
+                  onChange={(value) => setPlatformFilter(value as CatalogPlatformFilter)}
+                >
                   {PLATFORM_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
                 </FilterSelectField>
-                <FilterSelectField value={categoryFilter} onChange={(value) => setCategoryFilter(value as CatalogCategoryFilter)}>
-                  {CATEGORY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </FilterSelectField>
-                <FilterSelectField value={sortKey} onChange={(value) => setSortKey(value as CatalogSortKey)}>
+
+                <FilterSelectField
+                  value={sortKey}
+                  icon={<SlidersHorizontal size={16} />}
+                  label="Sắp xếp"
+                  onChange={(value) => setSortKey(value as CatalogSortKey)}
+                >
                   {SORT_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
@@ -117,8 +117,6 @@ export function GamesPage() {
                   ))}
                 </FilterSelectField>
               </div>
-
-              <FilterChipGroup items={QUICK_TAGS} value={categoryFilter} onChange={(value) => setCategoryFilter(value as CatalogCategoryFilter)} />
             </div>
           </PanelShell>
 
@@ -194,17 +192,10 @@ function GameCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2 px-1">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 px-1">
         <Badge tone="primary" className="w-fit rounded-full px-2.5 py-1 text-[0.72rem] font-bold">
           {platformLabel}
         </Badge>
-        <button
-          type="button"
-          aria-label="Yêu thích"
-          className="inline-flex size-8 items-center justify-center justify-self-end rounded-full border border-white/10 bg-transparent text-slate-300 transition-colors hover:border-cyan/25 hover:bg-cyan/10 hover:text-cyan-50"
-        >
-          <Heart size={16} />
-        </button>
         <div className="col-span-2 grid gap-0.5">
           <h3 className="m-0 text-base font-black gt-text">{game.name}</h3>
           <p className="m-0 text-sm leading-6 gt-text-muted">Nạp {topupLabel}</p>
@@ -213,7 +204,7 @@ function GameCard({
 
       <Button
         variant="primary"
-        className="translate-y-3 justify-center rounded-[14px] px-4 text-sm font-bold opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"
+        className="justify-center rounded-[14px] px-4 text-sm font-bold"
         onClick={onPick}
       >
         Nạp ngay
@@ -229,9 +220,8 @@ function GameCardSkeleton() {
       <div className="relative overflow-hidden rounded-[20px] bg-[var(--gt-bg-soft)]">
         <div className="h-[220px] animate-pulse bg-white/6" />
       </div>
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2 px-1">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 px-1">
         <div className="h-6 w-14 animate-pulse rounded-full bg-white/10" />
-        <div className="size-8 animate-pulse rounded-full bg-white/10 justify-self-end" />
         <div className="col-span-2 grid gap-2">
           <div className="h-4 w-28 animate-pulse rounded-full bg-white/10" />
           <div className="h-3.5 w-20 animate-pulse rounded-full bg-white/10" />

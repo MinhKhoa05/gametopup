@@ -1,5 +1,6 @@
 ﻿import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { ArrowRight, ChevronDown, Headset, ReceiptText, Search, ShieldCheck, Tag, Zap } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { SITE_IMAGES } from '@/app/config/site';
@@ -286,7 +287,6 @@ function buildFeaturedPackages(games: PublicGame[]): PackageCard[] {
       salePrice: preset.price,
       originalPrice: preset.originalPrice,
       isAvailable: true,
-      stockStatus: 'in_stock',
       imageUrl: game.imageUrl,
     };
   });
@@ -360,6 +360,39 @@ const BENEFITS = [
   },
 ] as const satisfies readonly TrustSectionItem[];
 
+const FAQ_ITEMS = [
+  {
+    question: 'Nạp tiền vào ví như thế nào?',
+    answer:
+      'Bạn tạo yêu cầu nạp, chuyển khoản theo hướng dẫn rồi xác nhận đã thanh toán. Sau khi giao dịch được kiểm tra, tiền sẽ được cộng vào ví.',
+  },
+  {
+    question: 'Mua gói nạp ra sao?',
+    answer:
+      'Chọn game, chọn gói cần nạp, nhập đúng thông tin nhân vật hoặc tài khoản game rồi thanh toán bằng ví. Sau đó đơn sẽ được tiếp nhận để xử lý.',
+  },
+  {
+    question: 'Đơn hàng xử lý mất bao lâu?',
+    answer:
+      'Thông thường đơn được xử lý trong khoảng 5-15 phút. Nếu đang đông đơn hoặc game cần kiểm tra thêm, thời gian có thể lâu hơn một chút.',
+  },
+  {
+    question: 'Nạp qua GameTopUp có an toàn không?',
+    answer:
+      'GameTopUp ưu tiên xử lý đơn rõ ràng, kiểm tra kỹ thông tin trước khi nạp và luôn cập nhật trạng thái để bạn yên tâm theo dõi.',
+  },
+  {
+    question: 'Có ảnh hưởng đến tài khoản game không?',
+    answer:
+      'Bạn chỉ cần cung cấp đúng thông tin cần thiết và không chia sẻ thêm các dữ liệu không liên quan. Đơn sẽ được xử lý theo cách thông thường của từng game.',
+  },
+  {
+    question: 'Nếu nhập sai thông tin thì sao?',
+    answer:
+      'Nếu thông tin sai khiến đơn chưa xử lý được, GameTopUp sẽ hỗ trợ kiểm tra lại. Trường hợp không thể nạp, tiền sẽ được hoàn về ví.',
+  },
+] as const;
+
 function TrustSection() {
   return (
     <section className="grid gap-6">
@@ -386,51 +419,20 @@ function TrustSection() {
   );
 }
 
-const FAQ_ITEMS = [
-  {
-    question: 'Nạp tiền vào ví như thế nào?',
-    answer:
-      'Bạn tạo yêu cầu nạp, chuyển khoản theo hướng dẫn rồi xác nhận đã thanh toán. Sau khi giao dịch được kiểm tra, tiền sẽ được cộng vào ví.',
-  },
-  {
-    question: 'Mua gói nạp ra sao?',
-    answer:
-      'Chọn game, chọn gói cần nạp, nhập đúng thông tin nhân vật hoặc tài khoản game rồi thanh toán bằng ví. Sau đó đơn sẽ được tiếp nhận để xử lý.',
-  },
-  {
-    question: 'Đơn hàng xử lý mất bao lâu?',
-    answer:
-      'Thông thường đơn được xử lý trong khoảng 5–15 phút. Nếu đang đông đơn hoặc game cần kiểm tra thêm, thời gian có thể lâu hơn một chút.',
-  },
-  {
-    question: 'Nạp qua GameTopUp có an toàn không?',
-    answer:
-      'GameTopUp ưu tiên xử lý đơn rõ ràng, kiểm tra kỹ thông tin trước khi nạp và luôn cập nhật trạng thái để bạn yên tâm theo dõi.',
-  },
-  {
-    question: 'Có ảnh hưởng đến tài khoản game không?',
-    answer:
-      'Bạn chỉ cần cung cấp đúng thông tin cần thiết và không chia sẻ thêm các dữ liệu không liên quan. Đơn sẽ được xử lý theo cách thông thường của từng game.',
-  },
-  {
-    question: 'Nếu nhập sai thông tin thì sao?',
-    answer:
-      'Nếu thông tin sai khiến đơn chưa xử lý được, GameTopUp sẽ hỗ trợ kiểm tra lại. Trường hợp không thể nạp, tiền sẽ được hoàn về ví.',
-  },
-] as const;
-
 function FaqSection() {
+  const [showAll, setShowAll] = useState(false);
+  const visibleItems = showAll ? FAQ_ITEMS : FAQ_ITEMS.slice(0, 3);
+
   return (
     <section className="grid gap-6">
-      <div className="flex items-end justify-between gap-4">
-        <div className="grid gap-1">
-          <h2 className="m-0 text-[1.5rem] font-black tracking-[-0.03em] text-white sm:text-[1.7rem]">Quy trình & thắc mắc</h2>
-          <p className="m-0 text-sm leading-6 gt-text-muted">Giải đáp nhanh những câu hỏi hay gặp trước khi bạn nạp game.</p>
-        </div>
-      </div>
+      <SectionHeading
+        title="Quy trình & thắc mắc"
+        titleClassName="text-[1.5rem] sm:text-[1.7rem]"
+        description="Giải đáp nhanh những câu hỏi hay gặp trước khi bạn nạp game."
+      />
 
       <div className="grid gap-3">
-        {FAQ_ITEMS.map((item, index) => (
+        {visibleItems.map((item, index) => (
           <details
             key={item.question}
             className="group rounded-[20px] border border-white/[0.06] bg-[rgba(255,255,255,0.025)] px-5 py-4 transition-colors open:border-cyan/20 open:bg-[rgba(255,255,255,0.04)]"
@@ -447,6 +449,19 @@ function FaqSection() {
           </details>
         ))}
       </div>
+
+      {FAQ_ITEMS.length > 3 ? (
+        <div className="flex justify-center">
+          <Button
+            variant="secondary"
+            className="rounded-[14px] px-5 text-sm font-bold"
+            onClick={() => setShowAll((current) => !current)}
+          >
+            {showAll ? 'Thu gọn' : `Xem thêm ${FAQ_ITEMS.length - 3} câu hỏi`}
+            <ChevronDown size={16} className={showAll ? 'rotate-180' : ''} />
+          </Button>
+        </div>
+      ) : null}
     </section>
   );
 }

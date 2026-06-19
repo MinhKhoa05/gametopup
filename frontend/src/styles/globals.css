@@ -51,11 +51,6 @@ button:disabled {
   background-size: 72px 72px;
 }
 
-.gt-noise {
-  background-image: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.04), transparent 28%),
-    radial-gradient(circle at 80% 0%, rgba(34, 211, 238, 0.05), transparent 18%);
-}
-
 .gt-tabular {
   font-variant-numeric: tabular-nums;
 }

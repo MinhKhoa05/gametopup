@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { getDepositRequestStatus } from '@/features/deposits/lib/deposit-request-status';
 import type { AdminDepositRequest } from '@/features/deposits/types';
 
-type DepositRequestFilter = 'all' | 'pending' | 'user-confirmed' | 'approved' | 'rejected';
+type DepositRequestFilter = 'active' | 'all' | 'pending' | 'user-confirmed' | 'approved' | 'rejected';
 
 const DEPOSIT_REQUEST_FILTERS: Array<{ key: DepositRequestFilter; label: string }> = [
+  { key: 'active', label: 'Cần xử lý' },
   { key: 'all', label: 'Tất cả' },
   { key: 'pending', label: 'Chờ chuyển khoản' },
   { key: 'user-confirmed', label: 'Đã xác nhận' },
@@ -21,7 +22,7 @@ export function useAdminDepositRequestsPageState({
   onRejectRequest: (payload: { note?: string; requestId: number }) => Promise<void>;
   requests: AdminDepositRequest[];
 }) {
-  const [filter, setFilter] = useState<DepositRequestFilter>('all');
+  const [filter, setFilter] = useState<DepositRequestFilter>('active');
   const [query, setQuery] = useState('');
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
   const [reviewNote, setReviewNote] = useState('');
@@ -31,6 +32,7 @@ export function useAdminDepositRequestsPageState({
 
     return requests.filter((request) => {
       const matchesFilter =
+        (filter === 'active' && (request.status === 1 || request.status === 2)) ||
         filter === 'all' ||
         (filter === 'pending' && request.status === 1) ||
         (filter === 'user-confirmed' && request.status === 2) ||
@@ -75,7 +77,7 @@ export function useAdminDepositRequestsPageState({
   }
 
   function resetFilters() {
-    setFilter('all');
+    setFilter('active');
     setQuery('');
   }
 

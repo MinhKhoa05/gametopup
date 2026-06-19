@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useCancelOrderMutation, useMyOrdersQuery } from '@/features/orders/server';
+import { useCancelOrderMutation, useMyOrdersQuery, useOrderTimelineQuery } from '@/features/orders/server';
 import { buildOrderHistoryItems, type OrderHistoryItem } from '@/features/orders/components/OrderHistorySections';
 
 const PAGE_SIZE = 6;
 
-export type StatusGroup = 'all' | 'pending' | 'processing' | 'completed' | 'canceled';
+export type StatusGroup = 'active' | 'all' | 'pending' | 'processing' | 'completed' | 'canceled';
 
 export type OrderFilters = {
   game: string;
@@ -17,12 +17,13 @@ export type OrderFilters = {
 export const DEFAULT_FILTERS: OrderFilters = {
   game: 'all',
   search: '',
-  status: 'all',
+  status: 'active',
   time: 'all',
   sort: 'newest',
 };
 
 export const STATUS_OPTIONS: Array<{ label: string; value: StatusGroup }> = [
+  { label: 'Cần theo dõi', value: 'active' },
   { label: 'Tất cả', value: 'all' },
   { label: 'Chờ xử lý', value: 'pending' },
   { label: 'Đang xử lý', value: 'processing' },
@@ -54,7 +55,8 @@ export function useOrdersPage() {
 
     return orderItems.filter((item) => {
       if (filters.game !== 'all' && item.gameKey !== filters.game) return false;
-      if (filters.status !== 'all' && item.statusGroup !== filters.status) return false;
+      if (filters.status === 'active' && item.statusGroup === 'completed') return false;
+      if (filters.status !== 'active' && filters.status !== 'all' && item.statusGroup !== filters.status) return false;
       if (filters.time !== 'all' && !matchesTimeFilter(item.order.createdAt, filters.time)) return false;
       if (!keyword) return true;
 
@@ -89,6 +91,9 @@ export function useOrdersPage() {
     return sortedItems.find((item) => item.order.id === selectedOrderId) ?? sortedItems[0];
   }, [selectedOrderId, sortedItems]);
 
+  const selectedOrderTimelineQuery = useOrderTimelineQuery(selectedOrder?.order.id ?? null, Boolean(selectedOrder));
+  const selectedOrderTimeline = selectedOrderTimelineQuery.data ?? null;
+
   const stats = useMemo(() => buildStats(orderItems), [orderItems]);
   const isLoading = ordersQuery.isPending && orders.length === 0;
   const isError = ordersQuery.isError && orders.length === 0;
@@ -105,6 +110,9 @@ export function useOrdersPage() {
     isError,
     isLoading,
     orderItems,
+    selectedOrderTimeline,
+    selectedOrderTimelineError: selectedOrderTimelineQuery.isError,
+    selectedOrderTimelineLoading: selectedOrderTimelineQuery.isPending,
     pageItems,
     selectedOrder,
     selectedOrderId,

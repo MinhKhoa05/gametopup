@@ -17,7 +17,7 @@ const HISTORY_SUB_TABS = [
 export type WalletHistoryView = (typeof HISTORY_SUB_TABS)[number]['value'];
 export type WalletHistorySort = 'newest' | 'oldest' | 'amount-desc' | 'amount-asc';
 export type WalletHistoryTime = 'all' | '24h' | '7d' | '30d';
-export type WalletDepositStatusFilter = 'all' | 'pending' | 'success' | 'failed';
+export type WalletDepositStatusFilter = 'active' | 'all' | 'pending' | 'success' | 'failed';
 export type WalletLedgerStatusFilter = 'all' | 'credit' | 'debit' | 'refund';
 export type WalletBankFilter = 'all' | string;
 
@@ -261,6 +261,12 @@ function HistoryFiltersBar({
         onChange={(value) => onChange({ search: value })}
       />
 
+      <FilterChipGroup
+        items={statusOptions}
+        value={filters.status}
+        onChange={(value) => onChange({ status: value })}
+      />
+
       <div className="grid gap-4 md:grid-cols-3">
         <FilterSelectField
           value={filters.bank}
@@ -300,12 +306,6 @@ function HistoryFiltersBar({
           <option value="30d">30 ngày</option>
         </FilterSelectField>
       </div>
-
-      <FilterChipGroup
-        items={statusOptions}
-        value={filters.status}
-        onChange={(value) => onChange({ status: value })}
-      />
     </div>
   );
 }
@@ -515,6 +515,7 @@ function getHistoryStatusOptions(mode: WalletHistoryView) {
   }
 
   return [
+    { label: 'Cần theo dõi', value: 'active' },
     { label: 'Tất cả', value: 'all' },
     { label: 'Chờ duyệt', value: 'pending' },
     { label: 'Thành công', value: 'success' },

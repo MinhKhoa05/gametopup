@@ -40,6 +40,7 @@ type GamesAdminPanelState = {
   setQuery: Dispatch<SetStateAction<string>>;
   startEdit: (game: AdminGameSummary) => void;
   submit: (event: FormEvent) => Promise<void>;
+  updateGame: (payload: { id: number; imageFile: File | null; isActive: boolean; name: string }) => Promise<void>;
 };
 
 type PanelMode = 'empty' | 'view' | 'edit' | 'create';
@@ -87,9 +88,13 @@ export function GamesAdminPanel({
     setPanelMode('edit');
   };
 
-  const openQuickToggleForm = (game: AdminGameSummary) => {
-    openEditForm(game);
-    state.setForm((current) => ({ ...current, isActive: !game.isActive }));
+  const handleQuickToggle = async (game: AdminGameSummary) => {
+    await state.updateGame({
+      id: game.id,
+      imageFile: null,
+      isActive: !game.isActive,
+      name: game.name,
+    });
   };
 
   const closeForm = () => {
@@ -207,7 +212,6 @@ export function GamesAdminPanel({
                   <GameSummaryCard item={selectedGame} packageCount={selectedGame.packageCount} />
 
                   <div className="grid gap-0 rounded-[20px] border gt-border bg-[var(--gt-card)] px-4">
-                    <DetailRow label="Mã game">#{selectedGame.id}</DetailRow>
                     <DetailRow label="Tên game">
                       <div className="grid justify-items-end gap-1">
                         <input
@@ -230,9 +234,6 @@ export function GamesAdminPanel({
                         />
                       </div>
                     </DetailRow>
-                    <DetailRow label="Số gói nạp">{selectedGame.packageCount} gói</DetailRow>
-                    <DetailRow label="Ngày tạo">{formatDate(selectedGame.createdAt)}</DetailRow>
-                    <DetailRow label="Cập nhật">{formatDate(selectedGame.updatedAt)}</DetailRow>
                   </div>
 
                   <div className="flex flex-wrap gap-2.5">
@@ -258,19 +259,6 @@ export function GamesAdminPanel({
                 <div className="grid gap-4">
                   <GameSummaryCard item={selectedGame} packageCount={selectedGame.packageCount} />
 
-                  <div className="grid gap-0 rounded-[20px] border gt-border bg-[var(--gt-card)] px-4">
-                    <DetailRow label="Mã game">#{selectedGame.id}</DetailRow>
-                    <DetailRow label="Tên game">{selectedGame.name}</DetailRow>
-                    <DetailRow label="Trạng thái">
-                      <Badge tone={selectedGame.isActive ? 'success' : 'neutral'} icon={selectedGame.isActive ? <CheckCircle2 size={14} /> : <X size={14} />}>
-                        {selectedGame.isActive ? 'Đang bán' : 'Đang ẩn'}
-                      </Badge>
-                    </DetailRow>
-                    <DetailRow label="Số gói nạp">{selectedGame.packageCount} gói</DetailRow>
-                    <DetailRow label="Ngày tạo">{formatDate(selectedGame.createdAt)}</DetailRow>
-                    <DetailRow label="Cập nhật">{formatDate(selectedGame.updatedAt)}</DetailRow>
-                  </div>
-
                   <div className="flex flex-wrap gap-2.5">
                     <Button variant="secondary" className="justify-center rounded-[16px] px-4" onClick={() => openEditForm(selectedGame)}>
                       <PencilLine size={16} />
@@ -279,7 +267,8 @@ export function GamesAdminPanel({
                     <Button
                       variant="outline"
                       className="justify-center rounded-[16px] px-4 border-amber-400/20 bg-amber-500/10 text-amber-200 hover:border-amber-300/30 hover:bg-amber-500/15 hover:text-amber-100"
-                      onClick={() => openQuickToggleForm(selectedGame)}
+                      disabled={busy}
+                      onClick={() => void handleQuickToggle(selectedGame)}
                     >
                       <EyeOff size={16} />
                       {selectedGame.isActive ? 'Ẩn game' : 'Hiện game'}
@@ -292,6 +281,13 @@ export function GamesAdminPanel({
                       Xem gói của game này
                       <ArrowRight size={16} />
                     </Button>
+                  </div>
+
+                  <div className="grid gap-0 rounded-[20px] border gt-border bg-[var(--gt-card)] px-4">
+                    <DetailRow label="Mã game">#{selectedGame.id}</DetailRow>
+                    <DetailRow label="Số gói nạp">{selectedGame.packageCount} gói</DetailRow>
+                    <DetailRow label="Ngày tạo">{formatDate(selectedGame.createdAt)}</DetailRow>
+                    <DetailRow label="Cập nhật">{formatDate(selectedGame.updatedAt)}</DetailRow>
                   </div>
                 </div>
               </>
@@ -309,7 +305,7 @@ export function GamesAdminPanel({
 
 function GameSummaryCard({ item, packageCount }: { item: AdminGameSummary; packageCount: number }) {
   return (
-    <div className="grid gap-4 rounded-[24px] border gt-border bg-[var(--gt-panel)] p-5">
+    <div className="grid gap-4 rounded-[24px] border border-cyan/15 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(8,24,39,0.86))] p-5 shadow-[0_18px_48px_rgba(2,6,23,0.2)]">
       <div className="flex items-center gap-4">
         <div className="relative h-[96px] w-[96px] shrink-0 overflow-hidden rounded-[18px] border gt-border bg-[var(--gt-card)]">
           <ImageBox src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
@@ -319,10 +315,12 @@ function GameSummaryCard({ item, packageCount }: { item: AdminGameSummary; packa
           <h3 className="overflow-hidden text-[1.04rem] font-black leading-[1.18] gt-text" title={item.name}>
             {item.name}
           </h3>
-          <p className="mt-1.5 text-[0.92rem] leading-6 gt-text-muted">Ảnh game và trạng thái hiện tại</p>
+          <p className="mt-1.5 text-[0.92rem] leading-6 gt-text-muted">Thông tin hiển thị trên kho game.</p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Badge tone={item.isActive ? 'success' : 'neutral'}>{item.isActive ? 'Đang bán' : 'Đang ẩn'}</Badge>
-            <span className="text-xs font-semibold uppercase tracking-[0.16em] gt-text-disabled">{packageCount} gói nạp</span>
+            <span className="inline-flex items-center rounded-full border border-white/[0.08] bg-slate-950/24 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-200">
+              {packageCount} gói nạp
+            </span>
           </div>
         </div>
       </div>

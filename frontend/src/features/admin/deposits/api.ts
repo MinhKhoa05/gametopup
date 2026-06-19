@@ -11,19 +11,24 @@ export type AdminDepositReviewInput = {
   requestId: number;
 };
 
+function buildDepositReviewBody(note?: string) {
+  const trimmedNote = note?.trim();
+  return trimmedNote ? { note: trimmedNote } : {};
+}
+
 export async function getAdminDepositRequests() {
   const response = await api.get<ApiResponse<AdminDepositRequest[]>>('/api/admin/deposits');
   return response.data.data;
 }
 
 export async function approveAdminDepositRequest(payload: AdminDepositReviewInput) {
-  const body = payload.note?.trim() ? { note: payload.note.trim() } : {};
+  const body = buildDepositReviewBody(payload.note);
   const response = await api.post<ApiResponse<AdminDepositRequest>>(`/api/admin/deposits/${payload.requestId}/approve`, body);
   return response.data.data;
 }
 
 export async function rejectAdminDepositRequest(payload: AdminDepositReviewInput) {
-  const body = payload.note?.trim() ? { note: payload.note.trim() } : {};
+  const body = buildDepositReviewBody(payload.note);
   const response = await api.post<ApiResponse<AdminDepositRequest>>(`/api/admin/deposits/${payload.requestId}/reject`, body);
   return response.data.data;
 }

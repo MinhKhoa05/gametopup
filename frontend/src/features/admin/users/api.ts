@@ -19,7 +19,7 @@ export type AdminUserDeleteInput = {
 };
 
 export async function getAdminUsers() {
-  const response = await api.get<ApiResponse<User[]>>('/api/users', {
+  const response = await api.get<ApiResponse<User[]>>('/api/admin/users', {
     params: {
       page: 1,
       pageSize: 200,
@@ -30,9 +30,9 @@ export async function getAdminUsers() {
 }
 
 export async function updateAdminUser({ id, ...payload }: AdminUserUpdateInput) {
-  await api.put<ApiResponse<void>>(`/api/users/${id}`, payload);
+  await api.put<ApiResponse<void>>(`/api/admin/users/${id}`, payload);
 }
 
 export async function deleteAdminUser({ id }: AdminUserDeleteInput) {
-  await api.delete<ApiResponse<void>>(`/api/users/${id}`);
+  await api.delete<ApiResponse<void>>(`/api/admin/users/${id}`);
 }

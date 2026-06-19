@@ -7,15 +7,15 @@ export function SiteCredits() {
     <div className="gt-shell-surface border-t gt-border pt-5 text-sm gt-text-muted">
       <div className="mx-auto flex w-full max-w-[1480px] flex-col items-center gap-3 px-4 text-center sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <span className="flex flex-wrap items-center justify-center gap-1.5 sm:justify-start">
-          <span>Â© {SITE.copyrightYear}</span>
+          <span>© {SITE.copyrightYear}</span>
           <Link to={routes.home()} className="font-semibold gt-text-soft transition-colors hover:text-white">
             {SITE.name}
           </Link>
-          <span>All rights reserved.</span>
+          <span>Mọi quyền được bảo lưu.</span>
         </span>
 
         <span className="flex flex-wrap items-center justify-center gap-2 font-medium gt-text-muted sm:justify-end">
-          <span>Developed by {SITE.developerName}</span>
+          <span>Phát triển bởi {SITE.developerName}</span>
           {FOOTER_DEVELOPER_LINKS.map((link) => (
           <a
             key={link.label}

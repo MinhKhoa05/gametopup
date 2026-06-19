@@ -40,6 +40,14 @@ export function rememberAuthEmail(email: string) {
   }
 }
 
+export function getRememberedAuthEmail() {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  return window.localStorage.getItem(REMEMBERED_EMAIL_KEY) ?? '';
+}
+
 function isPrivateQueryKey(queryKey: readonly unknown[]) {
   const [firstSegment] = queryKey;
 
