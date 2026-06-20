@@ -1,13 +1,11 @@
+using GameTopUp.BLL.Common;
 using GameTopUp.BLL.DTOs.Games;
-using GameTopUp.BLL.DTOs.Images;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Interfaces;
 using GameTopUp.BLL.Mappers;
 using GameTopUp.DAL.Entities.Games;
 using GameTopUp.DAL.Interfaces.Games;
 using GameTopUp.DAL.Queries;
-using Microsoft.AspNetCore.Http;
-
 namespace GameTopUp.BLL.Services.Games;
 
 public sealed class GameService
@@ -34,106 +32,61 @@ public sealed class GameService
         return await _gameQuery.GetAdminSummaryAsync();
     }
 
-    public async Task<Game> GetGameByIdAsync(long id)
+    public async Task<Game> GetGameByIdOrThrowAsync(long id)
     {
         return await _repository.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCode.GameNotFound);
     }
 
     public async Task<PublicGameResponse> GetPublicGameByIdAsync(long id)
     {
-        var game = await GetGameByIdAsync(id);
-        if (!game.IsActive)
-        {
-            throw new NotFoundException(ErrorCode.GameNotFound);
-        }
-
+        var game = await GetGameByIdOrThrowAsync(id);
         return game.MapTo<PublicGameResponse>();
     }
 
     public async Task<Game> CreateGameAsync(CreateGameRequest request)
     {
-        ImageStorageResult? uploadedImage = null;
-
-        if (request.ImageFile is not null)
-        {
-            if (request.ImageFile.Length == 0)
-            {
-                throw new BusinessException(ErrorCode.ImageRequired);
-            }
-
-            uploadedImage = await _imageStorageService.UploadAsync(request.ImageFile, "games");
-            request.ImageUrl = uploadedImage.Url;
-            request.ImageRelativePath = uploadedImage.RelativePath;
-        }
+        request.Name = InputTextNormalizer.Required(request.Name, ErrorCode.BadRequest);
+        var uploadedImage = await _imageStorageService.UploadAsync(request.ImageFile, "games");
 
         try
         {
-            var game = Game.Create(request.Name, request.ImageUrl, request.ImageRelativePath);
+            var game = Game.Create(request.Name);
+
+            if (uploadedImage is not null)
+            {
+                game.ApplyImage(uploadedImage.Url, uploadedImage.RelativePath);
+            }
+
             game.IsActive = request.IsActive;
             game.Id = await _repository.CreateAsync(game);
             return game;
         }
         catch
         {
-            if (uploadedImage is not null)
-            {
-                await _imageStorageService.DeleteAsync(uploadedImage.RelativePath);
-            }
-
+            await _imageStorageService.DeleteAsync(uploadedImage?.RelativePath);
             throw;
         }
     }
 
     public async Task<Game> UpdateGameAsync(long id, UpdateGameRequest request)
     {
-        var game = await GetGameByIdAsync(id);
-        var previousImageUrl = game.ImageUrl;
+        var game = await GetGameByIdOrThrowAsync(id);
         var previousImageRelativePath = game.ImageRelativePath;
-        ImageStorageResult? uploadedImage = null;
-
-        if (request.ImageFile is not null)
-        {
-            if (request.ImageFile.Length == 0)
-            {
-                throw new BusinessException(ErrorCode.ImageRequired);
-            }
-
-            uploadedImage = await _imageStorageService.UploadAsync(request.ImageFile, "games");
-            request.ImageUrl = uploadedImage.Url;
-            request.ImageRelativePath = uploadedImage.RelativePath;
-        }
-        else
-        {
-            request.ImageUrl ??= game.ImageUrl;
-            request.ImageRelativePath ??= game.ImageRelativePath;
-        }
+        var uploadedImage = await _imageStorageService.UploadAsync(request.ImageFile, "games");
 
         try
         {
-            if (!string.IsNullOrWhiteSpace(request.Name))
-            {
-                game.Name = request.Name.Trim();
-            }
+            request.ApplyTo(game);
 
-            if (request.ImageUrl is not null)
+            if (uploadedImage is not null)
             {
-                game.ImageUrl = request.ImageUrl;
-            }
-
-            if (request.ImageRelativePath is not null)
-            {
-                game.ImageRelativePath = request.ImageRelativePath;
-            }
-
-            if (request.IsActive is not null)
-            {
-                game.IsActive = request.IsActive.Value;
+                game.ApplyImage(uploadedImage.Url, uploadedImage.RelativePath);
             }
 
             game.UpdatedAt = DateTime.UtcNow;
             await _repository.UpdateAsync(game);
 
-            if (!string.IsNullOrWhiteSpace(request.ImageUrl) && request.ImageUrl != previousImageUrl)
+            if (uploadedImage is not null)
             {
                 await _imageStorageService.DeleteAsync(previousImageRelativePath);
             }
@@ -142,18 +95,14 @@ public sealed class GameService
         }
         catch
         {
-            if (uploadedImage is not null)
-            {
-                await _imageStorageService.DeleteAsync(uploadedImage.RelativePath);
-            }
-
+            await _imageStorageService.DeleteAsync(uploadedImage?.RelativePath);
             throw;
         }
     }
 
     public async Task DeleteGameAsync(long id)
     {
-        var existingGame = await GetGameByIdAsync(id);
+        var existingGame = await GetGameByIdOrThrowAsync(id);
         await _repository.DeleteAsync(id);
         await _imageStorageService.DeleteAsync(existingGame.ImageRelativePath);
     }

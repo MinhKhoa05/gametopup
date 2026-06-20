@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
 namespace GameTopUp.BLL.DTOs.GamePackages;
@@ -11,6 +12,8 @@ public sealed class UpdateGamePackageRequest
     public decimal? SalePrice { get; set; }
     public decimal? OriginalPrice { get; set; }
     public decimal? ImportPrice { get; set; }
-    public int? StockQuantity { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? AvailableSlots { get; set; }
     public bool? IsActive { get; set; }
 }

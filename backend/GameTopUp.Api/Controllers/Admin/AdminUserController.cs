@@ -22,6 +22,13 @@ public sealed class AdminUserController : ApiControllerBase
         return ApiOk(result);
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(long id)
+    {
+        var result = await _userService.GetByIdAsync(id);
+        return ApiOk(result);
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {

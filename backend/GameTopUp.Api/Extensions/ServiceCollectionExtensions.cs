@@ -97,7 +97,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<WalletService>();
         services.AddScoped<WalletDepositService>();
-        services.AddScoped<WalletDepositUseCase>();
         services.AddScoped<OrderQuery>();
 
         return services;
@@ -107,6 +106,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<AuthUseCase>();
         services.AddScoped<OrderUseCase>();
+        services.AddScoped<WalletDepositUseCase>();
         return services;
     }
 

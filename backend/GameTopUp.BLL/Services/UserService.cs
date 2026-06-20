@@ -1,3 +1,4 @@
+using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Users;
 using GameTopUp.BLL.Exceptions;
@@ -11,20 +12,14 @@ public sealed class UserService
 {
     private readonly IUserRepository _repository;
 
-    public UserService(IUserRepository repository)
+    public UserService(IUserRepository userRepository)
     {
-        _repository = repository;
+        _repository = userRepository;
     }
 
-    public async Task<User> GetByIdOrThrowAsync(long id)
+    public async Task<UserResponseDTO> GetByIdAsync(long id)
     {
-        return await _repository.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCode.UserNotFound);
-    }
-
-    public async Task<UserResponseDTO> GetProfileAsync(UserContext actor, long userId)
-    {
-        EnsureCanAccessUser(actor, userId);
-        var user = await GetByIdOrThrowAsync(userId);
+        var user = await GetByIdOrThrowAsync(id);
         return user.MapTo<UserResponseDTO>();
     }
 
@@ -34,39 +29,13 @@ public sealed class UserService
         return users.Select(user => user.MapTo<UserResponseDTO>());
     }
 
-    public async Task UpdateProfileAsync(UserContext actor, long id, UpdateUserRequest request)
+    public async Task UpdateProfileAsync(long id, UpdateProfileRequest request)
     {
-        EnsureCanAccessUser(actor, id);
         var user = await GetByIdOrThrowAsync(id);
 
-        if (!string.IsNullOrWhiteSpace(request.Email)
-            && !string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase)
-            && await _repository.ExistsByEmailAsync(request.Email))
-        {
-            throw new BusinessException(ErrorCode.EmailExists);
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.DisplayName))
-        {
-            user.DisplayName = request.DisplayName;
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.Email))
-        {
-            user.Email = request.Email;
-        }
-
-        if (request.Role is not null)
-        {
-            user.Role = request.Role.Value;
-        }
-
-        if (request.IsActive is not null)
-        {
-            user.IsActive = request.IsActive.Value;
-        }
-
+        user.DisplayName = InputTextNormalizer.NullIfWhiteSpace(request.DisplayName) ?? string.Empty;
         user.UpdatedAt = DateTime.UtcNow;
+        
         await _repository.UpdateAsync(user);
     }
 
@@ -76,13 +45,9 @@ public sealed class UserService
         await _repository.DeleteAsync(id);
     }
 
-    private static void EnsureCanAccessUser(UserContext actor, long targetUserId)
+    private async Task<User> GetByIdOrThrowAsync(long id)
     {
-        if (actor.IsAdmin || actor.UserId == targetUserId)
-        {
-            return;
-        }
-
-        throw new ForbiddenException(ErrorCode.Forbidden);
+        return await _repository.GetByIdAsync(id)
+            ?? throw new NotFoundException(ErrorCode.UserNotFound);
     }
 }

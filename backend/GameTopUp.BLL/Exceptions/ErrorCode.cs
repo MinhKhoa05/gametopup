@@ -95,8 +95,8 @@ public enum ErrorCode
     [Display(Name = "Order cannot be cancelled.")]
     OrderCannotBeCancelled,
 
-    [Display(Name = "Stock quantity must be greater than 0.")]
-    StockQuantityMustBePositive,
+    [Display(Name = "Available slots must be greater than 0.")]
+    AvailableSlotsMustBePositive,
 
     [Display(Name = "Insufficient stock.")]
     InsufficientStock,

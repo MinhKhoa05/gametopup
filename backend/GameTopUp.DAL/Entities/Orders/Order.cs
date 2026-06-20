@@ -12,9 +12,7 @@ public class Order
     public long UserId { get; set; }
     public string GameAccountInfo { get; set; } = string.Empty;
     public long GamePackageId { get; set; }
-    public decimal UnitPrice { get; set; }
-    [NotMapped]
-    public decimal Total => UnitPrice;
+    public decimal PackagePrice { get; set; }
     public long? AssignedTo { get; set; }
     public DateTime? AssignedAt { get; set; }
     public OrderStatus Status { get; set; }
@@ -24,7 +22,7 @@ public class Order
     public static Order Create(
         long userId,
         long gamePackageId,
-        decimal unitPrice,
+        decimal packagePrice,
         string gameAccountInfo,
         OrderStatus status = OrderStatus.Pending)
     {
@@ -34,7 +32,7 @@ public class Order
         {
             UserId = userId,
             GamePackageId = gamePackageId,
-            UnitPrice = unitPrice,
+            PackagePrice = packagePrice,
             GameAccountInfo = gameAccountInfo,
             Status = status,
             CreatedAt = now,

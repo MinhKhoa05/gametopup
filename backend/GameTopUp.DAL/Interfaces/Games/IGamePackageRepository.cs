@@ -5,7 +5,6 @@ namespace GameTopUp.DAL.Interfaces.Games;
 public interface IGamePackageRepository
 {
     Task<GamePackage?> GetByIdAsync(long id);
-    Task<List<GamePackage>> GetAllAsync();
     Task<List<GamePackage>> GetByGameIdAsync(long gameId);
     Task<long> CreateAsync(GamePackage gamePackage);
     Task<bool> UpdateAsync(GamePackage gamePackage);

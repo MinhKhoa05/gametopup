@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace GameTopUp.Api.Controllers.Admin;
 
 [Authorize(Roles = "Admin")]
-[Route("api/admin/game-packages")]
+[Route("api/admin/packages")]
 public sealed class AdminGamePackageController : ApiControllerBase
 {
     private readonly GamePackageService _packageService;
@@ -16,19 +16,19 @@ public sealed class AdminGamePackageController : ApiControllerBase
         _packageService = packageService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [HttpGet("/api/admin/games/{gameId:long}/packages")]
+    public async Task<IActionResult> GetByGameId(long gameId)
     {
-        var packages = await _packageService.GetAllPackagesAsync();
+        var packages = await _packageService.GetPackagesByGameIdAsync(gameId);
         return ApiOk(packages);
     }
 
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(5 * 1024 * 1024)]
-    [HttpPost]
-    public async Task<IActionResult> Create([FromForm] CreateGamePackageRequest request)
+    [HttpPost("/api/admin/games/{gameId:long}/packages")]
+    public async Task<IActionResult> Create(long gameId, [FromForm] CreateGamePackageRequest request)
     {
-        var package = await _packageService.CreatePackageAsync(request);
+        var package = await _packageService.CreatePackageAsync(gameId, request);
         return ApiCreated(package);
     }
 

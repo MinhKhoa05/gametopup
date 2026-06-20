@@ -10,8 +10,6 @@ public sealed class CreateGameRequest
     public string Name { get; set; } = string.Empty;
 
     public IFormFile? ImageFile { get; set; }
-    public string ImageUrl { get; set; } = string.Empty;
-    public string? ImageRelativePath { get; set; }
 
     public bool IsActive { get; set; } = true;
 }

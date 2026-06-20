@@ -10,8 +10,8 @@ public class Game
     public long Id { get; set; }
 
     public string Name { get; set; } = string.Empty;
-    public string ImageUrl { get; set; } = string.Empty;
-    public string? ImageRelativePath { get; set; }
+    public string? ImageUrl { get; set; } = string.Empty;
+    public string? ImageRelativePath { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -29,5 +29,11 @@ public class Game
             CreatedAt = now,
             UpdatedAt = now
         };
+    }
+
+    public void ApplyImage(string? imageUrl, string? imageRelativePath)
+    {
+        ImageUrl = imageUrl;
+        ImageRelativePath = imageRelativePath;
     }
 }

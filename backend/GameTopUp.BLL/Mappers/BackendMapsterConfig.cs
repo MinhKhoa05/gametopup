@@ -1,8 +1,11 @@
+using GameTopUp.BLL.Common;
+using GameTopUp.BLL.DTOs.Orders;
 using GameTopUp.BLL.DTOs.GamePackages;
 using GameTopUp.BLL.DTOs.Games;
 using GameTopUp.BLL.DTOs.Users;
 using GameTopUp.BLL.DTOs.Wallets;
 using GameTopUp.DAL.Entities.Games;
+using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.DAL.Entities.Users;
 using GameTopUp.DAL.Entities.Wallets;
 using Mapster;
@@ -19,8 +22,19 @@ internal static class BackendMapsterConfig
 
         config.NewConfig<Game, PublicGameResponse>();
 
+        config.NewConfig<UpdateGameRequest, Game>()
+            .IgnoreNullValues(true)
+            .Map(dest => dest.Name, src => InputTextNormalizer.NullIfWhiteSpace(src.Name));
+
+        config.NewConfig<UpdateGamePackageRequest, GamePackage>()
+            .IgnoreNullValues(true)
+            .Map(dest => dest.Name, src => InputTextNormalizer.NullIfWhiteSpace(src.Name));
+
         config.NewConfig<GamePackage, PublicGamePackageResponse>()
-            .Map(dest => dest.IsAvailable, src => src.StockQuantity > 0);
+            .Map(dest => dest.IsAvailable, src => src.AvailableSlots > 0);
+
+        config.NewConfig<Order, OrderResponseDTO>();
+        config.NewConfig<OrderHistory, OrderHistoryResponseDTO>();
 
         config.NewConfig<WalletTransaction, WalletTransactionInfo>();
 

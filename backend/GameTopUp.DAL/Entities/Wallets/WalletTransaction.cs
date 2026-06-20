@@ -19,9 +19,7 @@ public class WalletTransaction
 
     public WalletTransactionType Type { get; set; }
 
-    public string? Description { get; set; }
-
-    public long? OrderId { get; set; }
+    public string? ReferenceId { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
@@ -31,8 +29,7 @@ public class WalletTransaction
         decimal balanceBefore,
         decimal balanceAfter,
         WalletTransactionType type,
-        string? description = null,
-        long? orderId = null)
+        string? referenceId = null)
     {
         return new WalletTransaction
         {
@@ -41,8 +38,7 @@ public class WalletTransaction
             BalanceBefore = balanceBefore,
             BalanceAfter = balanceAfter,
             Type = type,
-            Description = description,
-            OrderId = orderId,
+            ReferenceId = referenceId,
             CreatedAt = DateTime.UtcNow
         };
     }

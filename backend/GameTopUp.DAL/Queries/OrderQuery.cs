@@ -27,7 +27,7 @@ public sealed class OrderQuery
                       g.image_url AS game_image_url,
                       gp.name AS package_name,
                       gp.image_url AS package_image_url,
-                      o.unit_price,
+                      o.package_price,
                       o.status,
                       o.created_at,
                       o.updated_at
@@ -53,8 +53,7 @@ public sealed class OrderQuery
                       o.user_id,
                       o.game_account_info,
                       o.game_package_id,
-                      o.unit_price,
-                      o.unit_price AS total,
+                      o.package_price,
                       o.assigned_to,
                       o.assigned_at,
                       o.status,
@@ -80,7 +79,7 @@ public sealed class MyOrderSummaryRow
     public string? GameImageUrl { get; set; }
     public string? PackageName { get; set; }
     public string? PackageImageUrl { get; set; }
-    public decimal UnitPrice { get; set; }
+    public decimal PackagePrice { get; set; }
     public OrderStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -92,8 +91,7 @@ public sealed class AdminOrderSummaryRow
     public long UserId { get; set; }
     public string GameAccountInfo { get; set; } = string.Empty;
     public long GamePackageId { get; set; }
-    public decimal UnitPrice { get; set; }
-    public decimal Total { get; set; }
+    public decimal PackagePrice { get; set; }
     public long? AssignedTo { get; set; }
     public DateTime? AssignedAt { get; set; }
     public OrderStatus Status { get; set; }

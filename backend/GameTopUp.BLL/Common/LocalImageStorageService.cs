@@ -17,16 +17,19 @@ public sealed class LocalImageStorageService : IImageStorageService
     };
 
     private readonly IHostEnvironment _environment;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public LocalImageStorageService(IHostEnvironment environment, IHttpContextAccessor httpContextAccessor)
+    public LocalImageStorageService(IHostEnvironment environment)
     {
         _environment = environment;
-        _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<ImageStorageResult> UploadAsync(IFormFile image, string folder)
+    public async Task<ImageStorageResult?> UploadAsync(IFormFile? image, string folder)
     {
+        if (image is null)
+        {
+            return null;
+        }
+
         ValidateImage(image);
 
         var relativePath = BuildRelativePath(folder, image.ContentType);
@@ -41,7 +44,7 @@ public sealed class LocalImageStorageService : IImageStorageService
         return new ImageStorageResult
         {
             Url = BuildPublicUrl(relativePath),
-            RelativePath = relativePath.Replace('\\', '/'),
+            RelativePath = NormalizeRelativePath(relativePath),
             StoredFileName = Path.GetFileName(physicalPath),
             Bytes = new FileInfo(physicalPath).Length,
             OriginalFileName = image.FileName
@@ -55,7 +58,7 @@ public sealed class LocalImageStorageService : IImageStorageService
             return Task.CompletedTask;
         }
 
-        var normalizedRelativePath = relativePath.TrimStart('/').Replace('\\', '/');
+        var normalizedRelativePath = NormalizeRelativePath(relativePath);
         var physicalPath = GetPhysicalPath(normalizedRelativePath);
         if (File.Exists(physicalPath))
         {
@@ -76,20 +79,22 @@ public sealed class LocalImageStorageService : IImageStorageService
 
     private string GetPhysicalPath(string relativePath)
     {
-        var webRoot = Path.Combine(_environment.ContentRootPath, "wwwroot");
-        return Path.Combine(webRoot, relativePath);
+        var webRoot = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "wwwroot"));
+        var normalizedRelativePath = NormalizeRelativePath(relativePath).Replace('/', Path.DirectorySeparatorChar);
+        var fullPath = Path.GetFullPath(Path.Combine(webRoot, normalizedRelativePath));
+
+        if (!fullPath.Equals(webRoot, StringComparison.OrdinalIgnoreCase)
+            && !fullPath.StartsWith(webRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new BusinessException(ErrorCode.InvalidImageFileName);
+        }
+
+        return fullPath;
     }
 
     private string BuildPublicUrl(string relativePath)
     {
-        var webPath = "/" + relativePath.Replace('\\', '/');
-        var context = _httpContextAccessor.HttpContext;
-        if (context?.Request == null)
-        {
-            return webPath;
-        }
-
-        return $"{context.Request.Scheme}://{context.Request.Host}{webPath}";
+        return "/" + NormalizeRelativePath(relativePath);
     }
 
     private static string ResolveExtension(string contentType)
@@ -104,6 +109,11 @@ public sealed class LocalImageStorageService : IImageStorageService
 
     private static string SanitizeSegment(string segment)
     {
+        if (string.IsNullOrWhiteSpace(segment))
+        {
+            throw new BusinessException(ErrorCode.InvalidImageFileName);
+        }
+
         if (segment.Contains('/') || segment.Contains('\\'))
         {
             throw new BusinessException(ErrorCode.InvalidImageFileName);
@@ -116,6 +126,11 @@ public sealed class LocalImageStorageService : IImageStorageService
         }
 
         return string.Join("-", cleaned.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    }
+
+    private static string NormalizeRelativePath(string relativePath)
+    {
+        return relativePath.TrimStart('/', '\\').Replace('\\', '/');
     }
 
     private static void ValidateImage(IFormFile image)

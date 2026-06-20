@@ -20,8 +20,25 @@ public sealed class WalletService
 
     public async Task<decimal> GetBalanceAsync(UserContext context)
     {
-        var wallet = await _walletRepository.GetByUserIdAsync(context.UserId);
-        return wallet?.Balance ?? throw new NotFoundException(ErrorCode.WalletNotFound);
+        var wallet = await _walletRepository.GetByUserIdAsync(context.UserId)
+            ?? throw new BusinessException(ErrorCode.WalletNotFound);
+
+        return wallet.Balance;
+    }
+
+    public async Task<Wallet> LockByUserIdOrThrowAsync(long userId)
+    {
+        return await _walletRepository.GetWithLockByUserIdAsync(userId)
+            ?? throw new NotFoundException(ErrorCode.WalletNotFound);
+    }
+
+    public async Task ApplyTransactionAsync(Wallet wallet, WalletTransaction transaction)
+    {
+        ArgumentNullException.ThrowIfNull(wallet);
+        ArgumentNullException.ThrowIfNull(transaction);
+
+        await _walletRepository.UpdateBalanceAsync(wallet.Id, wallet.Balance);
+        await _transactionRepository.CreateAsync(transaction);
     }
 
     public async Task<List<WalletTransactionInfo>> GetTransactionsAsync(UserContext context)
@@ -30,62 +47,38 @@ public sealed class WalletService
         return transactions.Select(transaction => transaction.MapTo<WalletTransactionInfo>()).ToList();
     }
 
-    public WalletTransaction DepositFromVietQr(Wallet wallet, decimal amount, string depositCode)
+    public void EnsureSufficientBalance(Wallet wallet, decimal amount)
     {
+        ArgumentNullException.ThrowIfNull(wallet);
+
         EnsurePositiveAmount(amount);
 
-        var balanceBefore = wallet.Balance;
-        var balanceAfter = balanceBefore + amount;
-        var transaction = WalletTransaction.Create(
-            wallet.UserId,
-            amount,
-            balanceBefore,
-            balanceAfter,
-            WalletTransactionType.Deposit,
-            $"Approve VietQR deposit #{depositCode}: {amount:N0} VND");
-        wallet.Balance = balanceAfter;
-        return transaction;
+        if (wallet.Balance < amount)
+        {
+            throw new BusinessException(ErrorCode.InsufficientWalletBalance);
+        }
     }
 
-    public WalletTransaction ChargeOrder(Wallet wallet, long orderId, decimal amount)
+    public WalletTransaction Credit(
+        Wallet wallet,
+        decimal amount,
+        WalletTransactionType type,
+        string? referenceId = null)
     {
+        ArgumentNullException.ThrowIfNull(wallet);
+
         EnsurePositiveAmount(amount);
-
-        var balanceBefore = wallet.Balance;
-        var balanceAfter = balanceBefore - amount;
-
-        EnsureBalanceNotNegative(balanceAfter);
-
-        var transaction = WalletTransaction.Create(
-            wallet.UserId,
-            -amount,
-            balanceBefore,
-            balanceAfter,
-            WalletTransactionType.PurchaseOrder,
-            $"Purchase order #{orderId}",
-            orderId);
-            
-        wallet.Balance = balanceAfter;
-        return transaction;
+        return CreateTransaction(wallet, amount, type, referenceId);
     }
 
-    public WalletTransaction RefundOrder(Wallet wallet, long orderId, decimal amount, string? reason = null)
+    public WalletTransaction Debit(
+        Wallet wallet,
+        decimal amount,
+        WalletTransactionType type,
+        string? referenceId = null)
     {
-        EnsurePositiveAmount(amount);
-
-        var description = $"Refund order #{orderId}." + (string.IsNullOrWhiteSpace(reason) ? string.Empty : $" Reason: {reason}");
-        var balanceBefore = wallet.Balance;
-        var balanceAfter = balanceBefore + amount;
-        var transaction = WalletTransaction.Create(
-            wallet.UserId,
-            amount,
-            balanceBefore,
-            balanceAfter,
-            WalletTransactionType.Refund,
-            description,
-            orderId);
-        wallet.Balance = balanceAfter;
-        return transaction;
+        EnsureSufficientBalance(wallet, amount);
+        return CreateTransaction(wallet, -amount, type, referenceId);
     }
 
     private static void EnsurePositiveAmount(decimal amount)
@@ -96,12 +89,24 @@ public sealed class WalletService
         }
     }
 
-    private static void EnsureBalanceNotNegative(decimal balanceAfter)
+    private static WalletTransaction CreateTransaction(
+        Wallet wallet,
+        decimal signedAmount,
+        WalletTransactionType type,
+        string? referenceId)
     {
-        if (balanceAfter < 0)
-        {
-            throw new BusinessException(ErrorCode.InsufficientWalletBalance);
-        }
-    }
+        ArgumentNullException.ThrowIfNull(wallet);
 
+        var balanceBefore = wallet.Balance;
+        var balanceAfter = balanceBefore + signedAmount;
+        wallet.Balance = balanceAfter;
+
+        return WalletTransaction.Create(
+            wallet.UserId,
+            signedAmount,
+            balanceBefore,
+            balanceAfter,
+            type,
+            referenceId);
+    }
 }

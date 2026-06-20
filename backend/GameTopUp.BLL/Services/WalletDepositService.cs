@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Security.Cryptography;
+using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Wallets;
 using GameTopUp.BLL.Exceptions;
@@ -14,61 +15,65 @@ namespace GameTopUp.BLL.Services;
 public sealed class WalletDepositService
 {
     private readonly IWalletDepositRepository _repository;
-    public VietQrSettings VietQrSettings { get; }
+
+    private readonly VietQrSettings _vietQrSettings;
 
     public WalletDepositService(
         IWalletDepositRepository repository,
         IOptions<VietQrSettings> vietQrOptions)
     {
         _repository = repository;
-        VietQrSettings = vietQrOptions.Value;
+        _vietQrSettings = vietQrOptions.Value;
+    }
+
+    public async Task<WalletDeposit> GetByIdOrThrowAsync(long depositId)
+    {
+        return await _repository.GetByIdAsync(depositId)
+            ?? throw new NotFoundException(ErrorCode.DepositRequestNotFound);
+    }
+
+    public async Task<WalletDeposit> LockByIdOrThrowAsync(long depositId)
+    {
+        return await _repository.GetWithLockByIdAsync(depositId)
+            ?? throw new NotFoundException(ErrorCode.DepositRequestNotFound);
+    }
+
+    public async Task<List<WalletDepositResponseDTO>> GetByUserAsync(UserContext context, WalletDepositStatus? status = null)
+    {
+        var deposits = await _repository.GetByUserIdAsync(context.UserId, status);
+        return deposits
+            .Select(BuildPublicResponse)
+            .ToList();
+    }
+
+    public async Task<List<AdminDepositRequestResponseDTO>> GetAllAsync(WalletDepositStatus? status = null)
+    {
+        var deposits = await _repository.GetAllAsync(status);
+        return deposits
+            .Select(request => request.MapTo<AdminDepositRequestResponseDTO>())
+            .ToList();
     }
 
     public async Task<WalletDepositResponseDTO> CreateAsync(UserContext context, decimal amount)
     {
-        ValidateAmount(amount);
-        ValidateVietQrSettings();
+        if (amount <= 0)
+        {
+            throw new BusinessException(ErrorCode.AmountMustBePositive);
+        }
+
+        if (amount != decimal.Truncate(amount))
+        {
+            throw new BusinessException(ErrorCode.DepositAmountMustBeInteger);
+        }
+
+        EnsureVietQrConfigured();
 
         var code = CreateDepositCode();
         var transferContent = code;
         var request = WalletDeposit.Create(context.UserId, amount, code, transferContent);
 
         request.Id = await _repository.CreateAsync(request);
-        return ToPublicResponse(request);
-    }
-
-    public async Task<WalletDeposit> GetByIdOrThrowAsync(long depositId)
-    {
-        return await _repository.GetByIdAsync(depositId)
-            ?? throw new NotFoundException(
-                ErrorCode.DepositRequestNotFound,
-                $"Deposit request #{depositId} was not found.");
-    }
-
-    public async Task<List<WalletDepositResponseDTO>> GetByUserAsync(UserContext context, WalletDepositStatus? status = null)
-    {
-        var deposits = await GetHistoryEntitiesAsync(context.UserId, status);
-        return deposits
-            .Select(ToPublicResponse)
-            .ToList();
-    }
-
-    public async Task<List<AdminDepositRequestResponseDTO>> GetAllAsync(WalletDepositStatus? status = null)
-    {
-        var deposits = await GetAllEntitiesAsync(status);
-        return deposits
-            .Select(ToAdminResponse)
-            .ToList();
-    }
-
-    public Task<List<WalletDeposit>> GetHistoryEntitiesAsync(long userId, WalletDepositStatus? status = null)
-    {
-        return _repository.GetByUserIdAsync(userId, status);
-    }
-
-    public Task<List<WalletDeposit>> GetAllEntitiesAsync(WalletDepositStatus? status = null)
-    {
-        return _repository.GetAllAsync(status);
+        return BuildPublicResponse(request);
     }
 
     public WalletDeposit Confirm(WalletDeposit deposit, UserContext actor, DateTime now)
@@ -118,34 +123,27 @@ public sealed class WalletDepositService
         return deposit;
     }
 
-    public WalletDepositResponseDTO ToPublicResponse(WalletDeposit request)
+    public WalletDepositResponseDTO BuildPublicResponse(WalletDeposit request)
     {
-        return BuildPublicResponse(request);
+        var response = request.MapTo<WalletDepositResponseDTO>();
+        response.QrImageUrl = BuildQrImageUrl(_vietQrSettings);
+        response.BankId = _vietQrSettings.BankId;
+        response.AccountNo = _vietQrSettings.AccountNo;
+        response.AccountName = _vietQrSettings.AccountName;
+        return response;
     }
 
-    public AdminDepositRequestResponseDTO ToAdminResponse(WalletDeposit request)
+    public async Task UpdateAsync(WalletDeposit deposit)
     {
-        return request.MapTo<AdminDepositRequestResponseDTO>();
+        ArgumentNullException.ThrowIfNull(deposit);
+        await _repository.UpdateAsync(deposit);
     }
 
-    private void ValidateAmount(decimal amount)
+    private void EnsureVietQrConfigured()
     {
-        if (amount <= 0)
-        {
-            throw new BusinessException(ErrorCode.AmountMustBePositive);
-        }
-
-        if (amount != decimal.Truncate(amount))
-        {
-            throw new BusinessException(ErrorCode.DepositAmountMustBeInteger);
-        }
-    }
-
-    private void ValidateVietQrSettings()
-    {
-        if (string.IsNullOrWhiteSpace(VietQrSettings.BankId)
-            || string.IsNullOrWhiteSpace(VietQrSettings.AccountNo)
-            || string.IsNullOrWhiteSpace(VietQrSettings.AccountName))
+        if (InputTextNormalizer.NullIfWhiteSpace(_vietQrSettings.BankId) is null
+            || InputTextNormalizer.NullIfWhiteSpace(_vietQrSettings.AccountNo) is null
+            || InputTextNormalizer.NullIfWhiteSpace(_vietQrSettings.AccountName) is null)
         {
             throw new BusinessException(ErrorCode.VietQrSettingsMissing);
         }
@@ -153,21 +151,11 @@ public sealed class WalletDepositService
 
     private static string BuildQrImageUrl(VietQrSettings settings)
     {
-        var bankId = Uri.EscapeDataString(settings.BankId.Trim());
-        var accountNo = Uri.EscapeDataString(settings.AccountNo.Trim());
-        var template = string.IsNullOrWhiteSpace(settings.Template) ? "compact2" : settings.Template.Trim();
+        var bankId = Uri.EscapeDataString(InputTextNormalizer.NullIfWhiteSpace(settings.BankId)!);
+        var accountNo = Uri.EscapeDataString(InputTextNormalizer.NullIfWhiteSpace(settings.AccountNo)!);
+        var template = InputTextNormalizer.NullIfWhiteSpace(settings.Template) ?? "compact2";
 
         return $"https://img.vietqr.io/image/{bankId}-{accountNo}-{template}.png";
-    }
-
-    private WalletDepositResponseDTO BuildPublicResponse(WalletDeposit request)
-    {
-        var response = request.MapTo<WalletDepositResponseDTO>();
-        response.QrImageUrl = BuildQrImageUrl(VietQrSettings);
-        response.BankId = VietQrSettings.BankId;
-        response.AccountNo = VietQrSettings.AccountNo;
-        response.AccountName = VietQrSettings.AccountName;
-        return response;
     }
 
     private static string CreateDepositCode()

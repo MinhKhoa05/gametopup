@@ -17,36 +17,17 @@ public sealed class UserController : ApiControllerBase
         _userService = userService;
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(long id)
-    {
-        var user = await _userService.GetProfileAsync(CurrentUser, id);
-        return ApiOk(user);
-    }
-
     [HttpGet("me")]
     public async Task<IActionResult> GetMyProfile()
     {
-        var user = await _userService.GetProfileAsync(CurrentUser, CurrentUser.UserId);
+        var user = await _userService.GetByIdAsync(CurrentUser.UserId);
         return ApiOk(user);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(long id, [FromBody] UpdateUserRequest request)
+    [HttpPut("me")]
+    public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileRequest request)
     {
-        await _userService.UpdateProfileAsync(CurrentUser, id, request);
-        return ApiOk();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(long id)
-    {
-        if (!CurrentUser.IsAdmin)
-        {
-            throw new ForbiddenException(ErrorCode.Forbidden);
-        }
-
-        await _userService.DeleteAsync(id);
+        await _userService.UpdateProfileAsync(CurrentUser.UserId, request);
         return ApiOk();
     }
 }

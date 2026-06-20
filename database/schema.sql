@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS game_packages (
     sale_price DECIMAL(18, 2) NOT NULL,
     original_price DECIMAL(18, 2) NOT NULL,
     import_price DECIMAL(18, 2) NOT NULL,
-    stock_quantity INT DEFAULT 0,
+    available_slots INT DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS orders (
     user_id BIGINT SIGNED NOT NULL,
     game_account_info TEXT NOT NULL,
     game_package_id BIGINT SIGNED NOT NULL,
-    unit_price DECIMAL(18, 2) NOT NULL,
+    package_price DECIMAL(18, 2) NOT NULL,
     assigned_to BIGINT SIGNED,
     assigned_at DATETIME,
     status INT NOT NULL, -- 1: Pending, 2: Processing, 3: Completed, 4: Cancelled
@@ -100,11 +100,9 @@ CREATE TABLE IF NOT EXISTS wallet_transactions (
     balance_before DECIMAL(18, 2) NOT NULL,
     balance_after DECIMAL(18, 2) NOT NULL,
     type INT NOT NULL, -- 1: Deposit, 2: Withdraw, 3: PurchaseOrder, 4: Refund
-    description TEXT,
-    order_id BIGINT SIGNED NULL,
+    reference_id VARCHAR(128) NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_tx_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_tx_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL,
     INDEX idx_tx_user_sort (user_id, created_at)
 ) ENGINE=InnoDB;
 

@@ -23,22 +23,15 @@ public sealed class AdminOrderController : ApiControllerBase
     [HttpGet]
     public async Task<IActionResult> GetOrders([FromQuery] OrderStatus? status = null)
     {
-        var orders = await _orderService.GetAdminOrderSummariesAsync(status);
+        var orders = await _orderService.GetAdminOrdersAsync(status);
         return ApiOk(orders);
     }
 
     [HttpGet("{orderId}")]
     public async Task<IActionResult> GetOrderById(long orderId)
     {
-        var order = await _orderService.GetOrderByIdOrThrowAsync(orderId);
-        return ApiOk(order);
-    }
-
-    [HttpGet("{orderId}/history")]
-    public async Task<IActionResult> GetOrderHistories(long orderId)
-    {
-        var histories = await _orderService.GetHistoriesAsync(orderId);
-        return ApiOk(histories);
+        var detail = await _orderService.GetOrderDetailAsync(CurrentUser, orderId);
+        return ApiOk(detail);
     }
 
     [HttpPost("{orderId}/pick")]

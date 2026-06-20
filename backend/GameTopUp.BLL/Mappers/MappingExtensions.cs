@@ -8,4 +8,12 @@ public static class MappingExtensions
     {
         return source.Adapt<TDestination>(BackendMapsterConfig.Config);
     }
+
+    public static TDestination ApplyTo<TSource, TDestination>(this TSource source, TDestination destination)
+        where TSource : class
+        where TDestination : class
+    {
+        source.Adapt(destination, BackendMapsterConfig.Config);
+        return destination;
+    }
 }

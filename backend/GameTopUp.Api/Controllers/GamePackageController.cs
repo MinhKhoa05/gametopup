@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GameTopUp.Api.Controllers;
 
-[Route("api/game-packages")]
+[Route("api/packages")]
 public sealed class GamePackageController : ApiControllerBase
 {
     private readonly GamePackageService _packageService;
@@ -23,7 +23,7 @@ public sealed class GamePackageController : ApiControllerBase
     [HttpGet("{id:long}")]
     public async Task<IActionResult> GetPackageById(long id)
     {
-        var package = await _packageService.GetPublicPackageByIdOrThrowAsync(id);
+        var package = await _packageService.GetPublicPackageByIdAsync(id);
         return ApiOk(package);
     }
 }

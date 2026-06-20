@@ -10,13 +10,13 @@ public class GamePackage
     public long Id { get; set; }
 
     public string Name { get; set; } = string.Empty;
-    public string ImageUrl { get; set; } = string.Empty;
-    public string? ImageRelativePath { get; set; }
+    public string? ImageUrl { get; set; } = string.Empty;
+    public string? ImageRelativePath { get; set; } = string.Empty;
     public long GameId { get; set; }
     public decimal SalePrice { get; set; }
     public decimal OriginalPrice { get; set; }
     public decimal ImportPrice { get; set; }
-    public int StockQuantity { get; set; }
+    public int AvailableSlots { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -27,7 +27,7 @@ public class GamePackage
         decimal salePrice,
         decimal originalPrice,
         decimal importPrice,
-        int stockQuantity = 0)
+        int availableSlots = 0)
     {
         var now = DateTime.UtcNow;
 
@@ -38,7 +38,7 @@ public class GamePackage
             SalePrice = salePrice,
             OriginalPrice = originalPrice,
             ImportPrice = importPrice,
-            StockQuantity = stockQuantity,
+            AvailableSlots = availableSlots,
             ImageUrl = string.Empty,
             ImageRelativePath = null,
             IsActive = true,
