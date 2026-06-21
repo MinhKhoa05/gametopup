@@ -5,7 +5,7 @@ using GameTopUp.BLL.Mappers;
 using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.DAL.Interfaces.Wallets;
 
-namespace GameTopUp.BLL.Services;
+namespace GameTopUp.BLL.Services.Wallets;
 
 public sealed class WalletService
 {

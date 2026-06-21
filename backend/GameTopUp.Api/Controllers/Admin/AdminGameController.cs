@@ -10,16 +10,18 @@ namespace GameTopUp.Api.Controllers.Admin;
 public sealed class AdminGameController : ApiControllerBase
 {
     private readonly GameService _gameService;
+    private readonly GameReadService _gameReadService;
 
-    public AdminGameController(GameService gameService)
+    public AdminGameController(GameService gameService, GameReadService gameReadService)
     {
         _gameService = gameService;
+        _gameReadService = gameReadService;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAllGames()
     {
-        var games = await _gameService.GetAdminGameSummariesAsync();
+        var games = await _gameReadService.GetAdminGameSummariesAsync();
         return ApiOk(games);
     }
 

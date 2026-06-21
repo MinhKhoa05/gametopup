@@ -1,4 +1,4 @@
-using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Services.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

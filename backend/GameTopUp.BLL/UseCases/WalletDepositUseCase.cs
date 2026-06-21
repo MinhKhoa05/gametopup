@@ -1,7 +1,7 @@
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Wallets;
 using GameTopUp.BLL.Mappers;
-using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities.Wallets;
 
@@ -11,21 +11,21 @@ public sealed class WalletDepositUseCase
 {
     private readonly WalletService _walletService;
     private readonly WalletDepositService _depositService;
-    private readonly DatabaseContext _database;
+    private readonly ITransactionManager _transaction;
 
     public WalletDepositUseCase(
         WalletService walletService,
         WalletDepositService depositService,
-        DatabaseContext database)
+        ITransactionManager transaction)
     {
         _walletService = walletService;
         _depositService = depositService;
-        _database = database;
+        _transaction = transaction;
     }
 
     public async Task<WalletDepositResponseDTO> ConfirmDepositTransferAsync(long requestId, UserContext user)
     {
-        return await _database.ExecuteInTransactionAsync(async () =>
+        return await _transaction.ExecuteAsync(async () =>
         {
             var now = DateTime.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);
@@ -44,7 +44,7 @@ public sealed class WalletDepositUseCase
 
     public async Task<AdminDepositRequestResponseDTO> ApproveDepositRequestAsync(long requestId, UserContext admin, string? note = null)
     {
-        return await _database.ExecuteInTransactionAsync(async () =>
+        return await _transaction.ExecuteAsync(async () =>
         {
             var now = DateTime.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);
@@ -70,7 +70,7 @@ public sealed class WalletDepositUseCase
 
     public async Task<AdminDepositRequestResponseDTO> RejectDepositRequestAsync(long requestId, UserContext admin, string? note = null)
     {
-        return await _database.ExecuteInTransactionAsync(async () =>
+        return await _transaction.ExecuteAsync(async () =>
         {
             var now = DateTime.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);

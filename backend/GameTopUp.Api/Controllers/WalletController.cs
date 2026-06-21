@@ -1,5 +1,5 @@
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Services.Wallets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

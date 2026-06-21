@@ -6,24 +6,24 @@ namespace GameTopUp.Api.Controllers;
 [Route("api/games")]
 public sealed class GameController : ApiControllerBase
 {
-    private readonly GameService _gameService;
+    private readonly GameReadService _gameReadService;
 
-    public GameController(GameService gameService)
+    public GameController(GameReadService gameReadService)
     {
-        _gameService = gameService;
+        _gameReadService = gameReadService;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAllGames()
     {
-        var games = await _gameService.GetPublicGamesAsync();
+        var games = await _gameReadService.GetPublicGamesAsync();
         return ApiOk(games);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetGameById(long id)
     {
-        var game = await _gameService.GetPublicGameByIdAsync(id);
+        var game = await _gameReadService.GetPublicGameByIdAsync(id);
         return ApiOk(game);
     }
 }

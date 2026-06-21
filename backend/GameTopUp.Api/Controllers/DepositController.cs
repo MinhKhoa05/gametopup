@@ -1,5 +1,5 @@
 using GameTopUp.BLL.DTOs.Wallets;
-using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Entities.Wallets;
 using Microsoft.AspNetCore.Authorization;

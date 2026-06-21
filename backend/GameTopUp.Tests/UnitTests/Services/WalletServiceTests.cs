@@ -1,7 +1,6 @@
 using FluentAssertions;
-using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.DAL.Interfaces.Wallets;
 using Moq;
@@ -20,100 +19,92 @@ public class WalletServiceTests
     }
 
     [Fact]
-    public void DepositFromVietQr_ShouldMutateBalanceAndReturnDepositTransaction()
+    public void Credit_ShouldCreateCreditTransactionAndUpdateBalance()
     {
-        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 200m };
+        var wallet = Wallet.CreateForUser(7, 200m);
 
-        var transaction = _service.DepositFromVietQr(wallet, 150m, "GTU-1406-40734");
+        var transaction = _service.Credit(wallet, 150m, WalletTransactionType.Deposit, "GTU-1406-40734");
 
         wallet.Balance.Should().Be(350m);
         transaction.Amount.Should().Be(150m);
         transaction.BalanceBefore.Should().Be(200m);
         transaction.BalanceAfter.Should().Be(350m);
         transaction.Type.Should().Be(WalletTransactionType.Deposit);
-        transaction.Description.Should().Contain("Approve VietQR deposit #GTU-1406-40734: 150");
+        transaction.ReferenceId.Should().Be("GTU-1406-40734");
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    public void DepositFromVietQr_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
+    public void Credit_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
     {
-        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 200m };
+        var wallet = Wallet.CreateForUser(7, 200m);
 
-        Action act = () => _service.DepositFromVietQr(wallet, amount, "GTU-1406-40734");
+        Action act = () => _service.Credit(wallet, amount, WalletTransactionType.Deposit, "GTU-1406-40734");
 
         act.Should().Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.AmountMustBePositive);
     }
 
     [Fact]
-    public void ChargeOrder_ShouldMutateBalanceAndReturnPurchaseTransaction()
+    public async Task LockByUserIdOrThrowAsync_ShouldThrow_WhenWalletDoesNotExist()
     {
-        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 500m };
+        _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
+            .ReturnsAsync((Wallet?)null);
 
-        var transaction = _service.ChargeOrder(wallet, 123, 120m);
+        var act = async () => await _service.LockByUserIdOrThrowAsync(7);
 
-        wallet.Balance.Should().Be(380m);
-        transaction.Amount.Should().Be(-120m);
-        transaction.BalanceBefore.Should().Be(500m);
-        transaction.BalanceAfter.Should().Be(380m);
-        transaction.Type.Should().Be(WalletTransactionType.PurchaseOrder);
-        transaction.OrderId.Should().Be(123);
-        transaction.Description.Should().Contain("Purchase order #123");
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-10)]
-    public void ChargeOrder_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
-    {
-        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 500m };
-
-        Action act = () => _service.ChargeOrder(wallet, 123, amount);
-
-        act.Should().Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.AmountMustBePositive);
+        await act.Should().ThrowAsync<NotFoundException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.WalletNotFound);
     }
 
     [Fact]
-    public void ChargeOrder_ShouldThrow_WhenBalanceWouldBeNegative()
+    public void EnsureSufficientBalance_ShouldThrow_WhenWalletHasNotEnoughBalance()
     {
-        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 50m };
+        var wallet = Wallet.CreateForUser(7, 50m);
 
-        Action act = () => _service.ChargeOrder(wallet, 123, 120m);
+        var act = () => _service.EnsureSufficientBalance(wallet, 120m);
 
         act.Should().Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.InsufficientWalletBalance);
     }
 
     [Fact]
-    public void RefundOrder_ShouldMutateBalanceAndReturnRefundTransaction()
+    public void Debit_ShouldCreateDebitTransactionAndUpdateBalance()
     {
-        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 80m };
+        var wallet = Wallet.CreateForUser(7, 500m);
 
-        var transaction = _service.RefundOrder(wallet, 321, 40m, "customer requested cancellation");
+        var transaction = _service.Debit(wallet, 120m, WalletTransactionType.PurchaseOrder, "123");
 
-        wallet.Balance.Should().Be(120m);
-        transaction.Amount.Should().Be(40m);
-        transaction.BalanceBefore.Should().Be(80m);
-        transaction.BalanceAfter.Should().Be(120m);
-        transaction.Type.Should().Be(WalletTransactionType.Refund);
-        transaction.OrderId.Should().Be(321);
-        transaction.Description.Should().Contain("Refund order #321.");
-        transaction.Description.Should().Contain("Reason: customer requested cancellation");
+        wallet.Balance.Should().Be(380m);
+        transaction.Amount.Should().Be(-120m);
+        transaction.BalanceBefore.Should().Be(500m);
+        transaction.BalanceAfter.Should().Be(380m);
+        transaction.Type.Should().Be(WalletTransactionType.PurchaseOrder);
+        transaction.ReferenceId.Should().Be("123");
     }
 
     [Theory]
     [InlineData(0)]
-    [InlineData(-5)]
-    public void RefundOrder_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
+    [InlineData(-10)]
+    public void Debit_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
     {
-        var wallet = new Wallet { Id = 11, UserId = 7, Balance = 80m };
+        var wallet = Wallet.CreateForUser(7, 500m);
 
-        Action act = () => _service.RefundOrder(wallet, 321, amount, "reason");
+        Action act = () => _service.Debit(wallet, amount, WalletTransactionType.PurchaseOrder, "123");
 
         act.Should().Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.AmountMustBePositive);
+    }
+
+    [Fact]
+    public void Debit_ShouldThrow_WhenBalanceWouldBeNegative()
+    {
+        var wallet = Wallet.CreateForUser(7, 50m);
+
+        Action act = () => _service.Debit(wallet, 120m, WalletTransactionType.PurchaseOrder, "123");
+
+        act.Should().Throw<BusinessException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.InsufficientWalletBalance);
     }
 }

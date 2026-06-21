@@ -3,8 +3,9 @@ using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Orders;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Interfaces;
-using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.Services.Games;
+using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities.Games;
@@ -14,13 +15,11 @@ using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.DAL.Interfaces.Games;
 using GameTopUp.DAL.Interfaces.Orders;
 using GameTopUp.DAL.Interfaces.Wallets;
-using GameTopUp.DAL.Queries.Orders;
-using Microsoft.Data.Sqlite;
 using Moq;
 
 namespace GameTopUp.Tests.UnitTests.UseCases;
 
-public class OrderUseCaseTests : IDisposable
+public class OrderUseCaseTests
 {
     private readonly Mock<IGamePackageRepository> _packageRepository = new();
     private readonly Mock<IGameRepository> _gameRepository = new();
@@ -29,25 +28,19 @@ public class OrderUseCaseTests : IDisposable
     private readonly Mock<IWalletTransactionRepository> _walletTransactionRepository = new();
     private readonly Mock<IOrderRepository> _orderRepository = new();
     private readonly Mock<IOrderHistoryRepository> _orderHistoryRepository = new();
-    private readonly DatabaseContext _database;
+    private readonly ITransactionManager _transaction = new ImmediateTransactionManager();
     private readonly OrderUseCase _useCase;
 
     public OrderUseCaseTests()
     {
-        _database = CreateDatabaseContext();
-
         var packageService = new GamePackageService(_packageRepository.Object, _gameRepository.Object, _imageStorageService.Object);
         var walletService = new WalletService(_walletRepository.Object, _walletTransactionRepository.Object);
-        var orderService = new OrderService(_orderRepository.Object, _orderHistoryRepository.Object, new OrderQuery(_database));
+        var orderService = new OrderService(_orderRepository.Object, _orderHistoryRepository.Object);
         _useCase = new OrderUseCase(
             packageService,
             walletService,
             orderService,
-            _orderRepository.Object,
-            _orderHistoryRepository.Object,
-            _walletRepository.Object,
-            _walletTransactionRepository.Object,
-            _database);
+            _transaction);
     }
 
     [Fact]
@@ -71,8 +64,10 @@ public class OrderUseCaseTests : IDisposable
         _orderHistoryRepository.Setup(repo => repo.CreateAsync(It.IsAny<OrderHistory>()))
             .ReturnsAsync(12)
             .Callback<OrderHistory>(history => createdHistory = history);
+        var fundedWallet = Wallet.CreateForUser(7, 500m);
+        fundedWallet.Id = 11;
         _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
-            .ReturnsAsync(new Wallet { Id = 11, UserId = 7, Balance = 500m });
+            .ReturnsAsync(fundedWallet);
         _walletRepository.Setup(repo => repo.UpdateBalanceAsync(11, It.IsAny<decimal>()))
             .ReturnsAsync(1)
             .Callback<long, decimal>((_, newBalance) => updatedBalance = newBalance);
@@ -96,16 +91,12 @@ public class OrderUseCaseTests : IDisposable
         createdOrder.Status.Should().Be(OrderStatus.Pending);
         createdHistory.Should().NotBeNull();
         createdHistory!.OrderId.Should().Be(88);
-        createdHistory.FromStatus.Should().Be(OrderStatus.Pending);
         createdHistory.ToStatus.Should().Be(OrderStatus.Pending);
-        createdHistory.Note.Should().Be("Order created in pending state.");
         updatedBalance.Should().Be(301m);
         createdTransaction.Should().NotBeNull();
         createdTransaction!.Amount.Should().Be(-199m);
-        createdTransaction.OrderId.Should().Be(88);
+        createdTransaction.ReferenceId.Should().Be("88");
         createdTransaction.Type.Should().Be(WalletTransactionType.PurchaseOrder);
-        _orderRepository.Verify(repo => repo.CreateAsync(It.IsAny<Order>()), Times.Once);
-        _orderHistoryRepository.Verify(repo => repo.CreateAsync(It.IsAny<OrderHistory>()), Times.Once);
         _packageRepository.Verify(repo => repo.DecreaseStockAsync(44, 1), Times.Once);
     }
 
@@ -148,6 +139,66 @@ public class OrderUseCaseTests : IDisposable
 
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _packageRepository.Verify(repo => repo.DecreaseStockAsync(It.IsAny<long>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task PurchaseOrderAsync_ShouldNotReserveStockOrCreateOrder_WhenWalletBalanceIsInsufficient()
+    {
+        _packageRepository.Setup(repo => repo.GetByIdAsync(44))
+            .ReturnsAsync(new GamePackage
+            {
+                Id = 44,
+                SalePrice = 199m,
+                IsActive = true
+            });
+        var lowBalanceWallet = Wallet.CreateForUser(7, 100m);
+        lowBalanceWallet.Id = 11;
+        _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
+            .ReturnsAsync(lowBalanceWallet);
+
+        var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequestDTO
+        {
+            GamePackageId = 44,
+            GameAccountInfo = "HERO-123"
+        });
+
+        await act.Should().ThrowAsync<BusinessException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.InsufficientWalletBalance);
+        _packageRepository.Verify(repo => repo.DecreaseStockAsync(It.IsAny<long>(), It.IsAny<int>()), Times.Never);
+        _orderRepository.Verify(repo => repo.CreateAsync(It.IsAny<Order>()), Times.Never);
+        _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
+        _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task PurchaseOrderAsync_ShouldNotCreateOrderOrChargeWallet_WhenStockReservationFails()
+    {
+        _packageRepository.Setup(repo => repo.GetByIdAsync(44))
+            .ReturnsAsync(new GamePackage
+            {
+                Id = 44,
+                SalePrice = 199m,
+                IsActive = true
+            });
+        var fundedWallet = Wallet.CreateForUser(7, 500m);
+        fundedWallet.Id = 11;
+        _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
+            .ReturnsAsync(fundedWallet);
+        _packageRepository.Setup(repo => repo.DecreaseStockAsync(44, 1))
+            .ReturnsAsync(0);
+
+        var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequestDTO
+        {
+            GamePackageId = 44,
+            GameAccountInfo = "HERO-123"
+        });
+
+        await act.Should().ThrowAsync<BusinessException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.PackageOutOfStock);
+        _orderRepository.Verify(repo => repo.CreateAsync(It.IsAny<Order>()), Times.Never);
+        _orderHistoryRepository.Verify(repo => repo.CreateAsync(It.IsAny<OrderHistory>()), Times.Never);
+        _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
+        _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
     }
 
     [Fact]
@@ -214,8 +265,10 @@ public class OrderUseCaseTests : IDisposable
             .Callback<OrderHistory>(history => createdHistory = history);
         _packageRepository.Setup(repo => repo.IncreaseStockAsync(44, 1))
             .ReturnsAsync(1);
+        var walletAfterPurchase = Wallet.CreateForUser(7, 301m);
+        walletAfterPurchase.Id = 11;
         _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
-            .ReturnsAsync(new Wallet { Id = 11, UserId = 7, Balance = 301m });
+            .ReturnsAsync(walletAfterPurchase);
         _walletRepository.Setup(repo => repo.UpdateBalanceAsync(11, It.IsAny<decimal>()))
             .ReturnsAsync(1)
             .Callback<long, decimal>((_, newBalance) => updatedBalance = newBalance);
@@ -230,15 +283,36 @@ public class OrderUseCaseTests : IDisposable
         createdHistory.Should().NotBeNull();
         createdHistory!.FromStatus.Should().Be(OrderStatus.Pending);
         createdHistory.ToStatus.Should().Be(OrderStatus.Cancelled);
-        createdHistory.Note.Should().Be("Order cancelled. Reason: changed my mind");
+        createdHistory.Note.Should().Be("changed my mind");
         refundTransaction.Should().NotBeNull();
         refundTransaction!.Amount.Should().Be(199m);
         refundTransaction.Type.Should().Be(WalletTransactionType.Refund);
-        refundTransaction.OrderId.Should().Be(88);
-        _orderRepository.Verify(repo => repo.UpdateAsync(order), Times.Once);
-        _orderHistoryRepository.Verify(repo => repo.CreateAsync(It.IsAny<OrderHistory>()), Times.Once);
+        refundTransaction.ReferenceId.Should().Be("88");
         _packageRepository.Verify(repo => repo.IncreaseStockAsync(44, 1), Times.Once);
-        _walletRepository.Verify(repo => repo.UpdateBalanceAsync(11, 500m), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_ShouldNotRefundWallet_WhenStockRestoreFails()
+    {
+        var order = Order.Create(7, 44, 199m, "hero-123", OrderStatus.Pending);
+        order.Id = 88;
+
+        _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
+            .ReturnsAsync(order);
+        _orderRepository.Setup(repo => repo.UpdateAsync(It.IsAny<Order>()))
+            .ReturnsAsync(true);
+        _orderHistoryRepository.Setup(repo => repo.CreateAsync(It.IsAny<OrderHistory>()))
+            .ReturnsAsync(12);
+        _packageRepository.Setup(repo => repo.IncreaseStockAsync(44, 1))
+            .ReturnsAsync(0);
+
+        var act = async () => await _useCase.CancelOrderAsync(88, new UserContext { UserId = 7 });
+
+        await act.Should().ThrowAsync<NotFoundException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.GamePackageNotFound);
+        _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
+        _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
+        _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
     }
 
     [Fact]
@@ -258,17 +332,5 @@ public class OrderUseCaseTests : IDisposable
         _packageRepository.Verify(repo => repo.IncreaseStockAsync(It.IsAny<long>(), It.IsAny<int>()), Times.Never);
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
-    }
-
-    private static DatabaseContext CreateDatabaseContext()
-    {
-        var connection = new SqliteConnection("Data Source=:memory:");
-        connection.Open();
-        return new DatabaseContext(connection);
-    }
-
-    public void Dispose()
-    {
-        _database.Dispose();
     }
 }

@@ -6,7 +6,7 @@ using GameTopUp.BLL.Mappers;
 using GameTopUp.DAL.Entities.Users;
 using GameTopUp.DAL.Interfaces.Users;
 
-namespace GameTopUp.BLL.Services;
+namespace GameTopUp.BLL.Services.Users;
 
 public sealed class UserService
 {

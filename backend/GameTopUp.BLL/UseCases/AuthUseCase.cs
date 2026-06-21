@@ -19,7 +19,7 @@ public sealed class AuthUseCase
     private readonly TokenService _tokenService;
     private readonly PasswordService _passwordService;
     private readonly RefreshTokenService _refreshTokenService;
-    private readonly DatabaseContext _database;
+    private readonly ITransactionManager _transaction;
 
     private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
 
@@ -29,14 +29,14 @@ public sealed class AuthUseCase
         TokenService tokenService,
         PasswordService passwordService,
         RefreshTokenService refreshTokenService,
-        DatabaseContext database)
+        ITransactionManager transaction)
     {
         _userRepository = userRepository;
         _walletRepository = walletRepository;
         _tokenService = tokenService;
         _passwordService = passwordService;
         _refreshTokenService = refreshTokenService;
-        _database = database;
+        _transaction = transaction;
     }
 
     public async Task RegisterAsync(CreateUserRequest request)
@@ -44,7 +44,7 @@ public sealed class AuthUseCase
         _passwordService.Validate(request.Password);
         var passwordHash = _passwordService.Hash(request.Password);
 
-        await _database.ExecuteInTransactionAsync(async () =>
+        await _transaction.ExecuteAsync(async () =>
         {
             if (await _userRepository.ExistsByEmailAsync(request.Email))
             {
@@ -78,7 +78,7 @@ public sealed class AuthUseCase
     {
         var hash = _tokenService.HashToken(refreshTokenString);
 
-        return await _database.ExecuteInTransactionAsync(async () =>
+        return await _transaction.ExecuteAsync(async () =>
         {
             var refreshToken = await _refreshTokenService.RevokeValidTokenAsync(hash);
             if (refreshToken is null)

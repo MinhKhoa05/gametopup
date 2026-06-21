@@ -4,7 +4,6 @@ using GameTopUp.BLL.DTOs.Auths;
 using GameTopUp.BLL.DTOs.Users;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Options;
-using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
@@ -14,25 +13,23 @@ using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.DAL.Interfaces.Auth;
 using GameTopUp.DAL.Interfaces.Users;
 using GameTopUp.DAL.Interfaces.Wallets;
-using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Options;
 using Moq;
 
 namespace GameTopUp.Tests.UnitTests.UseCases;
 
-public class AuthUseCaseTests : IDisposable
+public class AuthUseCaseTests
 {
     private readonly Mock<IUserRepository> _userRepository = new();
     private readonly Mock<IRefreshTokenRepository> _refreshTokenRepository = new();
     private readonly Mock<IWalletRepository> _walletRepository = new();
-    private readonly DatabaseContext _database;
+    private readonly ITransactionManager _transaction = new ImmediateTransactionManager();
     private readonly AuthUseCase _useCase;
     private readonly PasswordService _passwordService = new();
     private readonly TokenService _tokenService;
 
     public AuthUseCaseTests()
     {
-        _database = CreateDatabaseContext();
         _tokenService = new TokenService(Options.Create(new JwtSettings
         {
             Key = "this-is-a-test-key-that-is-long-enough-12345",
@@ -49,7 +46,7 @@ public class AuthUseCaseTests : IDisposable
             _tokenService,
             _passwordService,
             refreshTokenService,
-            _database);
+            _transaction);
     }
 
     [Fact]
@@ -119,6 +116,23 @@ public class AuthUseCaseTests : IDisposable
         {
             Email = "user@test.local",
             Password = "WrongPass123!"
+        });
+
+        await act.Should().ThrowAsync<BusinessException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidCredentials);
+        _refreshTokenRepository.Verify(repo => repo.CreateAsync(It.IsAny<RefreshToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task LoginAsync_ShouldThrow_WhenUserDoesNotExist()
+    {
+        _userRepository.Setup(repo => repo.GetByEmailAsync("missing@test.local"))
+            .ReturnsAsync((User?)null);
+
+        var act = async () => await _useCase.LoginAsync(new LoginRequest
+        {
+            Email = "missing@test.local",
+            Password = "Password123!"
         });
 
         await act.Should().ThrowAsync<BusinessException>()
@@ -217,6 +231,32 @@ public class AuthUseCaseTests : IDisposable
     }
 
     [Fact]
+    public async Task RefreshAsync_ShouldThrowAndSkipIssuingNewToken_WhenRefreshTokenUserDoesNotExist()
+    {
+        var hash = _tokenService.HashToken("refresh-token");
+
+        _refreshTokenRepository.Setup(repo => repo.GetByTokenHashAsync(hash))
+            .ReturnsAsync(new RefreshToken
+            {
+                Id = 5,
+                UserId = 7,
+                TokenHash = hash,
+                CreatedAt = DateTime.UtcNow.AddDays(-1),
+                ExpiresAt = DateTime.UtcNow.AddDays(6)
+            });
+        _refreshTokenRepository.Setup(repo => repo.RevokeTokenAsync(hash))
+            .ReturnsAsync(true);
+        _userRepository.Setup(repo => repo.GetByIdAsync(7))
+            .ReturnsAsync((User?)null);
+
+        var act = async () => await _useCase.RefreshAsync("refresh-token");
+
+        await act.Should().ThrowAsync<NotFoundException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.UserNotFound);
+        _refreshTokenRepository.Verify(repo => repo.CreateAsync(It.IsAny<RefreshToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task ChangePasswordAsync_ShouldThrow_WhenNewPasswordMatchesCurrentPassword()
     {
         var act = async () => await _useCase.ChangePasswordAsync(new UserContext { UserId = 7 }, new PasswordChangeRequest
@@ -227,6 +267,21 @@ public class AuthUseCaseTests : IDisposable
 
         await act.Should().ThrowAsync<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.NewPasswordSameAsCurrent);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_ShouldThrow_WhenNewPasswordIsWeak_AndSkipPasswordUpdate()
+    {
+        var act = async () => await _useCase.ChangePasswordAsync(new UserContext { UserId = 7 }, new PasswordChangeRequest
+        {
+            CurrentPassword = "Password123!",
+            NewPassword = "weakpass"
+        });
+
+        await act.Should().ThrowAsync<BusinessException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.WeakPassword);
+        _userRepository.Verify(repo => repo.GetByIdAsync(It.IsAny<long>()), Times.Never);
+        _userRepository.Verify(repo => repo.UpdatePasswordAsync(It.IsAny<long>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -287,17 +342,5 @@ public class AuthUseCaseTests : IDisposable
         var act = async () => await _useCase.LogoutAsync("refresh-token");
 
         await act.Should().NotThrowAsync();
-    }
-
-    public void Dispose()
-    {
-        _database.Dispose();
-    }
-
-    private static DatabaseContext CreateDatabaseContext()
-    {
-        var connection = new SqliteConnection("Data Source=:memory:");
-        connection.Open();
-        return new DatabaseContext(connection);
     }
 }

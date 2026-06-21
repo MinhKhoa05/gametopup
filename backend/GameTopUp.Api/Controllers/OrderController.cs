@@ -1,5 +1,6 @@
 using GameTopUp.BLL.DTOs.Orders;
 using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Entities.Orders;
 using Microsoft.AspNetCore.Authorization;
@@ -13,11 +14,13 @@ public sealed class OrderController : ApiControllerBase
 {
     private readonly OrderUseCase _orderUseCase;
     private readonly OrderService _orderService;
+    private readonly OrderReadService _orderReadService;
 
-    public OrderController(OrderUseCase orderUseCase, OrderService orderService)
+    public OrderController(OrderUseCase orderUseCase, OrderService orderService, OrderReadService orderReadService)
     {
         _orderUseCase = orderUseCase;
         _orderService = orderService;
+        _orderReadService = orderReadService;
     }
 
     [HttpPost]
@@ -30,14 +33,14 @@ public sealed class OrderController : ApiControllerBase
     [HttpGet]
     public async Task<IActionResult> GetMyOrders([FromQuery] OrderStatus? status = null)
     {
-        var orders = await _orderService.GetMyOrdersAsync(CurrentUser, status);
+        var orders = await _orderReadService.GetMyOrdersAsync(CurrentUser, status);
         return ApiOk(orders);
     }
 
     [HttpGet("{orderId}")]
     public async Task<IActionResult> GetOrderById(long orderId)
     {
-        var detail = await _orderService.GetOrderDetailAsync(CurrentUser, orderId);
+        var detail = await _orderReadService.GetOrderDetailAsync(CurrentUser, orderId);
         return ApiOk(detail);
     }
 

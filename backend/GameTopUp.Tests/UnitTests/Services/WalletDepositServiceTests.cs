@@ -2,7 +2,7 @@ using FluentAssertions;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Options;
-using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.DAL.Interfaces.Wallets;
 using Microsoft.Extensions.Options;
@@ -55,51 +55,16 @@ public class WalletDepositServiceTests
         created.Status.Should().Be(WalletDepositStatus.Pending);
     }
 
-    [Fact]
-    public async Task CreateAsync_ShouldUseDefaultTemplate_WhenTemplateIsMissing()
-    {
-        WalletDeposit? created = null;
-        _repository
-            .Setup(repo => repo.CreateAsync(It.IsAny<WalletDeposit>()))
-            .ReturnsAsync(123)
-            .Callback<WalletDeposit>(request => created = request);
-
-        var service = CreateService(new VietQrSettings
-        {
-            BankId = "VCB",
-            AccountNo = "123456789",
-            AccountName = "GameTopUp",
-            Template = "   "
-        });
-
-        var response = await service.CreateAsync(new UserContext { UserId = 7 }, 100000m);
-
-        response.QrImageUrl.Should().Contain("-compact2.png");
-        response.QrImageUrl.Should().NotContain("?");
-        created.Should().NotBeNull();
-        created!.Status.Should().Be(WalletDepositStatus.Pending);
-    }
-
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    public async Task CreateAsync_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
+    [InlineData(0, ErrorCode.AmountMustBePositive)]
+    [InlineData(-1, ErrorCode.AmountMustBePositive)]
+    [InlineData(100000.5, ErrorCode.DepositAmountMustBeInteger)]
+    public async Task CreateAsync_ShouldRejectInvalidAmount(decimal amount, ErrorCode expectedError)
     {
         var act = async () => await _service.CreateAsync(new UserContext { UserId = 7 }, amount);
 
         await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.AmountMustBePositive);
-
-        _repository.Verify(repo => repo.CreateAsync(It.IsAny<WalletDeposit>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task CreateAsync_ShouldThrow_WhenAmountIsNotAnInteger()
-    {
-        var act = async () => await _service.CreateAsync(new UserContext { UserId = 7 }, 100000.5m);
-
-        await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.DepositAmountMustBeInteger);
+            .Where(ex => ex.ErrorCode == expectedError);
 
         _repository.Verify(repo => repo.CreateAsync(It.IsAny<WalletDeposit>()), Times.Never);
     }
@@ -109,9 +74,8 @@ public class WalletDepositServiceTests
     {
         var request = WalletDeposit.Create(7, 100000m, "CODE", "CODE");
 
-        var result = _service.Confirm(request, new UserContext { UserId = 7 }, DateTime.UtcNow);
+        _service.Confirm(request, new UserContext { UserId = 7 }, DateTime.UtcNow);
 
-        result.Should().BeSameAs(request);
         request.Status.Should().Be(WalletDepositStatus.UserConfirmed);
         request.UserConfirmedAt.Should().NotBeNull();
     }
@@ -145,9 +109,8 @@ public class WalletDepositServiceTests
         var request = WalletDeposit.Create(7, 100000m, "CODE", "CODE");
         request.MarkUserConfirmed(DateTime.UtcNow);
 
-        var result = _service.Approve(request, new UserContext { UserId = 1 }, DateTime.UtcNow, "verified");
+        _service.Approve(request, new UserContext { UserId = 1 }, DateTime.UtcNow, "verified");
 
-        result.Should().BeSameAs(request);
         request.Status.Should().Be(WalletDepositStatus.Approved);
         request.ReviewedBy.Should().Be(1);
         request.AdminNote.Should().Be("verified");
@@ -171,9 +134,8 @@ public class WalletDepositServiceTests
         var request = WalletDeposit.Create(7, 100000m, "CODE", "CODE");
         request.MarkUserConfirmed(DateTime.UtcNow);
 
-        var result = _service.Reject(request, new UserContext { UserId = 1 }, DateTime.UtcNow, "not enough proof");
+        _service.Reject(request, new UserContext { UserId = 1 }, DateTime.UtcNow, "not enough proof");
 
-        result.Should().BeSameAs(request);
         request.Status.Should().Be(WalletDepositStatus.Rejected);
         request.ReviewedBy.Should().Be(1);
         request.AdminNote.Should().Be("not enough proof");

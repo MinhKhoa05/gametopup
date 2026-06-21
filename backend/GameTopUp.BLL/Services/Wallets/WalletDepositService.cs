@@ -10,7 +10,7 @@ using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.DAL.Interfaces.Wallets;
 using Microsoft.Extensions.Options;
 
-namespace GameTopUp.BLL.Services;
+namespace GameTopUp.BLL.Services.Wallets;
 
 public sealed class WalletDepositService
 {

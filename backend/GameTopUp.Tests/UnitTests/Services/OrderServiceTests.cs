@@ -1,30 +1,23 @@
 using FluentAssertions;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Services.Orders;
 using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.DAL.Entities.Users;
 using GameTopUp.DAL.Interfaces.Orders;
-using GameTopUp.DAL.Queries.Orders;
-using GameTopUp.DAL.Database;
-using Microsoft.Data.Sqlite;
 using Moq;
 
 namespace GameTopUp.Tests.UnitTests.Services;
 
-public class OrderServiceTests : IDisposable
+public class OrderServiceTests
 {
     private readonly Mock<IOrderRepository> _orderRepository = new();
     private readonly Mock<IOrderHistoryRepository> _historyRepository = new();
-    private readonly DatabaseContext _database;
-    private readonly OrderQuery _orderQuery;
     private readonly OrderService _service;
 
     public OrderServiceTests()
     {
-        _database = CreateDatabaseContext();
-        _orderQuery = new OrderQuery(_database);
-        _service = new OrderService(_orderRepository.Object, _historyRepository.Object, _orderQuery);
+        _service = new OrderService(_orderRepository.Object, _historyRepository.Object);
     }
 
     [Fact]
@@ -48,11 +41,11 @@ public class OrderServiceTests : IDisposable
         history.FromStatus.Should().Be(OrderStatus.Pending);
         history.ToStatus.Should().Be(OrderStatus.Processing);
         history.ActionBy.Should().Be(3);
-        history.Note.Should().Be("Admin Admin picked the order.");
+        history.Note.Should().BeNull();
     }
 
     [Fact]
-    public void PickOrder_ShouldThrow_WhenProcessingOrderIsAlreadyAssignedToAnotherAdmin()
+    public void PickOrder_ShouldThrow_WhenOrderIsAlreadyProcessing()
     {
         var order = Order.Create(7, 44, 199m, "account", OrderStatus.Processing);
         order.Id = 88;
@@ -105,7 +98,7 @@ public class OrderServiceTests : IDisposable
         history.FromStatus.Should().Be(OrderStatus.Processing);
         history.ToStatus.Should().Be(OrderStatus.Completed);
         history.ActionBy.Should().Be(3);
-        history.Note.Should().Be("Admin Admin completed the order.");
+        history.Note.Should().BeNull();
     }
 
     [Fact]
@@ -149,14 +142,26 @@ public class OrderServiceTests : IDisposable
         var order = Order.Create(7, 44, 199m, "account", OrderStatus.Pending);
         order.Id = 88;
 
-        var history = _service.CancelOrder(order, new UserContext { UserId = 7 });
+        var history = _service.CancelOrder(order, new UserContext { UserId = 7 }, "changed my mind");
 
         order.Status.Should().Be(OrderStatus.Cancelled);
         history.Should().NotBeNull();
         history.FromStatus.Should().Be(OrderStatus.Pending);
         history.ToStatus.Should().Be(OrderStatus.Cancelled);
         history.ActionBy.Should().Be(7);
-        history.Note.Should().Be("Order cancelled.");
+        history.Note.Should().Be("changed my mind");
+    }
+
+    [Fact]
+    public void CancelOrder_ShouldThrow_WhenMemberTriesToCancelAnotherUsersPendingOrder()
+    {
+        var order = Order.Create(8, 44, 199m, "account", OrderStatus.Pending);
+        order.Id = 88;
+
+        Action act = () => _service.CancelOrder(order, new UserContext { UserId = 7 });
+
+        act.Should().Throw<ForbiddenException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.CannotModifyOthersOrder);
     }
 
     [Fact]
@@ -178,7 +183,27 @@ public class OrderServiceTests : IDisposable
         history.FromStatus.Should().Be(OrderStatus.Pending);
         history.ToStatus.Should().Be(OrderStatus.Cancelled);
         history.ActionBy.Should().Be(3);
-        history.Note.Should().Be("Order cancelled.");
+        history.Note.Should().BeNull();
+    }
+
+    [Fact]
+    public void CancelOrder_ShouldAllowAssignedAdminToCancelProcessingOrderAndRecordReason()
+    {
+        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Processing);
+        order.Id = 88;
+        order.AssignedTo = 3;
+
+        var history = _service.CancelOrder(order, new UserContext
+        {
+            UserId = 3,
+            Role = UserRole.Admin
+        }, "cannot fulfill");
+
+        order.Status.Should().Be(OrderStatus.Cancelled);
+        history.FromStatus.Should().Be(OrderStatus.Processing);
+        history.ToStatus.Should().Be(OrderStatus.Cancelled);
+        history.ActionBy.Should().Be(3);
+        history.Note.Should().Be("cannot fulfill");
     }
 
     [Fact]
@@ -190,9 +215,8 @@ public class OrderServiceTests : IDisposable
 
         Action act = () => _service.CancelOrder(order, new UserContext { UserId = 7 });
 
-        act.Should().Throw<ForbiddenException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.OrderCannotBeCancelled)
-            .Where(ex => ex.Message == "Order cannot be cancelled.");
+        act.Should().Throw<BusinessException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.OrderCannotBeCancelled);
     }
 
     [Fact]
@@ -205,8 +229,7 @@ public class OrderServiceTests : IDisposable
         Action act = () => _service.CancelOrder(order, new UserContext { UserId = 7 });
 
         act.Should().Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.OrderCannotBeCancelled)
-            .Where(ex => ex.Message == "Order cannot be cancelled.");
+            .Where(ex => ex.ErrorCode == ErrorCode.OrderCannotBeCancelled);
     }
 
     [Fact]
@@ -223,21 +246,20 @@ public class OrderServiceTests : IDisposable
             Role = UserRole.Admin
         });
 
-        act.Should().Throw<ForbiddenException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.CannotModifyOthersOrder)
-            .Where(ex => ex.Message == "Không thể hủy đơn hàng của người khác.");
+        act.Should().Throw<BusinessException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.OrderCannotBeCancelled);
     }
 
-    private static DatabaseContext CreateDatabaseContext()
+    [Fact]
+    public async Task LockByIdOrThrowAsync_ShouldThrow_WhenOrderDoesNotExist()
     {
-        var connection = new SqliteConnection("Data Source=:memory:");
-        connection.Open();
-        return new DatabaseContext(connection);
-    }
+        _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
+            .ReturnsAsync((Order?)null);
 
-    public void Dispose()
-    {
-        _database.Dispose();
+        var act = async () => await _service.LockByIdOrThrowAsync(88);
+
+        await act.Should().ThrowAsync<NotFoundException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.OrderNotFound);
     }
 
 }

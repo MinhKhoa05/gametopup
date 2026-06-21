@@ -8,7 +8,7 @@ using GameTopUp.BLL.Services.Auth;
 using GameTopUp.DAL.Entities.Users;
 using Microsoft.Extensions.Options;
 
-namespace GameTopUp.Tests.UnitTests.Services.Auth;
+namespace GameTopUp.Tests.UnitTests.Services;
 
 public class TokenServiceTests
 {
@@ -24,10 +24,12 @@ public class TokenServiceTests
     public void GenerateRefreshToken_ShouldReturnHexStringWithExpectedLength()
     {
         var refreshToken = _service.GenerateRefreshToken();
+        var other = _service.GenerateRefreshToken();
 
         refreshToken.Should().NotBeNullOrWhiteSpace();
         refreshToken.Length.Should().Be(64);
         Convert.FromHexString(refreshToken).Length.Should().Be(32);
+        other.Should().NotBe(refreshToken);
     }
 
     [Fact]
@@ -43,13 +45,7 @@ public class TokenServiceTests
     [Fact]
     public void GenerateAccessToken_ShouldEmbedUserClaims()
     {
-        var token = _service.GenerateAccessToken(TokenPayload.Create(new UserContext
-        {
-            UserId = 7,
-            DisplayName = "Test User",
-            Email = "user@test.local",
-            Role = UserRole.Admin
-        }));
+        var token = _service.GenerateAccessToken(Payload());
 
         token.Should().NotBeNullOrWhiteSpace();
 
@@ -60,4 +56,25 @@ public class TokenServiceTests
         jwt.Claims.Should().Contain(claim => claim.Type == JwtRegisteredClaimNames.Email && claim.Value == "user@test.local");
         jwt.Claims.Should().Contain(claim => claim.Type == ClaimTypes.Role && claim.Value == UserRole.Admin.ToString());
     }
+
+    [Fact]
+    public void GenerateAccessToken_ShouldUseConfiguredIssuerAudienceAndExpiry()
+    {
+        var token = _service.GenerateAccessToken(Payload());
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+
+        jwt.Issuer.Should().Be("GameTopUp.Tests");
+        jwt.Audiences.Should().Contain("GameTopUp.Tests");
+        jwt.ValidTo.Should().BeAfter(DateTime.UtcNow.AddMinutes(55));
+        jwt.ValidTo.Should().BeBefore(DateTime.UtcNow.AddMinutes(61));
+    }
+
+    private static TokenPayload Payload() => TokenPayload.Create(new UserContext
+    {
+        UserId = 7,
+        DisplayName = "Test User",
+        Email = "user@test.local",
+        Role = UserRole.Admin
+    });
 }

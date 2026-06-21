@@ -2,8 +2,11 @@ using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Options;
 using GameTopUp.BLL.Interfaces;
 using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.BLL.Services.Games;
+using GameTopUp.BLL.Services.Users;
+using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Interfaces.Auth;
@@ -67,6 +70,8 @@ public static class ServiceCollectionExtensions
             return new DatabaseContext(new MySqlConnector.MySqlConnection(connectionString));
         });
 
+        services.AddScoped<ITransactionManager, TransactionManager>();
+
         return services;
     }
 
@@ -89,9 +94,11 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<UserService>();
         services.AddScoped<GameService>();
+        services.AddScoped<GameReadService>();
         services.AddScoped<GameQuery>();
         services.AddScoped<GamePackageService>();
         services.AddScoped<OrderService>();
+        services.AddScoped<OrderReadService>();
         services.AddScoped<PasswordService>();
         services.AddScoped<TokenService>();
         services.AddScoped<RefreshTokenService>();

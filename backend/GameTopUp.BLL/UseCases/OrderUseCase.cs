@@ -3,8 +3,9 @@ using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Orders;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Mappers;
-using GameTopUp.BLL.Services;
+using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.Services.Games;
+using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.DAL.Entities.Wallets;
@@ -17,23 +18,23 @@ public sealed class OrderUseCase
     private readonly GamePackageService _packageService;
     private readonly WalletService _walletService;
     private readonly OrderService _orderService;
-    private readonly DatabaseContext _database;
+    private readonly ITransactionManager _transaction;
 
     public OrderUseCase(
         GamePackageService packageService,
         WalletService walletService,
         OrderService orderService,
-        DatabaseContext database)
+        ITransactionManager transaction)
     {
         _packageService = packageService;
         _walletService = walletService;
         _orderService = orderService;
-        _database = database;
+        _transaction = transaction;
     }
 
     public async Task<OrderResponseDTO> PurchaseOrderAsync(UserContext actor, PurchaseOrderRequestDTO request)
     {
-        var order = await _database.ExecuteInTransactionAsync(async () =>
+        var order = await _transaction.ExecuteAsync(async () =>
         {
             var gameAccountInfo = InputTextNormalizer.Required(request.GameAccountInfo, ErrorCode.BadRequest);
             var package = await _packageService.GetActivePackageByIdOrThrowAsync(request.GamePackageId);
@@ -61,7 +62,7 @@ public sealed class OrderUseCase
 
     public async Task<OrderResponseDTO> PickOrderAsync(long orderId, UserContext actor)
     {
-        var order = await _database.ExecuteInTransactionAsync(async () =>
+        var order = await _transaction.ExecuteAsync(async () =>
         {
             var order = await _orderService.LockByIdOrThrowAsync(orderId);
 
@@ -81,7 +82,7 @@ public sealed class OrderUseCase
 
     public async Task<OrderResponseDTO> CompleteOrderAsync(long orderId, UserContext actor)
     {
-        var order = await _database.ExecuteInTransactionAsync(async () =>
+        var order = await _transaction.ExecuteAsync(async () =>
         {
             var order = await _orderService.LockByIdOrThrowAsync(orderId);
 
@@ -101,7 +102,7 @@ public sealed class OrderUseCase
 
     public async Task<OrderResponseDTO> CancelOrderAsync(long orderId, UserContext actor, string? reason = null)
     {
-        var order = await _database.ExecuteInTransactionAsync(async () =>
+        var order = await _transaction.ExecuteAsync(async () =>
         {
             var order = await _orderService.LockByIdOrThrowAsync(orderId);
 
