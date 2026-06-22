@@ -9,12 +9,12 @@ namespace GameTopUp.Api.Controllers;
 
 [Authorize]
 [Route("api/deposits")]
-public sealed class DepositController : ApiControllerBase
+public sealed class WalletDepositController : ApiControllerBase
 {
     private readonly WalletDepositService _depositService;
     private readonly WalletDepositUseCase _walletDepositUseCase;
 
-    public DepositController(
+    public WalletDepositController(
         WalletDepositService depositService,
         WalletDepositUseCase walletDepositUseCase)
     {
@@ -36,7 +36,14 @@ public sealed class DepositController : ApiControllerBase
         return ApiOk(requests);
     }
 
-    [HttpPost("{requestId}/confirm")]
+    [HttpGet("{requestId:long}")]
+    public async Task<IActionResult> GetDepositRequest(long requestId)
+    {
+        var request = await _depositService.GetByIdOrThrowAsync(CurrentUser, requestId);
+        return ApiOk(request);
+    }
+
+    [HttpPost("{requestId:long}/confirm")]
     public async Task<IActionResult> ConfirmDepositTransfer(long requestId)
     {
         var response = await _walletDepositUseCase.ConfirmDepositTransferAsync(requestId, CurrentUser);

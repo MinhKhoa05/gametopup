@@ -30,7 +30,7 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
         return Task.CompletedTask;
     }
 
-    protected HttpClient CreateAuthenticatedClient(User user)
+    protected HttpClient CreateHeaderAuthenticatedClient(User user)
     {
         var client = CreateClient();
 

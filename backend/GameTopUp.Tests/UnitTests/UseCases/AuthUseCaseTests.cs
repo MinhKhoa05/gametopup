@@ -191,6 +191,19 @@ public class AuthUseCaseTests
             .Where(ex => ex.ErrorCode == ErrorCode.InvalidRefreshToken);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Refresh_ShouldThrowUnauthorized_WhenRefreshTokenIsEmpty(string? refreshToken)
+    {
+        var act = () => _useCase.RefreshAsync(refreshToken);
+
+        await act.Should()
+            .ThrowAsync<UnauthorizedException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidRefreshToken);
+    }
+
     [Fact]
     public async Task RefreshAsync_ShouldReturnNewTokens_WhenRefreshTokenIsValid()
     {
@@ -334,7 +347,7 @@ public class AuthUseCaseTests
     }
 
     [Fact]
-    public async Task LogoutAsync_ShouldSwallowRepositoryErrors()
+    public async Task LogoutAsync_ShouldNotThrow_WhenTokenRevocationFails()
     {
         _refreshTokenRepository.Setup(repo => repo.RevokeTokenAsync(It.IsAny<string>()))
             .ThrowsAsync(new InvalidOperationException("boom"));

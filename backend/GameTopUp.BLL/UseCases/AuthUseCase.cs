@@ -62,7 +62,7 @@ public sealed class AuthUseCase
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user is null || !_passwordService.Verify(request.Password, user.PasswordHash))
         {
-            throw new BusinessException(ErrorCode.InvalidCredentials);
+            throw new UnauthorizedException(ErrorCode.InvalidCredentials);
         }
 
         var tokens = await IssueTokenPairAsync(MapToContext(user));
@@ -74,8 +74,13 @@ public sealed class AuthUseCase
         };
     }
 
-    public async Task<AuthResponseDTO> RefreshAsync(string refreshTokenString)
+    public async Task<AuthResponseDTO> RefreshAsync(string? refreshTokenString)
     {
+        if (string.IsNullOrWhiteSpace(refreshTokenString))
+        {
+            throw new UnauthorizedException(ErrorCode.InvalidRefreshToken);
+        }
+
         var hash = _tokenService.HashToken(refreshTokenString);
 
         return await _transaction.ExecuteAsync(async () =>
@@ -83,7 +88,7 @@ public sealed class AuthUseCase
             var refreshToken = await _refreshTokenService.RevokeValidTokenAsync(hash);
             if (refreshToken is null)
             {
-                throw new BusinessException(ErrorCode.InvalidRefreshToken);
+                throw new UnauthorizedException(ErrorCode.InvalidRefreshToken);
             }
 
             var user = await GetUserOrThrowAsync(refreshToken.UserId);
@@ -97,8 +102,10 @@ public sealed class AuthUseCase
         });
     }
 
-    public async Task LogoutAsync(string refreshToken)
+    public async Task LogoutAsync(string? refreshToken)
     {
+        if (string.IsNullOrWhiteSpace(refreshToken)) return;
+
         try
         {
             var hash = _tokenService.HashToken(refreshToken);

@@ -3,6 +3,7 @@ using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Options;
 using GameTopUp.BLL.Services.Wallets;
+using GameTopUp.DAL.Entities.Users;
 using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.DAL.Interfaces.Wallets;
 using Microsoft.Extensions.Options;
@@ -27,29 +28,98 @@ public class WalletDepositServiceTests
     }
 
     [Fact]
+    public async Task GetByIdOrThrow_ShouldReturnDeposit_WhenOwner()
+    {
+        var actor = MemberContext(10);
+        var deposit = CreateDeposit(actor.UserId);
+
+        _repository
+            .Setup(repo => repo.GetByIdAsync(deposit.Id))
+            .ReturnsAsync(deposit);
+
+        var result = await _service.GetByIdOrThrowAsync(actor, deposit.Id);
+
+        result.Id.Should().Be(deposit.Id);
+        result.UserId.Should().Be(actor.UserId);
+        result.Amount.Should().Be(deposit.Amount);
+    }
+
+    [Fact]
+    public async Task GetByIdOrThrow_ShouldReturnDeposit_WhenAdmin()
+    {
+        var admin = AdminContext(1);
+        var deposit = CreateDeposit(userId: 10);
+
+        _repository
+            .Setup(repo => repo.GetByIdAsync(deposit.Id))
+            .ReturnsAsync(deposit);
+
+        var result = await _service.GetByIdOrThrowAsync(admin, deposit.Id);
+
+        result.Id.Should().Be(deposit.Id);
+        result.UserId.Should().Be(deposit.UserId);
+    }
+
+    [Fact]
+    public async Task GetByIdOrThrow_ShouldThrowForbidden_WhenMemberReadsOtherUserDeposit()
+    {
+        var actor = MemberContext(20);
+        var deposit = CreateDeposit(userId: 10);
+
+        _repository
+            .Setup(repo => repo.GetByIdAsync(deposit.Id))
+            .ReturnsAsync(deposit);
+
+        var act = () => _service.GetByIdOrThrowAsync(actor, deposit.Id);
+
+        await act.Should()
+            .ThrowAsync<ForbiddenException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.DepositRequestForbidden);
+    }
+
+    [Fact]
+    public async Task GetByIdOrThrow_ShouldThrowNotFound_WhenDepositDoesNotExist()
+    {
+        var actor = MemberContext(10);
+
+        _repository
+            .Setup(repo => repo.GetByIdAsync(999))
+            .ReturnsAsync((WalletDeposit?)null);
+
+        var act = () => _service.GetByIdOrThrowAsync(actor, 999);
+
+        await act.Should()
+            .ThrowAsync<NotFoundException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.DepositRequestNotFound);
+    }
+
+    [Fact]
     public async Task CreateAsync_ShouldThrow_WhenVietQrSettingsMissing()
     {
         var service = CreateService(new VietQrSettings());
 
-        var act = async () => await service.CreateAsync(new UserContext { UserId = 7 }, 100000m);
+        var act = () => service.CreateAsync(MemberContext(7), 100_000m);
 
-        await act.Should().ThrowAsync<BusinessException>()
+        await act.Should()
+            .ThrowAsync<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.VietQrSettingsMissing);
     }
 
     [Fact]
-    public async Task CreateAsync_ShouldCreateRequest_WhenSettingsAreValid()
+    public async Task CreateAsync_ShouldCreateDeposit_WhenSettingsAreValid()
     {
         WalletDeposit? created = null;
+
         _repository
             .Setup(repo => repo.CreateAsync(It.IsAny<WalletDeposit>()))
             .ReturnsAsync(123)
-            .Callback<WalletDeposit>(request => created = request);
+            .Callback<WalletDeposit>(deposit => created = deposit);
 
-        await _service.CreateAsync(new UserContext { UserId = 7 }, 100000m);
+        await _service.CreateAsync(MemberContext(7), 100_000m);
 
         created.Should().NotBeNull();
-        created!.Amount.Should().Be(100000m);
+        created!.UserId.Should().Be(7);
+        created.Amount.Should().Be(100_000m);
         created.Code.Should().MatchRegex(@"^GTU-\d{4}-\d{5}$");
         created.TransferContent.Should().Be(created.Code);
         created.Status.Should().Be(WalletDepositStatus.Pending);
@@ -61,101 +131,129 @@ public class WalletDepositServiceTests
     [InlineData(100000.5, ErrorCode.DepositAmountMustBeInteger)]
     public async Task CreateAsync_ShouldRejectInvalidAmount(decimal amount, ErrorCode expectedError)
     {
-        var act = async () => await _service.CreateAsync(new UserContext { UserId = 7 }, amount);
+        var act = () => _service.CreateAsync(MemberContext(7), amount);
 
-        await act.Should().ThrowAsync<BusinessException>()
+        await act.Should()
+            .ThrowAsync<BusinessException>()
             .Where(ex => ex.ErrorCode == expectedError);
 
         _repository.Verify(repo => repo.CreateAsync(It.IsAny<WalletDeposit>()), Times.Never);
     }
 
     [Fact]
-    public void Confirm_ShouldMarkRequestConfirmed_WhenOwnerAndPending()
+    public void Confirm_ShouldMarkDepositConfirmed_WhenOwnerAndPending()
     {
-        var request = WalletDeposit.Create(7, 100000m, "CODE", "CODE");
+        var deposit = CreateDeposit(userId: 7);
 
-        _service.Confirm(request, new UserContext { UserId = 7 }, DateTime.UtcNow);
+        _service.Confirm(deposit, MemberContext(7), DateTime.UtcNow);
 
-        request.Status.Should().Be(WalletDepositStatus.UserConfirmed);
-        request.UserConfirmedAt.Should().NotBeNull();
+        deposit.Status.Should().Be(WalletDepositStatus.UserConfirmed);
+        deposit.UserConfirmedAt.Should().NotBeNull();
     }
 
     [Fact]
-    public void Confirm_ShouldThrow_WhenActorDoesNotOwnRequest()
+    public void Confirm_ShouldThrow_WhenActorDoesNotOwnDeposit()
     {
-        var request = WalletDeposit.Create(9, 100000m, "CODE", "CODE");
+        var deposit = CreateDeposit(userId: 9);
 
-        var act = () => _service.Confirm(request, new UserContext { UserId = 7 }, DateTime.UtcNow);
+        var act = () => _service.Confirm(deposit, MemberContext(7), DateTime.UtcNow);
 
-        act.Should().Throw<ForbiddenException>()
+        act.Should()
+            .Throw<ForbiddenException>()
             .Where(ex => ex.ErrorCode == ErrorCode.DepositRequestForbidden);
     }
 
     [Fact]
-    public void Confirm_ShouldThrow_WhenRequestIsNotPending()
+    public void Confirm_ShouldThrow_WhenDepositIsNotPending()
     {
-        var request = WalletDeposit.Create(7, 100000m, "CODE", "CODE");
-        request.Status = WalletDepositStatus.Approved;
+        var deposit = CreateDeposit(userId: 7);
+        deposit.Status = WalletDepositStatus.Approved;
 
-        var act = () => _service.Confirm(request, new UserContext { UserId = 7 }, DateTime.UtcNow);
+        var act = () => _service.Confirm(deposit, MemberContext(7), DateTime.UtcNow);
 
-        act.Should().Throw<BusinessException>()
+        act.Should()
+            .Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.DepositConfirmOnlyPending);
     }
 
     [Fact]
-    public void Approve_ShouldMarkRequestApproved_WhenConfirmed()
+    public void Approve_ShouldMarkDepositApproved_WhenConfirmed()
     {
-        var request = WalletDeposit.Create(7, 100000m, "CODE", "CODE");
-        request.MarkUserConfirmed(DateTime.UtcNow);
+        var deposit = CreateDeposit(userId: 7);
+        deposit.MarkUserConfirmed(DateTime.UtcNow);
 
-        _service.Approve(request, new UserContext { UserId = 1 }, DateTime.UtcNow, "verified");
+        _service.Approve(deposit, AdminContext(1), DateTime.UtcNow, "verified");
 
-        request.Status.Should().Be(WalletDepositStatus.Approved);
-        request.ReviewedBy.Should().Be(1);
-        request.AdminNote.Should().Be("verified");
-        request.ReviewedAt.Should().NotBeNull();
+        deposit.Status.Should().Be(WalletDepositStatus.Approved);
+        deposit.ReviewedBy.Should().Be(1);
+        deposit.AdminNote.Should().Be("verified");
+        deposit.ReviewedAt.Should().NotBeNull();
     }
 
     [Fact]
-    public void Approve_ShouldThrow_WhenRequestIsNotConfirmed()
+    public void Approve_ShouldThrow_WhenDepositIsNotConfirmed()
     {
-        var request = WalletDeposit.Create(7, 100000m, "CODE", "CODE");
+        var deposit = CreateDeposit(userId: 7);
 
-        var act = () => _service.Approve(request, new UserContext { UserId = 1 }, DateTime.UtcNow, "verified");
+        var act = () => _service.Approve(deposit, AdminContext(1), DateTime.UtcNow, "verified");
 
-        act.Should().Throw<BusinessException>()
+        act.Should()
+            .Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.DepositApproveOnlyUserConfirmed);
     }
 
     [Fact]
-    public void Reject_ShouldMarkRequestRejected_WhenRequestIsNotApproved()
+    public void Reject_ShouldMarkDepositRejected_WhenDepositIsNotApproved()
     {
-        var request = WalletDeposit.Create(7, 100000m, "CODE", "CODE");
-        request.MarkUserConfirmed(DateTime.UtcNow);
+        var deposit = CreateDeposit(userId: 7);
+        deposit.MarkUserConfirmed(DateTime.UtcNow);
 
-        _service.Reject(request, new UserContext { UserId = 1 }, DateTime.UtcNow, "not enough proof");
+        _service.Reject(deposit, AdminContext(1), DateTime.UtcNow, "not enough proof");
 
-        request.Status.Should().Be(WalletDepositStatus.Rejected);
-        request.ReviewedBy.Should().Be(1);
-        request.AdminNote.Should().Be("not enough proof");
-        request.ReviewedAt.Should().NotBeNull();
+        deposit.Status.Should().Be(WalletDepositStatus.Rejected);
+        deposit.ReviewedBy.Should().Be(1);
+        deposit.AdminNote.Should().Be("not enough proof");
+        deposit.ReviewedAt.Should().NotBeNull();
     }
 
     [Fact]
-    public void Reject_ShouldThrow_WhenRequestWasAlreadyApproved()
+    public void Reject_ShouldThrow_WhenDepositWasAlreadyApproved()
     {
-        var request = WalletDeposit.Create(7, 100000m, "CODE", "CODE");
-        request.Status = WalletDepositStatus.Approved;
+        var deposit = CreateDeposit(userId: 7);
+        deposit.Status = WalletDepositStatus.Approved;
 
-        var act = () => _service.Reject(request, new UserContext { UserId = 1 }, DateTime.UtcNow, "too late");
+        var act = () => _service.Reject(deposit, AdminContext(1), DateTime.UtcNow, "too late");
 
-        act.Should().Throw<BusinessException>()
+        act.Should()
+            .Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.ApprovedDepositCannotBeRejected);
     }
 
     private WalletDepositService CreateService(VietQrSettings settings)
     {
         return new WalletDepositService(_repository.Object, Options.Create(settings));
+    }
+
+    private static WalletDeposit CreateDeposit(long userId, decimal amount = 100_000m)
+    {
+        return WalletDeposit.Create(userId, amount, "CODE", "CODE");
+    }
+
+    private static UserContext MemberContext(long userId)
+    {
+        return new UserContext
+        {
+            UserId = userId,
+            Role = UserRole.Member
+        };
+    }
+
+    private static UserContext AdminContext(long userId)
+    {
+        return new UserContext
+        {
+            UserId = userId,
+            Role = UserRole.Admin
+        };
     }
 }

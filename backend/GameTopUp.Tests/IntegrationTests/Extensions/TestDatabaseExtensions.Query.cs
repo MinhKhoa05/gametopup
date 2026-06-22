@@ -20,6 +20,16 @@ public static partial class TestDatabaseExtensions
             db.GetByIdAsync<User>(userId));
     }
 
+    public static Task<User?> GetUserByEmailAsync(
+        this CustomWebApplicationFactory factory,
+        string email)
+    {
+        return factory.WithDbAsync(db =>
+            db.QueryFirstOrDefaultAsync<User>(
+                "SELECT * FROM users WHERE email = @Email",
+                new {Email = email}));
+    }
+
     public static Task<WalletEntity?> GetWalletAsync(
         this CustomWebApplicationFactory factory,
         long userId)
@@ -69,7 +79,7 @@ public static partial class TestDatabaseExtensions
                 new { OrderId = orderId }));
     }
 
-    public static Task<WalletDepositEntity?> GetDepositAsync(
+    public static Task<WalletDepositEntity?> GetWalletDepositAsync(
         this CustomWebApplicationFactory factory,
         long depositId)
     {

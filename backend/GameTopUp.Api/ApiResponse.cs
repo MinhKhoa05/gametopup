@@ -6,7 +6,7 @@ public class ApiResponse
 {
     public bool Success { get; set; }
     public string? Message { get; set; }
-    public string? ErrorCode { get; set; }
+    public ErrorCode? ErrorCode { get; set; }
 
     public static ApiResponse Ok() => new()
     {
@@ -23,14 +23,14 @@ public class ApiResponse
     {
         Success = false,
         Message = message ?? errorCode.GetMessage(),
-        ErrorCode = errorCode.ToString()
+        ErrorCode = errorCode
     };
 
     public static ApiResponse<T> Fail<T>(ErrorCode errorCode, string? message = null, T? data = default) => new()
     {
         Success = false,
         Message = message ?? errorCode.GetMessage(),
-        ErrorCode = errorCode.ToString(),
+        ErrorCode = errorCode,
         Data = data
     };
 }

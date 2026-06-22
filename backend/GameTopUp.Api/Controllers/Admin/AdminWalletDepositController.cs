@@ -1,4 +1,3 @@
-using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Wallets;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.UseCases;
@@ -10,12 +9,12 @@ namespace GameTopUp.Api.Controllers.Admin;
 
 [Authorize(Roles = "Admin")]
 [Route("api/admin/deposits")]
-public sealed class AdminDepositController : ApiControllerBase
+public sealed class AdminWalletDepositController : ApiControllerBase
 {
     private readonly WalletDepositUseCase _walletDepositUseCase;
     private readonly WalletDepositService _depositService;
 
-    public AdminDepositController(WalletDepositUseCase walletDepositUseCase, WalletDepositService depositService)
+    public AdminWalletDepositController(WalletDepositUseCase walletDepositUseCase, WalletDepositService depositService)
     {
         _walletDepositUseCase = walletDepositUseCase;
         _depositService = depositService;

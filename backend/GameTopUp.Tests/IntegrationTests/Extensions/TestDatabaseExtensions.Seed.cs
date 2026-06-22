@@ -17,6 +17,7 @@ public static partial class TestDatabaseExtensions
     public const string DefaultUserPassword = "Password123!";
 
     public static string UniqueCode(int length = 8) => Guid.NewGuid().ToString("N")[..length];
+    public static string UniqueEmail(string prefix = "user") => $"{prefix}-{UniqueCode()}@test.local";
 
     public static Task<User> SeedUserAsync(
         this CustomWebApplicationFactory factory,
@@ -39,21 +40,6 @@ public static partial class TestDatabaseExtensions
         this CustomWebApplicationFactory factory,
         Action<User>? customize = null) =>
         factory.SeedUserAsync(UserRole.Admin, customize: customize);
-
-    public static Task<User> SeedLoginUserAsync(
-        this CustomWebApplicationFactory factory,
-        string email,
-        string password,
-        UserRole role = UserRole.Member)
-    {
-        var user = User.Create(
-            $"Test User {UniqueCode(10)}",
-            email,
-            BCrypt.Net.BCrypt.HashPassword(password),
-            role);
-
-        return factory.InsertSeedAsync(user, (x, id) => x.Id = id);
-    }
 
     public static Task<WalletEntity> SeedWalletAsync(
         this CustomWebApplicationFactory factory,
@@ -114,7 +100,7 @@ public static partial class TestDatabaseExtensions
         return factory.InsertSeedAsync(order, (x, id) => x.Id = id);
     }
 
-    public static Task<WalletDepositEntity> SeedDepositRequestAsync(
+    public static Task<WalletDepositEntity> SeedWalletDepositAsync(
         this CustomWebApplicationFactory factory,
         long userId,
         Action<WalletDepositEntity>? customize = null)

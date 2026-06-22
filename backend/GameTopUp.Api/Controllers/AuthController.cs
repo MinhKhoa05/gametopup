@@ -1,7 +1,6 @@
 using GameTopUp.Api.Extensions;
 using GameTopUp.BLL.DTOs.Auths;
 using GameTopUp.BLL.DTOs.Users;
-using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -49,11 +48,6 @@ public sealed class AuthController : ApiControllerBase
     public async Task<IActionResult> Refresh()
     {
         var refreshToken = Request.GetRefreshToken();
-        if (string.IsNullOrEmpty(refreshToken))
-        {
-            throw new BusinessException(ErrorCode.InvalidRefreshToken);
-        }
-
         var response = await _auth.RefreshAsync(refreshToken);
         SetAuthCookies(response);
         return ApiOk(response);
@@ -64,11 +58,7 @@ public sealed class AuthController : ApiControllerBase
     public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.GetRefreshToken();
-        if (!string.IsNullOrEmpty(refreshToken))
-        {
-            await _auth.LogoutAsync(refreshToken);
-        }
-
+        await _auth.LogoutAsync(refreshToken);
         DeleteAuthCookies();
         return ApiOk();
     }

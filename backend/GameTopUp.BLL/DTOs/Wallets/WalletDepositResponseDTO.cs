@@ -5,6 +5,7 @@ namespace GameTopUp.BLL.DTOs.Wallets;
 public sealed class WalletDepositResponseDTO
 {
     public long Id { get; set; }
+    public long UserId { get; set; }
     public decimal Amount { get; set; }
     public string Code { get; set; } = string.Empty;
     public string TransferContent { get; set; } = string.Empty;

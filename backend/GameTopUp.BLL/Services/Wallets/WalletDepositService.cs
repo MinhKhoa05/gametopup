@@ -26,10 +26,17 @@ public sealed class WalletDepositService
         _vietQrSettings = vietQrOptions.Value;
     }
 
-    public async Task<WalletDeposit> GetByIdOrThrowAsync(long depositId)
+    public async Task<WalletDepositResponseDTO> GetByIdOrThrowAsync(UserContext actor, long depositId)
     {
-        return await _repository.GetByIdAsync(depositId)
+        var request = await _repository.GetByIdAsync(depositId)
             ?? throw new NotFoundException(ErrorCode.DepositRequestNotFound);
+
+        if (!actor.IsAdmin && request.UserId != actor.UserId)
+        {
+            throw new ForbiddenException(ErrorCode.DepositRequestForbidden);
+        }
+
+        return request.MapTo<WalletDepositResponseDTO>();
     }
 
     public async Task<WalletDeposit> LockByIdOrThrowAsync(long depositId)
