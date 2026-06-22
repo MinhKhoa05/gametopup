@@ -1,6 +1,6 @@
 using GameTopUp.DAL.Entities.Users;
 using Microsoft.AspNetCore.Mvc.Testing;
-using GameTopUp.Tests.IntegrationTests.Support;
+using GameTopUp.Tests.IntegrationTests.Extensions;
 
 namespace GameTopUp.Tests.IntegrationTests.Infrastructure;
 
@@ -30,15 +30,23 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
         return Task.CompletedTask;
     }
 
-    protected HttpClient CreateAuthenticatedClient(
-        long userId,
-        string displayName,
-        string email,
-        UserRole role = UserRole.Member)
+    protected HttpClient CreateAuthenticatedClient(User user)
+    {
+        var client = CreateClient();
+
+        client.DefaultRequestHeaders.Add("X-Test-UserId", user.Id.ToString());
+        client.DefaultRequestHeaders.Add("X-Test-DisplayName", user.DisplayName);
+        client.DefaultRequestHeaders.Add("X-Test-Email", user.Email);
+        client.DefaultRequestHeaders.Add("X-Test-Role", user.Role.ToString());
+
+        return client;
+    }
+
+    protected HttpClient CreateClient()
     {
         return Factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
-        }).AsTestUser(userId, displayName, email, role);
+        });
     }
 }

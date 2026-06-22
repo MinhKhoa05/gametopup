@@ -9,26 +9,24 @@ namespace GameTopUp.Api.Controllers;
 [ApiController]
 public abstract class ApiControllerBase : ControllerBase
 {
-    protected IActionResult ApiOk(object? data = null) =>
-        Ok(ApiResponse.Ok(data));
+    protected IActionResult ApiOk() => Ok(ApiResponse.Ok());
 
-    protected IActionResult ApiCreated(object? data = null) =>
-        StatusCode(StatusCodes.Status201Created, ApiResponse.Ok(data));
+    protected IActionResult ApiOk<T>(T? data) => Ok(ApiResponse.Ok(data));
+
+    protected IActionResult ApiCreated<T>(T? data)
+        => StatusCode(StatusCodes.Status201Created, ApiResponse.Ok(data));
 
     protected UserContext CurrentUser
     {
         get
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var displayName = User.FindFirstValue(ClaimTypes.Name) ?? string.Empty;
-            var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
             var roleClaim = User.FindFirstValue(ClaimTypes.Role) ?? nameof(UserRole.Member);
 
             return new UserContext
             {
-                UserId = long.TryParse(userIdClaim, out var userId) ? userId : 0,
-                DisplayName = displayName,
-                Email = email,
+                UserId = long.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : 0,
+                DisplayName = User.FindFirstValue(ClaimTypes.Name) ?? string.Empty,
+                Email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty,
                 Role = Enum.TryParse<UserRole>(roleClaim, ignoreCase: true, out var role) ? role : UserRole.Member
             };
         }

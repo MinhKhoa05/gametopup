@@ -6,7 +6,7 @@ namespace GameTopUp.Api.Middlewares;
 
 public static class ModelStateExtensions
 {
-    public static ApiResponse ToApiResponse(this ModelStateDictionary modelState)
+    public static ApiResponse<Dictionary<string, string?>> ToApiResponse(this ModelStateDictionary modelState)
     {
         var firstError = modelState.Values.SelectMany(v => v.Errors).FirstOrDefault();
         var firstErrorMessage = firstError?.ErrorMessage;

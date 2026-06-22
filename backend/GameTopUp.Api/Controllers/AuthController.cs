@@ -26,7 +26,7 @@ public sealed class AuthController : ApiControllerBase
     public async Task<IActionResult> Register(CreateUserRequest request)
     {
         await _auth.RegisterAsync(request);
-        return ApiCreated();
+        return ApiCreated<object?>(null);
     }
 
     [HttpPost("login")]

@@ -19,5 +19,5 @@ public sealed class WalletTransactionRepository : IWalletTransactionRepository
             new { UserId = userId });
 
     public Task<long> CreateAsync(WalletTransaction walletTransaction) =>
-        _database.InsertAsync<WalletTransaction, long>(walletTransaction);
+        _database.InsertAsync(walletTransaction);
 }

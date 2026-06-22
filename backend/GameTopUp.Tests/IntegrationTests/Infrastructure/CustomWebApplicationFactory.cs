@@ -1,4 +1,3 @@
-using System.Data.Common;
 using Dapper;
 using Dommel;
 using DotNet.Testcontainers.Builders;
@@ -12,17 +11,20 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using MySqlConnector;
 using Respawn;
 using Testcontainers.MariaDb;
-using Xunit;
 using Xunit.Sdk;
 
 namespace GameTopUp.Tests.IntegrationTests.Infrastructure;
 
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private static MariaDbContainer? Container;
+    private static readonly MariaDbContainer Container = new MariaDbBuilder("mariadb:11.4")
+        .WithDatabase("game_topup_test")
+        .WithUsername("test_user")
+        .WithPassword("test_password")
+        .Build();
 
-    private static readonly SemaphoreSlim SchemaLock = new(1, 1);
-    private static bool SchemaInitialized;
+    private static readonly SemaphoreSlim InitializationLock = new(1, 1);
+    private static bool Initialized;
 
     private Respawner? _respawner;
 
@@ -37,51 +39,44 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         try
         {
-            await GetContainer().StartAsync();
+            await Container.StartAsync();
         }
         catch (DockerUnavailableException ex)
         {
             throw SkipException.ForSkip($"Integration tests require Docker/Testcontainers. {ex.Message}");
         }
 
-        if (SchemaInitialized)
+        if (Initialized)
         {
             return;
         }
 
-        await SchemaLock.WaitAsync();
+        await InitializationLock.WaitAsync();
         try
         {
-            if (!SchemaInitialized)
+            if (!Initialized)
             {
                 await InitializeSchemaAsync();
-                SchemaInitialized = true;
+                Initialized = true;
             }
         }
         finally
         {
-            SchemaLock.Release();
+            InitializationLock.Release();
         }
     }
 
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        if (Container is not null)
-        {
-            await Container.DisposeAsync();
-        }
-    }
+    Task IAsyncLifetime.DisposeAsync() => Task.CompletedTask;
 
     public async Task ResetDatabaseAsync()
     {
-        var container = GetContainer();
-        await using var connection = new MySqlConnection(container.GetConnectionString());
+        await using var connection = new MySqlConnection(Container.GetConnectionString());
         await connection.OpenAsync();
 
         _respawner ??= await Respawner.CreateAsync(connection, new RespawnerOptions
         {
             DbAdapter = DbAdapter.MySql,
-            SchemasToInclude = new[] { "game_topup_test" }
+            SchemasToInclude = ["game_topup_test"]
         });
 
         await _respawner.ResetAsync(connection);
@@ -92,10 +87,9 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseEnvironment("Development");
         builder.ConfigureAppConfiguration((_, configuration) =>
         {
-            var container = GetContainer();
             configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:Default"] = container.GetConnectionString(),
+                ["ConnectionStrings:Default"] = Container.GetConnectionString(),
                 ["Jwt:Key"] = "integration-test-signing-key-that-is-long-enough-12345",
                 ["Jwt:Issuer"] = "GameTopUp.Tests",
                 ["Jwt:Audience"] = "GameTopUp.Tests",
@@ -108,9 +102,8 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            var container = GetContainer();
             services.RemoveAll<DatabaseContext>();
-            services.AddScoped<DatabaseContext>(_ => new DatabaseContext(new MySqlConnection(container.GetConnectionString())));
+            services.AddScoped(_ => new DatabaseContext(new MySqlConnection(Container.GetConnectionString())));
 
             services.AddAuthentication(options =>
             {
@@ -122,19 +115,17 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     private static async Task InitializeSchemaAsync()
     {
-        var container = GetContainer();
         var schemaPath = LocateSchemaPath();
         if (!File.Exists(schemaPath))
         {
             throw new FileNotFoundException("Could not find integration test schema.", schemaPath);
         }
 
-        var statements = File.ReadAllText(schemaPath)
+        var statements = (await File.ReadAllTextAsync(schemaPath))
             .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(statement => !string.IsNullOrWhiteSpace(statement))
-            .ToList();
+            .Where(statement => !string.IsNullOrWhiteSpace(statement));
 
-        await using var connection = new MySqlConnection(container.GetConnectionString());
+        await using var connection = new MySqlConnection(Container.GetConnectionString());
         await connection.OpenAsync();
 
         foreach (var statement in statements)
@@ -158,21 +149,5 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         }
 
         return Path.Combine(AppContext.BaseDirectory, "database", "schema.sql");
-    }
-
-    private static MariaDbContainer GetContainer()
-    {
-        if (Container is not null)
-        {
-            return Container;
-        }
-
-        Container = new MariaDbBuilder("mariadb:11.4")
-            .WithDatabase("game_topup_test")
-            .WithUsername("test_user")
-            .WithPassword("test_password")
-            .Build();
-
-        return Container;
     }
 }

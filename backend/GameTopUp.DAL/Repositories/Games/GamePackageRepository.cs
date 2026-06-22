@@ -20,7 +20,7 @@ public sealed class GamePackageRepository : IGamePackageRepository
             "SELECT * FROM game_packages WHERE game_id = @GameId AND is_active = 1 ORDER BY created_at DESC",
             new { GameId = gameId });
 
-    public Task<long> CreateAsync(GamePackage gamePackage) => _database.InsertAsync<GamePackage, long>(gamePackage);
+    public Task<long> CreateAsync(GamePackage gamePackage) => _database.InsertAsync(gamePackage);
 
     public Task<bool> UpdateAsync(GamePackage gamePackage) => _database.UpdateAsync(gamePackage);
 

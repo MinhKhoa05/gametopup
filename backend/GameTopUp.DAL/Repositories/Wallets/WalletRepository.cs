@@ -14,10 +14,10 @@ public sealed class WalletRepository : IWalletRepository
     }
 
     public Task<Wallet?> GetByUserIdAsync(long userId) =>
-        _database.QueryFirstAsync<Wallet>("SELECT * FROM wallets WHERE user_id = @UserId", new { UserId = userId });
+        _database.QueryFirstOrDefaultAsync<Wallet>("SELECT * FROM wallets WHERE user_id = @UserId", new { UserId = userId });
 
     public Task<Wallet?> GetWithLockByUserIdAsync(long userId) =>
-        _database.QueryFirstAsync<Wallet>("SELECT * FROM wallets WHERE user_id = @UserId FOR UPDATE", new { UserId = userId });
+        _database.QueryFirstOrDefaultAsync<Wallet>("SELECT * FROM wallets WHERE user_id = @UserId FOR UPDATE", new { UserId = userId });
 
     public Task UpsertWalletAsync(Wallet wallet) =>
         _database.ExecuteAsync(

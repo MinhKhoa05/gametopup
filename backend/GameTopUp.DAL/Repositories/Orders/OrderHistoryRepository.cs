@@ -18,5 +18,5 @@ public sealed class OrderHistoryRepository : IOrderHistoryRepository
             "SELECT * FROM order_history WHERE order_id = @OrderId ORDER BY created_at DESC",
             new { OrderId = orderId });
 
-    public Task<long> CreateAsync(OrderHistory history) => _database.InsertAsync<OrderHistory, long>(history);
+    public Task<long> CreateAsync(OrderHistory history) => _database.InsertAsync(history);
 }

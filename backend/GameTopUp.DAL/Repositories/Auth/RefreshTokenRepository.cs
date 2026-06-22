@@ -14,12 +14,12 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
     }
 
     public Task<RefreshToken?> GetByTokenHashAsync(string tokenHash) =>
-        _database.QueryFirstAsync<RefreshToken>(
+        _database.QueryFirstOrDefaultAsync<RefreshToken>(
             "SELECT * FROM refresh_tokens WHERE token_hash = @TokenHash",
             new { TokenHash = tokenHash });
 
     public Task<long> CreateAsync(RefreshToken refreshToken) =>
-        _database.InsertAsync<RefreshToken, long>(refreshToken);
+        _database.InsertAsync(refreshToken);
 
     public async Task<bool> RevokeTokenAsync(string tokenHash)
     {

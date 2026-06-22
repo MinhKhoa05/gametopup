@@ -16,9 +16,9 @@ public sealed class UserRepository : IUserRepository
     public Task<User?> GetByIdAsync(long userId) => _database.GetByIdAsync<User>(userId);
 
     public Task<User?> GetByEmailAsync(string email) =>
-        _database.QueryFirstAsync<User>("SELECT * FROM users WHERE email = @Email", new { Email = email });
+        _database.QueryFirstOrDefaultAsync<User>("SELECT * FROM users WHERE email = @Email", new { Email = email });
 
-    public Task<long> CreateAsync(User user) => _database.InsertAsync<User, long>(user);
+    public Task<long> CreateAsync(User user) => _database.InsertAsync(user);
 
     public Task<bool> UpdateAsync(User user) => _database.UpdateAsync(user);
 

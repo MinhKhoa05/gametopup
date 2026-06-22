@@ -11,11 +11,11 @@ public static class DatabaseExtensions
         return await db.Connection.GetAsync<T>(id, db.Transaction);
     }
 
-    public static async Task<TId?> InsertAsync<T, TId>(this DatabaseContext db, T entity) where T : class
+    public static async Task<long> InsertAsync<T>(this DatabaseContext db, T entity) where T : class
     {
         await db.EnsureOpenAsync();
         var result = await db.Connection.InsertAsync(entity, db.Transaction);
-        return result is null ? default : (TId)Convert.ChangeType(result, typeof(TId));
+        return Convert.ToInt64(result);
     }
 
     public static async Task<bool> UpdateAsync<T>(this DatabaseContext db, T entity) where T : class
@@ -37,7 +37,7 @@ public static class DatabaseExtensions
         return rows.ToList();
     }
 
-    public static async Task<T?> QueryFirstAsync<T>(this DatabaseContext db, string sql, object? param = null)
+    public static async Task<T?> QueryFirstOrDefaultAsync<T>(this DatabaseContext db, string sql, object? param = null)
     {
         await db.EnsureOpenAsync();
         return await db.Connection.QueryFirstOrDefaultAsync<T>(sql, param, db.Transaction);

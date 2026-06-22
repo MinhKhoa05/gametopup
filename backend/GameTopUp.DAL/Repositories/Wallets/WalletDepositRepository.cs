@@ -14,13 +14,13 @@ public sealed class WalletDepositRepository : IWalletDepositRepository
     }
 
     public Task<long> CreateAsync(WalletDeposit request) =>
-        _database.InsertAsync<WalletDeposit, long>(request);
+        _database.InsertAsync(request);
 
     public Task<WalletDeposit?> GetByIdAsync(long requestId) =>
         _database.GetByIdAsync<WalletDeposit>(requestId);
 
     public Task<WalletDeposit?> GetWithLockByIdAsync(long requestId) =>
-        _database.QueryFirstAsync<WalletDeposit>(
+        _database.QueryFirstOrDefaultAsync<WalletDeposit>(
             "SELECT * FROM wallet_deposits WHERE id = @Id FOR UPDATE",
             new { Id = requestId });
 

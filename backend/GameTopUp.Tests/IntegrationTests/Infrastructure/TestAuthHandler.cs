@@ -21,18 +21,28 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var userIdValue = Context.Request.Headers["X-Test-UserId"].FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(userIdValue))
+        var userId = Request.Headers["X-Test-UserId"].FirstOrDefault();
+
+        if (string.IsNullOrWhiteSpace(userId))
         {
             return Task.FromResult(AuthenticateResult.NoResult());
         }
 
-        var claims = new List<Claim>
+        if (!long.TryParse(userId, out _))
         {
-            new(ClaimTypes.NameIdentifier, userIdValue),
-            new(ClaimTypes.Name, Context.Request.Headers["X-Test-DisplayName"].FirstOrDefault() ?? "Test User"),
-            new(ClaimTypes.Email, Context.Request.Headers["X-Test-Email"].FirstOrDefault() ?? "test@example.local"),
-            new(ClaimTypes.Role, Context.Request.Headers["X-Test-Role"].FirstOrDefault() ?? UserRole.Member.ToString())
+            return Task.FromResult(AuthenticateResult.Fail("Invalid test user id."));
+        }
+
+        var displayName = Request.Headers["X-Test-DisplayName"].FirstOrDefault() ?? "Test User";
+        var email = Request.Headers["X-Test-Email"].FirstOrDefault() ?? "test@example.local";
+        var role = Request.Headers["X-Test-Role"].FirstOrDefault() ?? UserRole.Member.ToString();
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId),
+            new Claim(ClaimTypes.Name, displayName),
+            new Claim(ClaimTypes.Email, email),
+            new Claim(ClaimTypes.Role, role)
         };
 
         var identity = new ClaimsIdentity(claims, SchemeName);

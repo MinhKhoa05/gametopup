@@ -19,7 +19,7 @@ public sealed class GameRepository : IGameRepository
 
     public Task<List<Game>> GetActiveAsync() => _database.QueryAsync<Game>("SELECT * FROM games WHERE is_active = 1 ORDER BY created_at DESC");
 
-    public Task<long> CreateAsync(Game game) => _database.InsertAsync<Game, long>(game);
+    public Task<long> CreateAsync(Game game) => _database.InsertAsync(game);
 
     public Task<bool> UpdateAsync(Game game) => _database.UpdateAsync(game);
 

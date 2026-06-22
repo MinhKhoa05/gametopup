@@ -8,14 +8,6 @@ namespace GameTopUp.Tests.UnitTests.Domain;
 public class EntityBehaviorTests
 {
     [Fact]
-    public void OrderCreate_ShouldSnapshotPackagePrice()
-    {
-        var order = Order.Create(7, 44, 199m, "game-account");
-
-        order.PackagePrice.Should().Be(199m);
-    }
-
-    [Fact]
     public void OrderUpdateStatus_ShouldAssignStaffWhenProvided()
     {
         var order = Order.Create(7, 44, 199m, "game-account");

@@ -21,7 +21,7 @@ public sealed class OrderRepository : IOrderRepository
     public Task<Order?> GetByIdAsync(long orderId) => _database.GetByIdAsync<Order>(orderId);
 
     public Task<Order?> GetWithLockByIdAsync(long orderId) =>
-        _database.QueryFirstAsync<Order>("SELECT * FROM orders WHERE id = @Id FOR UPDATE", new { Id = orderId });
+        _database.QueryFirstOrDefaultAsync<Order>("SELECT * FROM orders WHERE id = @Id FOR UPDATE", new { Id = orderId });
 
     public Task<bool> UpdateAsync(Order order) => _database.UpdateAsync(order);
 
@@ -34,5 +34,5 @@ public sealed class OrderRepository : IOrderRepository
               ORDER BY created_at DESC",
             new { UserId = userId, Status = status });
 
-    public Task<long> CreateAsync(Order order) => _database.InsertAsync<Order, long>(order);
+    public Task<long> CreateAsync(Order order) => _database.InsertAsync(order);
 }
