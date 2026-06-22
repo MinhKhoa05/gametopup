@@ -23,7 +23,7 @@ public sealed class WalletDepositUseCase
         _transaction = transaction;
     }
 
-    public async Task<WalletDepositResponseDTO> ConfirmDepositTransferAsync(long requestId, UserContext user)
+    public async Task<WalletDepositResponse> ConfirmDepositTransferAsync(long requestId, UserContext user)
     {
         return await _transaction.ExecuteAsync(async () =>
         {
@@ -42,7 +42,7 @@ public sealed class WalletDepositUseCase
         });
     }
 
-    public async Task<AdminDepositRequestResponseDTO> ApproveDepositRequestAsync(long requestId, UserContext admin, string? note = null)
+    public async Task<AdminDepositResponse> ApproveDepositRequestAsync(long requestId, UserContext admin, string? note = null)
     {
         return await _transaction.ExecuteAsync(async () =>
         {
@@ -51,7 +51,7 @@ public sealed class WalletDepositUseCase
 
             if (request.Status == WalletDepositStatus.Approved)
             {
-                return request.MapTo<AdminDepositRequestResponseDTO>();
+                return request.MapTo<AdminDepositResponse>();
             }
 
             _depositService.Approve(request, admin, now, note);
@@ -64,11 +64,11 @@ public sealed class WalletDepositUseCase
             await _walletService.ApplyTransactionAsync(wallet, walletTransaction);
             await _depositService.UpdateAsync(request);
 
-            return request.MapTo<AdminDepositRequestResponseDTO>();
+            return request.MapTo<AdminDepositResponse>();
         });
     }
 
-    public async Task<AdminDepositRequestResponseDTO> RejectDepositRequestAsync(long requestId, UserContext admin, string? note = null)
+    public async Task<AdminDepositResponse> RejectDepositRequestAsync(long requestId, UserContext admin, string? note = null)
     {
         return await _transaction.ExecuteAsync(async () =>
         {
@@ -77,13 +77,13 @@ public sealed class WalletDepositUseCase
 
             if (request.Status == WalletDepositStatus.Rejected)
             {
-                return request.MapTo<AdminDepositRequestResponseDTO>();
+                return request.MapTo<AdminDepositResponse>();
             }
 
             _depositService.Reject(request, admin, now, note);
             await _depositService.UpdateAsync(request);
 
-            return request.MapTo<AdminDepositRequestResponseDTO>();
+            return request.MapTo<AdminDepositResponse>();
         });
     }
 }

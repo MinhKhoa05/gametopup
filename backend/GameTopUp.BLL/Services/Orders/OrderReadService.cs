@@ -24,13 +24,19 @@ public sealed class OrderReadService
         _orderQuery = orderQuery;
     }
 
-    public Task<List<MyOrderSummaryRow>> GetMyOrdersAsync(UserContext actor, OrderStatus? status = null) =>
-        _orderQuery.GetMySummaryAsync(actor.UserId, status);
+    public async Task<List<OrderResponse>> GetOrdersAsync(UserContext actor, OrderStatus? status = null)
+    {
+        var orders = await _orderQuery.GetOrderQueryAsync(actor.UserId, status);
+        return orders.Select(order => order.MapTo<OrderResponse>()).ToList();
+    }
 
-    public Task<List<AdminOrderSummaryRow>> GetAdminOrdersAsync(OrderStatus? status = null) =>
-        _orderQuery.GetAdminSummaryAsync(status);
+    public async Task<List<AdminOrderResponse>> GetAdminOrdersAsync(OrderStatus? status = null)
+    {
+        var orders = await _orderQuery.GetAdminOrdersAsync(status);
+        return orders.Select(order => order.MapTo<AdminOrderResponse>()).ToList();
+    }
 
-    public async Task<OrderDetailResponseDTO> GetOrderDetailAsync(UserContext actor, long orderId)
+    public async Task<OrderDetailResponse> GetOrderDetailAsync(UserContext actor, long orderId)
     {
         var order = await _orderRepository.GetByIdAsync(orderId)
             ?? throw new NotFoundException(ErrorCode.OrderNotFound);
@@ -42,10 +48,10 @@ public sealed class OrderReadService
 
         var histories = await _orderHistoryRepository.GetByOrderIdAsync(orderId);
 
-        return new OrderDetailResponseDTO
+        return new OrderDetailResponse
         {
-            Order = order.MapTo<OrderResponseDTO>(),
-            Histories = histories.Select(history => history.MapTo<OrderHistoryResponseDTO>()).ToList()
+            Order = order.MapTo<OrderResponse>(),
+            Histories = histories.Select(history => history.MapTo<OrderHistoryResponse>()).ToList()
         };
     }
 }

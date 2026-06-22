@@ -1,5 +1,3 @@
-using GameTopUp.BLL.DTOs.Orders;
-using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Entities.Orders;
@@ -13,13 +11,11 @@ namespace GameTopUp.Api.Controllers.Admin;
 public sealed class AdminOrderController : ApiControllerBase
 {
     private readonly OrderUseCase _orderUseCase;
-    private readonly OrderService _orderService;
     private readonly OrderReadService _orderReadService;
 
-    public AdminOrderController(OrderUseCase orderUseCase, OrderService orderService, OrderReadService orderReadService)
+    public AdminOrderController(OrderUseCase orderUseCase, OrderReadService orderReadService)
     {
         _orderUseCase = orderUseCase;
-        _orderService = orderService;
         _orderReadService = orderReadService;
     }
 
@@ -40,21 +36,21 @@ public sealed class AdminOrderController : ApiControllerBase
     [HttpPost("{orderId}/pick")]
     public async Task<IActionResult> PickOrder(long orderId)
     {
-        var order = await _orderUseCase.PickOrderAsync(orderId, CurrentUser);
-        return ApiOk(order);
+        await _orderUseCase.PickOrderAsync(orderId, CurrentUser);
+        return ApiOk();
     }
 
     [HttpPost("{orderId}/complete")]
     public async Task<IActionResult> CompleteOrder(long orderId)
     {
-        var order = await _orderUseCase.CompleteOrderAsync(orderId, CurrentUser);
-        return ApiOk(order);
+        await _orderUseCase.CompleteOrderAsync(orderId, CurrentUser);
+        return ApiOk();
     }
 
     [HttpPost("{orderId}/cancel")]
     public async Task<IActionResult> CancelOrder(long orderId)
     {
-        var order = await _orderUseCase.CancelOrderAsync(orderId, CurrentUser);
-        return ApiOk(order);
+        await _orderUseCase.CancelOrderAsync(orderId, CurrentUser);
+        return ApiOk();
     }
 }

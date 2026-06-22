@@ -57,7 +57,7 @@ public sealed class AuthUseCase
         });
     }
 
-    public async Task<AuthResponseDTO> LoginAsync(LoginRequest request)
+    public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user is null || !_passwordService.Verify(request.Password, user.PasswordHash))
@@ -66,15 +66,15 @@ public sealed class AuthUseCase
         }
 
         var tokens = await IssueTokenPairAsync(MapToContext(user));
-        return new AuthResponseDTO
+        return new AuthResponse
         {
             AccessToken = tokens.AccessToken,
             RefreshToken = tokens.RefreshToken,
-            User = user.MapTo<UserResponseDTO>()
+            User = user.MapTo<UserResponse>()
         };
     }
 
-    public async Task<AuthResponseDTO> RefreshAsync(string? refreshTokenString)
+    public async Task<AuthResponse> RefreshAsync(string? refreshTokenString)
     {
         if (string.IsNullOrWhiteSpace(refreshTokenString))
         {
@@ -94,7 +94,7 @@ public sealed class AuthUseCase
             var user = await GetUserOrThrowAsync(refreshToken.UserId);
             var tokens = await IssueTokenPairAsync(MapToContext(user));
 
-            return new AuthResponseDTO
+            return new AuthResponse
             {
                 AccessToken = tokens.AccessToken,
                 RefreshToken = tokens.RefreshToken

@@ -70,7 +70,7 @@ public class GameServiceTests
         game.Name.Should().Be("New Game");
         game.IsActive.Should().BeFalse();
         game.ImageUrl.Should().Be("old-url");
-        game.ImageRelativePath.Should().Be("old-path");
+        game.TotalPackages.Should().Be(0);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class GameServiceTests
         });
 
         game.ImageUrl.Should().Be("new-url");
-        game.ImageRelativePath.Should().Be("/games/new.png");
+        game.TotalPackages.Should().Be(0);
         _imageStorageService.Verify(service => service.DeleteAsync("/games/old.png"), Times.Once);
     }
 

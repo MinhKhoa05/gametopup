@@ -24,16 +24,16 @@ public sealed class OrderController : ApiControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateOrder([FromBody] PurchaseOrderRequestDTO request)
+    public async Task<IActionResult> CreateOrder([FromBody] PurchaseOrderRequest request)
     {
-        var order = await _orderUseCase.PurchaseOrderAsync(CurrentUser, request);
-        return ApiCreated(order);
+        var createOrderResponse = await _orderUseCase.PurchaseOrderAsync(CurrentUser, request);
+        return ApiCreated(createOrderResponse);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetMyOrders([FromQuery] OrderStatus? status = null)
+    public async Task<IActionResult> GetOrders([FromQuery] OrderStatus? status = null)
     {
-        var orders = await _orderReadService.GetMyOrdersAsync(CurrentUser, status);
+        var orders = await _orderReadService.GetOrdersAsync(CurrentUser, status);
         return ApiOk(orders);
     }
 
@@ -47,7 +47,7 @@ public sealed class OrderController : ApiControllerBase
     [HttpPost("{orderId}/cancel")]
     public async Task<IActionResult> CancelOrder(long orderId)
     {
-        var order = await _orderUseCase.CancelOrderAsync(orderId, CurrentUser);
-        return ApiOk(order);
+        await _orderUseCase.CancelOrderAsync(orderId, CurrentUser);
+        return ApiOk();
     }
 }

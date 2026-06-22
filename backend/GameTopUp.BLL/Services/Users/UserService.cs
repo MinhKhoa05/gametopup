@@ -17,16 +17,16 @@ public sealed class UserService
         _repository = userRepository;
     }
 
-    public async Task<UserResponseDTO> GetByIdAsync(long id)
+    public async Task<UserResponse> GetByIdAsync(long id)
     {
         var user = await GetByIdOrThrowAsync(id);
-        return user.MapTo<UserResponseDTO>();
+        return user.MapTo<UserResponse>();
     }
 
-    public async Task<IEnumerable<UserResponseDTO>> GetAllAsync(int page, int pageSize)
+    public async Task<IEnumerable<UserResponse>> GetAllAsync(int page, int pageSize)
     {
         var users = await _repository.GetAllAsync(page, pageSize);
-        return users.Select(user => user.MapTo<UserResponseDTO>());
+        return users.Select(user => user.MapTo<UserResponse>());
     }
 
     public async Task UpdateProfileAsync(long id, UpdateProfileRequest request)

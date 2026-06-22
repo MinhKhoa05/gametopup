@@ -2,11 +2,11 @@ using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.DTOs.Orders;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.BLL.Mappers;
 using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.Services.Games;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.DAL.Database;
+using GameTopUp.DAL.Interfaces.Games;
 using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.DAL.Entities.Wallets;
 using System.Globalization;
@@ -16,25 +16,28 @@ namespace GameTopUp.BLL.UseCases;
 public sealed class OrderUseCase
 {
     private readonly GamePackageService _packageService;
+    private readonly IGameRepository _gameRepository;
     private readonly WalletService _walletService;
     private readonly OrderService _orderService;
     private readonly ITransactionManager _transaction;
 
     public OrderUseCase(
         GamePackageService packageService,
+        IGameRepository gameRepository,
         WalletService walletService,
         OrderService orderService,
         ITransactionManager transaction)
     {
         _packageService = packageService;
+        _gameRepository = gameRepository;
         _walletService = walletService;
         _orderService = orderService;
         _transaction = transaction;
     }
 
-    public async Task<OrderResponseDTO> PurchaseOrderAsync(UserContext actor, PurchaseOrderRequestDTO request)
+    public async Task<CreateOrderResponse> PurchaseOrderAsync(UserContext actor, PurchaseOrderRequest request)
     {
-        var order = await _transaction.ExecuteAsync(async () =>
+        return await _transaction.ExecuteAsync(async () =>
         {
             var gameAccountInfo = InputTextNormalizer.Required(request.GameAccountInfo, ErrorCode.BadRequest);
             var package = await _packageService.GetActivePackageByIdOrThrowAsync(request.GamePackageId);
@@ -44,7 +47,12 @@ public sealed class OrderUseCase
             _walletService.EnsureSufficientBalance(wallet, packagePrice);
             await _packageService.ReservePackageAsync(package.Id);
 
-            var order = Order.Create(actor.UserId, package.Id, packagePrice, gameAccountInfo);
+            var order = Order.Create(
+                actor.UserId,
+                package.Id,
+                packagePrice,
+                package.Name,
+                gameAccountInfo);
             await _orderService.CreateAsync(order, actor);
 
             var walletTransaction = _walletService.Debit(
@@ -54,68 +62,61 @@ public sealed class OrderUseCase
                 order.Id.ToString(CultureInfo.InvariantCulture));
             await _walletService.ApplyTransactionAsync(wallet, walletTransaction);
 
-            return order;
+            return new CreateOrderResponse { OrderId = order.Id };
         });
-
-        return order.MapTo<OrderResponseDTO>();
     }
 
-    public async Task<OrderResponseDTO> PickOrderAsync(long orderId, UserContext actor)
+    public async Task PickOrderAsync(long orderId, UserContext actor)
     {
-        var order = await _transaction.ExecuteAsync(async () =>
+        await _transaction.ExecuteAsync(async () =>
         {
             var order = await _orderService.LockByIdOrThrowAsync(orderId);
 
             if (order.Status == OrderStatus.Processing && order.AssignedTo == actor.UserId)
             {
-                return order;
+                return;
             }
 
-            var history = _orderService.PickOrder(order, actor);
+            var package = await _packageService.GetPackageByIdOrThrowAsync(order.GamePackageId);
+            var history = _orderService.PickOrder(order, actor, package.ImportPrice);
             await _orderService.UpdateWithHistoryAsync(order, history);
-
-            return order;
         });
-
-        return order.MapTo<OrderResponseDTO>();
     }
 
-    public async Task<OrderResponseDTO> CompleteOrderAsync(long orderId, UserContext actor)
+    public async Task CompleteOrderAsync(long orderId, UserContext actor)
     {
-        var order = await _transaction.ExecuteAsync(async () =>
+        await _transaction.ExecuteAsync(async () =>
         {
             var order = await _orderService.LockByIdOrThrowAsync(orderId);
 
             if (order.Status == OrderStatus.Completed)
             {
-                return order;
+                return;
             }
 
             var history = _orderService.CompleteOrder(order, actor);
             await _orderService.UpdateWithHistoryAsync(order, history);
-
-            return order;
+            var package = await _packageService.GetPackageByIdOrThrowAsync(order.GamePackageId);
         });
-
-        return order.MapTo<OrderResponseDTO>();
     }
 
-    public async Task<OrderResponseDTO> CancelOrderAsync(long orderId, UserContext actor, string? reason = null)
+    public async Task CancelOrderAsync(long orderId, UserContext actor, string? reason = null)
     {
-        var order = await _transaction.ExecuteAsync(async () =>
+        await _transaction.ExecuteAsync(async () =>
         {
             var order = await _orderService.LockByIdOrThrowAsync(orderId);
 
             if (order.Status == OrderStatus.Cancelled)
             {
-                return order;
+                return;
             }
 
             var history = _orderService.CancelOrder(order, actor, reason);
             await _orderService.UpdateWithHistoryAsync(order, history);
 
             await _packageService.RestorePackageAsync(order.GamePackageId);
-            
+            var package = await _packageService.GetPackageByIdOrThrowAsync(order.GamePackageId);
+
             var wallet = await _walletService.LockByUserIdOrThrowAsync(order.UserId);
             var walletTransaction = _walletService.Credit(
                 wallet,
@@ -123,10 +124,6 @@ public sealed class OrderUseCase
                 WalletTransactionType.Refund,
                 order.Id.ToString(CultureInfo.InvariantCulture));
             await _walletService.ApplyTransactionAsync(wallet, walletTransaction);
-
-            return order;
         });
-
-        return order.MapTo<OrderResponseDTO>();
     }
 }

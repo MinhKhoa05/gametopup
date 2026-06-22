@@ -3,7 +3,7 @@ using GameTopUp.BLL.DTOs.Users;
 
 namespace GameTopUp.BLL.DTOs.Auths;
 
-public sealed class AuthResponseDTO
+public sealed class AuthResponse
 {
     [JsonIgnore]
     public string AccessToken { get; set; } = string.Empty;
@@ -12,5 +12,5 @@ public sealed class AuthResponseDTO
     public string RefreshToken { get; set; } = string.Empty;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public UserResponseDTO? User { get; set; }
+    public UserResponse? User { get; set; }
 }

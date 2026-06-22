@@ -14,16 +14,16 @@ public sealed class GameController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllGames()
+    public async Task<IActionResult> GetGames()
     {
-        var games = await _gameReadService.GetPublicGamesAsync();
+        var games = await _gameReadService.GetGamesAsync();
         return ApiOk(games);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetGameById(long id)
     {
-        var game = await _gameReadService.GetPublicGameByIdAsync(id);
+        var game = await _gameReadService.GetGameByIdAsync(id);
         return ApiOk(game);
     }
 }

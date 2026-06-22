@@ -2,7 +2,7 @@ using GameTopUp.DAL.Entities.Wallets;
 
 namespace GameTopUp.BLL.DTOs.Wallets;
 
-public sealed class WalletTransactionInfo
+public sealed class WalletTransactionResponse
 {
     public long Id { get; set; }
     public decimal Amount { get; set; }

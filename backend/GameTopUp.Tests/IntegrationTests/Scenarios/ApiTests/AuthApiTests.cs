@@ -8,7 +8,7 @@ using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 using Renci.SshNet;
 
-namespace GameTopUp.Tests.IntegrationTests.Scenarios.ApiTests.Auth;
+namespace GameTopUp.Tests.IntegrationTests.Scenarios.ApiTests;
 
 [Collection("Integration")]
 public sealed class AuthApiTests : BaseIntegrationTest
@@ -54,7 +54,7 @@ public sealed class AuthApiTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.ReadApiResponseAsync<AuthResponseDTO>();
+        var body = await response.ReadApiResponseAsync<AuthResponse>();
         body.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
         body.Data!.User.Should().NotBeNull();

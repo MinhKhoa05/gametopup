@@ -12,7 +12,9 @@ public class Order
     public long UserId { get; set; }
     public string GameAccountInfo { get; set; } = string.Empty;
     public long GamePackageId { get; set; }
+    public string PackageName { get; set; } = string.Empty;
     public decimal PackagePrice { get; set; }
+    public decimal PackageCost { get; set; }
     public long? AssignedTo { get; set; }
     public DateTime? AssignedAt { get; set; }
     public OrderStatus Status { get; set; }
@@ -23,6 +25,7 @@ public class Order
         long userId,
         long gamePackageId,
         decimal packagePrice,
+        string packageName,
         string gameAccountInfo,
         OrderStatus status = OrderStatus.Pending)
     {
@@ -33,6 +36,8 @@ public class Order
             UserId = userId,
             GamePackageId = gamePackageId,
             PackagePrice = packagePrice,
+            PackageName = packageName.Trim(),
+            PackageCost = 0m,
             GameAccountInfo = gameAccountInfo,
             Status = status,
             CreatedAt = now,
@@ -54,9 +59,10 @@ public class Order
         }
     }
 
-    public void MarkProcessing(long adminUserId)
+    public void MarkProcessing(long adminUserId, decimal packageCost)
     {
         UpdateStatus(OrderStatus.Processing, adminUserId);
+        PackageCost = packageCost;
     }
 
     public void MarkCompleted()

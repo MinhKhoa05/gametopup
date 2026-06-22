@@ -41,10 +41,10 @@ public sealed class WalletService
         await _transactionRepository.CreateAsync(transaction);
     }
 
-    public async Task<List<WalletTransactionInfo>> GetTransactionsAsync(UserContext context)
+    public async Task<List<WalletTransactionResponse>> GetTransactionsAsync(UserContext context)
     {
         var transactions = await _transactionRepository.GetByUserIdAsync(context.UserId);
-        return transactions.Select(transaction => transaction.MapTo<WalletTransactionInfo>()).ToList();
+        return transactions.Select(transaction => transaction.MapTo<WalletTransactionResponse>()).ToList();
     }
 
     public void EnsureSufficientBalance(Wallet wallet, decimal amount)

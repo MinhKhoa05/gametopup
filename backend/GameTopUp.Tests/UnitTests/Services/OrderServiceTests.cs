@@ -23,7 +23,7 @@ public class OrderServiceTests
     [Fact]
     public void PickOrder_ShouldMovePendingOrderToProcessing()
     {
-        var order = Order.Create(7, 44, 199m, "account");
+        var order = Order.Create(7, 44, 199m, "package", "account");
         order.Id = 88;
 
         var history = _service.PickOrder(order, new UserContext
@@ -31,11 +31,12 @@ public class OrderServiceTests
             UserId = 3,
             DisplayName = "Admin",
             Role = UserRole.Admin
-        });
+        }, 80m);
 
         order.Status.Should().Be(OrderStatus.Processing);
         order.AssignedTo.Should().Be(3);
         order.AssignedAt.Should().NotBeNull();
+        order.PackageCost.Should().Be(80m);
         history.Should().NotBeNull();
         history.OrderId.Should().Be(88);
         history.FromStatus.Should().Be(OrderStatus.Pending);
@@ -47,7 +48,7 @@ public class OrderServiceTests
     [Fact]
     public void PickOrder_ShouldThrow_WhenOrderIsAlreadyProcessing()
     {
-        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Processing);
+        var order = Order.Create(7, 44, 199m, "package", "account", OrderStatus.Processing);
         order.Id = 88;
         order.AssignedTo = 99;
 
@@ -56,7 +57,7 @@ public class OrderServiceTests
             UserId = 3,
             DisplayName = "Admin",
             Role = UserRole.Admin
-        });
+        }, 80m);
 
         act.Should().Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.OrderAlreadyAssigned);
@@ -65,7 +66,7 @@ public class OrderServiceTests
     [Fact]
     public void PickOrder_ShouldThrow_WhenOrderIsNotPendingOrProcessing()
     {
-        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Completed);
+        var order = Order.Create(7, 44, 199m, "package", "account", OrderStatus.Completed);
         order.Id = 88;
 
         Action act = () => _service.PickOrder(order, new UserContext
@@ -73,7 +74,7 @@ public class OrderServiceTests
             UserId = 3,
             DisplayName = "Admin",
             Role = UserRole.Admin
-        });
+        }, 80m);
 
         act.Should().Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.OrderNotReadyForPick);
@@ -82,7 +83,7 @@ public class OrderServiceTests
     [Fact]
     public void CompleteOrder_ShouldCompleteOrderAssignedToCurrentAdmin()
     {
-        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Processing);
+        var order = Order.Create(7, 44, 199m, "package", "account", OrderStatus.Processing);
         order.Id = 88;
         order.AssignedTo = 3;
 
@@ -104,7 +105,7 @@ public class OrderServiceTests
     [Fact]
     public void CompleteOrder_ShouldThrow_WhenOrderIsAssignedToAnotherAdmin()
     {
-        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Processing);
+        var order = Order.Create(7, 44, 199m, "package", "account", OrderStatus.Processing);
         order.Id = 88;
         order.AssignedTo = 99;
 
@@ -122,7 +123,7 @@ public class OrderServiceTests
     [Fact]
     public void CompleteOrder_ShouldThrow_WhenOrderIsNotProcessing()
     {
-        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Pending);
+        var order = Order.Create(7, 44, 199m, "package", "account", OrderStatus.Pending);
         order.Id = 88;
 
         Action act = () => _service.CompleteOrder(order, new UserContext
@@ -139,7 +140,7 @@ public class OrderServiceTests
     [Fact]
     public void CancelOrder_ShouldAllowMemberToCancelPendingOrderAndRecordReason()
     {
-        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Pending);
+        var order = Order.Create(7, 44, 199m, "package", "account", OrderStatus.Pending);
         order.Id = 88;
 
         var history = _service.CancelOrder(order, new UserContext { UserId = 7 }, "changed my mind");
@@ -155,7 +156,7 @@ public class OrderServiceTests
     [Fact]
     public void CancelOrder_ShouldThrow_WhenMemberTriesToCancelAnotherUsersPendingOrder()
     {
-        var order = Order.Create(8, 44, 199m, "account", OrderStatus.Pending);
+        var order = Order.Create(8, 44, 199m, "package", "account", OrderStatus.Pending);
         order.Id = 88;
 
         Action act = () => _service.CancelOrder(order, new UserContext { UserId = 7 });
@@ -167,7 +168,7 @@ public class OrderServiceTests
     [Fact]
     public void CancelOrder_ShouldAllowAdminToCancelPendingOrder()
     {
-        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Pending);
+        var order = Order.Create(7, 44, 199m, "package", "account", OrderStatus.Pending);
         order.Id = 88;
 
         var history = _service.CancelOrder(order, new UserContext
@@ -189,7 +190,7 @@ public class OrderServiceTests
     [Fact]
     public void CancelOrder_ShouldAllowAssignedAdminToCancelProcessingOrderAndRecordReason()
     {
-        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Processing);
+        var order = Order.Create(7, 44, 199m, "package", "account", OrderStatus.Processing);
         order.Id = 88;
         order.AssignedTo = 3;
 
@@ -209,7 +210,7 @@ public class OrderServiceTests
     [Fact]
     public void CancelOrder_ShouldThrow_WhenMemberTriesToCancelProcessingOrder()
     {
-        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Processing);
+        var order = Order.Create(7, 44, 199m, "package", "account", OrderStatus.Processing);
         order.Id = 88;
         order.AssignedTo = 3;
 
@@ -222,7 +223,7 @@ public class OrderServiceTests
     [Fact]
     public void CancelOrder_ShouldThrow_WhenCompletedOrderIsCancelled()
     {
-        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Completed);
+        var order = Order.Create(7, 44, 199m, "package", "account", OrderStatus.Completed);
         order.Id = 88;
         order.AssignedTo = 3;
 
@@ -235,7 +236,7 @@ public class OrderServiceTests
     [Fact]
     public void CancelOrder_ShouldThrow_WhenAdminTriesToCancelSomeoneElsesProcessingOrder()
     {
-        var order = Order.Create(7, 44, 199m, "account", OrderStatus.Processing);
+        var order = Order.Create(7, 44, 199m, "package", "account", OrderStatus.Processing);
         order.Id = 88;
         order.AssignedTo = 99;
 

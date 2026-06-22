@@ -23,7 +23,7 @@ public sealed class GameService
         return await _repository.GetByIdAsync(id) ?? throw new NotFoundException(ErrorCode.GameNotFound);
     }
 
-    public async Task<Game> CreateGameAsync(CreateGameRequest request)
+    public async Task<AdminGameResponse> CreateGameAsync(CreateGameRequest request)
     {
         request.Name = InputTextNormalizer.Required(request.Name, ErrorCode.BadRequest);
         var uploadedImage = await _imageStorageService.UploadAsync(request.ImageFile, "games");
@@ -39,7 +39,7 @@ public sealed class GameService
 
             game.IsActive = request.IsActive;
             game.Id = await _repository.CreateAsync(game);
-            return game;
+            return game.MapTo<AdminGameResponse>();
         }
         catch
         {
@@ -48,7 +48,7 @@ public sealed class GameService
         }
     }
 
-    public async Task<Game> UpdateGameAsync(long id, UpdateGameRequest request)
+    public async Task<AdminGameResponse> UpdateGameAsync(long id, UpdateGameRequest request)
     {
         var game = await GetGameByIdOrThrowAsync(id);
         var previousImageRelativePath = game.ImageRelativePath;
@@ -71,7 +71,7 @@ public sealed class GameService
                 await _imageStorageService.DeleteAsync(previousImageRelativePath);
             }
 
-            return game;
+            return game.MapTo<AdminGameResponse>();
         }
         catch
         {

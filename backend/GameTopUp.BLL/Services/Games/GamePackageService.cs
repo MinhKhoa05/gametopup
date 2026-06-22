@@ -26,15 +26,15 @@ public sealed class GamePackageService
         _imageStorageService = imageStorageService;
     }
 
-    public Task<List<GamePackage>> GetPackagesByGameIdAsync(long gameId) =>
+    public Task<List<GamePackage>> GetPackageEntitiesByGameIdAsync(long gameId) =>
         _packageRepository.GetByGameIdAsync(gameId);
 
-    public async Task<List<PublicGamePackageResponse>> GetPublicPackagesByGameIdAsync(long gameId)
+    public async Task<List<GamePackageResponse>> GetPackagesByGameIdAsync(long gameId)
     {
         var packages = await _packageRepository.GetByGameIdAsync(gameId);
 
         return packages
-            .Select(item => item.MapTo<PublicGamePackageResponse>())
+            .Select(item => item.MapTo<GamePackageResponse>())
             .ToList();
     }
 
@@ -56,10 +56,10 @@ public sealed class GamePackageService
         return package;
     }
 
-    public async Task<PublicGamePackageResponse> GetPublicPackageByIdAsync(long id)
+    public async Task<GamePackageResponse> GetPackageByIdAsync(long id)
     {
         var package = await GetActivePackageByIdOrThrowAsync(id);
-        return package.MapTo<PublicGamePackageResponse>();
+        return package.MapTo<GamePackageResponse>();
     }
 
     public async Task ReservePackageAsync(long packageId)

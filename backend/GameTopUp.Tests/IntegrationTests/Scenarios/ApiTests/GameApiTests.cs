@@ -5,7 +5,7 @@ using GameTopUp.BLL.Exceptions;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 
-namespace GameTopUp.Tests.IntegrationTests.Scenarios.ApiTests.Auth;
+namespace GameTopUp.Tests.IntegrationTests.Scenarios.ApiTests;
 
 [Collection("Integration")]
 public sealed class GameApiTests : BaseIntegrationTest
@@ -15,18 +15,17 @@ public sealed class GameApiTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetAllGames_ShouldReturnPublicGames()
+    public async Task GetGames_ShouldReturnGames()
     {
-        var game = await Factory.SeedGameAsync(g =>
-        {
-            g.Name = "Mobile Legends";
-        });
+        var activeGame = await Factory.SeedGameAsync();
+        await Factory.SeedGamePackageAsync(activeGame.Id);
+        await Factory.SeedGameAsync(game => game.IsActive = false);
 
         var response = await Client.GetAsync("/api/games");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.ReadApiResponseAsync<List<PublicGameResponse>>();
+        var body = await response.ReadApiResponseAsync<List<GameResponse>>();
 
         body.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
@@ -36,29 +35,44 @@ public sealed class GameApiTests : BaseIntegrationTest
             .ContainSingle()
             .Subject;
 
-        result.Id.Should().Be(game.Id);
-        result.Name.Should().Be(game.Name);
+        result.Id.Should().Be(activeGame.Id);
+        result.Name.Should().Be(activeGame.Name);
+        result.ActivePackages.Should().Be(1);
     }
 
     [Fact]
     public async Task GetGameById_ShouldReturnGame_WhenExists()
     {
-        var game = await Factory.SeedGameAsync(g =>
-        {
-            g.Name = "Free Fire";
-        });
+        var game = await Factory.SeedGameAsync();
+        await Factory.SeedGamePackageAsync(game.Id);
 
         var response = await Client.GetAsync($"/api/games/{game.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.ReadApiResponseAsync<PublicGameResponse>();
+        var body = await response.ReadApiResponseAsync<GameResponse>();
 
         body.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
 
         body.Data!.Id.Should().Be(game.Id);
         body.Data.Name.Should().Be(game.Name);
+        body.Data.ActivePackages.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetGameById_ShouldReturnNotFound_WhenGameIsInactive()
+    {
+        var game = await Factory.SeedGameAsync(g => g.IsActive = false);
+
+        var response = await Client.GetAsync($"/api/games/{game.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var body = await response.ReadApiResponseAsync<object>();
+
+        body.Success.Should().BeFalse();
+        body.ErrorCode.Should().Be(ErrorCode.GameNotFound);
     }
 
     [Fact]

@@ -28,7 +28,7 @@ public class OrderReadServiceTests : IDisposable
     [Fact]
     public async Task GetOrderDetailAsync_ShouldReturnOwnOrderAndHistories()
     {
-        var expected = Order.Create(7, 44, 199m, "account");
+        var expected = Order.Create(7, 44, 199m, "package", "account");
         expected.Id = 88;
         var histories = new List<OrderHistory>
         {
@@ -49,7 +49,7 @@ public class OrderReadServiceTests : IDisposable
     [Fact]
     public async Task GetOrderDetailAsync_ShouldThrowForbidden_WhenOrderBelongsToAnotherUser()
     {
-        var existing = Order.Create(8, 44, 199m, "account");
+        var existing = Order.Create(8, 44, 199m, "package", "account");
         existing.Id = 88;
         _orderRepository.Setup(repo => repo.GetByIdAsync(88))
             .ReturnsAsync(existing);
@@ -63,7 +63,7 @@ public class OrderReadServiceTests : IDisposable
     [Fact]
     public async Task GetOrderDetailAsync_ShouldAllowAdminToAccessAnyOrder()
     {
-        var expected = Order.Create(8, 44, 199m, "account");
+        var expected = Order.Create(8, 44, 199m, "package", "account");
         expected.Id = 88;
         var histories = new List<OrderHistory>
         {

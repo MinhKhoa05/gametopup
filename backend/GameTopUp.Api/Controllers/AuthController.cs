@@ -63,7 +63,7 @@ public sealed class AuthController : ApiControllerBase
         return ApiOk();
     }
 
-    private void SetAuthCookies(AuthResponseDTO authResponse)
+    private void SetAuthCookies(AuthResponse authResponse)
     {
         var secure = ShouldUseSecureCookies();
         Response.SetAccessToken(authResponse.AccessToken, GetAccessTokenExpireMinutes(), secure);

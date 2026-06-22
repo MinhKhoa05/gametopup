@@ -1,6 +1,6 @@
 namespace GameTopUp.BLL.DTOs.GamePackages;
 
-public sealed class PublicGamePackageResponse
+public sealed class GamePackageResponse
 {
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;

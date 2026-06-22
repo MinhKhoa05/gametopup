@@ -80,7 +80,9 @@ CREATE TABLE IF NOT EXISTS orders (
     user_id BIGINT SIGNED NOT NULL,
     game_account_info TEXT NOT NULL,
     game_package_id BIGINT SIGNED NOT NULL,
+    package_name VARCHAR(150) NOT NULL,
     package_price DECIMAL(18, 2) NOT NULL,
+    package_cost DECIMAL(18, 2) NOT NULL DEFAULT 0.00,
     assigned_to BIGINT SIGNED,
     assigned_at DATETIME,
     status INT NOT NULL, -- 1: Pending, 2: Processing, 3: Completed, 4: Cancelled

@@ -93,6 +93,7 @@ public static partial class TestDatabaseExtensions
             userId,
             packageId,
             100m,
+            $"Test Package {unique}",
             $"account-{unique}");
 
         customize?.Invoke(order);

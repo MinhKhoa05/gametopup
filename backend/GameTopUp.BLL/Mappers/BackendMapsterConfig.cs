@@ -8,6 +8,7 @@ using GameTopUp.DAL.Entities.Games;
 using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.DAL.Entities.Users;
 using GameTopUp.DAL.Entities.Wallets;
+using GameTopUp.DAL.Queries;
 using Mapster;
 
 namespace GameTopUp.BLL.Mappers;
@@ -20,7 +21,9 @@ internal static class BackendMapsterConfig
     {
         var config = new TypeAdapterConfig();
 
-        config.NewConfig<Game, PublicGameResponse>();
+        config.NewConfig<GameQueryRow, GameResponse>();
+        config.NewConfig<Game, AdminGameResponse>();
+        config.NewConfig<GameQueryRow, AdminGameResponse>();
 
         config.NewConfig<UpdateGameRequest, Game>()
             .IgnoreNullValues(true)
@@ -30,18 +33,18 @@ internal static class BackendMapsterConfig
             .IgnoreNullValues(true)
             .Map(dest => dest.Name, src => InputTextNormalizer.NullIfWhiteSpace(src.Name));
 
-        config.NewConfig<GamePackage, PublicGamePackageResponse>()
+        config.NewConfig<GamePackage, GamePackageResponse>()
             .Map(dest => dest.IsAvailable, src => src.AvailableSlots > 0);
 
-        config.NewConfig<Order, OrderResponseDTO>();
-        config.NewConfig<OrderHistory, OrderHistoryResponseDTO>();
+        config.NewConfig<Order, OrderResponse>();
+        config.NewConfig<OrderHistory, OrderHistoryResponse>();
 
-        config.NewConfig<WalletTransaction, WalletTransactionInfo>();
+        config.NewConfig<WalletTransaction, WalletTransactionResponse>();
 
-        config.NewConfig<WalletDeposit, WalletDepositResponseDTO>();
-        config.NewConfig<WalletDeposit, AdminDepositRequestResponseDTO>();
+        config.NewConfig<WalletDeposit, WalletDepositResponse>();
+        config.NewConfig<WalletDeposit, AdminDepositResponse>();
 
-        config.NewConfig<User, UserResponseDTO>()
+        config.NewConfig<User, UserResponse>()
             .Map(dest => dest.Role, src => src.Role.ToString());
 
         return config;

@@ -10,6 +10,7 @@ public sealed class OrderService
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IOrderHistoryRepository _orderHistoryRepository;
+    
     public OrderService(
         IOrderRepository orderRepository,
         IOrderHistoryRepository orderHistoryRepository)
@@ -42,7 +43,7 @@ public sealed class OrderService
         await _orderHistoryRepository.CreateAsync(history);
     }
 
-    public OrderHistory PickOrder(Order order, UserContext actor)
+    public OrderHistory PickOrder(Order order, UserContext actor, decimal packageCost)
     {
         if (order.Status == OrderStatus.Processing)
         {
@@ -55,7 +56,7 @@ public sealed class OrderService
         }
 
         var fromStatus = order.Status;
-        order.MarkProcessing(actor.UserId);
+        order.MarkProcessing(actor.UserId, packageCost);
 
         return CreateHistory(order, fromStatus, actor);
     }

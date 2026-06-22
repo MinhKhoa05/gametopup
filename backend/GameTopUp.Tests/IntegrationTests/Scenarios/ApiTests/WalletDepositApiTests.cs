@@ -6,7 +6,7 @@ using GameTopUp.DAL.Entities.Wallets;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 
-namespace GameTopUp.Tests.IntegrationTests.Scenarios.ApiTests.Wallets;
+namespace GameTopUp.Tests.IntegrationTests.Scenarios.ApiTests;
 
 [Collection("Integration")]
 public sealed class DepositApiTests : BaseIntegrationTest
@@ -30,7 +30,7 @@ public sealed class DepositApiTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var body = await response.ReadApiResponseAsync<WalletDepositResponseDTO>();
+        var body = await response.ReadApiResponseAsync<WalletDepositResponse>();
         body.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
 
@@ -63,7 +63,7 @@ public sealed class DepositApiTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.ReadApiResponseAsync<WalletDepositResponseDTO>();
+        var body = await response.ReadApiResponseAsync<WalletDepositResponse>();
         body.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
 
@@ -129,7 +129,7 @@ public sealed class DepositApiTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.ReadApiResponseAsync<List<WalletDepositResponseDTO>>();
+        var body = await response.ReadApiResponseAsync<List<WalletDepositResponse>>();
         body.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
 
@@ -161,7 +161,7 @@ public sealed class DepositApiTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.ReadApiResponseAsync<List<WalletDepositResponseDTO>>();
+        var body = await response.ReadApiResponseAsync<List<WalletDepositResponse>>();
         body.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
 
@@ -186,7 +186,7 @@ public sealed class DepositApiTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.ReadApiResponseAsync<WalletDepositResponseDTO>();
+        var body = await response.ReadApiResponseAsync<WalletDepositResponse>();
         body.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
 

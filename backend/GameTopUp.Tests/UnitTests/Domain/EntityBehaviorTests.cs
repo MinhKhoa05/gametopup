@@ -10,7 +10,7 @@ public class EntityBehaviorTests
     [Fact]
     public void OrderUpdateStatus_ShouldAssignStaffWhenProvided()
     {
-        var order = Order.Create(7, 44, 199m, "game-account");
+        var order = Order.Create(7, 44, 199m, "game-package", "game-account");
 
         order.UpdateStatus(OrderStatus.Processing, 3);
 
@@ -22,8 +22,8 @@ public class EntityBehaviorTests
     [Fact]
     public void OrderMarkCompleted_ShouldKeepExistingAssignee()
     {
-        var order = Order.Create(7, 44, 199m, "game-account");
-        order.MarkProcessing(3);
+        var order = Order.Create(7, 44, 199m, "game-package", "game-account");
+        order.MarkProcessing(3, 80m);
         var assignedAt = order.AssignedAt;
 
         order.MarkCompleted();
@@ -31,6 +31,7 @@ public class EntityBehaviorTests
         order.Status.Should().Be(OrderStatus.Completed);
         order.AssignedTo.Should().Be(3);
         order.AssignedAt.Should().Be(assignedAt);
+        order.PackageCost.Should().Be(80m);
     }
 
     [Fact]

@@ -19,9 +19,9 @@ public sealed class AdminGameController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllGames()
+    public async Task<IActionResult> GetAdminGames()
     {
-        var games = await _gameReadService.GetAdminGameSummariesAsync();
+        var games = await _gameReadService.GetAdminGamesAsync();
         return ApiOk(games);
     }
 

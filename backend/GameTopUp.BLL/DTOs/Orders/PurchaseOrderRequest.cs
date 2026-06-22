@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GameTopUp.BLL.DTOs.Orders;
 
-public sealed class PurchaseOrderRequestDTO
+public sealed class PurchaseOrderRequest
 {
     [Required]
     public long GamePackageId { get; set; }

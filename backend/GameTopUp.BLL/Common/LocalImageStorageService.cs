@@ -60,9 +60,18 @@ public sealed class LocalImageStorageService : IImageStorageService
 
         var normalizedRelativePath = NormalizeRelativePath(relativePath);
         var physicalPath = GetPhysicalPath(normalizedRelativePath);
+
         if (File.Exists(physicalPath))
         {
             File.Delete(physicalPath);
+
+            var uploadsRoot = GetPhysicalPath("uploads");
+            var directory = Path.GetDirectoryName(physicalPath);
+
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                DeleteEmptyParentDirectories(directory, uploadsRoot);
+            }
         }
 
         return Task.CompletedTask;
@@ -72,7 +81,7 @@ public sealed class LocalImageStorageService : IImageStorageService
     {
         var safeFolder = SanitizeSegment(folder);
         var extension = ResolveExtension(contentType);
-        var datePath = DateTime.UtcNow.ToString("yyyy/MM/dd");
+        var datePath = DateTime.UtcNow.ToString("yyyy/MM");
         var fileName = $"{Guid.NewGuid():N}{extension}";
         return Path.Combine("uploads", safeFolder, datePath, fileName);
     }
@@ -159,6 +168,28 @@ public sealed class LocalImageStorageService : IImageStorageService
         if (!ContentTypeExtensions.Any(entry => entry.Value.Equals(extension, StringComparison.OrdinalIgnoreCase)))
         {
             throw new BusinessException(ErrorCode.UnsupportedImageType);
+        }
+    }
+
+    private static void DeleteEmptyParentDirectories(string startDirectory, string stopDirectory)
+    {
+        var current = new DirectoryInfo(startDirectory);
+        var stopFullPath = Path.GetFullPath(stopDirectory);
+
+        while (current.Exists &&
+               !string.Equals(current.FullName, stopFullPath, StringComparison.OrdinalIgnoreCase) &&
+               !current.EnumerateFileSystemInfos().Any())
+        {
+            var parent = current.Parent;
+
+            current.Delete();
+
+            if (parent is null)
+            {
+                break;
+            }
+
+            current = parent;
         }
     }
 }

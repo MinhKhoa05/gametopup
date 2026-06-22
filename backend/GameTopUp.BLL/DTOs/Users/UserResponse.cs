@@ -1,6 +1,6 @@
 namespace GameTopUp.BLL.DTOs.Users;
 
-public sealed class UserResponseDTO
+public sealed class UserResponse
 {
     public long Id { get; set; }
     public string DisplayName { get; set; } = string.Empty;

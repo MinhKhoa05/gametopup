@@ -26,7 +26,7 @@ public sealed class WalletDepositService
         _vietQrSettings = vietQrOptions.Value;
     }
 
-    public async Task<WalletDepositResponseDTO> GetByIdOrThrowAsync(UserContext actor, long depositId)
+    public async Task<WalletDepositResponse> GetByIdOrThrowAsync(UserContext actor, long depositId)
     {
         var request = await _repository.GetByIdAsync(depositId)
             ?? throw new NotFoundException(ErrorCode.DepositRequestNotFound);
@@ -36,7 +36,7 @@ public sealed class WalletDepositService
             throw new ForbiddenException(ErrorCode.DepositRequestForbidden);
         }
 
-        return request.MapTo<WalletDepositResponseDTO>();
+        return request.MapTo<WalletDepositResponse>();
     }
 
     public async Task<WalletDeposit> LockByIdOrThrowAsync(long depositId)
@@ -45,7 +45,7 @@ public sealed class WalletDepositService
             ?? throw new NotFoundException(ErrorCode.DepositRequestNotFound);
     }
 
-    public async Task<List<WalletDepositResponseDTO>> GetByUserAsync(UserContext context, WalletDepositStatus? status = null)
+    public async Task<List<WalletDepositResponse>> GetByUserAsync(UserContext context, WalletDepositStatus? status = null)
     {
         var deposits = await _repository.GetByUserIdAsync(context.UserId, status);
         return deposits
@@ -53,15 +53,15 @@ public sealed class WalletDepositService
             .ToList();
     }
 
-    public async Task<List<AdminDepositRequestResponseDTO>> GetAllAsync(WalletDepositStatus? status = null)
+    public async Task<List<AdminDepositResponse>> GetAllAsync(WalletDepositStatus? status = null)
     {
         var deposits = await _repository.GetAllAsync(status);
         return deposits
-            .Select(request => request.MapTo<AdminDepositRequestResponseDTO>())
+            .Select(request => request.MapTo<AdminDepositResponse>())
             .ToList();
     }
 
-    public async Task<WalletDepositResponseDTO> CreateAsync(UserContext context, decimal amount)
+    public async Task<WalletDepositResponse> CreateAsync(UserContext context, decimal amount)
     {
         if (amount <= 0)
         {
@@ -130,9 +130,9 @@ public sealed class WalletDepositService
         return deposit;
     }
 
-    public WalletDepositResponseDTO BuildPublicResponse(WalletDeposit request)
+    public WalletDepositResponse BuildPublicResponse(WalletDeposit request)
     {
-        var response = request.MapTo<WalletDepositResponseDTO>();
+        var response = request.MapTo<WalletDepositResponse>();
         response.QrImageUrl = BuildQrImageUrl(_vietQrSettings);
         response.BankId = _vietQrSettings.BankId;
         response.AccountNo = _vietQrSettings.AccountNo;

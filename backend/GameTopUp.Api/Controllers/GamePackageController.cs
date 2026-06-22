@@ -16,14 +16,14 @@ public sealed class GamePackageController : ApiControllerBase
     [HttpGet("/api/games/{gameId:long}/packages")]
     public async Task<IActionResult> GetPackagesByGame(long gameId)
     {
-        var packages = await _packageService.GetPublicPackagesByGameIdAsync(gameId);
+        var packages = await _packageService.GetPackagesByGameIdAsync(gameId);
         return ApiOk(packages);
     }
 
     [HttpGet("{id:long}")]
     public async Task<IActionResult> GetPackageById(long id)
     {
-        var package = await _packageService.GetPublicPackageByIdAsync(id);
+        var package = await _packageService.GetPackageByIdAsync(id);
         return ApiOk(package);
     }
 }

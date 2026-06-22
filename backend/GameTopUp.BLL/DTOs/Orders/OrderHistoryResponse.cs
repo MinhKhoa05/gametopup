@@ -2,7 +2,7 @@ using GameTopUp.DAL.Entities.Orders;
 
 namespace GameTopUp.BLL.DTOs.Orders;
 
-public sealed class OrderHistoryResponseDTO
+public sealed class OrderHistoryResponse
 {
     public long Id { get; set; }
     public long OrderId { get; set; }

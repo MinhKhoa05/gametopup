@@ -38,6 +38,7 @@ public class OrderUseCaseTests
         var orderService = new OrderService(_orderRepository.Object, _orderHistoryRepository.Object);
         _useCase = new OrderUseCase(
             packageService,
+            _gameRepository.Object,
             walletService,
             orderService,
             _transaction);
@@ -55,8 +56,16 @@ public class OrderUseCaseTests
             .ReturnsAsync(new GamePackage
             {
                 Id = 44,
+                GameId = 9,
+                Name = "Diamond 86",
                 SalePrice = 199m,
                 IsActive = true
+            });
+        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
+            .ReturnsAsync(new Game
+            {
+                Id = 9,
+                Name = "Mobile Legends"
             });
         _orderRepository.Setup(repo => repo.CreateAsync(It.IsAny<Order>()))
             .ReturnsAsync(88)
@@ -77,17 +86,17 @@ public class OrderUseCaseTests
         _packageRepository.Setup(repo => repo.DecreaseStockAsync(44, 1))
             .ReturnsAsync(1);
 
-        var order = await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequestDTO
+        var order = await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequest
         {
             GamePackageId = 44,
             GameAccountInfo = "  HERO-123  "
         });
 
-        order.Id.Should().Be(88);
-        order.GameAccountInfo.Should().Be("HERO-123");
-        order.Status.Should().Be(OrderStatus.Pending);
+        order.OrderId.Should().Be(88);
         createdOrder.Should().NotBeNull();
         createdOrder!.GameAccountInfo.Should().Be("HERO-123");
+        createdOrder.PackageName.Should().Be("Diamond 86");
+        createdOrder.PackageCost.Should().Be(0m);
         createdOrder.Status.Should().Be(OrderStatus.Pending);
         createdHistory.Should().NotBeNull();
         createdHistory!.OrderId.Should().Be(88);
@@ -103,7 +112,7 @@ public class OrderUseCaseTests
     [Fact]
     public async Task PurchaseOrderAsync_ShouldThrow_WhenGameAccountInfoIsBlank()
     {
-        var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequestDTO
+        var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequest
         {
             GamePackageId = 44,
             GameAccountInfo = "   "
@@ -124,11 +133,19 @@ public class OrderUseCaseTests
             .ReturnsAsync(new GamePackage
             {
                 Id = 44,
+                GameId = 9,
+                Name = "Diamond 86",
                 SalePrice = 199m,
                 IsActive = false
             });
+        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
+            .ReturnsAsync(new Game
+            {
+                Id = 9,
+                Name = "Mobile Legends"
+            });
 
-        var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequestDTO
+        var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequest
         {
             GamePackageId = 44,
             GameAccountInfo = "HERO-123"
@@ -148,15 +165,23 @@ public class OrderUseCaseTests
             .ReturnsAsync(new GamePackage
             {
                 Id = 44,
+                GameId = 9,
+                Name = "Diamond 86",
                 SalePrice = 199m,
                 IsActive = true
+            });
+        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
+            .ReturnsAsync(new Game
+            {
+                Id = 9,
+                Name = "Mobile Legends"
             });
         var lowBalanceWallet = Wallet.CreateForUser(7, 100m);
         lowBalanceWallet.Id = 11;
         _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
             .ReturnsAsync(lowBalanceWallet);
 
-        var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequestDTO
+        var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequest
         {
             GamePackageId = 44,
             GameAccountInfo = "HERO-123"
@@ -177,8 +202,16 @@ public class OrderUseCaseTests
             .ReturnsAsync(new GamePackage
             {
                 Id = 44,
+                GameId = 9,
+                Name = "Diamond 86",
                 SalePrice = 199m,
                 IsActive = true
+            });
+        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
+            .ReturnsAsync(new Game
+            {
+                Id = 9,
+                Name = "Mobile Legends"
             });
         var fundedWallet = Wallet.CreateForUser(7, 500m);
         fundedWallet.Id = 11;
@@ -187,7 +220,7 @@ public class OrderUseCaseTests
         _packageRepository.Setup(repo => repo.DecreaseStockAsync(44, 1))
             .ReturnsAsync(0);
 
-        var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequestDTO
+        var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequest
         {
             GamePackageId = 44,
             GameAccountInfo = "HERO-123"
@@ -204,23 +237,36 @@ public class OrderUseCaseTests
     [Fact]
     public async Task PickOrderAsync_ShouldReturnUnchanged_WhenSameAdminAlreadyPickedOrder()
     {
-        var order = Order.Create(7, 44, 199m, "hero-123", OrderStatus.Processing);
+        var order = Order.Create(7, 44, 199m, "Diamond 86", "hero-123", OrderStatus.Processing);
         order.Id = 88;
         order.AssignedTo = 3;
         order.AssignedAt = DateTime.UtcNow.AddMinutes(-5);
+        _packageRepository.Setup(repo => repo.GetByIdAsync(44))
+            .ReturnsAsync(new GamePackage
+            {
+                Id = 44,
+                GameId = 9,
+                Name = "Diamond 86"
+            });
+        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
+            .ReturnsAsync(new Game
+            {
+                Id = 9,
+                Name = "Mobile Legends"
+            });
 
         _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
             .ReturnsAsync(order);
 
-        var result = await _useCase.PickOrderAsync(88, new UserContext
+        await _useCase.PickOrderAsync(88, new UserContext
         {
             UserId = 3,
             DisplayName = "Admin",
             Role = UserRole.Admin
         });
 
-        result.Status.Should().Be(OrderStatus.Processing);
-        result.AssignedTo.Should().Be(3);
+        order.Status.Should().Be(OrderStatus.Processing);
+        order.AssignedTo.Should().Be(3);
         _orderRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Order>()), Times.Never);
         _orderHistoryRepository.Verify(repo => repo.CreateAsync(It.IsAny<OrderHistory>()), Times.Never);
     }
@@ -228,21 +274,34 @@ public class OrderUseCaseTests
     [Fact]
     public async Task CompleteOrderAsync_ShouldReturnUnchanged_WhenOrderIsAlreadyCompleted()
     {
-        var order = Order.Create(7, 44, 199m, "hero-123", OrderStatus.Completed);
+        var order = Order.Create(7, 44, 199m, "Diamond 86", "hero-123", OrderStatus.Completed);
         order.Id = 88;
         order.AssignedTo = 3;
+        _packageRepository.Setup(repo => repo.GetByIdAsync(44))
+            .ReturnsAsync(new GamePackage
+            {
+                Id = 44,
+                GameId = 9,
+                Name = "Diamond 86"
+            });
+        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
+            .ReturnsAsync(new Game
+            {
+                Id = 9,
+                Name = "Mobile Legends"
+            });
 
         _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
             .ReturnsAsync(order);
 
-        var result = await _useCase.CompleteOrderAsync(88, new UserContext
+        await _useCase.CompleteOrderAsync(88, new UserContext
         {
             UserId = 3,
             DisplayName = "Admin",
             Role = UserRole.Admin
         });
 
-        result.Status.Should().Be(OrderStatus.Completed);
+        order.Status.Should().Be(OrderStatus.Completed);
         _orderRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Order>()), Times.Never);
         _orderHistoryRepository.Verify(repo => repo.CreateAsync(It.IsAny<OrderHistory>()), Times.Never);
     }
@@ -250,11 +309,24 @@ public class OrderUseCaseTests
     [Fact]
     public async Task CancelOrderAsync_ShouldRestoreStockAndRefundWallet_WhenCancellationChangesState()
     {
-        var order = Order.Create(7, 44, 199m, "hero-123", OrderStatus.Pending);
+        var order = Order.Create(7, 44, 199m, "Diamond 86", "hero-123", OrderStatus.Pending);
         order.Id = 88;
         OrderHistory? createdHistory = null;
         WalletTransaction? refundTransaction = null;
         decimal? updatedBalance = null;
+        _packageRepository.Setup(repo => repo.GetByIdAsync(44))
+            .ReturnsAsync(new GamePackage
+            {
+                Id = 44,
+                GameId = 9,
+                Name = "Diamond 86"
+            });
+        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
+            .ReturnsAsync(new Game
+            {
+                Id = 9,
+                Name = "Mobile Legends"
+            });
 
         _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
             .ReturnsAsync(order);
@@ -276,9 +348,9 @@ public class OrderUseCaseTests
             .ReturnsAsync(102)
             .Callback<WalletTransaction>(transaction => refundTransaction = transaction);
 
-        var result = await _useCase.CancelOrderAsync(88, new UserContext { UserId = 7 }, "changed my mind");
+        await _useCase.CancelOrderAsync(88, new UserContext { UserId = 7 }, "changed my mind");
 
-        result.Status.Should().Be(OrderStatus.Cancelled);
+        order.Status.Should().Be(OrderStatus.Cancelled);
         updatedBalance.Should().Be(500m);
         createdHistory.Should().NotBeNull();
         createdHistory!.FromStatus.Should().Be(OrderStatus.Pending);
@@ -294,8 +366,21 @@ public class OrderUseCaseTests
     [Fact]
     public async Task CancelOrderAsync_ShouldNotRefundWallet_WhenStockRestoreFails()
     {
-        var order = Order.Create(7, 44, 199m, "hero-123", OrderStatus.Pending);
+        var order = Order.Create(7, 44, 199m, "Diamond 86", "hero-123", OrderStatus.Pending);
         order.Id = 88;
+        _packageRepository.Setup(repo => repo.GetByIdAsync(44))
+            .ReturnsAsync(new GamePackage
+            {
+                Id = 44,
+                GameId = 9,
+                Name = "Diamond 86"
+            });
+        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
+            .ReturnsAsync(new Game
+            {
+                Id = 9,
+                Name = "Mobile Legends"
+            });
 
         _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
             .ReturnsAsync(order);
@@ -318,15 +403,28 @@ public class OrderUseCaseTests
     [Fact]
     public async Task CancelOrderAsync_ShouldNotRestoreStockOrRefund_WhenOrderWasAlreadyCancelled()
     {
-        var order = Order.Create(7, 44, 199m, "hero-123", OrderStatus.Cancelled);
+        var order = Order.Create(7, 44, 199m, "Diamond 86", "hero-123", OrderStatus.Cancelled);
         order.Id = 88;
+        _packageRepository.Setup(repo => repo.GetByIdAsync(44))
+            .ReturnsAsync(new GamePackage
+            {
+                Id = 44,
+                GameId = 9,
+                Name = "Diamond 86"
+            });
+        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
+            .ReturnsAsync(new Game
+            {
+                Id = 9,
+                Name = "Mobile Legends"
+            });
 
         _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
             .ReturnsAsync(order);
 
-        var result = await _useCase.CancelOrderAsync(88, new UserContext { UserId = 7 });
+        await _useCase.CancelOrderAsync(88, new UserContext { UserId = 7 });
 
-        result.Status.Should().Be(OrderStatus.Cancelled);
+        order.Status.Should().Be(OrderStatus.Cancelled);
         _orderRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Order>()), Times.Never);
         _orderHistoryRepository.Verify(repo => repo.CreateAsync(It.IsAny<OrderHistory>()), Times.Never);
         _packageRepository.Verify(repo => repo.IncreaseStockAsync(It.IsAny<long>(), It.IsAny<int>()), Times.Never);
