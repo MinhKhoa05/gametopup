@@ -13,13 +13,11 @@ namespace GameTopUp.Api.Controllers;
 public sealed class OrderController : ApiControllerBase
 {
     private readonly OrderUseCase _orderUseCase;
-    private readonly OrderService _orderService;
     private readonly OrderReadService _orderReadService;
 
-    public OrderController(OrderUseCase orderUseCase, OrderService orderService, OrderReadService orderReadService)
+    public OrderController(OrderUseCase orderUseCase, OrderReadService orderReadService)
     {
         _orderUseCase = orderUseCase;
-        _orderService = orderService;
         _orderReadService = orderReadService;
     }
 
@@ -40,8 +38,15 @@ public sealed class OrderController : ApiControllerBase
     [HttpGet("{orderId}")]
     public async Task<IActionResult> GetOrderById(long orderId)
     {
-        var detail = await _orderReadService.GetOrderDetailAsync(CurrentUser, orderId);
-        return ApiOk(detail);
+        var order = await _orderReadService.GetOrderAsync(CurrentUser, orderId);
+        return ApiOk(order);
+    }
+
+    [HttpGet("{orderId}/history")]
+    public async Task<IActionResult> GetOrderHistory(long orderId)
+    {
+        var history = await _orderReadService.GetOrderHistoryAsync(CurrentUser, orderId);
+        return ApiOk(history);
     }
 
     [HttpPost("{orderId}/cancel")]

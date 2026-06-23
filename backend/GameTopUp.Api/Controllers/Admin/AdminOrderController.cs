@@ -26,13 +26,6 @@ public sealed class AdminOrderController : ApiControllerBase
         return ApiOk(orders);
     }
 
-    [HttpGet("{orderId}")]
-    public async Task<IActionResult> GetOrderById(long orderId)
-    {
-        var detail = await _orderReadService.GetOrderDetailAsync(CurrentUser, orderId);
-        return ApiOk(detail);
-    }
-
     [HttpPost("{orderId}/pick")]
     public async Task<IActionResult> PickOrder(long orderId)
     {

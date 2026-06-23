@@ -1,7 +1,6 @@
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities.Auth;
 using GameTopUp.DAL.Entities.Games;
-using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.DAL.Entities.Users;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -80,25 +79,6 @@ public static partial class TestDatabaseExtensions
         customize?.Invoke(package);
 
         return factory.InsertSeedAsync(package, (x, id) => x.Id = id);
-    }
-
-    public static Task<Order> SeedOrderAsync(
-        this CustomWebApplicationFactory factory,
-        long userId,
-        long packageId,
-        Action<Order>? customize = null)
-    {
-        var unique = UniqueCode();
-        var order = Order.Create(
-            userId,
-            packageId,
-            100m,
-            $"Test Package {unique}",
-            $"account-{unique}");
-
-        customize?.Invoke(order);
-
-        return factory.InsertSeedAsync(order, (x, id) => x.Id = id);
     }
 
     public static Task<WalletDepositEntity> SeedWalletDepositAsync(

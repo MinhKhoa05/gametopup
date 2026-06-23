@@ -26,24 +26,50 @@ public class OrderReadServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetOrderDetailAsync_ShouldReturnOwnOrderAndHistories()
+    public async Task GetOrderAsync_ShouldReturnOwnOrder()
     {
         var expected = Order.Create(7, 44, 199m, "package", "account");
         expected.Id = 88;
+
+        _orderRepository
+            .Setup(repo => repo.GetByIdAsync(88))
+            .ReturnsAsync(expected);
+
+        var order = await _service.GetOrderAsync(
+            new UserContext { UserId = 7 },
+            88);
+
+        order.Id.Should().Be(expected.Id);
+    }
+
+    [Fact]
+    public async Task GetOrderHistoryAsync_ShouldReturnOrderHistory()
+    {
+        var order = Order.Create(7, 44, 199m, "package", "account");
+        order.Id = 88;
+
         var histories = new List<OrderHistory>
         {
-            OrderHistory.Create(88, OrderStatus.Pending, OrderStatus.Pending, 7)
+            OrderHistory.Create(
+                88,
+                OrderStatus.Pending,
+                OrderStatus.Pending,
+                7)
         };
-        _orderRepository.Setup(repo => repo.GetByIdAsync(88))
-            .ReturnsAsync(expected);
-        _historyRepository.Setup(repo => repo.GetByOrderIdAsync(88))
+
+        _orderRepository
+            .Setup(repo => repo.GetByIdAsync(88))
+            .ReturnsAsync(order);
+
+        _historyRepository
+            .Setup(repo => repo.GetByOrderIdAsync(88))
             .ReturnsAsync(histories);
 
-        var detail = await _service.GetOrderDetailAsync(new UserContext { UserId = 7 }, 88);
+        var result = await _service.GetOrderHistoryAsync(
+            new UserContext { UserId = 7 },
+            88);
 
-        detail.Order.Id.Should().Be(expected.Id);
-        detail.Histories.Should().HaveCount(1);
-        detail.Histories[0].OrderId.Should().Be(88);
+        result.Should().HaveCount(1);
     }
 
     [Fact]
@@ -54,14 +80,14 @@ public class OrderReadServiceTests : IDisposable
         _orderRepository.Setup(repo => repo.GetByIdAsync(88))
             .ReturnsAsync(existing);
 
-        var act = async () => await _service.GetOrderDetailAsync(new UserContext { UserId = 7 }, 88);
+        var act = async () => await _service.GetOrderAsync(new UserContext { UserId = 7 }, 88);
 
         await act.Should().ThrowAsync<ForbiddenException>()
             .Where(ex => ex.ErrorCode == ErrorCode.CannotModifyOthersOrder);
     }
 
     [Fact]
-    public async Task GetOrderDetailAsync_ShouldAllowAdminToAccessAnyOrder()
+    public async Task GetOrderAsync_ShouldAllowAdminToAccessAnyOrder()
     {
         var expected = Order.Create(8, 44, 199m, "package", "account");
         expected.Id = 88;
@@ -74,15 +100,13 @@ public class OrderReadServiceTests : IDisposable
         _historyRepository.Setup(repo => repo.GetByOrderIdAsync(88))
             .ReturnsAsync(histories);
 
-        var detail = await _service.GetOrderDetailAsync(new UserContext
+        var order = await _service.GetOrderAsync(new UserContext
         {
             UserId = 3,
             Role = UserRole.Admin
         }, 88);
 
-        detail.Order.Id.Should().Be(expected.Id);
-        detail.Histories.Should().HaveCount(1);
-        detail.Histories[0].OrderId.Should().Be(88);
+        order.Id.Should().Be(expected.Id);
     }
 
     private static DatabaseContext CreateDatabaseContext()

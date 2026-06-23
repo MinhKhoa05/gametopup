@@ -248,7 +248,7 @@ public class OrderServiceTests
         });
 
         act.Should().Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.OrderCannotBeCancelled);
+            .Where(ex => ex.ErrorCode == ErrorCode.CannotModifyOthersOrder);
     }
 
     [Fact]

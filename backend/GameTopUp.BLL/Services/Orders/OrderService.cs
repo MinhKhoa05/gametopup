@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Exceptions;
@@ -10,7 +11,7 @@ public sealed class OrderService
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IOrderHistoryRepository _orderHistoryRepository;
-    
+
     public OrderService(
         IOrderRepository orderRepository,
         IOrderHistoryRepository orderHistoryRepository)
@@ -103,20 +104,30 @@ public sealed class OrderService
 
     private static void EnsureCanCancelOrder(Order order, UserContext actor)
     {
-        if (!actor.IsAdmin && order.UserId != actor.UserId)
-        {
-            throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
-        }
-
-        var canCancel =
-            order.Status == OrderStatus.Pending ||
-            (actor.IsAdmin &&
-             order.Status == OrderStatus.Processing &&
-             order.AssignedTo == actor.UserId);
-
-        if (!canCancel)
+        if (order.Status == OrderStatus.Completed)
         {
             throw new BusinessException(ErrorCode.OrderCannotBeCancelled);
+        }
+
+        if (!actor.IsAdmin)
+        {
+            if (order.UserId != actor.UserId)
+            {
+                throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
+            }
+
+            if (order.Status == OrderStatus.Processing)
+            {
+                throw new BusinessException(ErrorCode.OrderCannotBeCancelled);
+            }
+
+            return;
+        }
+
+        if (order.Status == OrderStatus.Processing &&
+            order.AssignedTo != actor.UserId)
+        {
+            throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
         }
     }
 }

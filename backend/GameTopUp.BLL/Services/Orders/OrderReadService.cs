@@ -5,6 +5,7 @@ using GameTopUp.BLL.Mappers;
 using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.DAL.Interfaces.Orders;
 using GameTopUp.DAL.Queries.Orders;
+using GameTopUp.DAL.Repositories.Orders;
 
 namespace GameTopUp.BLL.Services.Orders;
 
@@ -36,7 +37,21 @@ public sealed class OrderReadService
         return orders.Select(order => order.MapTo<AdminOrderResponse>()).ToList();
     }
 
-    public async Task<OrderDetailResponse> GetOrderDetailAsync(UserContext actor, long orderId)
+    public async Task<OrderResponse> GetOrderAsync(UserContext actor, long orderId)
+    {
+        var order = await EnsureOrderAccessUser(actor, orderId);
+        return order.MapTo<OrderResponse>();
+    }
+
+    public async Task<List<OrderHistoryResponse>> GetOrderHistoryAsync(UserContext actor, long orderId)
+    {
+        await EnsureOrderAccessUser(actor, orderId);
+        
+        var history = await _orderHistoryRepository.GetByOrderIdAsync(orderId);
+        return history.Select(h => h.MapTo<OrderHistoryResponse>()).ToList();
+    }
+
+    private async Task<Order> EnsureOrderAccessUser(UserContext actor, long orderId)
     {
         var order = await _orderRepository.GetByIdAsync(orderId)
             ?? throw new NotFoundException(ErrorCode.OrderNotFound);
@@ -46,12 +61,6 @@ public sealed class OrderReadService
             throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
         }
 
-        var histories = await _orderHistoryRepository.GetByOrderIdAsync(orderId);
-
-        return new OrderDetailResponse
-        {
-            Order = order.MapTo<OrderResponse>(),
-            Histories = histories.Select(history => history.MapTo<OrderHistoryResponse>()).ToList()
-        };
+        return order;
     }
 }

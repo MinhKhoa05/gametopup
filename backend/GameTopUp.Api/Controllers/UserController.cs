@@ -1,5 +1,4 @@
 using GameTopUp.BLL.DTOs.Users;
-using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
