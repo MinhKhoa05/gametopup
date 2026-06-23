@@ -65,7 +65,8 @@ public sealed class AuthUseCase
             throw new UnauthorizedException(ErrorCode.InvalidCredentials);
         }
 
-        var tokens = await IssueTokenPairAsync(MapToContext(user));
+        var tokens = await IssueTokenPairAsync(user.MapTo<UserContext>());
+
         return new AuthResponse
         {
             AccessToken = tokens.AccessToken,
@@ -86,13 +87,9 @@ public sealed class AuthUseCase
         return await _transaction.ExecuteAsync(async () =>
         {
             var refreshToken = await _refreshTokenService.RevokeValidTokenAsync(hash);
-            if (refreshToken is null)
-            {
-                throw new UnauthorizedException(ErrorCode.InvalidRefreshToken);
-            }
 
             var user = await GetUserOrThrowAsync(refreshToken.UserId);
-            var tokens = await IssueTokenPairAsync(MapToContext(user));
+            var tokens = await IssueTokenPairAsync(user.MapTo<UserContext>());
 
             return new AuthResponse
             {
@@ -111,19 +108,14 @@ public sealed class AuthUseCase
             var hash = _tokenService.HashToken(refreshToken);
             await _refreshTokenService.RevokeValidTokenAsync(hash);
         }
-        catch
+        catch (UnauthorizedException)
         {
-            // Logout should stay best-effort.
+            // Ignore revoke failures during logout
         }
     }
 
     public async Task ChangePasswordAsync(UserContext context, PasswordChangeRequest request)
     {
-        if (request.CurrentPassword == request.NewPassword)
-        {
-            throw new BusinessException(ErrorCode.NewPasswordSameAsCurrent);
-        }
-
         _passwordService.Validate(request.NewPassword);
 
         var user = await GetUserOrThrowAsync(context.UserId);
@@ -151,16 +143,5 @@ public sealed class AuthUseCase
     {
         return await _userRepository.GetByIdAsync(userId)
             ?? throw new NotFoundException(ErrorCode.UserNotFound);
-    }
-
-    private static UserContext MapToContext(User user)
-    {
-        return new UserContext
-        {
-            UserId = user.Id,
-            DisplayName = user.DisplayName,
-            Email = user.Email,
-            Role = user.Role
-        };
     }
 }

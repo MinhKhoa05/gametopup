@@ -1,4 +1,5 @@
 using FluentAssertions;
+using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.DAL.Entities.Auth;
 using GameTopUp.DAL.Interfaces.Auth;
@@ -18,46 +19,63 @@ public class RefreshTokenServiceTests
 
     [Theory]
     [MemberData(nameof(InvalidRefreshTokens))]
-    public async Task RevokeValidTokenAsync_ShouldReturnNull_WhenTokenCannotBeUsed(RefreshToken? token)
+    public async Task RevokeValidTokenAsync_ShouldThrowUnauthorized_WhenTokenCannotBeUsed(
+        RefreshToken? token)
     {
         _repository.Setup(repo => repo.GetByTokenHashAsync("HASH"))
             .ReturnsAsync(token);
 
-        var result = await _service.RevokeValidTokenAsync("HASH");
+        var act = () => _service.RevokeValidTokenAsync("HASH");
 
-        result.Should().BeNull();
-        _repository.Verify(repo => repo.RevokeTokenAsync(It.IsAny<string>()), Times.Never);
+        await act.Should()
+            .ThrowAsync<UnauthorizedException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidRefreshToken);
+
+        _repository.Verify(
+            repo => repo.RevokeAsync(It.IsAny<string>()),
+            Times.Never);
     }
 
     [Fact]
     public async Task RevokeValidTokenAsync_ShouldReturnToken_WhenRevocationSucceeds()
     {
         var token = ValidToken();
+
         _repository.Setup(repo => repo.GetByTokenHashAsync("HASH"))
             .ReturnsAsync(token);
-        _repository.Setup(repo => repo.RevokeTokenAsync("HASH"))
+
+        _repository.Setup(repo => repo.RevokeAsync("HASH"))
             .ReturnsAsync(true);
 
         var result = await _service.RevokeValidTokenAsync("HASH");
 
         result.Should().BeSameAs(token);
-        _repository.Verify(repo => repo.RevokeTokenAsync("HASH"), Times.Once);
+
+        _repository.Verify(
+            repo => repo.RevokeAsync("HASH"),
+            Times.Once);
     }
 
     [Fact]
-    public async Task RevokeValidTokenAsync_ShouldReturnNull_WhenRevocationFails()
+    public async Task RevokeValidTokenAsync_ShouldThrowUnauthorized_WhenRevocationFails()
     {
         var token = ValidToken();
 
         _repository.Setup(repo => repo.GetByTokenHashAsync("HASH"))
             .ReturnsAsync(token);
-        _repository.Setup(repo => repo.RevokeTokenAsync("HASH"))
+
+        _repository.Setup(repo => repo.RevokeAsync("HASH"))
             .ReturnsAsync(false);
 
-        var result = await _service.RevokeValidTokenAsync("HASH");
+        var act = () => _service.RevokeValidTokenAsync("HASH");
 
-        result.Should().BeNull();
-        _repository.Verify(repo => repo.RevokeTokenAsync("HASH"), Times.Once);
+        await act.Should()
+            .ThrowAsync<UnauthorizedException>()
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidRefreshToken);
+
+        _repository.Verify(
+            repo => repo.RevokeAsync("HASH"),
+            Times.Once);
     }
 
     public static TheoryData<RefreshToken?> InvalidRefreshTokens() => new()

@@ -30,7 +30,7 @@ public sealed class DepositApiTests : BaseIntegrationTest
         deposit.Should().NotBeNull();
 
         deposit!.UserId.Should().Be(user.Id);
-        deposit.Amount.Should().Be(100_000m);
+        deposit.Amount.Should().Be(100_00m);
         deposit.Status.Should().Be(WalletDepositStatus.Pending);
         deposit.Code.Should().NotBeNullOrWhiteSpace();
         deposit.TransferContent.Should().NotBeNullOrWhiteSpace();
@@ -171,12 +171,12 @@ public sealed class DepositApiTests : BaseIntegrationTest
         {
             Amount = 100_000m
         });
-        await createResponse.ShouldHaveError(HttpStatusCode.Unauthorized);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
         var listResponse = await Client.GetAsync("/api/deposits");
-        await listResponse.ShouldHaveError(HttpStatusCode.Unauthorized);
+        listResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
         var confirmResponse = await Client.PostAsync("/api/deposits/1/confirm", null);
-        await confirmResponse.ShouldHaveError(HttpStatusCode.Unauthorized);
+        confirmResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }

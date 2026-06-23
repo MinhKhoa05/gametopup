@@ -21,7 +21,7 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
     public Task<long> CreateAsync(RefreshToken refreshToken) =>
         _database.InsertAsync(refreshToken);
 
-    public async Task<bool> RevokeTokenAsync(string tokenHash)
+    public async Task<bool> RevokeAsync(string tokenHash)
     {
         var affected = await _database.ExecuteAsync(
             "UPDATE refresh_tokens SET revoked_at = @Now WHERE token_hash = @TokenHash AND revoked_at IS NULL",

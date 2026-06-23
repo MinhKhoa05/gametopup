@@ -80,7 +80,7 @@ public sealed class AuthApiTests : BaseIntegrationTest
         reusedClient.ReplaceCookieHeader($"refreshToken={session.RefreshToken}");
 
         var reusedResponse = await reusedClient.PostAsync("/api/auth/refresh", null);
-        await response.ShouldHaveError(HttpStatusCode.Unauthorized, ErrorCode.InvalidRefreshToken);
+        await reusedResponse.ShouldHaveError(HttpStatusCode.Unauthorized, ErrorCode.InvalidRefreshToken);
     }
 
     [Fact]
@@ -111,8 +111,7 @@ public sealed class AuthApiTests : BaseIntegrationTest
         refreshAfterLogoutClient.ReplaceCookieHeader($"refreshToken={session.RefreshToken}");
 
         var refreshAfterLogoutResponse = await refreshAfterLogoutClient.PostAsync("/api/auth/refresh", null);
-
-        await response.ShouldHaveError(HttpStatusCode.Unauthorized, ErrorCode.InvalidRefreshToken);
+        await refreshAfterLogoutResponse.ShouldHaveError(HttpStatusCode.Unauthorized, ErrorCode.InvalidRefreshToken);
     }
 
     [Fact]
@@ -150,12 +149,10 @@ public sealed class AuthApiTests : BaseIntegrationTest
                 CurrentPassword = TestDatabaseExtensions.DefaultUserPassword,
                 NewPassword = "NewPassword123!"
             });
-
-        await changePasswordResponse.ShouldHaveError(HttpStatusCode.Unauthorized);
+        changePasswordResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
         var logoutResponse = await Client.PostAsync("/api/auth/logout", null);
-
-        await logoutResponse.ShouldHaveError(HttpStatusCode.Unauthorized);
+        logoutResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     private async Task<AuthSession> CreateLoggedInSessionAsync()

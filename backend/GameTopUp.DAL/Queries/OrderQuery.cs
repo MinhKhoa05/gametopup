@@ -51,7 +51,7 @@ public sealed class OrderQuery
                     o.game_account_info,
                     o.game_package_id,
                     g.name AS game_name,
-                    pg.image_url AS package_image_url,
+                    gp.image_url AS package_image_url,
                     o.package_name,
                     o.package_price,
                     o.package_cost,

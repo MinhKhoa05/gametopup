@@ -12,12 +12,9 @@ public static class ApiResponseAssertions
         CancellationToken cancellationToken = default)
     {
         response.StatusCode.Should().Be(statusCode);
-
         var body = await response.ReadApiResponseAsync<T>(cancellationToken);
-
         body.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
-
         return body.Data!;
     }
 
@@ -27,9 +24,7 @@ public static class ApiResponseAssertions
         CancellationToken cancellationToken = default)
     {
         response.StatusCode.Should().Be(statusCode);
-
         var body = await response.ReadApiResponseAsync<object>(cancellationToken);
-
         body.Success.Should().BeTrue();
     }
 
@@ -40,23 +35,19 @@ public static class ApiResponseAssertions
         CancellationToken cancellationToken = default)
     {
         response.StatusCode.Should().Be(statusCode);
-
         var body = await response.ReadApiResponseAsync<object>(cancellationToken);
-
         body.Success.Should().BeFalse();
         body.ErrorCode.Should().Be(errorCode);
     }
 
-    
+
     public static async Task ShouldHaveError(
         this HttpResponseMessage response,
         HttpStatusCode statusCode,
         CancellationToken cancellationToken = default)
     {
         response.StatusCode.Should().Be(statusCode);
-
         var body = await response.ReadApiResponseAsync<object>(cancellationToken);
-
         body.Success.Should().BeFalse();
     }
 }

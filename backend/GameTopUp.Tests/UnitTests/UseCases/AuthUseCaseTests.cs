@@ -172,7 +172,7 @@ public class AuthUseCaseTests
         response.RefreshToken.Should().NotBeNullOrWhiteSpace();
         response.User.Should().NotBeNull();
         response.User!.Email.Should().Be("user@test.local");
-        response.User.Role.Should().Be(UserRole.Member.ToString());
+        response.User.Role.Should().Be(UserRole.Member);
         savedRefreshToken.Should().NotBeNull();
         savedRefreshToken!.UserId.Should().Be(7);
         savedRefreshToken.TokenHash.Should().NotBeNullOrWhiteSpace();
@@ -187,7 +187,8 @@ public class AuthUseCaseTests
 
         var act = async () => await _useCase.RefreshAsync("invalid-refresh-token");
 
-        await act.Should().ThrowAsync<BusinessException>()
+        await act.Should()
+            .ThrowAsync<UnauthorizedException>()
             .Where(ex => ex.ErrorCode == ErrorCode.InvalidRefreshToken);
     }
 
@@ -219,7 +220,7 @@ public class AuthUseCaseTests
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 ExpiresAt = DateTime.UtcNow.AddDays(6)
             });
-        _refreshTokenRepository.Setup(repo => repo.RevokeTokenAsync(hash))
+        _refreshTokenRepository.Setup(repo => repo.RevokeAsync(hash))
             .ReturnsAsync(true);
         _userRepository.Setup(repo => repo.GetByIdAsync(7))
             .ReturnsAsync(new User
@@ -244,7 +245,7 @@ public class AuthUseCaseTests
     }
 
     [Fact]
-    public async Task RefreshAsync_ShouldThrowAndSkipIssuingNewToken_WhenRefreshTokenUserDoesNotExist()
+    public async Task RefreshAsync_ShouldThrowUserNotFound_WhenRefreshTokenOwnerDoesNotExist()
     {
         var hash = _tokenService.HashToken("refresh-token");
 
@@ -257,7 +258,7 @@ public class AuthUseCaseTests
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 ExpiresAt = DateTime.UtcNow.AddDays(6)
             });
-        _refreshTokenRepository.Setup(repo => repo.RevokeTokenAsync(hash))
+        _refreshTokenRepository.Setup(repo => repo.RevokeAsync(hash))
             .ReturnsAsync(true);
         _userRepository.Setup(repo => repo.GetByIdAsync(7))
             .ReturnsAsync((User?)null);
@@ -267,19 +268,6 @@ public class AuthUseCaseTests
         await act.Should().ThrowAsync<NotFoundException>()
             .Where(ex => ex.ErrorCode == ErrorCode.UserNotFound);
         _refreshTokenRepository.Verify(repo => repo.CreateAsync(It.IsAny<RefreshToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task ChangePasswordAsync_ShouldThrow_WhenNewPasswordMatchesCurrentPassword()
-    {
-        var act = async () => await _useCase.ChangePasswordAsync(new UserContext { UserId = 7 }, new PasswordChangeRequest
-        {
-            CurrentPassword = "Password123!",
-            NewPassword = "Password123!"
-        });
-
-        await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.NewPasswordSameAsCurrent);
     }
 
     [Fact]
@@ -349,7 +337,7 @@ public class AuthUseCaseTests
     [Fact]
     public async Task LogoutAsync_ShouldNotThrow_WhenTokenRevocationFails()
     {
-        _refreshTokenRepository.Setup(repo => repo.RevokeTokenAsync(It.IsAny<string>()))
+        _refreshTokenRepository.Setup(repo => repo.RevokeAsync(It.IsAny<string>()))
             .ThrowsAsync(new InvalidOperationException("boom"));
 
         var act = async () => await _useCase.LogoutAsync("refresh-token");

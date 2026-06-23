@@ -32,9 +32,6 @@ public enum ErrorCode
     [Display(Name = "Password is too weak.")]
     WeakPassword,
 
-    [Display(Name = "New password cannot match current password.")]
-    NewPasswordSameAsCurrent,
-
     [Display(Name = "Current password is incorrect.")]
     CurrentPasswordIncorrect,
 
