@@ -15,7 +15,7 @@ public sealed class GameApiTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetGames_ShouldReturnGames()
+    public async Task GetGames_ShouldExcludeInactiveGames()
     {
         var activeGame = await Factory.SeedGameAsync();
         await Factory.SeedGamePackageAsync(activeGame.Id);
@@ -23,41 +23,38 @@ public sealed class GameApiTests : BaseIntegrationTest
 
         var response = await Client.GetAsync("/api/games");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var games = await response.ShouldBeSuccess<List<GameResponse>>();
 
-        var body = await response.ReadApiResponseAsync<List<GameResponse>>();
+        var game = games.Should().ContainSingle().Subject;
 
-        body.Success.Should().BeTrue();
-        body.Data.Should().NotBeNull();
-
-        var result = body.Data!
-            .Should()
-            .ContainSingle()
-            .Subject;
-
-        result.Id.Should().Be(activeGame.Id);
-        result.Name.Should().Be(activeGame.Name);
-        result.ActivePackages.Should().Be(1);
+        game.Id.Should().Be(activeGame.Id);
+        game.Name.Should().Be(activeGame.Name);
+        game.ActivePackages.Should().Be(1);
     }
 
     [Fact]
-    public async Task GetGameById_ShouldReturnGame_WhenExists()
+    public async Task GetGameById_ShouldReturnGame_WhenGameHasActivePackages()
     {
         var game = await Factory.SeedGameAsync();
         await Factory.SeedGamePackageAsync(game.Id);
 
         var response = await Client.GetAsync($"/api/games/{game.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.ShouldBeSuccess<GameResponse>();
 
-        var body = await response.ReadApiResponseAsync<GameResponse>();
+        result.Id.Should().Be(game.Id);
+        result.Name.Should().Be(game.Name);
+        result.ActivePackages.Should().Be(1);
+    }
 
-        body.Success.Should().BeTrue();
-        body.Data.Should().NotBeNull();
+    [Fact]
+    public async Task GetGameById_ShouldReturnNotFound_WhenGameHasNoActivePackages()
+    {
+        var game = await Factory.SeedGameAsync();
 
-        body.Data!.Id.Should().Be(game.Id);
-        body.Data.Name.Should().Be(game.Name);
-        body.Data.ActivePackages.Should().Be(1);
+        var response = await Client.GetAsync($"/api/games/{game.Id}");
+
+        await response.ShouldHaveError(HttpStatusCode.NotFound, ErrorCode.GameNotFound);
     }
 
     [Fact]
@@ -67,12 +64,7 @@ public sealed class GameApiTests : BaseIntegrationTest
 
         var response = await Client.GetAsync($"/api/games/{game.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-
-        var body = await response.ReadApiResponseAsync<object>();
-
-        body.Success.Should().BeFalse();
-        body.ErrorCode.Should().Be(ErrorCode.GameNotFound);
+        await response.ShouldHaveError(HttpStatusCode.NotFound, ErrorCode.GameNotFound);
     }
 
     [Fact]
@@ -80,11 +72,6 @@ public sealed class GameApiTests : BaseIntegrationTest
     {
         var response = await Client.GetAsync("/api/games/999999");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-
-        var body = await response.ReadApiResponseAsync<object>();
-
-        body.Success.Should().BeFalse();
-        body.ErrorCode.Should().Be(ErrorCode.GameNotFound);
+        await response.ShouldHaveError(HttpStatusCode.NotFound, ErrorCode.GameNotFound);
     }
 }

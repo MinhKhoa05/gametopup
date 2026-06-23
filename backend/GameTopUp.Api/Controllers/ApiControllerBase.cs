@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using GameTopUp.Api;
 using GameTopUp.BLL.Context;
 using GameTopUp.DAL.Entities.Users;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +14,9 @@ public abstract class ApiControllerBase : ControllerBase
 
     protected IActionResult ApiCreated<T>(T? data)
         => StatusCode(StatusCodes.Status201Created, ApiResponse.Ok(data));
+
+    protected IActionResult ApiCreated()
+        => StatusCode(StatusCodes.Status201Created, ApiResponse.Ok());
 
     protected UserContext CurrentUser
     {

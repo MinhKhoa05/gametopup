@@ -21,27 +21,16 @@ public sealed class DepositApiTests : BaseIntegrationTest
         var user = await Factory.SeedUserAsync();
         using var client = CreateHeaderAuthenticatedClient(user);
 
-        var request = new CreateDepositRequest
-        {
-            Amount = 100_000m
-        };
+        var response = await client.PostJsonAsync("/api/deposits", new CreateDepositRequest { Amount = 100_00m });
 
-        var response = await client.PostJsonAsync("/api/deposits", request);
+        var createdDeposit = await response.ShouldBeSuccess<WalletDepositResponse>(HttpStatusCode.Created);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        var body = await response.ReadApiResponseAsync<WalletDepositResponse>();
-        body.Success.Should().BeTrue();
-        body.Data.Should().NotBeNull();
-
-        body.Data!.Amount.Should().Be(request.Amount);
-        body.Data.Status.Should().Be(WalletDepositStatus.Pending);
-
-        var deposit = await Factory.GetWalletDepositAsync(body.Data.Id);
+        var deposit = await Factory.GetWalletDepositAsync(createdDeposit.Id);
 
         deposit.Should().NotBeNull();
+
         deposit!.UserId.Should().Be(user.Id);
-        deposit.Amount.Should().Be(request.Amount);
+        deposit.Amount.Should().Be(100_000m);
         deposit.Status.Should().Be(WalletDepositStatus.Pending);
         deposit.Code.Should().NotBeNullOrWhiteSpace();
         deposit.TransferContent.Should().NotBeNullOrWhiteSpace();
@@ -53,23 +42,18 @@ public sealed class DepositApiTests : BaseIntegrationTest
         var user = await Factory.SeedUserAsync();
         var deposit = await Factory.SeedWalletDepositAsync(user.Id, d =>
         {
-            d.Amount = 100_000m;
-            d.Status = WalletDepositStatus.Pending;
+            d.Amount = 777_777m;
         });
 
         using var client = CreateHeaderAuthenticatedClient(user);
 
         var response = await client.GetAsync($"/api/deposits/{deposit.Id}");
+        
+        var depositResponse = await response.ShouldBeSuccess<WalletDepositResponse>();
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var body = await response.ReadApiResponseAsync<WalletDepositResponse>();
-        body.Success.Should().BeTrue();
-        body.Data.Should().NotBeNull();
-
-        body.Data!.Id.Should().Be(deposit.Id);
-        body.Data.UserId.Should().Be(user.Id);
-        body.Data.Amount.Should().Be(deposit.Amount);
+        depositResponse.Id.Should().Be(deposit.Id);
+        depositResponse.UserId.Should().Be(user.Id);
+        depositResponse.Amount.Should().Be(777_777m);
     }
 
     [Fact]
@@ -84,11 +68,7 @@ public sealed class DepositApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync($"/api/deposits/{deposit.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-
-        var body = await response.ReadApiResponseAsync<object>();
-        body.Success.Should().BeFalse();
-        body.ErrorCode.Should().Be(ErrorCode.DepositRequestForbidden);
+        await response.ShouldHaveError(HttpStatusCode.Forbidden, ErrorCode.DepositRequestForbidden);
     }
 
     [Fact]
@@ -100,11 +80,7 @@ public sealed class DepositApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync("/api/deposits/999999");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-
-        var body = await response.ReadApiResponseAsync<object>();
-        body.Success.Should().BeFalse();
-        body.ErrorCode.Should().Be(ErrorCode.DepositRequestNotFound);
+        await response.ShouldHaveError(HttpStatusCode.NotFound, ErrorCode.DepositRequestNotFound);
     }
 
     [Fact]
@@ -127,15 +103,13 @@ public sealed class DepositApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync("/api/deposits");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var deposits = await response.ShouldBeSuccess<List<WalletDepositResponse>>();
 
-        var body = await response.ReadApiResponseAsync<List<WalletDepositResponse>>();
-        body.Success.Should().BeTrue();
-        body.Data.Should().NotBeNull();
+        var deposit = deposits.Should().ContainSingle().Subject;
 
-        var result = body.Data!.Should().ContainSingle().Subject;
-        result.Id.Should().Be(userDeposit.Id);
-        result.Amount.Should().Be(userDeposit.Amount);
+        deposit.Id.Should().Be(userDeposit.Id);
+        deposit.UserId.Should().Be(user.Id);
+        deposit.Amount.Should().Be(100_000m);
     }
 
     [Fact]
@@ -158,16 +132,11 @@ public sealed class DepositApiTests : BaseIntegrationTest
         using var client = CreateHeaderAuthenticatedClient(user);
 
         var response = await client.GetAsync($"/api/deposits?status={WalletDepositStatus.Pending}");
+        var deposits = await response.ShouldBeSuccess<List<WalletDepositResponse>>();
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var body = await response.ReadApiResponseAsync<List<WalletDepositResponse>>();
-        body.Success.Should().BeTrue();
-        body.Data.Should().NotBeNull();
-
-        var result = body.Data!.Should().ContainSingle().Subject;
-        result.Id.Should().Be(pendingDeposit.Id);
-        result.Status.Should().Be(WalletDepositStatus.Pending);
+        var deposit = deposits.Should().ContainSingle().Subject;
+        deposit.Id.Should().Be(pendingDeposit.Id);
+        deposit.Status.Should().Be(WalletDepositStatus.Pending);
     }
 
     [Fact]
@@ -177,27 +146,21 @@ public sealed class DepositApiTests : BaseIntegrationTest
         var deposit = await Factory.SeedWalletDepositAsync(user.Id, deposit =>
         {
             deposit.Amount = 100_000m;
-            deposit.Status = WalletDepositStatus.Pending;
         });
 
         using var client = CreateHeaderAuthenticatedClient(user);
 
         var response = await client.PostAsync($"/api/deposits/{deposit.Id}/confirm", null);
+        var despositReponse = await response.ShouldBeSuccess<WalletDepositResponse>();
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var body = await response.ReadApiResponseAsync<WalletDepositResponse>();
-        body.Success.Should().BeTrue();
-        body.Data.Should().NotBeNull();
-
-        body.Data!.Id.Should().Be(deposit.Id);
-        body.Data.Status.Should().Be(WalletDepositStatus.UserConfirmed);
+        despositReponse.Id.Should().Be(deposit.Id);
+        despositReponse.Status.Should().Be(WalletDepositStatus.UserConfirmed);
 
         var updatedDeposit = await Factory.GetWalletDepositAsync(deposit.Id);
 
         updatedDeposit.Should().NotBeNull();
         updatedDeposit!.UserId.Should().Be(user.Id);
-        updatedDeposit.Amount.Should().Be(deposit.Amount);
+        updatedDeposit.Amount.Should().Be(100_000m);
         updatedDeposit.Status.Should().Be(WalletDepositStatus.UserConfirmed);
     }
 
@@ -208,15 +171,12 @@ public sealed class DepositApiTests : BaseIntegrationTest
         {
             Amount = 100_000m
         });
-
-        createResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        await createResponse.ShouldHaveError(HttpStatusCode.Unauthorized);
 
         var listResponse = await Client.GetAsync("/api/deposits");
-
-        listResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        await listResponse.ShouldHaveError(HttpStatusCode.Unauthorized);
 
         var confirmResponse = await Client.PostAsync("/api/deposits/1/confirm", null);
-
-        confirmResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        await confirmResponse.ShouldHaveError(HttpStatusCode.Unauthorized);
     }
 }
