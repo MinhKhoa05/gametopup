@@ -1,6 +1,4 @@
 using System.Text;
-using GameTopUp.Api;
-using GameTopUp.Api.Middlewares;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

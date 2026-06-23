@@ -79,6 +79,21 @@ public static partial class TestDatabaseExtensions
                 new { OrderId = orderId }));
     }
 
+    public static Task<List<Order>> GetOrdersByUserAsync(
+        this CustomWebApplicationFactory factory,
+        long userId)
+    {
+        return factory.WithDbAsync(db =>
+            db.QueryAsync<Order>(
+                """
+                SELECT *
+                FROM orders
+                WHERE user_id = @UserId
+                ORDER BY created_at DESC
+                """,
+                new { UserId = userId }));
+    }
+
     public static Task<WalletDepositEntity?> GetWalletDepositAsync(
         this CustomWebApplicationFactory factory,
         long depositId)
