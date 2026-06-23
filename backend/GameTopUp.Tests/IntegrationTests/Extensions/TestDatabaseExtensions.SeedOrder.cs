@@ -53,6 +53,7 @@ public static partial class TestDatabaseExtensions
 
         var order = await factory.SeedOrderAsync(user.Id, package.Id, order =>
         {
+            order.PackagePrice = package.SalePrice;
             customizeOrder?.Invoke(order);
         });
 

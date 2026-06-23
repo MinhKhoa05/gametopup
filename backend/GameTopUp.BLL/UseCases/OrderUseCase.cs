@@ -79,6 +79,7 @@ public sealed class OrderUseCase
 
             var package = await _packageService.GetPackageByIdOrThrowAsync(order.GamePackageId);
             var history = _orderService.PickOrder(order, actor, package.ImportPrice);
+
             await _orderService.UpdateWithHistoryAsync(order, history);
         });
     }
@@ -123,6 +124,7 @@ public sealed class OrderUseCase
                 order.PackagePrice,
                 WalletTransactionType.Refund,
                 order.Id.ToString(CultureInfo.InvariantCulture));
+            
             await _walletService.ApplyTransactionAsync(wallet, walletTransaction);
         });
     }
