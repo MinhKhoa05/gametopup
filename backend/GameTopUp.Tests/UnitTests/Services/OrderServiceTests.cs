@@ -77,7 +77,7 @@ public class OrderServiceTests
         }, 80m);
 
         act.Should().Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.OrderNotReadyForPick);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidOrderStatus);
     }
 
     [Fact]
@@ -117,7 +117,7 @@ public class OrderServiceTests
         });
 
         act.Should().Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.CannotModifyOthersOrder);
+            .Where(ex => ex.ErrorCode == ErrorCode.Forbidden);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class OrderServiceTests
         });
 
         act.Should().Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.OrderStatusInvalidToComplete);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidOrderStatus);
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public class OrderServiceTests
         Action act = () => _service.CancelOrder(order, new UserContext { UserId = 7 });
 
         act.Should().Throw<ForbiddenException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.CannotModifyOthersOrder);
+            .Where(ex => ex.ErrorCode == ErrorCode.Forbidden);
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public class OrderServiceTests
         Action act = () => _service.CancelOrder(order, new UserContext { UserId = 7 });
 
         act.Should().Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.OrderCannotBeCancelled);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidOrderStatus);
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public class OrderServiceTests
         Action act = () => _service.CancelOrder(order, new UserContext { UserId = 7 });
 
         act.Should().Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.OrderCannotBeCancelled);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidOrderStatus);
     }
 
     [Fact]
@@ -248,7 +248,7 @@ public class OrderServiceTests
         });
 
         act.Should().Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.CannotModifyOthersOrder);
+            .Where(ex => ex.ErrorCode == ErrorCode.Forbidden);
     }
 
     [Fact]

@@ -85,7 +85,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync($"/api/orders/{order.Id}");
 
-        await response.ShouldHaveError(HttpStatusCode.Forbidden, ErrorCode.CannotModifyOthersOrder);
+        await response.ShouldHaveError(HttpStatusCode.Forbidden, ErrorCode.Forbidden);
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync($"/api/orders/{order.Id}/history");
 
-        await response.ShouldHaveError(HttpStatusCode.Forbidden, ErrorCode.CannotModifyOthersOrder);
+        await response.ShouldHaveError(HttpStatusCode.Forbidden, ErrorCode.Forbidden);
     }
 
     [Fact]

@@ -46,7 +46,7 @@ internal static class BackendMapsterConfig
         config.NewConfig<WalletTransaction, WalletTransactionResponse>();
 
         config.NewConfig<WalletDeposit, WalletDepositResponse>();
-        config.NewConfig<WalletDeposit, AdminDepositResponse>();
+
 
         config.NewConfig<User, UserResponse>();
         config.NewConfig<User, UserContext>()

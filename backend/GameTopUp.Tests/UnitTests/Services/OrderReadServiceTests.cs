@@ -83,7 +83,7 @@ public class OrderReadServiceTests : IDisposable
         var act = async () => await _service.GetOrderAsync(new UserContext { UserId = 7 }, 88);
 
         await act.Should().ThrowAsync<ForbiddenException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.CannotModifyOthersOrder);
+            .Where(ex => ex.ErrorCode == ErrorCode.Forbidden);
     }
 
     [Fact]

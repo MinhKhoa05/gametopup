@@ -46,7 +46,7 @@ public sealed class WalletDepositController : ApiControllerBase
     [HttpPost("{requestId:long}/confirm")]
     public async Task<IActionResult> ConfirmDepositTransfer(long requestId)
     {
-        var response = await _walletDepositUseCase.ConfirmDepositTransferAsync(requestId, CurrentUser);
-        return ApiOk(response);
+        await _walletDepositUseCase.ConfirmDepositTransferAsync(requestId, CurrentUser);
+        return ApiOk();
     }
 }

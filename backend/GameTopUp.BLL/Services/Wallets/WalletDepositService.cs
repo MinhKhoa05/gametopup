@@ -33,7 +33,7 @@ public sealed class WalletDepositService
 
         if (!actor.IsAdmin && request.UserId != actor.UserId)
         {
-            throw new ForbiddenException(ErrorCode.DepositRequestForbidden);
+            throw new ForbiddenException(ErrorCode.Forbidden);
         }
 
         return request.MapTo<WalletDepositResponse>();
@@ -53,11 +53,11 @@ public sealed class WalletDepositService
             .ToList();
     }
 
-    public async Task<List<AdminDepositResponse>> GetAllAsync(WalletDepositStatus? status = null)
+    public async Task<List<WalletDepositResponse>> GetAllAsync(WalletDepositStatus? status = null)
     {
         var deposits = await _repository.GetAllAsync(status);
         return deposits
-            .Select(request => request.MapTo<AdminDepositResponse>())
+            .Select(request => request.MapTo<WalletDepositResponse>())
             .ToList();
     }
 
@@ -90,12 +90,12 @@ public sealed class WalletDepositService
 
         if (deposit.UserId != actor.UserId)
         {
-            throw new ForbiddenException(ErrorCode.DepositRequestForbidden);
+            throw new ForbiddenException(ErrorCode.Forbidden);
         }
 
         if (deposit.Status != WalletDepositStatus.Pending)
         {
-            throw new BusinessException(ErrorCode.DepositConfirmOnlyPending);
+            throw new BusinessException(ErrorCode.InvalidDepositStatus);
         }
 
         deposit.MarkUserConfirmed(now);
@@ -109,7 +109,7 @@ public sealed class WalletDepositService
 
         if (deposit.Status != WalletDepositStatus.UserConfirmed)
         {
-            throw new BusinessException(ErrorCode.DepositApproveOnlyUserConfirmed);
+            throw new BusinessException(ErrorCode.InvalidDepositStatus);
         }
 
         deposit.MarkApproved(admin.UserId, note, now);
@@ -121,12 +121,13 @@ public sealed class WalletDepositService
         ArgumentNullException.ThrowIfNull(deposit);
         ArgumentNullException.ThrowIfNull(admin);
 
-        if (deposit.Status == WalletDepositStatus.Approved)
+        if (deposit.Status != WalletDepositStatus.UserConfirmed)
         {
-            throw new BusinessException(ErrorCode.ApprovedDepositCannotBeRejected);
+            throw new BusinessException(ErrorCode.InvalidDepositStatus);
         }
 
         deposit.MarkRejected(admin.UserId, note, now);
+
         return deposit;
     }
 

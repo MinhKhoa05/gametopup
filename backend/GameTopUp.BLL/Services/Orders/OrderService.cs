@@ -53,7 +53,7 @@ public sealed class OrderService
 
         if (order.Status != OrderStatus.Pending)
         {
-            throw new BusinessException(ErrorCode.OrderNotReadyForPick);
+            throw new BusinessException(ErrorCode.InvalidOrderStatus);
         }
 
         var fromStatus = order.Status;
@@ -66,12 +66,12 @@ public sealed class OrderService
     {
         if (order.Status != OrderStatus.Processing)
         {
-            throw new BusinessException(ErrorCode.OrderStatusInvalidToComplete);
+            throw new BusinessException(ErrorCode.InvalidOrderStatus);
         }
 
         if (order.AssignedTo != actor.UserId)
         {
-            throw new BusinessException(ErrorCode.CannotModifyOthersOrder);
+            throw new BusinessException(ErrorCode.Forbidden);
         }
 
         var fromStatus = order.Status;
@@ -106,19 +106,19 @@ public sealed class OrderService
     {
         if (order.Status == OrderStatus.Completed)
         {
-            throw new BusinessException(ErrorCode.OrderCannotBeCancelled);
+            throw new BusinessException(ErrorCode.InvalidOrderStatus);
         }
 
         if (!actor.IsAdmin)
         {
             if (order.UserId != actor.UserId)
             {
-                throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
+                throw new ForbiddenException(ErrorCode.Forbidden);
             }
 
             if (order.Status == OrderStatus.Processing)
             {
-                throw new BusinessException(ErrorCode.OrderCannotBeCancelled);
+                throw new BusinessException(ErrorCode.InvalidOrderStatus);
             }
 
             return;
@@ -127,7 +127,7 @@ public sealed class OrderService
         if (order.Status == OrderStatus.Processing &&
             order.AssignedTo != actor.UserId)
         {
-            throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
+            throw new ForbiddenException(ErrorCode.Forbidden);
         }
     }
 }

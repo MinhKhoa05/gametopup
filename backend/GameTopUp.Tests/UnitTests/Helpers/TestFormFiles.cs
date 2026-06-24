@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace GameTopUp.Tests.UnitTests.Support;
+namespace GameTopUp.Tests.UnitTests.Helpers;
 
 internal static class TestFormFiles
 {

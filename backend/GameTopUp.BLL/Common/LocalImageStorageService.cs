@@ -95,7 +95,7 @@ public sealed class LocalImageStorageService : IImageStorageService
         if (!fullPath.Equals(webRoot, StringComparison.OrdinalIgnoreCase)
             && !fullPath.StartsWith(webRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
         {
-            throw new BusinessException(ErrorCode.InvalidImageFileName);
+            throw new BusinessException(ErrorCode.InvalidImageFile);
         }
 
         return fullPath;
@@ -113,25 +113,25 @@ public sealed class LocalImageStorageService : IImageStorageService
             return extension;
         }
 
-        throw new BusinessException(ErrorCode.UnsupportedImageType);
+        throw new BusinessException(ErrorCode.InvalidImageFile);
     }
 
     private static string SanitizeSegment(string segment)
     {
         if (string.IsNullOrWhiteSpace(segment))
         {
-            throw new BusinessException(ErrorCode.InvalidImageFileName);
+            throw new BusinessException(ErrorCode.InvalidImageFile);
         }
 
         if (segment.Contains('/') || segment.Contains('\\'))
         {
-            throw new BusinessException(ErrorCode.InvalidImageFileName);
+            throw new BusinessException(ErrorCode.InvalidImageFile);
         }
 
         var cleaned = segment.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, ' ');
         if (string.IsNullOrWhiteSpace(cleaned))
         {
-            throw new BusinessException(ErrorCode.InvalidImageFileName);
+            throw new BusinessException(ErrorCode.InvalidImageFile);
         }
 
         return string.Join("-", cleaned.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
@@ -146,28 +146,28 @@ public sealed class LocalImageStorageService : IImageStorageService
     {
         if (image == null || image.Length == 0)
         {
-            throw new BusinessException(ErrorCode.ImageRequired);
+            throw new BusinessException(ErrorCode.InvalidImageFile);
         }
 
         if (image.Length > MaxImageSize)
         {
-            throw new BusinessException(ErrorCode.ImageTooLarge);
+            throw new BusinessException(ErrorCode.InvalidImageFile);
         }
 
         if (string.IsNullOrWhiteSpace(image.FileName))
         {
-            throw new BusinessException(ErrorCode.InvalidImageFileName);
+            throw new BusinessException(ErrorCode.InvalidImageFile);
         }
 
         if (string.IsNullOrWhiteSpace(image.ContentType))
         {
-            throw new BusinessException(ErrorCode.UnsupportedImageType);
+            throw new BusinessException(ErrorCode.InvalidImageFile);
         }
 
         var extension = Path.GetExtension(image.FileName);
         if (!ContentTypeExtensions.Any(entry => entry.Value.Equals(extension, StringComparison.OrdinalIgnoreCase)))
         {
-            throw new BusinessException(ErrorCode.UnsupportedImageType);
+            throw new BusinessException(ErrorCode.InvalidImageFile);
         }
     }
 

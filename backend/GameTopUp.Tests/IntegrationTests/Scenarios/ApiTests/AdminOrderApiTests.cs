@@ -162,7 +162,7 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
 
         var response = await client.PostAsync($"/api/admin/orders/{orderId}/cancel", null);
 
-        await response.ShouldHaveError(HttpStatusCode.Forbidden, ErrorCode.CannotModifyOthersOrder);
+        await response.ShouldHaveError(HttpStatusCode.Forbidden, ErrorCode.Forbidden);
 
         var updated = await Factory.GetOrderAsync(orderId);
 

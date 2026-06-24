@@ -17,4 +17,6 @@ public sealed class WalletDepositResponse
     public DateTime? UserConfirmedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public long? ReviewedBy { get; set; }
+    public string? AdminNote { get; set; }
 }

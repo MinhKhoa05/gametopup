@@ -103,7 +103,7 @@ public sealed class AdminGameApiTests : BaseIntegrationTest
             },
             CreateImageContent("text/plain", "bad-image.txt"));
 
-        await response.ShouldHaveError(HttpStatusCode.BadRequest, ErrorCode.UnsupportedImageType);
+        await response.ShouldHaveError(HttpStatusCode.BadRequest, ErrorCode.InvalidImageFile);
     }
 
     [Fact]

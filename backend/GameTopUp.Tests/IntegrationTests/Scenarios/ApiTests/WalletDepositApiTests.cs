@@ -68,7 +68,7 @@ public sealed class DepositApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync($"/api/deposits/{deposit.Id}");
 
-        await response.ShouldHaveError(HttpStatusCode.Forbidden, ErrorCode.DepositRequestForbidden);
+        await response.ShouldHaveError(HttpStatusCode.Forbidden, ErrorCode.Forbidden);
     }
 
     [Fact]
@@ -151,10 +151,7 @@ public sealed class DepositApiTests : BaseIntegrationTest
         using var client = CreateHeaderAuthenticatedClient(user);
 
         var response = await client.PostAsync($"/api/deposits/{deposit.Id}/confirm", null);
-        var despositReponse = await response.ShouldBeSuccess<WalletDepositResponse>();
-
-        despositReponse.Id.Should().Be(deposit.Id);
-        despositReponse.Status.Should().Be(WalletDepositStatus.UserConfirmed);
+        await response.ShouldBeSuccess();
 
         var updatedDeposit = await Factory.GetWalletDepositAsync(deposit.Id);
 

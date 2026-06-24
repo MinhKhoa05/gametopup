@@ -32,14 +32,14 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync("/api/admin/deposits");
 
-        var depositRequests = await response.ShouldBeSuccess<List<AdminDepositResponse>>();
+        var depositRequests = await response.ShouldBeSuccess<List<WalletDepositResponse>>();
 
         depositRequests.Should().Contain(item => item.Id == pendingDeposit.Id);
         depositRequests.Should().Contain(item => item.Id == confirmedDeposit.Id);
 
         response = await client.GetAsync($"/api/admin/deposits?status={WalletDepositStatus.Pending}");
 
-        var filteredDepositRequests = await response.ShouldBeSuccess<List<AdminDepositResponse>>();
+        var filteredDepositRequests = await response.ShouldBeSuccess<List<WalletDepositResponse>>();
 
         filteredDepositRequests.Should().ContainSingle(item => item.Id == pendingDeposit.Id);
     }
@@ -81,18 +81,9 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
 
         using var client = CreateHeaderAuthenticatedClient(admin);
 
-        var response = await client.PostJsonAsync(
-            $"/api/admin/deposits/{deposit.Id}/approve",
-            new ReviewDepositRequest
-            {
-                Note = "verified"
-            });
+        var response = await client.PostAsync($"/api/admin/deposits/{deposit.Id}/approve", null);
 
-        var approvedDeposit = await response.ShouldBeSuccess<AdminDepositResponse>();
-
-        approvedDeposit.Status.Should().Be(WalletDepositStatus.Approved);
-        approvedDeposit.ReviewedBy.Should().Be(admin.Id);
-        approvedDeposit.AdminNote.Should().Be("verified");
+        await response.ShouldBeSuccess();
 
         var wallet = await Factory.GetWalletAsync(user.Id);
 
@@ -120,14 +111,9 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
 
         using var client = CreateHeaderAuthenticatedClient(admin);
 
-        var response = await client.PostJsonAsync(
-            $"/api/admin/deposits/{deposit.Id}/approve",
-            new ReviewDepositRequest
-            {
-                Note = "verified"
-            });
+        var response = await client.PostAsync($"/api/admin/deposits/{deposit.Id}/approve", null);
 
-        await response.ShouldHaveError(HttpStatusCode.BadRequest, ErrorCode.DepositApproveOnlyUserConfirmed);
+        await response.ShouldHaveError(HttpStatusCode.BadRequest, ErrorCode.InvalidDepositStatus);
     }
 
     [Fact]
@@ -137,12 +123,7 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
 
         using var client = CreateHeaderAuthenticatedClient(admin);
 
-        var response = await client.PostJsonAsync(
-            "/api/admin/deposits/999999/approve",
-            new ReviewDepositRequest
-            {
-                Note = "verified"
-            });
+        var response = await client.PostAsync("/api/admin/deposits/999999/approve", null);
 
         await response.ShouldHaveError(HttpStatusCode.NotFound, ErrorCode.DepositRequestNotFound);
     }
@@ -165,19 +146,9 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
 
         using var client = CreateHeaderAuthenticatedClient(admin);
 
-        var response = await client.PostJsonAsync(
-            $"/api/admin/deposits/{deposit.Id}/reject",
-            new ReviewDepositRequest
-            {
-                Note = "duplicate transfer"
-            });
+        var response = await client.PostAsync($"/api/admin/deposits/{deposit.Id}/reject", null);
 
-        var rejectedDeposit =
-            await response.ShouldBeSuccess<AdminDepositResponse>();
-
-        rejectedDeposit.Status.Should().Be(WalletDepositStatus.Rejected);
-        rejectedDeposit.ReviewedBy.Should().Be(admin.Id);
-        rejectedDeposit.AdminNote.Should().Be("duplicate transfer");
+        await response.ShouldBeSuccess();
 
         var wallet = await Factory.GetWalletAsync(user.Id);
 
@@ -196,12 +167,7 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
 
         using var client = CreateHeaderAuthenticatedClient(admin);
 
-        var response = await client.PostJsonAsync(
-            "/api/admin/deposits/999999/reject",
-            new ReviewDepositRequest
-            {
-                Note = "duplicate transfer"
-            });
+        var response = await client.PostAsync("/api/admin/deposits/999999/reject", null);
 
         await response.ShouldHaveError(HttpStatusCode.NotFound, ErrorCode.DepositRequestNotFound);
     }

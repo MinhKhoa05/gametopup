@@ -49,9 +49,8 @@ public class WalletDepositUseCaseTests
         _depositRequestRepository.Setup(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()))
             .ReturnsAsync(true);
 
-        var response = await _useCase.ConfirmDepositTransferAsync(5, new UserContext { UserId = 7 });
+        await _useCase.ConfirmDepositTransferAsync(5, new UserContext { UserId = 7 });
 
-        response.Status.Should().Be(WalletDepositStatus.UserConfirmed);
         request.Status.Should().Be(WalletDepositStatus.UserConfirmed);
         request.UserConfirmedAt.Should().NotBeNull();
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(request), Times.Once);
@@ -66,9 +65,8 @@ public class WalletDepositUseCaseTests
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
 
-        var response = await _useCase.ConfirmDepositTransferAsync(5, new UserContext { UserId = 7 });
+        await _useCase.ConfirmDepositTransferAsync(5, new UserContext { UserId = 7 });
 
-        response.Status.Should().Be(WalletDepositStatus.UserConfirmed);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
     }
 
@@ -83,7 +81,7 @@ public class WalletDepositUseCaseTests
         var act = async () => await _useCase.ConfirmDepositTransferAsync(5, new UserContext { UserId = 7 });
 
         await act.Should().ThrowAsync<ForbiddenException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.DepositRequestForbidden);
+            .Where(ex => ex.ErrorCode == ErrorCode.Forbidden);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
     }
 
@@ -99,7 +97,7 @@ public class WalletDepositUseCaseTests
         var act = async () => await _useCase.ConfirmDepositTransferAsync(5, new UserContext { UserId = 7 });
 
         await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.DepositConfirmOnlyPending);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidDepositStatus);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
     }
 
@@ -127,14 +125,13 @@ public class WalletDepositUseCaseTests
             .ReturnsAsync(101)
             .Callback<WalletTransaction>(transaction => createdTransaction = transaction);
 
-        var response = await _useCase.ApproveDepositRequestAsync(5, new UserContext
+        await _useCase.ApproveDepositRequestAsync(5, new UserContext
         {
             UserId = 1,
             DisplayName = "Admin",
             Role = DAL.Entities.Users.UserRole.Admin
         }, "verified");
 
-        response.Status.Should().Be(WalletDepositStatus.Approved);
         request.Status.Should().Be(WalletDepositStatus.Approved);
         request.ReviewedBy.Should().Be(1);
         request.AdminNote.Should().Be("verified");
@@ -157,14 +154,13 @@ public class WalletDepositUseCaseTests
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
 
-        var response = await _useCase.ApproveDepositRequestAsync(5, new UserContext
+        await _useCase.ApproveDepositRequestAsync(5, new UserContext
         {
             UserId = 1,
             DisplayName = "Admin",
             Role = DAL.Entities.Users.UserRole.Admin
         }, "verified");
 
-        response.Status.Should().Be(WalletDepositStatus.Approved);
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
         _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
@@ -186,7 +182,7 @@ public class WalletDepositUseCaseTests
         }, "verified");
 
         await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.DepositApproveOnlyUserConfirmed);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidDepositStatus);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
     }
@@ -258,14 +254,13 @@ public class WalletDepositUseCaseTests
         _depositRequestRepository.Setup(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()))
             .ReturnsAsync(true);
 
-        var response = await _useCase.RejectDepositRequestAsync(5, new UserContext
+        await _useCase.RejectDepositRequestAsync(5, new UserContext
         {
             UserId = 1,
             DisplayName = "Admin",
             Role = DAL.Entities.Users.UserRole.Admin
         }, "not enough proof");
 
-        response.Status.Should().Be(WalletDepositStatus.Rejected);
         request.Status.Should().Be(WalletDepositStatus.Rejected);
         request.ReviewedBy.Should().Be(1);
         request.AdminNote.Should().Be("not enough proof");
@@ -274,28 +269,28 @@ public class WalletDepositUseCaseTests
     }
 
     [Fact]
-    public async Task RejectDepositRequestAsync_ShouldRejectPendingRequestWithoutTouchingWallet()
+    public async Task RejectDepositRequestAsync_ShouldRejectConfirmedRequest()
     {
         var request = WalletDeposit.Create(7, 100000m, "GTU7CODE", "NAP GTU7CODE");
+        request.Status = WalletDepositStatus.UserConfirmed;
 
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
         _depositRequestRepository.Setup(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()))
             .ReturnsAsync(true);
 
-        var response = await _useCase.RejectDepositRequestAsync(5, new UserContext
+        await _useCase.RejectDepositRequestAsync(5, new UserContext
         {
             UserId = 1,
             DisplayName = "Admin",
             Role = DAL.Entities.Users.UserRole.Admin
         }, "duplicate transfer");
 
-        response.Status.Should().Be(WalletDepositStatus.Rejected);
         request.Status.Should().Be(WalletDepositStatus.Rejected);
         request.AdminNote.Should().Be("duplicate transfer");
-        _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
-        _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
-        _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
+        request.ReviewedBy.Should().Be(1);
+
+        _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Once);
     }
 
     [Fact]
@@ -307,14 +302,13 @@ public class WalletDepositUseCaseTests
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
 
-        var response = await _useCase.RejectDepositRequestAsync(5, new UserContext
+        await _useCase.RejectDepositRequestAsync(5, new UserContext
         {
             UserId = 1,
             DisplayName = "Admin",
             Role = DAL.Entities.Users.UserRole.Admin
         }, "not enough proof");
 
-        response.Status.Should().Be(WalletDepositStatus.Rejected);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
     }
 
@@ -335,7 +329,7 @@ public class WalletDepositUseCaseTests
         }, "too late");
 
         await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.ApprovedDepositCannotBeRejected);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidDepositStatus);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
     }
 }

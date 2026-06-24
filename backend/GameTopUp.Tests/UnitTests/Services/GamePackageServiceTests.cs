@@ -6,7 +6,7 @@ using GameTopUp.BLL.Interfaces;
 using GameTopUp.BLL.Services.Games;
 using GameTopUp.DAL.Entities.Games;
 using GameTopUp.DAL.Interfaces.Games;
-using GameTopUp.Tests.UnitTests.Support;
+using GameTopUp.Tests.UnitTests.Helpers;
 using Microsoft.AspNetCore.Http;
 using Moq;
 

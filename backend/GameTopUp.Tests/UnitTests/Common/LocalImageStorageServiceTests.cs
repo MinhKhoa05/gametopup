@@ -60,7 +60,7 @@ public sealed class LocalImageStorageServiceTests : IDisposable
         var act = async () => await _service.DeleteAsync("../../appsettings.json");
 
         await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.InvalidImageFileName);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidImageFile);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class LocalImageStorageServiceTests : IDisposable
         var act = async () => await _service.UploadAsync(image, "../games");
 
         await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.InvalidImageFileName);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidImageFile);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public sealed class LocalImageStorageServiceTests : IDisposable
         var act = async () => await _service.UploadAsync(image, "games");
 
         await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.UnsupportedImageType);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidImageFile);
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public sealed class LocalImageStorageServiceTests : IDisposable
         var act = async () => await _service.UploadAsync(image, "games");
 
         await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.ImageTooLarge);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidImageFile);
     }
 
     private static IFormFile CreateImage(string fileName, string contentType)

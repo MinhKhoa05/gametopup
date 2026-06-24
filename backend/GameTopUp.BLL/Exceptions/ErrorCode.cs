@@ -5,6 +5,7 @@ namespace GameTopUp.BLL.Exceptions;
 
 public enum ErrorCode
 {
+    // System
     [Display(Name = "System error. Please try again later.")]
     InternalServerError,
 
@@ -20,6 +21,7 @@ public enum ErrorCode
     [Display(Name = "You do not have permission to perform this action.")]
     Forbidden,
 
+    // Authentication
     [Display(Name = "This email is already used.")]
     EmailExists,
 
@@ -35,6 +37,7 @@ public enum ErrorCode
     [Display(Name = "Current password is incorrect.")]
     CurrentPasswordIncorrect,
 
+    // Resources
     [Display(Name = "User not found.")]
     UserNotFound,
 
@@ -53,48 +56,34 @@ public enum ErrorCode
     [Display(Name = "Deposit request not found.")]
     DepositRequestNotFound,
 
+    // Validation
     [Display(Name = "Amount must be greater than 0.")]
     AmountMustBePositive,
-
-    [Display(Name = "Wallet balance is insufficient.")]
-    InsufficientWalletBalance,
 
     [Display(Name = "Deposit amount must be an integer value.")]
     DepositAmountMustBeInteger,
 
-    [Display(Name = "VietQR settings are missing.")]
-    VietQrSettingsMissing,
-
-    [Display(Name = "You cannot access this deposit request.")]
-    DepositRequestForbidden,
-
-    [Display(Name = "Only pending requests can be marked as transferred.")]
-    DepositConfirmOnlyPending,
-
-    [Display(Name = "Only user-confirmed requests can be approved.")]
-    DepositApproveOnlyUserConfirmed,
-
-    [Display(Name = "Approved requests cannot be rejected.")]
-    ApprovedDepositCannotBeRejected,
-
-    [Display(Name = "Order already assigned.")]
-    OrderAlreadyAssigned,
-
-    [Display(Name = "Order is not ready to be picked.")]
-    OrderNotReadyForPick,
-
-    [Display(Name = "Order status is invalid for completion.")]
-    OrderStatusInvalidToComplete,
-
-    [Display(Name = "You cannot modify another user's order.")]
-    CannotModifyOthersOrder,
-
-    [Display(Name = "Order cannot be cancelled.")]
-    OrderCannotBeCancelled,
-
     [Display(Name = "Available slots must be greater than 0.")]
     AvailableSlotsMustBePositive,
 
+    // Wallet
+    [Display(Name = "Wallet balance is insufficient.")]
+    InsufficientWalletBalance,
+
+    [Display(Name = "VietQR settings are missing.")]
+    VietQrSettingsMissing,
+
+    [Display(Name = "Cannot perform this action on the current deposit request.")]
+    InvalidDepositStatus,
+
+    // Orders
+    [Display(Name = "Order already assigned.")]
+    OrderAlreadyAssigned,
+
+    [Display(Name = "Cannot perform this action on the current order.")]
+    InvalidOrderStatus,
+
+    // Inventory
     [Display(Name = "Insufficient stock.")]
     InsufficientStock,
 
@@ -107,20 +96,9 @@ public enum ErrorCode
     [Display(Name = "Cannot add package to an inactive game.")]
     InactiveGameCannotAddPackage,
 
+    // Media
     [Display(Name = "Invalid image file.")]
-    InvalidImageFile,
-
-    [Display(Name = "Image upload cannot exceed 5MB.")]
-    ImageTooLarge,
-
-    [Display(Name = "Only JPG, PNG, and WEBP images are supported.")]
-    UnsupportedImageType,
-
-    [Display(Name = "Invalid image file name.")]
-    InvalidImageFileName,
-
-    [Display(Name = "Image is required.")]
-    ImageRequired
+    InvalidImageFile
 }
 
 public static class ErrorCodeExtensions

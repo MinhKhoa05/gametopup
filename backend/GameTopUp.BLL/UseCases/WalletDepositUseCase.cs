@@ -1,6 +1,4 @@
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.DTOs.Wallets;
-using GameTopUp.BLL.Mappers;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities.Wallets;
@@ -23,35 +21,33 @@ public sealed class WalletDepositUseCase
         _transaction = transaction;
     }
 
-    public async Task<WalletDepositResponse> ConfirmDepositTransferAsync(long requestId, UserContext user)
+    public async Task ConfirmDepositTransferAsync(long requestId, UserContext user)
     {
-        return await _transaction.ExecuteAsync(async () =>
+        await _transaction.ExecuteAsync(async () =>
         {
             var now = DateTime.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);
 
             if (request.Status == WalletDepositStatus.UserConfirmed)
             {
-                return _depositService.BuildPublicResponse(request);
+                return;
             }
 
             _depositService.Confirm(request, user, now);
             await _depositService.UpdateAsync(request);
-
-            return _depositService.BuildPublicResponse(request);
         });
     }
 
-    public async Task<AdminDepositResponse> ApproveDepositRequestAsync(long requestId, UserContext admin, string? note = null)
+    public async Task ApproveDepositRequestAsync(long requestId, UserContext admin, string? note = null)
     {
-        return await _transaction.ExecuteAsync(async () =>
+        await _transaction.ExecuteAsync(async () =>
         {
             var now = DateTime.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);
 
             if (request.Status == WalletDepositStatus.Approved)
             {
-                return request.MapTo<AdminDepositResponse>();
+                return;
             }
 
             _depositService.Approve(request, admin, now, note);
@@ -63,27 +59,23 @@ public sealed class WalletDepositUseCase
                 request.Code);
             await _walletService.ApplyTransactionAsync(wallet, walletTransaction);
             await _depositService.UpdateAsync(request);
-
-            return request.MapTo<AdminDepositResponse>();
         });
     }
 
-    public async Task<AdminDepositResponse> RejectDepositRequestAsync(long requestId, UserContext admin, string? note = null)
+    public async Task RejectDepositRequestAsync(long requestId, UserContext admin, string? note = null)
     {
-        return await _transaction.ExecuteAsync(async () =>
+        await _transaction.ExecuteAsync(async () =>
         {
             var now = DateTime.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);
 
             if (request.Status == WalletDepositStatus.Rejected)
             {
-                return request.MapTo<AdminDepositResponse>();
+                return;
             }
 
             _depositService.Reject(request, admin, now, note);
             await _depositService.UpdateAsync(request);
-
-            return request.MapTo<AdminDepositResponse>();
         });
     }
 }

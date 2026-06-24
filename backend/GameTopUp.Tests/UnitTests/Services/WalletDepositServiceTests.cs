@@ -74,7 +74,7 @@ public class WalletDepositServiceTests
 
         await act.Should()
             .ThrowAsync<ForbiddenException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.DepositRequestForbidden);
+            .Where(ex => ex.ErrorCode == ErrorCode.Forbidden);
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class WalletDepositServiceTests
 
         act.Should()
             .Throw<ForbiddenException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.DepositRequestForbidden);
+            .Where(ex => ex.ErrorCode == ErrorCode.Forbidden);
     }
 
     [Fact]
@@ -173,7 +173,7 @@ public class WalletDepositServiceTests
 
         act.Should()
             .Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.DepositConfirmOnlyPending);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidDepositStatus);
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class WalletDepositServiceTests
 
         act.Should()
             .Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.DepositApproveOnlyUserConfirmed);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidDepositStatus);
     }
 
     [Fact]
@@ -226,7 +226,7 @@ public class WalletDepositServiceTests
 
         act.Should()
             .Throw<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.ApprovedDepositCannotBeRejected);
+            .Where(ex => ex.ErrorCode == ErrorCode.InvalidDepositStatus);
     }
 
     private WalletDepositService CreateService(VietQrSettings settings)

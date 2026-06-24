@@ -58,7 +58,7 @@ public sealed class OrderReadService
 
         if (!actor.IsAdmin && order.UserId != actor.UserId)
         {
-            throw new ForbiddenException(ErrorCode.CannotModifyOthersOrder);
+            throw new ForbiddenException(ErrorCode.Forbidden);
         }
 
         return order;

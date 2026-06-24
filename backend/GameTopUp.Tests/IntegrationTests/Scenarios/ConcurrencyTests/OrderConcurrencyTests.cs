@@ -4,7 +4,7 @@ using GameTopUp.DAL.Entities.Orders;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 
-namespace GameTopUp.Tests.IntegrationTests.Scenarios.Concurrency;
+namespace GameTopUp.Tests.IntegrationTests.Scenarios.ConcurrencyTests;
 
 [Collection("Integration")]
 public sealed class OrderConcurrencyTests : BaseIntegrationTest
