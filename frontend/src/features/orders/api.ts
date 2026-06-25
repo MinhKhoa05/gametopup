@@ -22,7 +22,7 @@ export async function cancelOrder({ orderId }: CancelOrderInput) {
   return response.data.data;
 }
 
-export async function getOrderTimeline(orderId: number) {
+export async function getOrderHistory(orderId: number) {
   const response = await api.get<ApiResponse<OrderHistoryResponse[]>>(`/api/orders/${orderId}/history`);
   return response.data.data;
 }

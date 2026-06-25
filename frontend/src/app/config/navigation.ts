@@ -17,7 +17,7 @@ export type BottomNavItem = NavItem & {
 export const HEADER_NAV_ITEMS: HeaderNavItem[] = [
   {
     label: "Trang chủ",
-    href: routes.homeGuest(),
+    href: routes.home(),
   },
   {
     label: "Kho game",
@@ -38,7 +38,7 @@ export const HEADER_NAV_ITEMS: HeaderNavItem[] = [
 export const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
   {
     label: "Trang chủ",
-    href: routes.homeGuest(),
+    href: routes.home(),
     iconKey: "home",
   },
   {

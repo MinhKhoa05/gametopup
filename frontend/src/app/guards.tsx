@@ -1,38 +1,45 @@
-import type { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
-import { ROUTE_PATHS } from '@/app/router/routes';
+import type { ReactNode } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { ROUTE_PATHS } from "@/app/router/routes";
+import { UserRole } from "@/features/auth/types";
 
 type GuardProps = {
   children: ReactNode;
 };
 
 export function RequireAuth({ children }: GuardProps) {
-  const auth = useAuthSession();
+  const { isAuthenticated, isChecking } = useAuthSession();
   const location = useLocation();
 
-  if (auth.status === 'checking') {
+  if (isChecking) {
     return <GuardLoadingState />;
   }
 
-  if (auth.status !== 'authenticated') {
-    return <Navigate to={ROUTE_PATHS.login} replace state={{ from: `${location.pathname}${location.search}${location.hash}` }} />;
+  if (!isAuthenticated) {
+    return (
+      <Navigate
+        to={ROUTE_PATHS.login}
+        replace
+        state={{
+          from: `${location.pathname}${location.search}${location.hash}`,
+        }}
+      />
+    );
   }
 
   return children;
 }
 
 export function RequireAdmin({ children }: GuardProps) {
-  const auth = useAuthSession();
+  const { user, isChecking } = useAuthSession();
 
-  if (auth.status === 'checking') {
+  if (isChecking) {
     return <GuardLoadingState />;
   }
 
-  const role = auth.user?.role == null ? '' : String(auth.user.role).trim().toLowerCase();
-
-  if (!auth.user || !(role === '1' || role === 'admin')) {
-    return <Navigate to={ROUTE_PATHS.homeGuest} replace />;
+  if (user?.role !== UserRole.Admin) {
+    return <Navigate to={ROUTE_PATHS.home} replace />;
   }
 
   return children;

@@ -10,10 +10,10 @@ export function AuthHeader() {
   return (
     <header className="gt-shell-surface fixed inset-x-0 top-0 z-50 border-b gt-border backdrop-blur-xl">
       <div className="mx-auto flex max-w-[1480px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <BrandLogo size="sm" onClick={() => navigate(ROUTE_PATHS.homeGuest)} />
+        <BrandLogo size="sm" onClick={() => navigate(ROUTE_PATHS.home)} />
 
         <Link
-          to={routes.homeGuest()}
+          to={routes.home()}
           className={classNames(
             'inline-flex items-center gap-2 text-sm font-medium gt-text-muted transition-colors duration-200',
             'hover:text-white focus-visible:outline-none focus-visible:text-white',

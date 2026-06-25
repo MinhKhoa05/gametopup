@@ -24,10 +24,9 @@ type FavoriteGameCard = {
 };
 
 export function ProfilePage() {
-  const auth = useAuthSession();
-  const user = auth.user;
+  const { isChecking, user} = useAuthSession();
 
-  if (auth.status === 'checking' && !user) {
+  if (isChecking && !user) {
     return <ProfilePageLoading />;
   }
 

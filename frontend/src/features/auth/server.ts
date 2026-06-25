@@ -9,10 +9,13 @@ const PRIVATE_QUERY_PREFIXES = new Set(['auth', 'wallet', 'orders', 'admin']);
 const REMEMBERED_EMAIL_KEY = 'gametopup:last-auth-email';
 
 export function clearAuthSessionCache(queryClient: QueryClient) {
+  queryClient.setQueryData(AUTH_USER_QUERY_KEY, null);
+
   queryClient.removeQueries({
-    predicate: (query) => isPrivateQueryKey(query.queryKey),
+    predicate: (query) =>
+      isPrivateQueryKey(query.queryKey) &&
+      query.queryKey !== AUTH_USER_QUERY_KEY,
   });
-  queryClient.setQueryData<User | null>(AUTH_USER_QUERY_KEY, null);
 }
 
 export async function bootstrapAuthSession(queryClient: QueryClient) {
@@ -97,7 +100,9 @@ export function useLogoutMutation() {
       if (currentUser?.email) {
         rememberAuthEmail(currentUser.email);
       }
+
       clearAuthSessionCache(queryClient);
+
       toast.success('Đăng xuất thành công.');
     },
   });

@@ -60,7 +60,7 @@ export const FOOTER_LINK_COLUMNS = [
   {
     title: "Điều hướng",
     links: [
-      { label: "Trang chủ", href: routes.homeGuest() },
+      { label: "Trang chủ", href: routes.home() },
       { label: "Kho game", href: routes.games() },
       { label: "Nạp ví", href: routes.wallet() },
       { label: "Đơn hàng", href: routes.orders() },

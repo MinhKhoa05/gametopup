@@ -15,8 +15,8 @@ import {
 
 export function useWalletPage() {
   const navigate = useNavigate();
-  const auth = useAuthSession();
-  const overviewQuery = useWalletOverviewQuery(auth.status === 'authenticated');
+  const { isAuthenticated } = useAuthSession();
+  const overviewQuery = useWalletOverviewQuery(isAuthenticated);
 
   const [historyView, setHistoryView] = useState<WalletHistoryView>('deposit');
   const [historyPage, setHistoryPage] = useState(1);
@@ -79,7 +79,6 @@ export function useWalletPage() {
   }, [balance, depositRequests.length, transactions]);
 
   return {
-    auth,
     bankOptions: getBankOptions(depositRequests),
     currentHistoryPage,
     historyFilters,

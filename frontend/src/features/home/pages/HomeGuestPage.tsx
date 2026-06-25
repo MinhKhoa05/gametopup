@@ -24,7 +24,32 @@ export function HomeGuestPage() {
   return (
     <Container className="relative z-10 py-5 sm:py-7 lg:py-8">
       <div className="grid gap-10 lg:gap-12">
-        <HeroSection onExploreGames={() => navigate(routes.games())} />
+        <HeroSection
+          eyebrow={
+            <>
+              <span className="gt-text">Game</span>
+              <span className="text-cyan-300">TopUp</span>
+            </>
+          }
+          title={
+            <>
+              Nạp game nhanh chóng,
+              <br />
+              đơn giản và minh bạch.
+            </>
+          }
+          description="Khám phá các tựa game phổ biến, lựa chọn gói nạp phù hợp và theo dõi trạng thái đơn hàng trong một giao diện đơn giản, dễ sử dụng."
+          actions={
+            <Button
+              variant="primary"
+              className="w-fit rounded-[14px] px-5"
+              onClick={() => navigate(routes.games())}
+              trailingIcon={<ArrowRight size={16} />}
+            >
+              Khám phá game
+            </Button>
+          }
+        />
 
         <QuickSteps />
 

@@ -16,7 +16,7 @@ export function AppFooter() {
           <section className="flex max-w-md flex-col gap-5">
             <BrandLogo
               className="w-fit"
-              onClick={() => navigate(routes.homeGuest())}
+              onClick={() => navigate(routes.home())}
             />
 
             <p className="text-sm leading-7 gt-text-muted">

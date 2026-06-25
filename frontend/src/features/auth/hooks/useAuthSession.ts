@@ -1,10 +1,16 @@
-import { useEffect } from 'react';
-import { toast } from 'sonner';
-import { getApiMessage } from '@/shared/api/errors';
-import { useLogoutMutation, useLoginMutation, useRegisterMutation, useAuthUserQuery } from '../server';
-import type { AuthFormData } from '../types';
+import { useEffect } from "react";
+import { toast } from "sonner";
 
-export type AuthMode = 'login' | 'register';
+import { getApiMessage } from "@/shared/api/errors";
+import {
+  useAuthUserQuery,
+  useLoginMutation,
+  useLogoutMutation,
+  useRegisterMutation,
+} from "../server";
+import type { AuthFormData } from "../types";
+
+export type AuthMode = "login" | "register";
 
 export function useAuthSession() {
   const userQuery = useAuthUserQuery();
@@ -13,41 +19,53 @@ export function useAuthSession() {
   const logoutMutation = useLogoutMutation();
 
   const user = userQuery.data ?? null;
-  const status = userQuery.isLoading ? 'checking' : user ? 'authenticated' : 'guest';
-  const displayName = user?.displayName || user?.email || 'Khách';
+
+  const isAuthenticated = user !== null;
+  const isChecking = userQuery.isLoading;
+
+  const userDisplayName = user?.displayName ?? "Khách";
 
   useEffect(() => {
-    if (userQuery.error) {
-      toast.error(getApiMessage(userQuery.error));
+    if (!userQuery.error) {
+      return;
     }
+
+    toast.error(getApiMessage(userQuery.error));
   }, [userQuery.error]);
 
-  function handleLogout() {
-    logoutMutation.mutate();
-  }
-
-  async function submitAuth(mode: AuthMode, form: AuthFormData) {
-    const loginPayload = {
+  async function submitAuth(
+    mode: AuthMode,
+    form: AuthFormData,
+  ) {
+    const payload = {
       email: form.email.trim(),
       password: form.password,
     };
 
-    if (mode === 'register') {
+    if (mode === "register") {
       await registerMutation.mutateAsync({
         displayName: form.displayName.trim(),
-        ...loginPayload,
+        ...payload,
       });
     }
 
-    return loginMutation.mutateAsync(loginPayload);
+    return loginMutation.mutateAsync(payload);
   }
 
   return {
-    isSubmitting: loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending,
-    status,
-    submitAuth,
     user,
-    userDisplayName: displayName,
-    handleLogout,
+    userDisplayName,
+
+    isAuthenticated,
+    isChecking,
+
+    isSubmitting:
+      loginMutation.isPending ||
+      registerMutation.isPending ||
+      logoutMutation.isPending,
+
+    submitAuth,
+
+    logout: () => logoutMutation.mutate(),
   };
 }

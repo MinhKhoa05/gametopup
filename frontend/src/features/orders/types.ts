@@ -1,5 +1,10 @@
 // Mirrors OrderStatus enum in backend
-export type OrderStatus = 1 | 2 | 3 | 4;
+export enum OrderStatus {
+  Pending = 1,
+  Processing = 2,
+  Completed = 3,
+  Cancelled = 4,
+}
 
 // UI-only type for timeline rendering
 export type OrderTimelineState = 'complete' | 'current' | 'danger' | 'upcoming';

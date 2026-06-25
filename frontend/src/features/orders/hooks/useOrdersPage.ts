@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useCancelOrderMutation, useMyOrdersQuery, useOrderQuery, useOrderTimelineQuery } from '@/features/orders/server';
+import { useCancelOrderMutation, useMyOrdersQuery, useOrderQuery, useOrderHistoryQuery } from '@/features/orders/server';
 import { buildOrderHistoryItems, type OrderHistoryItem } from '@/features/orders/components/OrderHistorySections';
 
 const PAGE_SIZE = 6;
@@ -91,7 +91,7 @@ export function useOrdersPage() {
     return sortedItems.find((item) => item.order.id === selectedOrderId) ?? sortedItems[0];
   }, [selectedOrderId, sortedItems]);
 
-  const orderQuery = useOrderQuery(selectedOrderId, selectedOrderId != null);
+  const orderQuery = useOrderQuery(selectedOrderId);
   const selectedOrderData = orderQuery.data ?? null;
 
   const selectedOrder = useMemo(() => {
@@ -99,7 +99,7 @@ export function useOrdersPage() {
     return fallbackOrder;
   }, [selectedOrderData, fallbackOrder]);
 
-  const selectedOrderTimelineQuery = useOrderTimelineQuery(selectedOrder?.order.id ?? null, Boolean(selectedOrder));
+  const selectedOrderTimelineQuery = useOrderHistoryQuery(selectedOrder?.order.id ?? null);
   const selectedOrderTimeline = selectedOrderTimelineQuery.data ?? null;
 
   const stats = useMemo(() => buildStats(orderItems), [orderItems]);

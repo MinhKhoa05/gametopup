@@ -4,7 +4,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button, IconBox } from "@/shared/components";
 import { classNames } from "@/shared/lib/classNames";
 import { formatCurrency } from "@/shared/lib/format";
-import { HEADER_NAV_ITEMS, HEADER_ADMIN_MENU_ITEMS, HEADER_USER_MENU_ITEMS } from "@/app/config";
+import {
+  HEADER_NAV_ITEMS,
+  HEADER_ADMIN_MENU_ITEMS,
+  HEADER_USER_MENU_ITEMS,
+} from "@/app/config";
 import { BrandLogo, HeaderAccountMenu } from "@/shared/components";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { useWalletBalanceQuery } from "@/features/wallet/server";
@@ -12,16 +16,20 @@ import { ROUTE_PATHS, routes } from "@/app/router/routes";
 import { UserRole } from "@/features/auth/types";
 
 export function AppHeader() {
-  const authSession = useAuthSession();
+  const { user, userDisplayName, isAuthenticated, isChecking, logout } =
+    useAuthSession();
 
   const navigate = useNavigate();
   const location = useLocation();
 
+  function handleLogout() {
+    logout();
+    navigate(routes.home(), { replace: true });
+  }
+
   const [query, setQuery] = useState("");
 
-  const isAuthenticated = authSession.status === "authenticated";
-  const showSessionSkeleton = authSession.status === "checking";
-  const isAdmin = authSession.user?.role === UserRole.Admin;
+  const isAdmin = user?.role === UserRole.Admin;
 
   const walletQuery = useWalletBalanceQuery(isAuthenticated);
 
@@ -32,12 +40,12 @@ export function AppHeader() {
   const headerMenuItems = isAdmin
     ? HEADER_ADMIN_MENU_ITEMS
     : HEADER_USER_MENU_ITEMS;
-    
+
   return (
     <header className="gt-shell-surface sticky top-0 z-50 border-b gt-border shadow-[0_12px_32px_rgba(2,6,23,0.18)]">
       <div className="mx-auto grid max-w-[1480px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-6">
-          <BrandLogo onClick={() => navigate(ROUTE_PATHS.homeGuest)} />
+          <BrandLogo onClick={() => navigate(ROUTE_PATHS.home)} />
 
           <nav
             className="hidden items-center gap-1 xl:flex"
@@ -112,7 +120,7 @@ export function AppHeader() {
           ) : null}
 
           <div className="hidden items-center gap-3 sm:flex">
-            {showSessionSkeleton ? (
+            {isChecking ? (
               <div className="flex h-11 min-w-44 items-center gap-3 rounded-2xl border gt-border bg-[var(--gt-card)] px-3">
                 <div className="h-8 w-8 animate-pulse rounded-full bg-white/10" />
                 <div className="grid gap-1">
@@ -132,10 +140,10 @@ export function AppHeader() {
                 </button>
 
                 <HeaderAccountMenu
-                  displayName={authSession.userDisplayName}
+                  displayName={userDisplayName}
                   items={headerMenuItems}
                   onNavigate={navigate}
-                  onLogout={authSession.handleLogout}
+                  onLogout={handleLogout}
                 />
               </>
             ) : (
@@ -145,8 +153,8 @@ export function AppHeader() {
                 size="md"
                 className="min-h-11 rounded-2xl px-4 text-sm font-bold text-slate-950 shadow-[0_8px_22px_rgba(34,211,238,0.2)]"
                 onClick={() => navigate(routes.login())}
+                leadingIcon={<UserRound size={17} />}
               >
-                <UserRound size={17} />
                 <span className="hidden sm:inline">Đăng nhập</span>
               </Button>
             )}

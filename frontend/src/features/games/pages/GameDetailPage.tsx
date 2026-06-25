@@ -52,10 +52,10 @@ function draftReducer(state: GameDetailDraftState, action: GameDetailDraftAction
 export function GameDetailPage() {
   const navigate = useNavigate();
   const { gameId: gameIdParam } = useParams<{ gameId?: string }>();
-  const auth = useAuthSession();
+  const { isAuthenticated } = useAuthSession();
   const gamesQuery = useGamesQuery();
   const createOrderMutation = useCreateOrderMutation();
-  const walletQuery = useWalletBalanceQuery(auth.status === 'authenticated');
+  const walletQuery = useWalletBalanceQuery(isAuthenticated);
   const [draftState, dispatch] = useReducer(draftReducer, initialDraftState);
   const [isConfirmOpen, setConfirmOpen] = useState(false);
   const [isSuccessOpen, setSuccessOpen] = useState(false);
@@ -106,10 +106,10 @@ export function GameDetailPage() {
   const walletBalance = walletQuery.data ?? 0;
   const walletLoading = walletQuery.isPending && !walletQuery.data;
   const busy = createOrderMutation.isPending;
-  const canRequestPurchase = !!selectedPackage && !walletLoading && auth.status === 'authenticated' && selectedPackage.salePrice <= walletBalance;
+  const canRequestPurchase = !!selectedPackage && !walletLoading && isAuthenticated && selectedPackage.salePrice <= walletBalance;
 
   const handleRequestPurchase = () => {
-    if (auth.status !== 'authenticated') {
+    if (!isAuthenticated) {
       toast.error('Vui lòng đăng nhập để đặt đơn.');
       return;
     }

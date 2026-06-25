@@ -5,10 +5,10 @@ import { WalletHistoryPanel } from '@/features/wallet/components/WalletHistoryPa
 import { useWalletPage } from '@/features/wallet/hooks/useWalletPage';
 import { EmptyState, IconBox, PageHero, StatCard } from '@/shared/components';
 import { formatCurrency } from '@/shared/lib/format';
+import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 
 export function WalletPage() {
   const {
-    auth,
     bankOptions,
     currentHistoryPage,
     historyFilters,
@@ -24,11 +24,13 @@ export function WalletPage() {
     stats,
   } = useWalletPage();
 
-  if (auth.status === 'checking' && !auth.user) {
+  const { isChecking, user } = useAuthSession();
+
+  if (isChecking && !user) {
     return <WalletLoadingState />;
   }
 
-  if (!auth.user) {
+  if (!user) {
     return (
       <EmptyState
         className="mx-auto mt-12 max-w-lg"
