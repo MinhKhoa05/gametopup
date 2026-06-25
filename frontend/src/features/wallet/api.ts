@@ -8,6 +8,6 @@ export async function getWalletBalance() {
 }
 
 export async function getWalletOverview() {
-  const response = await api.get<ApiResponse<WalletOverview>>('/api/wallet/overview');
+  const response = await api.get<ApiResponse<WalletOverview>>('/api/wallet/transactions');
   return response.data.data;
 }

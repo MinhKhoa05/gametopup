@@ -1,6 +1,6 @@
 import { CheckCircle2, CircleSlash, Clock3, Send, TriangleAlert, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import type { AdminOrderSummary } from '@/features/orders/types';
+import type { AdminOrderResponse } from '@/features/orders/types';
 import type { User } from '@/features/auth/types';
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, ImageBox, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
@@ -12,7 +12,7 @@ type OrderFilter = 'active' | 'all' | 'pending' | 'processing' | 'completed' | '
 type OrdersAdminPanelState = {
   filters: Array<{ key: OrderFilter; label: string }>;
   filter: OrderFilter;
-  filteredOrders: AdminOrderSummary[];
+  filteredOrders: AdminOrderResponse[];
   query: string;
   setFilter: (value: OrderFilter) => void;
   setQuery: (value: string) => void;
@@ -34,7 +34,7 @@ export function OrdersAdminPanel({
   onCancelOrder: (orderId: number) => Promise<void>;
   onCompleteOrder: (orderId: number) => Promise<void>;
   onPickOrder: (orderId: number) => Promise<void>;
-  orders: AdminOrderSummary[];
+  orders: AdminOrderResponse[];
   state: OrdersAdminPanelState;
 }) {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
@@ -96,7 +96,7 @@ export function OrdersAdminPanel({
                     subtitle={`User #${order.userId} · Gói #${order.gamePackageId}`}
                     meta={`${order.gameAccountInfo} · ${formatDate(order.createdAt)}`}
                     titleAccessory={<Badge tone={statusMeta.tone} icon={statusMeta.icon}>{statusMeta.label}</Badge>}
-                    trailing={<strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">{formatCurrency(order.total ?? order.unitPrice)}</strong>}
+                    trailing={<strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">{formatCurrency(order.packagePrice)}</strong>}
                   />
                 );
               })}
@@ -129,7 +129,7 @@ export function OrdersAdminPanel({
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-cyan">Đơn #{selectedOrder.id}</p>
-                        <strong className="mt-1 block text-2xl font-black tracking-[-0.04em] text-white">{formatCurrency(selectedOrder.total ?? selectedOrder.unitPrice)}</strong>
+                        <strong className="mt-1 block text-2xl font-black tracking-[-0.04em] text-white">{formatCurrency(selectedOrder.packagePrice)}</strong>
                         <span className="mt-1 block truncate text-sm text-slate-300">User #{selectedOrder.userId} · Gói #{selectedOrder.gamePackageId}</span>
                       </div>
                       <Badge tone={selectedStatus?.tone ?? 'neutral'} icon={selectedStatus?.icon} className="shrink-0 rounded-full">
@@ -191,7 +191,7 @@ export function OrdersAdminPanel({
   );
 }
 
-function summarizeOrders(orders: AdminOrderSummary[]) {
+function summarizeOrders(orders: AdminOrderResponse[]) {
   return orders.reduce(
     (result, order) => {
       if (order.status === 1) result.pending += 1;
@@ -204,15 +204,15 @@ function summarizeOrders(orders: AdminOrderSummary[]) {
   );
 }
 
-function canPick(order: AdminOrderSummary) {
+function canPick(order: AdminOrderResponse) {
   return order.status === 1;
 }
 
-function canAct(order: AdminOrderSummary, currentAdminId: number | null) {
+function canAct(order: AdminOrderResponse, currentAdminId: number | null) {
   return order.status === 2 && order.assignedTo === currentAdminId;
 }
 
-function getOrderActionState(order: AdminOrderSummary, currentAdminId: number | null) {
+function getOrderActionState(order: AdminOrderResponse, currentAdminId: number | null) {
   if (canPick(order)) {
     return {
       kind: 'pick' as const,

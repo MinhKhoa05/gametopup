@@ -8,8 +8,7 @@ export type WalletTransaction = {
   balanceBefore: number;
   balanceAfter: number;
   type: WalletTransactionType;
-  description: string | null;
-  orderId: number | null;
+  referenceId: string | null;
   createdAt: string;
 };
 

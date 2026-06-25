@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { CheckCircle2, Clock3, TimerReset, XCircle } from 'lucide-react';
-import type { Order } from '@/features/orders/types';
+import type { OrderResponse } from '@/features/orders/types';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { DEFAULT_IMAGE_SRC } from '@/shared/lib/image';
@@ -14,11 +14,10 @@ export type OrderHistoryItem = {
   createdAt: string;
   gameKey: string;
   gameName: string;
-  gameImageUrl: string | null;
   gameThumbnailSrc: string;
   gameAccountInfo: string;
   note: string;
-  order: Order;
+  order: OrderResponse;
   orderCode: string;
   packageName: string;
   statusGroup: StatusGroup;
@@ -28,10 +27,9 @@ export type OrderHistoryItem = {
   updatedAtLabel: string;
 };
 
-export function buildOrderHistoryItems(orders: Order[]): OrderHistoryItem[] {
+export function buildOrderHistoryItems(orders: OrderResponse[]): OrderHistoryItem[] {
   return orders.map((order) => {
-    const visual = resolveVisual(order);
-    const amount = order.total ?? order.unitPrice;
+    const amount = order.packagePrice;
     const status = getOrderStatusMeta(order.status, getOrderStatusIcon(order.status));
     const createdAtLabel = formatDate(order.createdAt);
     const updatedAtLabel = formatDate(order.updatedAt);
@@ -42,14 +40,13 @@ export function buildOrderHistoryItems(orders: Order[]): OrderHistoryItem[] {
       createdAtLabel,
       createdAt: order.createdAt,
       gameAccountInfo: order.gameAccountInfo,
-      gameKey: visual.gameKey,
-      gameName: visual.gameName,
-      gameImageUrl: visual.imageUrl,
-      gameThumbnailSrc: visual.imageUrl ?? DEFAULT_IMAGE_SRC,
+      gameKey: `package-${order.gamePackageId}`,
+      gameName: order.gameName.trim() || 'Game đã ẩn',
+      gameThumbnailSrc: order.packageImageUrl || DEFAULT_IMAGE_SRC,
       note: '-',
       order,
       orderCode: `#GTOP${order.id}`,
-      packageName: visual.packageName,
+      packageName: order.packageName.trim() || 'Gói nạp',
       statusGroup: getStatusGroup(order.status),
       statusIcon: status.icon,
       statusLabel: status.label,
@@ -57,15 +54,6 @@ export function buildOrderHistoryItems(orders: Order[]): OrderHistoryItem[] {
       updatedAtLabel,
     };
   });
-}
-
-function resolveVisual(order: Order) {
-  return {
-    gameKey: order.gameId ? `game-${order.gameId}` : 'unknown-game',
-    gameName: order.gameName?.trim() || 'Game đã ẩn',
-    imageUrl: order.gameImageUrl ?? null,
-    packageName: order.packageName?.trim() || 'Gói nạp',
-  };
 }
 
 function getStatusGroup(status: number): StatusGroup {

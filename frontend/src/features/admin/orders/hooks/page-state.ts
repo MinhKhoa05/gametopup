@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { AdminOrderSummary } from '@/features/orders/types';
+import type { AdminOrderResponse } from '@/features/orders/types';
 
 type OrderFilter = 'active' | 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
 
@@ -19,7 +19,7 @@ const ORDER_STATUS_LABEL_BY_STATUS: Record<number, string> = {
   4: 'Đã hủy',
 };
 
-export function useAdminOrdersPageState(orders: AdminOrderSummary[]) {
+export function useAdminOrdersPageState(orders: AdminOrderResponse[]) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<OrderFilter>('active');
 

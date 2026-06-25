@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, FilterSelectField, ImageBox, MediaListItem, PanelShell, SearchBar, StatCard } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { type OrderHistoryItem } from '@/features/orders/components/OrderHistorySections';
-import type { OrderStatus, OrderTimelineResponse, OrderTimelineState, OrderTimelineStep } from '@/features/orders/types';
+import type { OrderResponse, OrderStatus, OrderHistoryResponse, OrderTimelineState, OrderTimelineStep } from '@/features/orders/types';
 import {
   STATUS_OPTIONS,
   type OrderFilters,
@@ -172,7 +172,7 @@ function OrderDetailPanel({
   busy: boolean;
   onCancel: (orderId: number) => Promise<void>;
   orderItem: OrderHistoryItem | null;
-  timeline: OrderTimelineResponse | null;
+  timeline: OrderHistoryResponse[] | null;
   timelineError: boolean;
   timelineLoading: boolean;
 }) {
@@ -189,7 +189,7 @@ function OrderDetailPanel({
     );
   }
 
-  const timelineSteps = timeline ? buildTimelineSteps(timeline) : [];
+  const timelineSteps = timeline ? buildTimelineSteps(orderItem.order, timeline) : [];
 
   return (
     <PanelShell className="grid gap-8 p-5 lg:sticky lg:top-24">
@@ -327,19 +327,19 @@ function OrderTimeline({ steps }: { steps: OrderTimelineStep[] }) {
   );
 }
 
-function buildTimelineSteps(timeline: OrderTimelineResponse): OrderTimelineStep[] {
-  const eventByStatus = new Map(timeline.events.map((event) => [event.toStatus, event]));
+function buildTimelineSteps(order: OrderResponse, events: OrderHistoryResponse[]): OrderTimelineStep[] {
+  const eventByStatus = new Map(events.map((event) => [event.toStatus, event]));
   const steps: OrderTimelineStep[] = [
     buildTimelineStep({
       defaultDescription: 'Đã ghi nhận',
       label: 'Đơn hàng đã được tạo',
       note: eventByStatus.get(1)?.note,
-      state: timeline.status === 1 ? 'current' : 'complete',
-      time: eventByStatus.get(1)?.createdAt ?? timeline.createdAt,
+      state: order.status === 1 ? 'current' : 'complete',
+      time: eventByStatus.get(1)?.createdAt ?? order.createdAt,
     }),
   ];
 
-  if (timeline.status === 4) {
+  if (order.status === 4) {
     const processingEvent = eventByStatus.get(2);
     if (processingEvent) {
       steps.push(
@@ -359,7 +359,7 @@ function buildTimelineSteps(timeline: OrderTimelineResponse): OrderTimelineStep[
         label: 'Đơn hàng đã bị hủy',
         note: eventByStatus.get(4)?.note,
         state: 'danger',
-        time: eventByStatus.get(4)?.createdAt ?? timeline.updatedAt,
+        time: eventByStatus.get(4)?.createdAt ?? order.updatedAt,
       }),
     );
 
@@ -371,18 +371,18 @@ function buildTimelineSteps(timeline: OrderTimelineResponse): OrderTimelineStep[
       defaultDescription: 'Nhân viên đang thực hiện xử lý đơn hàng.',
       label: 'Đang xử lý đơn hàng',
       note: eventByStatus.get(2)?.note,
-      state: getProcessingTimelineState(timeline.status),
-      time: timeline.status >= 2 ? eventByStatus.get(2)?.createdAt ?? timeline.assignedAt ?? timeline.updatedAt : null,
+      state: getProcessingTimelineState(order.status),
+      time: order.status >= 2 ? eventByStatus.get(2)?.createdAt ?? order.updatedAt : null,
     }),
   );
 
   steps.push(
     buildTimelineStep({
-      defaultDescription: timeline.status === 3 ? 'Đã hoàn thành' : 'Đang chờ',
+      defaultDescription: order.status === 3 ? 'Đã hoàn thành' : 'Đang chờ',
       label: 'Hoàn thành',
       note: eventByStatus.get(3)?.note,
-      state: timeline.status === 3 ? 'complete' : 'upcoming',
-      time: timeline.status === 3 ? eventByStatus.get(3)?.createdAt ?? timeline.updatedAt : null,
+      state: order.status === 3 ? 'complete' : 'upcoming',
+      time: order.status === 3 ? eventByStatus.get(3)?.createdAt ?? order.updatedAt : null,
     }),
   );
 

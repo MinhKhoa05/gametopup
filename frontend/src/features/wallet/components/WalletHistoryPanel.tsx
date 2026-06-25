@@ -172,7 +172,7 @@ export function buildWalletHistoryRows(depositRequests: WalletDepositRequest[], 
     const meta = TRANSACTION_META_BY_TYPE[transaction.type];
     const code = normalizeCode(`TX${transaction.id}`, 'TX');
     const delta = transaction.amount;
-    const searchText = [code, meta.label, transaction.description ?? '', formatCurrency(transaction.amount), formatCurrency(transaction.balanceAfter)].join(' ').toLowerCase();
+    const searchText = [code, transaction.referenceId ?? '', meta.label, formatCurrency(transaction.amount), formatCurrency(transaction.balanceAfter)].join(' ').toLowerCase();
 
     return {
       kind: 'ledger',

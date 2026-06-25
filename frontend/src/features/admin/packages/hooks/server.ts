@@ -91,7 +91,7 @@ export function useAdminPackagesSection() {
       name: string;
       originalPrice: number;
       salePrice: number;
-      stockQuantity: number;
+      availableSlots: number;
     }) => {
       await packageMutations.update.mutateAsync(payload);
     },

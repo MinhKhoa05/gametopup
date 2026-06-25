@@ -10,7 +10,7 @@ const emptyPackageForm = {
   name: '',
   originalPrice: 0,
   salePrice: 0,
-  stockQuantity: 0,
+  availableSlots: 0,
 };
 
 export function useAdminPackagesPageState({
@@ -30,7 +30,7 @@ export function useAdminPackagesPageState({
     name: string;
     originalPrice: number;
     salePrice: number;
-    stockQuantity: number;
+    availableSlots: number;
   }) => Promise<void>;
   onDeletePackage: (id: number) => Promise<void>;
   onUpdatePackage: (
@@ -42,7 +42,7 @@ export function useAdminPackagesPageState({
       name: string;
       originalPrice: number;
       salePrice: number;
-      stockQuantity: number;
+      availableSlots: number;
     },
   ) => Promise<void>;
 }) {
@@ -85,7 +85,7 @@ export function useAdminPackagesPageState({
       name: item.name,
       originalPrice: item.originalPrice,
       salePrice: item.salePrice,
-      stockQuantity: item.stockQuantity,
+      availableSlots: item.availableSlots,
     });
     setImageFile(null);
   }
@@ -120,7 +120,7 @@ export function useAdminPackagesPageState({
           name: payload.name,
           originalPrice: payload.originalPrice,
           salePrice: payload.salePrice,
-          stockQuantity: payload.stockQuantity,
+          availableSlots: payload.availableSlots,
         })
       : onCreatePackage(payload));
     resetForm();
@@ -135,7 +135,7 @@ export function useAdminPackagesPageState({
       name: string;
       originalPrice: number;
       salePrice: number;
-      stockQuantity: number;
+      availableSlots: number;
     },
   ) {
     await onUpdatePackage(payload);

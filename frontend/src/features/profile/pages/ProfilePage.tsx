@@ -7,7 +7,7 @@ import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import type { User } from '@/features/auth/types';
 import { formatUserRoleLabel, isAdminUserRole } from '@/features/auth/userRole';
 import { buildOrderHistoryItems } from '@/features/orders/components/OrderHistorySections';
-import type { Order } from '@/features/orders/types';
+import type { OrderResponse } from '@/features/orders/types';
 import { useMyOrdersQuery } from '@/features/orders/server';
 import { useUpdateMyProfileMutation } from '@/features/profile/server';
 import { useWalletOverviewQuery } from '@/features/wallet/server';
@@ -78,7 +78,6 @@ function ProfileContent({ user }: { user: User }) {
     event.preventDefault();
 
     await updateProfileMutation.mutateAsync({
-      userId: user.id,
       displayName: draftName.trim(),
     });
   }
@@ -411,7 +410,7 @@ function getInitials(displayName: string, fallbackEmail: string) {
   return base.slice(0, 2).toUpperCase();
 }
 
-function buildFavoriteGames(orders: Order[]) {
+function buildFavoriteGames(orders: OrderResponse[]) {
   const grouped = new Map<string, FavoriteGameCard>();
   const historyItems = buildOrderHistoryItems(orders);
 

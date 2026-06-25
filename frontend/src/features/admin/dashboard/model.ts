@@ -6,7 +6,7 @@ import type { AdminDepositRequest } from '@/features/deposits/types';
 import type { AdminGameSummary } from '@/features/admin/games/api';
 import type { GamePackage } from '@/features/games/types';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
-import type { AdminOrderSummary } from '@/features/orders/types';
+import type { AdminOrderResponse } from '@/features/orders/types';
 import { formatCurrency } from '@/shared/lib/format';
 
 export type QueueItem =
@@ -62,7 +62,7 @@ export function buildQueueItems({
 }: {
   depositRequests: AdminDepositRequest[];
   games: AdminGameSummary[];
-  orders: AdminOrderSummary[];
+  orders: AdminOrderResponse[];
   packages: GamePackage[];
 }) {
   const gameById = new Map(games.map((game) => [game.id, game]));
@@ -72,7 +72,7 @@ export function buildQueueItems({
     const gamePackage = packageById.get(order.gamePackageId);
     const game = gamePackage ? gameById.get(gamePackage.gameId) : undefined;
     const statusMeta = getOrderStatusMeta(order.status);
-    const amount = formatCurrency(order.total ?? order.unitPrice);
+    const amount = formatCurrency(order.packagePrice);
     const title = gamePackage ? `${game?.name ?? 'Game'} · ${gamePackage.name}` : `Đơn #${order.id}`;
     const description = `${order.gameAccountInfo || 'Chưa có thông tin'} · #${order.id}`;
 
@@ -123,21 +123,21 @@ export function buildWatchItems(packages: GamePackage[], games: AdminGameSummary
   const gameById = new Map(games.map((game) => [game.id, game]));
 
   return packages
-    .filter((item) => !item.isActive || item.stockQuantity <= 20)
-    .sort((left, right) => Number(left.isActive) - Number(right.isActive) || left.stockQuantity - right.stockQuantity)
+    .filter((item) => !item.isActive || item.availableSlots <= 20)
+    .sort((left, right) => Number(left.isActive) - Number(right.isActive) || left.availableSlots - right.availableSlots)
     .slice(0, 4)
     .map<WatchItem>((item) => {
       const game = gameById.get(item.gameId);
 
       return {
         actionHref: routes.admin('packages'),
-        description: item.isActive ? `Tồn kho ${item.stockQuantity} gói` : 'Đang tắt hiển thị',
+        description: item.isActive ? `Còn ${item.availableSlots} slot` : 'Đang tắt hiển thị',
         id: `package-${item.id}`,
         imageUrl: item.imageUrl ?? game?.imageUrl ?? '',
         subtitle: `${game?.name ?? 'Game'} · ${item.name}`,
-        stockLabel: item.isActive ? `Còn ${item.stockQuantity}` : 'Đang tắt',
+        stockLabel: item.isActive ? `Còn ${item.availableSlots}` : 'Đang tắt',
         title: item.name,
-        tone: item.isActive ? (item.stockQuantity <= 10 ? 'warning' : 'success') : 'neutral',
+        tone: item.isActive ? (item.availableSlots <= 10 ? 'warning' : 'success') : 'neutral',
       };
     });
 }
@@ -149,7 +149,7 @@ export function buildRecentUsers(users: User[]) {
     .slice(0, 4);
 }
 
-export function countOrdersToday(orders: AdminOrderSummary[]) {
+export function countOrdersToday(orders: AdminOrderResponse[]) {
   const today = new Date();
 
   return orders.filter((order) => {

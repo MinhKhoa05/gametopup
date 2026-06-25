@@ -15,7 +15,7 @@ export type AdminPackageInput = {
   salePrice: number;
   originalPrice: number;
   importPrice: number;
-  stockQuantity: number;
+  availableSlots: number;
   isActive: boolean;
 };
 
@@ -30,7 +30,7 @@ type AdminPackageWriteInput = {
   salePrice: number;
   originalPrice: number;
   importPrice: number;
-  stockQuantity: number;
+  availableSlots: number;
   isActive: boolean;
 };
 
@@ -41,27 +41,27 @@ function buildPackageFormData(payload: AdminPackageWriteInput) {
   appendFormValue(formData, 'salePrice', payload.salePrice);
   appendFormValue(formData, 'originalPrice', payload.originalPrice);
   appendFormValue(formData, 'importPrice', payload.importPrice);
-  appendFormValue(formData, 'stockQuantity', payload.stockQuantity);
+  appendFormValue(formData, 'availableSlots', payload.availableSlots);
   appendFormValue(formData, 'isActive', payload.isActive);
   appendFormValue(formData, 'imageFile', payload.imageFile);
   return formData;
 }
 
 export async function getAdminPackages() {
-  const response = await api.get<ApiResponse<GamePackage[]>>('/api/admin/game-packages');
+  const response = await api.get<ApiResponse<GamePackage[]>>('/api/admin/packages');
   return response.data.data;
 }
 
 export async function createAdminPackage(payload: Omit<AdminPackageInput, 'id'>) {
-  const response = await api.post<ApiResponse<GamePackage>>('/api/admin/game-packages', buildPackageFormData(payload));
+  const response = await api.post<ApiResponse<GamePackage>>(`/api/admin/games/${payload.gameId}/packages`, buildPackageFormData(payload));
   return response.data.data;
 }
 
 export async function updateAdminPackage({ id, ...payload }: AdminPackageUpdateInput) {
-  const response = await api.put<ApiResponse<GamePackage>>(`/api/admin/game-packages/${id}`, buildPackageFormData(payload));
+  const response = await api.put<ApiResponse<GamePackage>>(`/api/admin/packages/${id}`, buildPackageFormData(payload));
   return response.data.data;
 }
 
 export async function deleteAdminPackage({ id }: Required<Pick<AdminPackageInput, 'id'>>) {
-  await api.delete<ApiResponse<void>>(`/api/admin/game-packages/${id}`);
+  await api.delete<ApiResponse<void>>(`/api/admin/packages/${id}`);
 }

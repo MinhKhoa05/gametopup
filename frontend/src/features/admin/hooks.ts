@@ -15,7 +15,7 @@ import { walletKeys } from '@/features/wallet/server';
 import type { User } from '@/features/auth/types';
 import type { GamePackage } from '@/features/games/types';
 import type { AdminGameSummary } from './games/api';
-import type { AdminOrderSummary } from '@/features/orders/types';
+import type { AdminOrderResponse } from '@/features/orders/types';
 import { useAdminGamesPageState } from './games/hooks';
 import { useAdminPackagesPageState } from './packages/hooks';
 import { useAdminOrdersPageState } from './orders/hooks';
@@ -41,13 +41,13 @@ export function useAdminMetrics({
 }: {
   games: AdminGameSummary[];
   packages: GamePackage[];
-  orders: AdminOrderSummary[];
+  orders: AdminOrderResponse[];
   users: User[];
 }) {
   const metrics = useMemo(() => {
     const revenue = orders
       .filter((order) => order.status !== 4)
-      .reduce((sum, order) => sum + (order.total ?? order.unitPrice), 0);
+      .reduce((sum, order) => sum + order.packagePrice, 0);
 
     return {
       activeGames: games.filter((game) => game.isActive).length,

@@ -1,9 +1,14 @@
 import { api } from '@/shared/api/client';
 import type { ApiResponse } from '@/shared/types/api';
-import type { CancelOrderInput, CreateOrderInput, Order, OrderTimelineResponse } from './types';
+import type { CancelOrderInput, CreateOrderInput, OrderHistoryResponse, OrderResponse } from './types';
 
 export async function getMyOrders() {
-  const response = await api.get<ApiResponse<Order[]>>('/api/orders');
+  const response = await api.get<ApiResponse<OrderResponse[]>>('/api/orders');
+  return response.data.data;
+}
+
+export async function getOrder(orderId: number) {
+  const response = await api.get<ApiResponse<OrderResponse>>(`/api/orders/${orderId}`);
   return response.data.data;
 }
 
@@ -18,6 +23,6 @@ export async function cancelOrder({ orderId }: CancelOrderInput) {
 }
 
 export async function getOrderTimeline(orderId: number) {
-  const response = await api.get<ApiResponse<OrderTimelineResponse>>(`/api/orders/${orderId}/timeline`);
+  const response = await api.get<ApiResponse<OrderHistoryResponse[]>>(`/api/orders/${orderId}/history`);
   return response.data.data;
 }

@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { cancelOrder, createOrder, getMyOrders, getOrderTimeline } from './api';
+import { cancelOrder, createOrder, getMyOrders, getOrder, getOrderTimeline } from './api';
 import { walletKeys } from '@/features/wallet/server';
 
 export const orderKeys = {
   all: ['orders'] as const,
+  detail: (orderId: number) => ['orders', 'detail', orderId] as const,
   timeline: (orderId: number) => ['orders', 'timeline', orderId] as const,
   myOrders: ['orders', 'my'] as const,
 };
@@ -14,6 +15,19 @@ export function useMyOrdersQuery(enabled = true) {
     queryKey: orderKeys.myOrders,
     queryFn: getMyOrders,
     enabled,
+  });
+}
+
+export function useOrderQuery(orderId: number | null, enabled = true) {
+  return useQuery({
+    queryKey: orderId == null ? orderKeys.all : orderKeys.detail(orderId),
+    queryFn: () => {
+      if (orderId == null) {
+        throw new Error('Order id is required.');
+      }
+      return getOrder(orderId);
+    },
+    enabled: enabled && orderId != null,
   });
 }
 

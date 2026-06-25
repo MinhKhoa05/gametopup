@@ -16,7 +16,7 @@ import type { User } from '@/features/auth/types';
 import type { GamePackage } from '@/features/games/types';
 import type { AdminGameSummary } from '@/features/admin/games/api';
 import type { AdminDepositRequest } from '@/features/deposits/types';
-import type { AdminOrderSummary } from '@/features/orders/types';
+import type { AdminOrderResponse } from '@/features/orders/types';
 import { buildQueueItems, buildRecentUsers, buildWatchItems, countOrdersToday, type QueueItem } from '@/features/admin/dashboard/model';
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, IconBox, ImageBox, MediaListItem, PageHero, PanelShell, SearchBar, SectionHeading, StatCard } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
@@ -48,7 +48,7 @@ export function DashboardPanel({
   games: AdminGameSummary[];
   loading: boolean;
   metrics: AdminCatalogMetrics;
-  orders: AdminOrderSummary[];
+  orders: AdminOrderResponse[];
   packages: GamePackage[];
   users: User[];
 }) {

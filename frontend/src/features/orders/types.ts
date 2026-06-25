@@ -1,30 +1,27 @@
+// Mirrors OrderStatus enum in backend
 export type OrderStatus = 1 | 2 | 3 | 4;
+
+// UI-only type for timeline rendering
 export type OrderTimelineState = 'complete' | 'current' | 'danger' | 'upcoming';
 
-export type Order = {
+// Mirrors OrderResponse.cs
+export type OrderResponse = {
   id: number;
   gameAccountInfo: string;
   gamePackageId: number;
-  gameId?: number | null;
-  gameName?: string | null;
-  gameImageUrl?: string | null;
-  packageName?: string | null;
-  packageImageUrl?: string | null;
-  unitPrice: number;
-  total?: number;
+  gameName: string;
+  packageName: string;
+  packagePrice: number;
+  packageImageUrl: string;
   status: OrderStatus;
   createdAt: string;
   updatedAt: string;
 };
 
-export type OrderTimelineStep = {
-  description: string;
-  label: string;
-  state: OrderTimelineState;
-  time?: string | null;
-};
-
-export type OrderTimelineEvent = {
+// Mirrors OrderHistoryResponse.cs
+export type OrderHistoryResponse = {
+  id: number;
+  orderId: number;
   fromStatus: OrderStatus;
   toStatus: OrderStatus;
   note?: string | null;
@@ -33,26 +30,30 @@ export type OrderTimelineEvent = {
   createdAt: string;
 };
 
-export type OrderTimelineResponse = {
-  status: OrderStatus;
-  createdAt: string;
-  updatedAt: string;
-  assignedAt?: string | null;
-  events: OrderTimelineEvent[];
-};
-
-export type AdminOrderSummary = {
+// Mirrors AdminOrderResponse.cs
+export type AdminOrderResponse = {
   id: number;
   userId: number;
   gameAccountInfo: string;
   gamePackageId: number;
-  unitPrice: number;
-  total: number;
+  gameName: string;
+  packageName: string;
+  packagePrice: number;
+  packageCost: number;
+  packageImageUrl: string;
   assignedTo: number | null;
   assignedAt: string | null;
   status: OrderStatus;
   createdAt: string;
   updatedAt: string;
+};
+
+// UI-only type for timeline steps
+export type OrderTimelineStep = {
+  description: string;
+  label: string;
+  state: OrderTimelineState;
+  time?: string | null;
 };
 
 export type CreateOrderInput = {

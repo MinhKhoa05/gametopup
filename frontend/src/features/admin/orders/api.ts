@@ -1,6 +1,6 @@
 import { api } from '@/shared/api/client';
 import type { ApiResponse } from '@/shared/types/api';
-import type { AdminOrderSummary } from '@/features/orders/types';
+import type { AdminOrderResponse } from '@/features/orders/types';
 
 export const adminOrdersKeys = {
   all: ['admin', 'orders'] as const,
@@ -11,7 +11,7 @@ export type AdminOrderActionInput = {
 };
 
 export async function getAdminOrders() {
-  const response = await api.get<ApiResponse<AdminOrderSummary[]>>('/api/admin/orders');
+  const response = await api.get<ApiResponse<AdminOrderResponse[]>>('/api/admin/orders');
   return response.data.data;
 }
 

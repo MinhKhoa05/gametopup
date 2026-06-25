@@ -33,7 +33,7 @@ type PackagesAdminPanelState = {
     name: string;
     originalPrice: number;
     salePrice: number;
-    stockQuantity: number;
+    availableSlots: number;
   };
   imageFile: File | null;
   query: string;
@@ -49,7 +49,7 @@ type PackagesAdminPanelState = {
       name: string;
       originalPrice: number;
       salePrice: number;
-      stockQuantity: number;
+      availableSlots: number;
     }>
   >;
   setImageFile: Dispatch<SetStateAction<File | null>>;
@@ -65,13 +65,13 @@ type PackagesAdminPanelState = {
     name: string;
     originalPrice: number;
     salePrice: number;
-    stockQuantity: number;
+    availableSlots: number;
   }) => Promise<void>;
 };
 
 type PanelMode = 'empty' | 'view' | 'edit' | 'create';
 type StatusFilter = 'all' | 'active' | 'inactive';
-type EditErrors = Partial<Record<'name' | 'originalPrice' | 'salePrice' | 'importPrice' | 'stockQuantity', string>>;
+type EditErrors = Partial<Record<'name' | 'originalPrice' | 'salePrice' | 'importPrice' | 'availableSlots', string>>;
 
 const detailInputClassName = classNames(inputClassName, 'h-11 rounded-[14px] text-sm');
 
@@ -165,8 +165,8 @@ export function PackagesAdminPanel({
     if (state.form.importPrice < 0) {
       errors.importPrice = 'Giá nhập không được âm.';
     }
-    if (state.form.stockQuantity < 0) {
-      errors.stockQuantity = 'Tồn kho không được âm.';
+    if (state.form.availableSlots < 0) {
+      errors.availableSlots = 'Tồn kho không được âm.';
     }
 
     return errors;
@@ -197,7 +197,7 @@ export function PackagesAdminPanel({
       name: selectedPackage.name,
       originalPrice: selectedPackage.originalPrice,
       salePrice: selectedPackage.salePrice,
-      stockQuantity: selectedPackage.stockQuantity,
+      availableSlots: selectedPackage.availableSlots,
     });
   };
 
@@ -281,7 +281,7 @@ export function PackagesAdminPanel({
                       leading={<ImageBox src={item.imageUrl} alt={item.name} className="object-cover" />}
                       title={item.name}
                       subtitle={`${selectedGame?.name ?? `Game #${item.gameId}`} · ${formatCurrency(item.salePrice)}`}
-                      meta={`${item.stockQuantity > 0 ? `Tồn ${item.stockQuantity}` : 'Hết hàng'} · ${item.isActive ? 'Đang bán' : 'Đang ẩn'}`}
+                      meta={`${item.availableSlots > 0 ? `Tồn ${item.availableSlots}` : 'Hết hàng'} · ${item.isActive ? 'Đang bán' : 'Đang ẩn'}`}
                       titleAccessory={
                         <Badge tone={item.isActive ? 'success' : 'neutral'} icon={item.isActive ? <CheckCircle2 size={14} /> : <X size={14} />}>
                           {item.isActive ? 'Bật' : 'Tắt'}
@@ -406,15 +406,15 @@ export function PackagesAdminPanel({
                           className={classNames(detailInputClassName, 'w-full max-w-[220px] text-right')}
                           min={0}
                           type="number"
-                          value={String(state.form.stockQuantity)}
+                          value={String(state.form.availableSlots)}
                           onChange={(event) => {
                             const value = Number(event.target.value);
-                            state.setForm((current) => ({ ...current, stockQuantity: value }));
-                            setEditErrors((current) => ({ ...current, stockQuantity: value >= 0 ? undefined : current.stockQuantity }));
+                            state.setForm((current) => ({ ...current, availableSlots: value }));
+                            setEditErrors((current) => ({ ...current, availableSlots: value >= 0 ? undefined : current.availableSlots }));
                           }}
                         />
-                        {editErrors.stockQuantity ? (
-                          <span className="max-w-[220px] text-xs font-medium text-rose-200">{editErrors.stockQuantity}</span>
+                        {editErrors.availableSlots ? (
+                          <span className="max-w-[220px] text-xs font-medium text-rose-200">{editErrors.availableSlots}</span>
                         ) : null}
                       </div>
                     </DetailRow>
@@ -465,7 +465,7 @@ export function PackagesAdminPanel({
                     <DetailRow label="Giá bán">{formatCurrency(selectedPackage.salePrice)}</DetailRow>
                     <DetailRow label="Giá gốc">{formatCurrency(selectedPackage.originalPrice)}</DetailRow>
                     <DetailRow label="Giá nhập">{formatCurrency(selectedPackage.importPrice)}</DetailRow>
-                    <DetailRow label="Tồn kho">{selectedPackage.stockQuantity}</DetailRow>
+                    <DetailRow label="Tồn kho">{selectedPackage.availableSlots}</DetailRow>
                     <DetailRow label="Tiết kiệm">
                       {selectedPackage.originalPrice > 0
                         ? `${formatCurrency(Math.max(0, selectedPackage.originalPrice - selectedPackage.salePrice))} (${selectedPackageDiscount}%)`
@@ -565,7 +565,7 @@ function PackageFormPanel({
       name: string;
       originalPrice: number;
       salePrice: number;
-      stockQuantity: number;
+      availableSlots: number;
     }>
   >;
 }) {
@@ -638,11 +638,11 @@ function PackageFormPanel({
         <Field
           label="Tồn kho"
           min={0}
-          onChange={(event) => setForm({ ...form, stockQuantity: Number(event.target.value) })}
+          onChange={(event) => setForm({ ...form, availableSlots: Number(event.target.value) })}
           placeholder="50"
           required
           type="number"
-          value={String(form.stockQuantity)}
+          value={String(form.availableSlots)}
         />
       </div>
 
@@ -662,3 +662,4 @@ function PackageFormPanel({
     </form>
   );
 }
+
