@@ -1,9 +1,8 @@
 import { CheckCircle2, ShieldCheck } from 'lucide-react';
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Badge } from '@/shared/components';
-import { SITE } from '@/app/config/site';
-import { SiteCredits } from '@/app/site-shell/SiteCredits';
+import { Badge, BrandLogo } from '@/shared/components';
+import { SiteCredits } from '@/app/components';
 import { AuthForm } from './AuthForm';
 import { useAuthSession, type AuthMode } from '../hooks/useAuthSession';
 import { routes } from '@/app/router/routes';
@@ -59,9 +58,7 @@ export function AuthPage({ mode }: AuthPageProps) {
       <section className="relative flex w-full flex-1 items-center justify-center">
         <div className="mx-auto grid w-full max-w-[30rem] gap-6">
           <div className="text-center">
-            <Badge tone="primary" className="uppercase tracking-[0.24em]">
-              {SITE.name}
-            </Badge>
+            <BrandLogo onClick={() => navigate(routes.homeGuest())} />
             <h1 className="mt-5 text-[clamp(2rem,4vw,2.65rem)] font-black leading-[0.96] tracking-tight text-white">
               {meta.title}
             </h1>

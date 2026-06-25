@@ -218,7 +218,7 @@ export function PackagePurchaseDialog({ busy, game, isOpen, onClose, onConfirm, 
               <Button className="sm:min-w-32" disabled={busy} variant="outline" onClick={onClose}>
                 Hủy
               </Button>
-              <Button className="sm:min-w-40" disabled={busy || !canConfirm} variant="accent" onClick={handleConfirm}>
+              <Button className="sm:min-w-40" disabled={busy || !canConfirm} variant="primary" onClick={handleConfirm}>
                 {busy ? 'Đang tạo đơn...' : 'Đặt hàng'}
               </Button>
             </div>
@@ -315,7 +315,7 @@ export function PurchaseSuccessDialog({ game, isOpen, onContinue, onViewOrders, 
             <Button className="sm:min-w-32" variant="outline" onClick={onContinue}>
               Tiếp tục nạp
             </Button>
-            <Button className="sm:min-w-36" variant="accent" onClick={onViewOrders}>
+            <Button className="sm:min-w-36" variant="primary" onClick={onViewOrders}>
               Xem đơn hàng
             </Button>
           </div>

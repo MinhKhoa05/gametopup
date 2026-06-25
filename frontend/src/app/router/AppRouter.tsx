@@ -10,7 +10,7 @@ const AuthPage = lazy(() => import('@/features/auth/components/AuthPage').then((
 const WalletPage = lazy(() => import('@/features/wallet/pages/WalletPage').then((module) => ({ default: module.WalletPage })));
 const OrdersPage = lazy(() => import('@/features/orders/pages/OrdersPage').then((module) => ({ default: module.OrdersPage })));
 const ProfilePage = lazy(() => import('@/features/profile/pages/ProfilePage').then((module) => ({ default: module.ProfilePage })));
-const AdminLayoutPage = lazy(() => import('@/features/admin/pages/AdminLayoutPage').then((module) => ({ default: module.AdminLayoutPage })));
+// const AdminLayoutPage = lazy(() => import('@/features/admin/pages/AdminLayoutPage').then((module) => ({ default: module.AdminLayoutPage })));
 const AdminDashboardPage = lazy(() => import('@/features/admin/dashboard/pages/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })));
 const AdminUsersPage = lazy(() => import('@/features/admin/users/AdminUsersPage').then((module) => ({ default: module.AdminUsersPage })));
 const AdminGamesPage = lazy(() => import('@/features/admin/games/AdminGamesPage').then((module) => ({ default: module.AdminGamesPage })));
@@ -51,7 +51,7 @@ export function AppRouter() {
             </RequireAuth>
           }
         />
-        <Route
+        {/* <Route
           path={ROUTE_PATHS.admin}
           element={
             <RequireAdmin>
@@ -66,7 +66,7 @@ export function AppRouter() {
           <Route path="packages" element={<AdminPackagesPage />} />
           <Route path="orders" element={<AdminOrdersPage />} />
           <Route path="deposits" element={<AdminDepositsPage />} />
-        </Route>
+        </Route> */}
         <Route path="*" element={<Navigate to={ROUTE_PATHS.homeGuest} replace />} />
       </Routes>
     </Suspense>

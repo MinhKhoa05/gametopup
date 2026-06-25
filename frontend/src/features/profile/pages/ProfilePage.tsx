@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode, type RefObject } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, LockKeyhole, PencilLine, ShieldCheck } from 'lucide-react';
-import { AppPageContainer } from '@/app/components/AppPageContainer';
+import { Container } from '@/shared/components';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import type { User } from '@/features/auth/types';
-import { formatUserRoleLabel, isAdminUserRole } from '@/features/auth/userRole';
+import { formatUserRoleLabel } from '@/features/auth/userRole';
 import { buildOrderHistoryItems } from '@/features/orders/components/OrderHistorySections';
 import type { OrderResponse } from '@/features/orders/types';
 import { useMyOrdersQuery } from '@/features/orders/server';
@@ -52,7 +52,6 @@ function ProfileContent({ user }: { user: User }) {
   }, [user.displayName, user.id]);
 
   const displayName = user.displayName?.trim() || user.email;
-  const rawRoleLabel = formatUserRoleLabel(user.role);
   const joinedAtLabel = formatJoinedDate(user.createdAt);
 
   const stats = useMemo(() => {
@@ -84,7 +83,7 @@ function ProfileContent({ user }: { user: User }) {
 
   return (
     <div className="relative isolate overflow-hidden">
-      <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
+      <Container className="relative z-10 py-5 sm:py-7 lg:py-8">
         <div className="grid gap-10 lg:gap-12">
           <PageHero
             eyebrow="TÀI KHOẢN CỦA TÔI"
@@ -173,7 +172,7 @@ function ProfileContent({ user }: { user: User }) {
             </div>
           </section>
         </div>
-      </AppPageContainer>
+      </Container>
     </div>
   );
 }
@@ -455,7 +454,7 @@ function resolveVipTier(totalDeposited: number) {
 
 function ProfilePageLoading() {
   return (
-    <AppPageContainer className="py-5 sm:py-7 lg:py-8" aria-busy="true" aria-label="Đang xác thực tài khoản">
+    <Container className="py-5 sm:py-7 lg:py-8" aria-busy="true" aria-label="Đang xác thực tài khoản">
         <div className="grid gap-10 lg:gap-12">
         <div className="h-[220px] animate-pulse rounded-[30px] border border-white/10 bg-white/[0.03]" />
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.9fr)]">
@@ -470,7 +469,7 @@ function ProfilePageLoading() {
         </div>
         <div className="h-[220px] animate-pulse rounded-[26px] border border-white/10 bg-white/[0.03]" />
       </div>
-    </AppPageContainer>
+    </Container>
   );
 }
 

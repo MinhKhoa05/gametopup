@@ -1,5 +1,6 @@
 ﻿import { Link } from 'react-router-dom';
-import { FOOTER_DEVELOPER_LINKS, SITE } from '@/app/config/site';
+import { DEVELOPER, FOOTER_DEVELOPER_LINKS } from '@/app/config';
+
 import { routes } from '@/app/router/routes';
 
 export function SiteCredits() {
@@ -7,15 +8,15 @@ export function SiteCredits() {
     <div className="gt-shell-surface border-t gt-border pt-5 text-sm gt-text-muted">
       <div className="mx-auto flex w-full max-w-[1480px] flex-col items-center gap-3 px-4 text-center sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <span className="flex flex-wrap items-center justify-center gap-1.5 sm:justify-start">
-          <span>© {SITE.copyrightYear}</span>
+          <span>© 2026</span>
           <Link to={routes.homeGuest()} className="font-semibold gt-text-soft transition-colors hover:text-white">
-            {SITE.name}
+            GameTopUp
           </Link>
           <span>Mọi quyền được bảo lưu.</span>
         </span>
 
         <span className="flex flex-wrap items-center justify-center gap-2 font-medium gt-text-muted sm:justify-end">
-          <span>Phát triển bởi {SITE.developerName}</span>
+          <span>Phát triển bởi {DEVELOPER.name}</span>
           {FOOTER_DEVELOPER_LINKS.map((link) => (
           <a
             key={link.label}

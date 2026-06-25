@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useNavigate, useParams } from 'react-router-dom';
-import { buildHeaderAccountMenuItems } from '@/app/site-shell/header.helpers';
-import { HEADER_ACCOUNT_MENU_ADMIN_ITEMS } from '@/app/config/site';
+import { HEADER_ADMIN_MENU_ITEMS } from '@/app/config';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { useAdminPage } from '@/features/admin/hooks';
 import {
@@ -22,10 +21,7 @@ export function AdminLayoutPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const activeSection = ADMIN_SECTIONS.includes(sectionParam as AdminSection) ? (sectionParam as AdminSection) : 'dashboard';
 
-  const accountMenuItems = useMemo(
-    () => buildHeaderAccountMenuItems(HEADER_ACCOUNT_MENU_ADMIN_ITEMS, auth.handleLogout, navigate),
-    [auth.handleLogout, navigate],
-  );
+  const accountMenuItems = HEADER_ADMIN_MENU_ITEMS;
 
   if (!auth.user || String(auth.user.role ?? '').trim().toLowerCase() !== 'admin') {
     return <AdminAccessDenied onLogin={() => navigate(routes.login())} />;
@@ -41,7 +37,7 @@ export function AdminLayoutPage() {
   return (
     <div className="gt-app-shell min-h-screen">
       <AdminMobileLayout
-        accountMenuItems={accountMenuItems}
+        // accountMenuItems={accountMenuItems}
         activeSection={activeSection}
         children={shell}
         isOpen={mobileSidebarOpen}

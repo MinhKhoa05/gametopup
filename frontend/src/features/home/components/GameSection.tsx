@@ -30,9 +30,9 @@ export function GameSection({
             size="sm"
             className="rounded-xl"
             onClick={onViewAll}
+            trailingIcon = {<ArrowRight size={16}/>}
           >
             Xem tất cả
-            <ArrowRight size={16} />
           </Button>
         )}
       </div>

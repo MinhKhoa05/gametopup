@@ -1,12 +1,9 @@
 import { Boxes, CalendarDays, ChevronRight, LayoutDashboard, Menu, Users, WalletCards, X } from 'lucide-react';
 import { type CSSProperties, type ReactNode } from 'react';
-import { Badge, EmptyState, IconBox } from '@/shared/components';
-import { BrandLogo } from '@/app/site-shell/BrandLogo';
-import { HeaderAccountMenu } from '@/app/site-shell/HeaderAccountMenu';
+import { Badge, EmptyState, IconBox, BrandLogo, HeaderAccountMenu} from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
-import { SITE } from '@/app/config/site';
 import type { AdminSection } from '@/app/router/routes';
-import type { HeaderAccountMenuItem } from '@/shared/types/layout';
+import type { HeaderMenuItem } from '@/app/config';
 
 const ADMIN_NAV_ITEMS: Array<{ icon: ReactNode; label: string; section: AdminSection }> = [
   { section: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Tổng quan' },
@@ -107,7 +104,7 @@ export function AdminDesktopLayout({
   accountMenuItems,
 }: {
   activeSection: AdminSection;
-  accountMenuItems: HeaderAccountMenuItem[];
+  accountMenuItems: HeaderMenuItem[];
   brandCollapsed: boolean;
   children: ReactNode;
   loading: boolean;
@@ -136,8 +133,6 @@ export function AdminDesktopLayout({
           collapsed={brandCollapsed}
           onClick={onBrandClick}
           size="lg"
-          subtitle="Quản lý và vận hành dịch vụ"
-          title={SITE.adminName}
         />
       </div>
 
@@ -163,7 +158,7 @@ export function AdminDesktopLayout({
             >
               <CalendarDays size={17} className={loading ? 'animate-spin' : ''} />
             </button>
-            <HeaderAccountMenu items={accountMenuItems} triggerLabel={userName} />
+            {/* <HeaderAccountMenu items={accountMenuItems} displayName={userName} /> */}
           </div>
         </div>
       </header>
@@ -186,10 +181,9 @@ export function AdminMobileLayout({
   onRefresh,
   onToggleSidebar,
   userName,
-  accountMenuItems,
 }: {
   activeSection: AdminSection;
-  accountMenuItems: HeaderAccountMenuItem[];
+//   accountMenuItems: HeaderAccountMenuItem[];
   children: ReactNode;
   isOpen: boolean;
   loading: boolean;
@@ -218,8 +212,6 @@ export function AdminMobileLayout({
               adminDot
               onClick={onBrandClick}
               size="sm"
-              subtitle="Quản lý và vận hành dịch vụ"
-              title={SITE.adminName}
             />
           </div>
 
@@ -232,7 +224,7 @@ export function AdminMobileLayout({
             >
               <CalendarDays size={17} className={loading ? 'animate-spin' : ''} />
             </button>
-            <HeaderAccountMenu items={accountMenuItems} triggerLabel={userName} />
+            {/* <HeaderAccountMenu items={accountMenuItems} triggerLabel={userName} /> */}
           </div>
         </div>
       </header>
@@ -305,9 +297,6 @@ function AdminSidebarMobile({
             className="min-w-0 flex-1"
             onClick={() => onNavigate('dashboard')}
             size="lg"
-            showTextOnMobile
-            subtitle="Quản lý và vận hành dịch vụ"
-            title={SITE.adminName}
           />
 
           <button

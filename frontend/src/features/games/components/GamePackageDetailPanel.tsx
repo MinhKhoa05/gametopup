@@ -67,7 +67,7 @@ export function GamePackageDetailPanel({ gameName, onPurchase, selectedPackage }
               <DetailRow label="Thời gian xử lý">5–15 phút</DetailRow>
             </div>
 
-            <Button type="button" variant="accent" className="w-full py-3.5" onClick={onPurchase} disabled={!isAvailable}>
+            <Button type="button" variant="primary" className="w-full py-3.5" onClick={onPurchase} disabled={!isAvailable}>
               {isAvailable ? 'Mua ngay' : 'Hết hàng'}
             </Button>
           </div>

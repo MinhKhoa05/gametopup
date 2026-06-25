@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Gamepad2, SlidersHorizontal, Sparkles, Smartphone } from 'lucide-react';
-import { AppPageContainer } from '@/app/components/AppPageContainer';
+import { Container } from '@/shared/components';
 import { routes } from '@/app/router/routes';
 import type { Game } from '@/features/games/contracts';
 import { useGamesQuery } from '@/features/games/server';
@@ -70,7 +70,7 @@ export function GamesPage() {
   const activeCount = filteredGames.length;
 
   return (
-    <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
+    <Container className="relative z-10 py-5 sm:py-7 lg:py-8">
         <div className="grid gap-10 lg:gap-12">
           <PageHero
             eyebrow="KHO GAME"
@@ -148,7 +148,7 @@ export function GamesPage() {
             />
           )}
         </div>
-    </AppPageContainer>
+    </Container>
   );
 }
 

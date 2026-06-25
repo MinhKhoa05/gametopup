@@ -1,5 +1,5 @@
 import { ArrowUpRight, Clock3, ReceiptText, WalletCards } from 'lucide-react';
-import { AppPageContainer } from '@/app/components/AppPageContainer';
+import { Container } from '@/shared/components';
 import { WalletDepositDialog } from '@/features/wallet/components/WalletDepositDialog';
 import { WalletHistoryPanel } from '@/features/wallet/components/WalletHistoryPanel';
 import { useWalletPage } from '@/features/wallet/hooks/useWalletPage';
@@ -45,7 +45,7 @@ export function WalletPage() {
 
   return (
     <div className="relative isolate overflow-hidden">
-      <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
+      <Container className="relative z-10 py-5 sm:py-7 lg:py-8">
         <div className="grid gap-10 lg:gap-12">
           <PageHero
             eyebrow="QUẢN LÝ TÀI KHOẢN"
@@ -131,7 +131,7 @@ export function WalletPage() {
             totalPages={historyTotalPages}
           />
         </div>
-      </AppPageContainer>
+      </Container>
       <WalletDepositDialog
         isOpen={isDepositOpen}
         onClose={() => setIsDepositOpen(false)}
@@ -146,7 +146,7 @@ export function WalletPage() {
 
 function WalletLoadingState() {
   return (
-    <AppPageContainer className="py-5 sm:py-7 lg:py-8" aria-busy="true">
+    <Container className="py-5 sm:py-7 lg:py-8" aria-busy="true">
       <div className="grid gap-10 lg:gap-12">
         <div className="h-[380px] animate-pulse rounded-[30px] border border-white/10 bg-white/[0.03]" />
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -160,6 +160,6 @@ function WalletLoadingState() {
         </div>
         <div className="h-[260px] animate-pulse rounded-[26px] border border-white/10 bg-white/[0.03]" />
       </div>
-    </AppPageContainer>
+    </Container>
   );
 }

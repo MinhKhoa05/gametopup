@@ -1,5 +1,5 @@
 import { Gamepad2, Home, PackageCheck, UserRound, WalletCards } from 'lucide-react';
-import { BOTTOM_NAV_ITEMS } from '@/app/config/site';
+import { NavItem, BOTTOM_NAV_ITEMS } from '@/app/config';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { classNames } from '@/shared/lib/classNames';
 import { useLocation, useNavigate } from 'react-router-dom';

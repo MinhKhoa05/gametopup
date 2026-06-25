@@ -32,9 +32,9 @@ export function HeroSection({ onExploreGames }: HeroSectionProps) {
             variant="primary"
             className="w-fit rounded-[14px] px-5"
             onClick={onExploreGames}
+            trailingIcon = {<ArrowRight size={16} />}
           >
             Khám phá game
-            <ArrowRight size={16} />
           </Button>
         </div>
 

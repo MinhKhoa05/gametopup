@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { AppPageContainer } from '@/app/components/AppPageContainer';
-import { SiteCredits } from '@/app/site-shell/SiteCredits';
+import { Container } from '@/shared/components';
+import { SiteCredits } from '@/app/components';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { useGamesQuery } from '@/features/games/server';
@@ -173,7 +173,7 @@ export function GameDetailPage() {
   };
 
   return (
-    <AppPageContainer className="py-5 sm:py-7 lg:py-8">
+    <Container className="py-5 sm:py-7 lg:py-8">
       <div className="grid gap-10 lg:gap-12">
         <PageHero
           eyebrow="NẠP GAME"
@@ -223,6 +223,6 @@ export function GameDetailPage() {
           result={checkoutResult}
         />
       ) : null}
-    </AppPageContainer>
+    </Container>
   );
 }

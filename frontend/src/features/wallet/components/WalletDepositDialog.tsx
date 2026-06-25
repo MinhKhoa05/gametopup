@@ -260,7 +260,7 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                   <Button className="sm:min-w-32" disabled={isBusy} variant="outline" onClick={onClose}>
                     Hủy
                   </Button>
-                  <Button className="sm:min-w-40" disabled={isBusy || !amount.trim() || Number.parseInt(amount, 10) <= 0} variant="accent" type="submit">
+                  <Button className="sm:min-w-40" disabled={isBusy || !amount.trim() || Number.parseInt(amount, 10) <= 0} variant="primary" type="submit">
                     {createDepositMutation.isPending ? 'Đang tạo yêu cầu...' : 'Tạo yêu cầu nạp'}
                   </Button>
                 </div>
@@ -330,7 +330,7 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                   <Button className="sm:min-w-32" disabled={isBusy} variant="outline" onClick={onClose}>
                     Đóng
                   </Button>
-                  <Button className="sm:min-w-44" disabled={isBusy} variant="accent" onClick={() => void handleConfirmTransfer()}>
+                  <Button className="sm:min-w-44" disabled={isBusy} variant="primary" onClick={() => void handleConfirmTransfer()}>
                     {confirmDepositMutation.isPending ? 'Đang xác nhận...' : 'Tôi đã chuyển khoản'}
                   </Button>
                 </div>
@@ -357,7 +357,7 @@ export function WalletDepositDialog({ isOpen, onClose, onViewHistory }: WalletDe
                 <Button className="sm:min-w-36" variant="outline" onClick={onClose}>
                   Đóng
                 </Button>
-                <Button className="sm:min-w-40" variant="accent" onClick={onViewHistory}>
+                <Button className="sm:min-w-40" variant="primary" onClick={onViewHistory}>
                   Xem lịch sử nạp
                 </Button>
               </div>

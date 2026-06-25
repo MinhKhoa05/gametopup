@@ -6,8 +6,8 @@ import { registerSessionExpiredHandler } from '@/app/session';
 import { AppLayout } from '@/app/components/AppLayout';
 import { AuthHeader } from '@/app/components/AuthHeader';
 import { BottomNav } from '@/app/components/BottomNav';
-import { SiteHeader } from '@/app/components/SiteHeader';
-import { Footer } from '@/app/site-shell/Footer';
+import { AppHeader } from '@/app/components/AppHeader';
+import { AppFooter } from '@/app/components/AppFooter';
 import { AppRouter } from '@/app/router/AppRouter';
 import { ROUTE_PATHS, isAdminRoutePath, isAuthRoutePath, isGameDetailRoutePath } from '@/app/router/routes';
 
@@ -17,7 +17,6 @@ export function App() {
   const isAdminRoute = isAdminRoutePath(location.pathname);
   const isAuthRoute = isAuthRoutePath(location.pathname);
   const isTopupRoute = isGameDetailRoutePath(location.pathname);
-  const footerVariant = location.pathname === ROUTE_PATHS.homeGuest ? 'full' : 'minimal';
   const [sessionExpiredAt, setSessionExpiredAt] = useState<number | null>(null);
 
   useEffect(() => {
@@ -48,9 +47,9 @@ export function App() {
     <AppLayout
       isAdminRoute={isAdminRoute}
       isAuthRoute={isAuthRoute}
-      header={<SiteHeader />}
+      header={<AppHeader />}
       authHeader={<AuthHeader />}
-      footer={isTopupRoute || isAuthRoute ? undefined : <Footer variant={footerVariant} />}
+      footer={isTopupRoute || isAuthRoute ? undefined : <AppFooter />}
       bottomNav={isTopupRoute || isAuthRoute ? undefined : <BottomNav />}
     >
       <AppRouter />

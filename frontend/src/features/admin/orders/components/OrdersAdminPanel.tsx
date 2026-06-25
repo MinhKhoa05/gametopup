@@ -148,7 +148,7 @@ export function OrdersAdminPanel({
               {selectedActionState?.kind === 'pick' || selectedActionState?.kind === 'act' ? (
                 <div className="flex flex-wrap gap-2.5">
                   {selectedActionState.kind === 'pick' ? (
-                    <Button variant="accent" disabled={busy} onClick={() => void onPickOrder(selectedOrder.id)}>
+                    <Button variant="primary" disabled={busy} onClick={() => void onPickOrder(selectedOrder.id)}>
                       <Send size={16} />
                       Tiếp nhận
                     </Button>
@@ -156,7 +156,7 @@ export function OrdersAdminPanel({
 
                   {selectedActionState.kind === 'act' ? (
                     <>
-                      <Button variant="accent" disabled={busy} onClick={() => void onCompleteOrder(selectedOrder.id)}>
+                      <Button variant="primary" disabled={busy} onClick={() => void onCompleteOrder(selectedOrder.id)}>
                         <CheckCircle2 size={16} />
                         Hoàn thành
                       </Button>
