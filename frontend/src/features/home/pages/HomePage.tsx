@@ -1,468 +1,336 @@
-﻿import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { ArrowRight, ChevronDown, Headset, ReceiptText, Search, ShieldCheck, Tag, Zap } from 'lucide-react';
-import { AppPageContainer } from '@/app/components/AppPageContainer';
-import { SITE_IMAGES } from '@/app/config/site';
-import { routes } from '@/app/router/routes';
-import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
-import { GamePackageCard } from '@/features/games/components/GamePackageCard';
-import { useGamesQuery } from '@/features/games/server';
-import type { PublicGame, PublicGamePackage } from '@/features/games/contracts';
-import { useMyOrdersQuery } from '@/features/orders/server';
-import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
-import { useWalletBalanceQuery } from '@/features/wallet/server';
-import { Badge, Button, EmptyState, IconBox, ImageBox, MediaListItem, PanelShell, SectionHeading } from '@/shared/components';
-import { formatCurrency, formatRelativeTime } from '@/shared/lib/format';
-import type { Order } from '@/features/orders/types';
+import { useMemo } from 'react';
 import type { ReactNode } from 'react';
+import { Bell, ChevronRight, CirclePlus, Wallet2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { HEADER_ACCOUNT_MENU_ADMIN_ITEMS, HEADER_ACCOUNT_MENU_USER_ITEMS } from '@/app/config/site';
+import { routes } from '@/app/router/routes';
+import { BrandLogo } from '@/app/site-shell/BrandLogo';
+import { HeaderAccountMenu } from '@/app/site-shell/HeaderAccountMenu';
+import { buildHeaderAccountMenuItems } from '@/app/site-shell/header.helpers';
+import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
+import { getDepositRequestStatus } from '@/features/deposits/lib/deposit-request-status';
+import type { WalletDepositRequest } from '@/features/deposits/types';
+import { useGamesQuery } from '@/features/games/server';
+import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
+import type { OrderResponse } from '@/features/orders/types';
+import { useMyOrdersQuery } from '@/features/orders/server';
+import { useWalletOverviewQuery } from '@/features/wallet/server';
+import { Badge, Button, IconBox } from '@/shared/components';
+import { ImageBox } from '@/shared/components/image';
+import { formatCurrency, formatDate } from '@/shared/lib/format';
 
-type PackageCard = PublicGamePackage & {
-  game: PublicGame;
-};
+const HOME_TABS = [
+  { label: 'Games', href: routes.games(), active: true },
+  { label: 'Orders', href: routes.orders(), active: false },
+  { label: 'Wallet', href: routes.wallet(), active: false },
+] as const;
+
+const GAME_PACKAGE_COUNTS = [12, 10, 8, 8, 6] as const;
 
 export function HomePage() {
   const navigate = useNavigate();
   const auth = useAuthSession();
   const gamesQuery = useGamesQuery();
-  const walletQuery = useWalletBalanceQuery(auth.status === 'authenticated');
+  const walletOverviewQuery = useWalletOverviewQuery(auth.status === 'authenticated');
   const ordersQuery = useMyOrdersQuery(auth.status === 'authenticated');
 
-  const featuredGames = useMemo(() => (gamesQuery.data ?? []).slice(0, 8), [gamesQuery.data]);
-  const featuredPackages = useMemo(() => buildFeaturedPackages(featuredGames.slice(0, 6)), [featuredGames]);
-  const recentOrders = (ordersQuery.data ?? []).slice(0, 4);
-  const walletBalance = walletQuery.data ?? 0;
-
-  const isGamesLoading = gamesQuery.isPending && !featuredGames.length;
-  const isOrdersLoading = ordersQuery.isPending && auth.status === 'authenticated';
-  const isWalletLoading = walletQuery.isPending && auth.status === 'authenticated' && walletQuery.data == null;
+  const featuredGames = useMemo(() => (gamesQuery.data ?? []).slice(0, 5), [gamesQuery.data]);
+  const recentOrders = useMemo(() => (ordersQuery.data ?? []).slice(0, 3), [ordersQuery.data]);
+  const recentDeposits = useMemo(() => (walletOverviewQuery.data?.depositRequests ?? []).slice(0, 3), [walletOverviewQuery.data?.depositRequests]);
+  const walletBalance = walletOverviewQuery.data?.balance ?? 0;
+  const userName = auth.user?.displayName?.trim() || auth.user?.email?.split('@')[0] || 'Ban';
+  const baseMenuItems =
+    auth.user?.role != null && String(auth.user.role).trim().toLowerCase() === 'admin' ? HEADER_ACCOUNT_MENU_ADMIN_ITEMS : HEADER_ACCOUNT_MENU_USER_ITEMS;
+  const accountMenuItems = useMemo(
+    () => buildHeaderAccountMenuItems(baseMenuItems, auth.handleLogout, (href) => navigate(href)),
+    [auth.handleLogout, baseMenuItems, navigate],
+  );
 
   return (
-    <AppPageContainer className="relative z-10 py-5 sm:py-7 lg:py-8">
-        <div className="grid gap-10 lg:gap-12">
-          <HeroSection onBrowse={() => navigate(routes.games())} onDeposit={() => navigate(routes.wallet())} />
+    <div className="relative z-10 min-h-screen bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.08),transparent_22%),linear-gradient(180deg,#030814_0%,#07101d_100%)]">
+      <header className="border-b border-white/[0.06] bg-[rgba(3,8,20,0.72)] backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-[1560px] items-center justify-between gap-6 px-5 py-5 sm:px-8 lg:px-12">
+          <div className="flex min-w-0 items-center gap-6 lg:gap-10">
+            <BrandLogo title="GameTopUp" onClick={() => navigate(routes.homeGuest())} />
 
-          <FeaturedRail games={featuredGames} onPick={(game) => navigate(routes.gameDetail(game.id))} loading={isGamesLoading} />
-
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.82fr)]">
-            <section className="grid gap-4">
-              <SectionHeading
-                className="items-center"
-                title="Gói nạp bán chạy"
-                titleClassName="text-[1.45rem] sm:text-[1.7rem]"
-                action={
-                  <Button variant="secondary" className="rounded-[14px] px-4 text-sm font-semibold" onClick={() => navigate(routes.games())}>
-                    Xem game
-                    <Search size={16} />
-                  </Button>
-                }
-              />
-
-              {featuredPackages.length ? (
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,214px))] justify-start gap-3 sm:gap-4">
-                  {featuredPackages.map((pkg) => (
-                    <GamePackageCard key={pkg.id} gamePackage={pkg} isSelected={false} onSelect={() => navigate(routes.gameDetail(pkg.game.id))} />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Chưa có gói nạp"
-                  description="Danh mục game sẽ xuất hiện ở đây sau khi hệ thống tải xong dữ liệu."
-                  variant="compact"
-                />
-              )}
-            </section>
-
-            <aside className="grid gap-6">
-              <PanelShell className="overflow-hidden">
-                <div className="grid gap-4 px-5 py-5 sm:px-6 sm:py-6">
-                  <SectionHeading title="Ví của bạn" />
-                  <div className="text-[clamp(2.1rem,3.2vw,3rem)] font-black tracking-[-0.06em] text-cyan-300 gt-tabular">
-                    {isWalletLoading ? '--' : auth.status === 'authenticated' ? formatCurrency(walletBalance) : 'Đăng nhập'}
-                  </div>
-
-                  <div className="flex flex-wrap gap-3 pt-1">
-                    <Button variant="primary" className="rounded-[14px] px-5 text-sm font-bold" onClick={() => navigate(routes.wallet())}>
-                      Nạp thêm
-                    </Button>
-                    <Button variant="outline" className="rounded-[14px] px-5 text-sm font-bold" onClick={() => navigate(routes.wallet())}>
-                      Lịch sử
-                    </Button>
-                  </div>
-                </div>
-              </PanelShell>
-
-              <section className="grid gap-4">
-                <SectionHeading
-                  className="items-center"
-                  title="Đơn hàng gần đây"
-                  titleClassName="text-[1.3rem]"
-                  action={
-                    <Button variant="secondary" className="rounded-[14px] px-4 text-sm font-semibold" onClick={() => navigate(routes.orders())}>
-                      Xem tất cả
-                      <ArrowRight size={16} />
-                    </Button>
-                  }
-                />
-
-                <div className="grid gap-3">
-                  {auth.status === 'authenticated' ? (
-                    isOrdersLoading ? (
-                      <RecentOrdersSkeleton />
-                    ) : recentOrders.length ? (
-                      recentOrders.map((order) => <RecentOrderItem key={order.id} order={order} />)
-                    ) : (
-                      <EmptyState
-                        title="Chưa có đơn hàng"
-                        description="Khi bạn nạp game, các đơn gần đây sẽ hiện ở đây."
-                        actionLabel="Khám phá kho game"
-                        onAction={() => navigate(routes.games())}
-                        variant="compact"
-                      />
-                    )
-                  ) : (
-                    <EmptyState
-                      title="Đăng nhập để xem lịch sử"
-                      description="Sau khi đăng nhập, các đơn hàng gần đây sẽ hiển thị tại đây."
-                      actionLabel="Đăng nhập"
-                      onAction={() => navigate(routes.login())}
-                      variant="compact"
-                    />
-                  )}
-                </div>
-              </section>
-            </aside>
+            <nav className="hidden items-center gap-1 xl:flex" aria-label="Home 2 navigation">
+              {HOME_TABS.map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  aria-current={item.active ? 'page' : undefined}
+                  className={`relative rounded-full px-4 py-2 text-sm font-semibold tracking-[-0.01em] transition-all duration-200 ${
+                    item.active
+                      ? 'bg-[var(--gt-primary-soft)] text-[var(--gt-text)] shadow-[inset_0_0_0_1px_rgba(34,211,238,0.18)]'
+                      : 'gt-text-muted hover:bg-[var(--gt-primary-soft)] hover:text-[var(--gt-text)]'
+                  }`}
+                  onClick={() => navigate(item.href)}
+                >
+                  <span>{item.label}</span>
+                  <span
+                    className={`absolute inset-x-3 -bottom-[21px] h-px rounded-full bg-transparent transition-all duration-200 ${
+                      item.active ? 'bg-[var(--gt-primary)]' : ''
+                    }`}
+                  />
+                </button>
+              ))}
+            </nav>
           </div>
 
-          <TrustSection />
-
-          <FaqSection />
-        </div>
-    </AppPageContainer>
-  );
-}
-
-function HeroSection({
-  onBrowse,
-  onDeposit,
-}: {
-  onBrowse: () => void;
-  onDeposit: () => void;
-}) {
-  return (
-      <div className="grid gap-5 sm:gap-6">
-      <section className="gt-panel overflow-hidden rounded-[28px]">
-        <div className="relative aspect-[16/9] w-full">
-          <img
-            src={SITE_IMAGES.home.heroIllustration}
-            alt="Banner GameTopUp"
-            className="h-full w-full object-cover"
-            loading="eager"
-            decoding="async"
-          />
-        </div>
-      </section>
-
-      <div className="flex flex-wrap gap-3">
-        <Button variant="primary" className="rounded-[14px] px-5 text-sm font-bold" onClick={onDeposit}>
-          Nạp ngay
-          <Zap size={16} />
-        </Button>
-        <Button variant="secondary" className="rounded-[14px] px-5 text-sm font-bold" onClick={onBrowse}>
-          Xem danh sách game
-        </Button>
-      </div>
-
-      <div className="flex flex-wrap gap-4 text-sm gt-text-muted">
-        <span className="inline-flex items-center gap-2">
-          <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(34,197,94,0.5)]" />
-          Hỗ trợ 24/7
-        </span>
-        <span className="inline-flex items-center gap-2">
-          <span className="size-2 rounded-full bg-cyan shadow-[0_0_12px_rgba(34,211,238,0.5)]" />
-          Xử lý đơn 5-15 phút
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function FeaturedRail({
-  games,
-  loading,
-  onPick,
-}: {
-  games: PublicGame[];
-  loading: boolean;
-  onPick: (game: PublicGame) => void;
-}) {
-  return (
-    <section className="grid gap-4">
-      <SectionHeading title="Game nổi bật" titleClassName="text-[1.3rem]" />
-
-      <div className="overflow-x-auto">
-        {loading ? (
-          <div className="flex gap-4">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="grid min-w-[92px] gap-2">
-                <div className="aspect-square animate-pulse rounded-[22px] bg-white/6" />
-                <div className="h-3 w-16 animate-pulse rounded-full bg-white/6" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex gap-4">
-            {games.map((game) => (
-              <button
-                key={game.id}
-                type="button"
-                className="group grid min-w-[84px] gap-2 text-left"
-                onClick={() => onPick(game)}
-              >
-                <div className="relative h-[84px] w-[84px] overflow-hidden rounded-[22px] border border-white/[0.08] bg-[var(--gt-bg-soft)] transition-all duration-200 group-hover:-translate-y-1 group-hover:border-cyan/30 group-hover:shadow-[0_16px_28px_rgba(2,6,23,0.16)]">
-                  <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.05]" />
-                </div>
-                <span className="truncate text-xs font-semibold gt-text-soft group-hover:text-cyan-100">{game.name}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function RecentOrderItem({ order }: { order: Order }) {
-  const statusMeta = getOrderStatusMeta(order.status);
-  const timeLabel = formatRelativeTime(order.createdAt);
-
-  return (
-    <MediaListItem
-      leading={
-        <IconBox size="sm" tone="primary" className="h-11 w-11 rounded-[16px]">
-          <ReceiptText size={18} />
-        </IconBox>
-      }
-      title={`Đơn #${order.id} - Gói #${order.gamePackageId}`}
-      subtitle={order.gameAccountInfo}
-      meta={timeLabel}
-      titleAccessory={
-        <Badge tone={statusMeta.tone} className="rounded-full text-[0.72rem]">
-          {statusMeta.label}
-        </Badge>
-      }
-      className="hover:bg-[var(--gt-card-hover)]"
-    />
-  );
-}
-
-function RecentOrdersSkeleton() {
-  return (
-    <div className="grid gap-3" aria-busy="true" aria-label="Đang tải đơn hàng gần đây">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[color:var(--gt-border)] bg-[var(--gt-card)] px-4 py-3">
-          <div className="h-11 w-11 animate-pulse rounded-[16px] bg-white/6" />
-          <div className="grid gap-2">
-            <div className="h-3.5 w-48 animate-pulse rounded-full bg-white/6" />
-            <div className="h-3 w-28 animate-pulse rounded-full bg-white/6" />
-          </div>
-          <div className="grid justify-items-end gap-2">
-            <div className="h-6 w-20 animate-pulse rounded-full bg-white/6" />
-            <div className="h-3 w-14 animate-pulse rounded-full bg-white/6" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function buildFeaturedPackages(games: PublicGame[]): PackageCard[] {
-  return games.map((game, index) => {
-    const preset = PACKAGE_PRESETS[index % PACKAGE_PRESETS.length];
-    return {
-      id: game.id * 1000 + index,
-      game,
-      name: preset.nameFor(game.name),
-      description: null,
-      salePrice: preset.price,
-      originalPrice: preset.originalPrice,
-      isAvailable: true,
-      imageUrl: game.imageUrl,
-    };
-  });
-}
-
-const PACKAGE_PRESETS = [
-  {
-    nameFor: (gameName: string) => {
-      const lower = gameName.toLowerCase();
-      if (lower.includes('valorant')) return '475 VP';
-      return 'Gói nạp tiêu biểu';
-    },
-    price: 299000,
-    originalPrice: 349000,
-  },
-  {
-    nameFor: (gameName: string) => {
-      const lower = gameName.toLowerCase();
-      if (lower.includes('pubg')) return '180 UC';
-      return 'Gói nạp nhanh';
-    },
-    price: 69000,
-    originalPrice: 79000,
-  },
-  {
-    nameFor: (gameName: string) => {
-      const lower = gameName.toLowerCase();
-      if (lower.includes('liên quân') || lower.includes('lien quan')) return '195 Quân Huy';
-      return 'Gói ưu đãi';
-    },
-    price: 49000,
-    originalPrice: 59000,
-  },
-  {
-    nameFor: (gameName: string) => {
-      const lower = gameName.toLowerCase();
-      if (lower.includes('genshin')) return '6480 Genesis Crystal';
-      return 'Gói cao cấp';
-    },
-    price: 1599000,
-    originalPrice: 1799000,
-  },
-] as const;
-
-type TrustSectionItem = {
-  title: string;
-  description: string;
-  icon: ReactNode;
-};
-
-const BENEFITS = [
-  {
-    title: 'Giá tốt hơn',
-    description: 'Tiết kiệm đến 15% so với cửa hàng chính thức.',
-    icon: <Tag size={24} />,
-  },
-  {
-    title: 'Thanh toán an toàn',
-    description: 'Bảo mật thông tin tuyệt đối, hỗ trợ nhiều phương thức.',
-    icon: <ShieldCheck size={24} />,
-  },
-  {
-    title: 'Xử lý nhanh chóng',
-    description: 'Đơn được xử lý tự động 5 - 15 phút.',
-    icon: <Zap size={24} />,
-  },
-  {
-    title: 'Hỗ trợ 24/7',
-    description: 'Đội ngũ hỗ trợ luôn sẵn sàng giúp đỡ bạn.',
-    icon: <Headset size={24} />,
-  },
-] as const satisfies readonly TrustSectionItem[];
-
-const FAQ_ITEMS = [
-  {
-    question: 'Nạp tiền vào ví như thế nào?',
-    answer:
-      'Bạn tạo yêu cầu nạp, chuyển khoản theo hướng dẫn rồi xác nhận đã thanh toán. Sau khi giao dịch được kiểm tra, tiền sẽ được cộng vào ví.',
-  },
-  {
-    question: 'Mua gói nạp ra sao?',
-    answer:
-      'Chọn game, chọn gói cần nạp, nhập đúng thông tin nhân vật hoặc tài khoản game rồi thanh toán bằng ví. Sau đó đơn sẽ được tiếp nhận để xử lý.',
-  },
-  {
-    question: 'Đơn hàng xử lý mất bao lâu?',
-    answer:
-      'Thông thường đơn được xử lý trong khoảng 5-15 phút. Nếu đang đông đơn hoặc game cần kiểm tra thêm, thời gian có thể lâu hơn một chút.',
-  },
-  {
-    question: 'Nạp qua GameTopUp có an toàn không?',
-    answer:
-      'GameTopUp ưu tiên xử lý đơn rõ ràng, kiểm tra kỹ thông tin trước khi nạp và luôn cập nhật trạng thái để bạn yên tâm theo dõi.',
-  },
-  {
-    question: 'Có ảnh hưởng đến tài khoản game không?',
-    answer:
-      'Bạn chỉ cần cung cấp đúng thông tin cần thiết và không chia sẻ thêm các dữ liệu không liên quan. Đơn sẽ được xử lý theo cách thông thường của từng game.',
-  },
-  {
-    question: 'Nếu nhập sai thông tin thì sao?',
-    answer:
-      'Nếu thông tin sai khiến đơn chưa xử lý được, GameTopUp sẽ hỗ trợ kiểm tra lại. Trường hợp không thể nạp, tiền sẽ được hoàn về ví.',
-  },
-] as const;
-
-function TrustSection() {
-  return (
-    <section className="grid gap-6">
-      <SectionHeading
-        title="Vì sao chọn GameTopUp?"
-        titleClassName="text-[1.5rem] sm:text-[1.7rem]"
-        description="Một vài điểm cốt lõi để bạn nhìn nhanh trước khi quyết định."
-      />
-
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {BENEFITS.map((item) => (
-          <article key={item.title} className="gt-card grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-[20px] border border-white/[0.06] px-5 py-5">
-            <IconBox size="sm" className="h-12 w-12 rounded-[16px] border-cyan/20 bg-cyan/10 text-cyan-50">
-              {item.icon}
-            </IconBox>
-            <div className="grid gap-1">
-              <h3 className="text-base font-black text-white">{item.title}</h3>
-              <p className="m-0 text-sm leading-6 gt-text-muted">{item.description}</p>
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function FaqSection() {
-  const [showAll, setShowAll] = useState(false);
-  const visibleItems = showAll ? FAQ_ITEMS : FAQ_ITEMS.slice(0, 3);
-
-  return (
-    <section className="grid gap-6">
-      <SectionHeading
-        title="Quy trình & thắc mắc"
-        titleClassName="text-[1.5rem] sm:text-[1.7rem]"
-        description="Giải đáp nhanh những câu hỏi hay gặp trước khi bạn nạp game."
-      />
-
-      <div className="grid gap-3">
-        {visibleItems.map((item, index) => (
-          <details
-            key={item.question}
-            className="group rounded-[20px] border border-white/[0.06] bg-[rgba(255,255,255,0.025)] px-5 py-4 transition-colors open:border-cyan/20 open:bg-[rgba(255,255,255,0.04)]"
-            open={index === 0}
-          >
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left">
-              <span className="text-base font-bold gt-text">{item.question}</span>
-              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.03] text-cyan-100 transition-transform duration-200 group-open:rotate-180">
-                <ChevronDown size={16} />
+          <div className="flex items-center gap-3 sm:gap-5">
+            <button
+              type="button"
+              className="gt-button gt-button-secondary hidden h-11 items-center gap-2 rounded-2xl px-3.5 text-sm font-bold lg:inline-flex"
+              onClick={() => navigate(routes.wallet())}
+            >
+              <IconBox size="sm" className="h-8 w-8 rounded-xl">
+                <Wallet2 size={15} />
+              </IconBox>
+              <span className="grid text-left">
+                <span className="text-sm text-slate-400">Balance</span>
+                <span className="text-[1.05rem] font-bold text-cyan-300 gt-tabular">{compactCurrency(walletBalance)}</span>
               </span>
-            </summary>
+            </button>
 
-            <p className="mt-3 max-w-4xl text-sm leading-7 gt-text-muted">{item.answer}</p>
-          </details>
-        ))}
-      </div>
+            <button
+              type="button"
+              aria-label="Thong bao"
+              className="gt-button gt-button-secondary relative inline-flex h-11 w-11 items-center justify-center rounded-2xl gt-text-soft"
+            >
+              <Bell size={20} />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-cyan" />
+            </button>
 
-      {FAQ_ITEMS.length > 3 ? (
-        <div className="flex justify-center">
-          <Button
-            variant="secondary"
-            className="rounded-[14px] px-5 text-sm font-bold"
-            onClick={() => setShowAll((current) => !current)}
-          >
-            {showAll ? 'Thu gọn' : `Xem thêm ${FAQ_ITEMS.length - 3} câu hỏi`}
-            <ChevronDown size={16} className={showAll ? 'rotate-180' : ''} />
-          </Button>
+            <HeaderAccountMenu triggerLabel={userName} items={accountMenuItems} />
+          </div>
         </div>
-      ) : null}
+      </header>
+
+      <main className="mx-auto flex w-full max-w-[1560px] flex-col gap-8 px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
+        <section className="grid gap-2">
+          <h1 className="m-0 text-[2rem] font-bold tracking-[-0.04em] text-white sm:text-[2.3rem]">Hello, {userName}</h1>
+          <p className="m-0 text-lg text-slate-400">Ready to top up your favorite games?</p>
+        </section>
+
+        <section className="overflow-hidden rounded-[18px] border border-white/[0.07] bg-[linear-gradient(90deg,rgba(11,21,36,0.96)_0%,rgba(13,24,40,0.94)_66%,rgba(9,18,31,0.98)_100%)] shadow-[0_20px_60px_rgba(2,6,23,0.18)]">
+          <div className="grid gap-8 px-6 py-7 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center md:px-8 lg:px-10">
+            <div className="grid gap-4">
+              <span className="text-[1rem] font-medium text-slate-300">Wallet Balance</span>
+              <strong className="text-[clamp(2.5rem,5vw,4rem)] font-bold tracking-[-0.06em] text-cyan-300 gt-tabular">
+                {compactCurrency(walletBalance)}
+              </strong>
+            </div>
+
+            <div className="hidden h-full items-center justify-center md:flex">
+              <div className="relative grid h-[122px] w-[176px] place-items-center">
+                <div className="absolute inset-x-[18px] top-[8px] h-[74px] rounded-[18px] border border-cyan-700/30 bg-cyan-400/[0.04] shadow-[0_0_40px_rgba(34,211,238,0.05)]" />
+                <div className="absolute inset-x-[8px] top-[16px] h-[88px] rounded-[22px] border border-cyan-700/30 bg-cyan-400/[0.05]" />
+                <div className="absolute inset-x-0 top-[24px] h-[96px] rounded-[24px] border border-cyan-700/35 bg-[linear-gradient(180deg,rgba(10,33,52,0.85),rgba(6,21,35,0.92))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]" />
+                <div className="absolute right-[22px] top-[58px] h-7 w-8 rounded-[10px] border border-cyan-800/35 bg-cyan-950/35" />
+              </div>
+            </div>
+
+            <div className="flex md:justify-end">
+              <Button
+                variant="primary"
+                className="min-h-14 rounded-[14px] px-7 text-lg font-bold text-slate-950 shadow-[0_18px_40px_rgba(34,211,238,0.22)]"
+                onClick={() => navigate(routes.wallet())}
+              >
+                <CirclePlus size={20} />
+                Create Deposit
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-5">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="m-0 text-[1.2rem] font-bold tracking-[-0.03em] text-white sm:text-[1.35rem]">Popular Games</h2>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 border-0 bg-transparent p-0 text-[1rem] font-medium text-cyan-300 transition-colors hover:text-cyan-200"
+              onClick={() => navigate(routes.games())}
+            >
+              View all
+              <ChevronRight size={18} />
+            </button>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+            {featuredGames.map((game, index) => (
+              <article
+                key={game.id}
+                className="overflow-hidden rounded-[16px] border border-white/[0.07] bg-[linear-gradient(180deg,rgba(12,22,37,0.96),rgba(10,18,31,0.98))] shadow-[0_14px_30px_rgba(2,6,23,0.2)]"
+              >
+                <button type="button" className="grid w-full border-0 bg-transparent p-0 text-left" onClick={() => navigate(routes.gameDetail(game.id))}>
+                  <div className="relative h-[176px] overflow-hidden">
+                    <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full object-cover" />
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.04)_0%,rgba(2,6,23,0.14)_50%,rgba(2,6,23,0.9)_100%)]" />
+                  </div>
+
+                  <div className="grid gap-2 px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="inline-flex size-10 items-center justify-center overflow-hidden rounded-[10px] bg-[#07121e] ring-1 ring-white/[0.06]">
+                        <ImageBox src={game.imageUrl} alt="" className="h-full w-full object-cover" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="truncate text-[1rem] font-medium text-white">{game.name}</div>
+                        <div className="text-[0.95rem] text-slate-400">{GAME_PACKAGE_COUNTS[index] ?? 6} packages</div>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-2">
+          <HistoryPanel title="Recent Orders" actionLabel="View all" onAction={() => navigate(routes.orders())}>
+            {recentOrders.length ? recentOrders.map((order) => <OrderRow key={order.id} order={order} />) : <HistoryEmptyState message="Recent orders will appear here after you buy a package." />}
+          </HistoryPanel>
+
+          <HistoryPanel title="Recent Deposits" actionLabel="View all" onAction={() => navigate(routes.wallet())}>
+            {recentDeposits.length ? (
+              recentDeposits.map((request) => <DepositRow key={request.id} request={request} />)
+            ) : (
+              <HistoryEmptyState message="Recent deposit requests will appear here after you create one." />
+            )}
+          </HistoryPanel>
+        </section>
+
+        <footer className="flex flex-col gap-4 border-t border-white/[0.06] px-1 pb-8 pt-2 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
+          <span>© 2026 GameTopUp. All rights reserved.</span>
+          <div className="flex flex-wrap items-center gap-4 md:gap-8">
+            <button type="button" className="border-0 bg-transparent p-0 text-inherit transition-colors hover:text-white">
+              Terms of Service
+            </button>
+            <button type="button" className="border-0 bg-transparent p-0 text-inherit transition-colors hover:text-white">
+              Privacy Policy
+            </button>
+            <button type="button" className="border-0 bg-transparent p-0 text-inherit transition-colors hover:text-white">
+              Contact
+            </button>
+          </div>
+        </footer>
+      </main>
+    </div>
+  );
+}
+
+function HistoryPanel({
+  actionLabel,
+  children,
+  onAction,
+  title,
+}: {
+  actionLabel: string;
+  children: ReactNode;
+  onAction: () => void;
+  title: string;
+}) {
+  return (
+    <section className="overflow-hidden rounded-[16px] border border-white/[0.07] bg-[linear-gradient(180deg,rgba(11,21,36,0.96),rgba(8,16,28,0.98))]">
+      <div className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+        <h2 className="m-0 text-[1.1rem] font-bold tracking-[-0.03em] text-white">{title}</h2>
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-[1rem] font-medium text-cyan-300 transition-colors hover:text-cyan-200"
+          onClick={onAction}
+        >
+          {actionLabel}
+          <ChevronRight size={18} />
+        </button>
+      </div>
+      <div className="grid">{children}</div>
     </section>
   );
 }
 
+function OrderRow({ order }: { order: OrderResponse }) {
+  const status = getOrderStatusMeta(order.status);
+
+  return (
+    <article className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-4 border-t border-white/[0.06] px-5 py-4 sm:px-6">
+      <div className="inline-flex size-11 items-center justify-center overflow-hidden rounded-[12px] bg-[#08111d] ring-1 ring-white/[0.06]">
+        <ImageBox src={order.packageImageUrl} alt="" className="h-full w-full object-cover" />
+      </div>
+
+      <div className="min-w-0">
+        <div className="truncate text-[1rem] font-semibold text-white">#{order.id}</div>
+        <div className="truncate text-[0.98rem] text-slate-400">
+          {order.gameName || `Game #${order.gamePackageId}`} • {order.packageName || order.gameAccountInfo}
+        </div>
+      </div>
+
+      <div className="text-right text-[1rem] font-medium text-white gt-tabular">{compactCurrency(order.packagePrice)}</div>
+
+      <Badge tone={status.tone} className="min-w-[108px] justify-center rounded-[10px] px-3 text-[0.92rem] font-medium">
+        {translateOrderStatus(status.label)}
+      </Badge>
+    </article>
+  );
+}
+
+function DepositRow({ request }: { request: WalletDepositRequest }) {
+  const status = getDepositRequestStatus(request.status);
+
+  return (
+    <article className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-4 border-t border-white/[0.06] px-5 py-4 sm:px-6">
+      <div className={`inline-flex size-11 items-center justify-center rounded-full border ${status.iconClassName}`}>{status.icon}</div>
+
+      <div className="min-w-0">
+        <div className="truncate text-[1rem] font-semibold text-white">{request.code}</div>
+        <div className="truncate text-[0.98rem] text-slate-400">{formatDate(request.createdAt)}</div>
+      </div>
+
+      <div className="text-right text-[1rem] font-medium text-white gt-tabular">{compactCurrency(request.amount)}</div>
+
+      <Badge tone={status.tone} className="min-w-[108px] justify-center rounded-[10px] px-3 text-[0.92rem] font-medium">
+        {translateDepositStatus(status.label)}
+      </Badge>
+    </article>
+  );
+}
+
+function HistoryEmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex min-h-[214px] items-center justify-center border-t border-white/[0.06] px-6 py-10 text-center text-slate-400">
+      <p className="m-0 max-w-[32ch] text-[0.98rem] leading-7">{message}</p>
+    </div>
+  );
+}
+
+function compactCurrency(value: number) {
+  return formatCurrency(value).replace(/\s?₫/, 'đ');
+}
+
+function translateOrderStatus(label: string) {
+  switch (label) {
+    case 'Chờ xử lý':
+      return 'Processing';
+    case 'Đang xử lý':
+      return 'Processing';
+    case 'Thành công':
+      return 'Completed';
+    case 'Đã hủy':
+      return 'Canceled';
+    default:
+      return label;
+  }
+}
+
+function translateDepositStatus(label: string) {
+  switch (label) {
+    case 'Chờ chuyển khoản':
+      return 'Pending';
+    case 'Đã gửi, chờ duyệt':
+      return 'Pending';
+    case 'Đã duyệt':
+      return 'Approved';
+    case 'Đã từ chối':
+      return 'Rejected';
+    default:
+      return label;
+  }
+}

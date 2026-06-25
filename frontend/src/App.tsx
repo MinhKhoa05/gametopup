@@ -17,7 +17,7 @@ export function App() {
   const isAdminRoute = isAdminRoutePath(location.pathname);
   const isAuthRoute = isAuthRoutePath(location.pathname);
   const isTopupRoute = isGameDetailRoutePath(location.pathname);
-  const footerVariant = location.pathname === ROUTE_PATHS.home ? 'full' : 'minimal';
+  const footerVariant = location.pathname === ROUTE_PATHS.homeGuest ? 'full' : 'minimal';
   const [sessionExpiredAt, setSessionExpiredAt] = useState<number | null>(null);
 
   useEffect(() => {

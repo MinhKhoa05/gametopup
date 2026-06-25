@@ -1,12 +1,12 @@
 import { Button, ImageBox, DetailRow } from '@/shared/components';
 import { formatCurrency } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
-import type { PublicGamePackage } from '@/features/games/contracts';
+import type { GamePackage } from '@/features/games/contracts';
 
 type GamePackageDetailPanelProps = {
   gameName: string;
   onPurchase: () => void;
-  selectedPackage: PublicGamePackage | null;
+  selectedPackage: GamePackage | null;
 };
 
 export function GamePackageDetailPanel({ gameName, onPurchase, selectedPackage }: GamePackageDetailPanelProps) {

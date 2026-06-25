@@ -1,9 +1,9 @@
-import type { PublicGamePackage } from '@/features/games/contracts';
+import type { GamePackage } from '@/features/games/contracts';
 import { GamePackageCard } from './GamePackageCard';
 
 type GamePackageGridProps = {
   isLoading: boolean;
-  packages: PublicGamePackage[];
+  packages: GamePackage[];
   selectedPackageId: number | null;
   onSelectPackage: (packageId: number) => void;
 };

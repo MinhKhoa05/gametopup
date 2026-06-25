@@ -32,7 +32,7 @@ export function RequireAdmin({ children }: GuardProps) {
   const role = auth.user?.role == null ? '' : String(auth.user.role).trim().toLowerCase();
 
   if (!auth.user || !(role === '1' || role === 'admin')) {
-    return <Navigate to={ROUTE_PATHS.home} replace />;
+    return <Navigate to={ROUTE_PATHS.homeGuest} replace />;
   }
 
   return children;

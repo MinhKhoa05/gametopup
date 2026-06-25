@@ -10,7 +10,7 @@ type FooterVariant = 'full' | 'minimal';
 
 const FOOTER_LINKS = {
   about: [
-    { label: 'Trang chủ', href: routes.home() },
+    { label: 'Trang chủ', href: routes.homeGuest() },
     { label: 'Kho game', href: routes.games() },
     { label: 'Nạp ví', href: routes.wallet() },
     { label: 'Đơn hàng', href: routes.orders() },
@@ -49,7 +49,7 @@ export function Footer({ variant = 'full' }: { variant?: FooterVariant }) {
           )}
         >
           <div className="grid max-w-[320px] gap-2">
-            <BrandLogo className="w-fit" onClick={() => navigate(routes.home())} title={SITE.name} subtitle={SITE.tagline} />
+            <BrandLogo className="w-fit" onClick={() => navigate(routes.homeGuest())} title={SITE.name} subtitle={SITE.tagline} />
             <p className="max-w-[28ch] text-sm leading-6 gt-text-muted [text-wrap:balance]">{SITE.footerDescription}</p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">

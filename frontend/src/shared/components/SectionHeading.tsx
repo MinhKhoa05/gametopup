@@ -1,32 +1,90 @@
-import type { ReactNode } from 'react';
-import { classNames } from '@/shared/lib/classNames';
+import type { ReactNode } from "react";
+import { classNames } from "@/shared/lib/classNames";
 
 type SectionHeadingProps = {
   title: ReactNode;
-  titleClassName?: string;
+
+  eyebrow?: ReactNode;
   description?: ReactNode;
-  descriptionClassName?: string;
   action?: ReactNode;
-  actionClassName?: string;
+  children?: ReactNode;
+
   className?: string;
+  bodyClassName?: string;
+
+  titleClassName?: string;
+  descriptionClassName?: string;
+  actionClassName?: string;
+  eyebrowClassName?: string;
 };
 
 export function SectionHeading({
-  action,
-  actionClassName,
-  className,
-  description,
-  descriptionClassName,
   title,
+  eyebrow,
+  description,
+  action,
+  children,
+
+  className,
+  bodyClassName,
+
   titleClassName,
+  descriptionClassName,
+  actionClassName,
+  eyebrowClassName,
 }: SectionHeadingProps) {
   return (
-    <div className={classNames('flex items-start justify-between gap-4', className)}>
-      <div className="grid min-w-0 gap-0.5">
-        <h2 className={classNames('m-0 text-[1.05rem] font-black leading-[1.15] gt-text', titleClassName)}>{title}</h2>
-        {description ? <p className={classNames('m-0 text-sm leading-[1.5] gt-text-muted', descriptionClassName)}>{description}</p> : null}
+    <div
+      className={classNames(
+        "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between",
+        className,
+      )}
+    >
+      <div className={classNames("grid min-w-0 gap-2", bodyClassName)}>
+        {eyebrow ? (
+          <span
+            className={classNames(
+              "text-xs font-semibold uppercase tracking-[0.14em] gt-text-muted",
+              eyebrowClassName,
+            )}
+          >
+            {eyebrow}
+          </span>
+        ) : null}
+
+        <h2
+          className={classNames(
+            "m-0 text-[1.5rem] font-bold leading-tight tracking-[-0.02em] text-balance gt-text",
+            titleClassName,
+          )}
+        >
+          {title}
+        </h2>
+
+        {description ? (
+          <p
+            className={classNames(
+              "max-w-2xl text-[15px] leading-7 gt-text-soft",
+              descriptionClassName,
+            )}
+          >
+            {description}
+          </p>
+        ) : null}
+
+        {children}
       </div>
-      {action ? <div className={classNames('flex flex-none items-start justify-end text-sm font-extrabold text-cyan-300', actionClassName)}>{action}</div> : null}
+
+      {action ? (
+        <div
+          className={classNames(
+            "flex shrink-0 items-start sm:items-center",
+            actionClassName,
+          )}
+        >
+          {action}
+        </div>
+      ) : null}
     </div>
   );
 }

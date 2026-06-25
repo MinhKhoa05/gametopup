@@ -18,7 +18,7 @@ export type GamePackage = {
   salePrice: number;
   originalPrice: number;
   importPrice: number;
-  stockQuantity: number;
+  availableSlots: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

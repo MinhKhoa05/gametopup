@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { ROUTE_PATHS } from './routes';
 import { RequireAdmin, RequireAuth } from '@/app/guards';
 
-const HomePage = lazy(() => import('@/features/home/pages/HomePage').then((module) => ({ default: module.HomePage })));
+const HomeGuestPage = lazy(() => import('@/features/home/pages/HomeGuestPage').then((module) => ({ default: module.HomeGuestPage })));
 const GamesPage = lazy(() => import('@/features/games/pages/GamesPage').then((module) => ({ default: module.GamesPage })));
 const GameDetailPage = lazy(() => import('@/features/games/pages/GameDetailPage').then((module) => ({ default: module.GameDetailPage })));
 const AuthPage = lazy(() => import('@/features/auth/components/AuthPage').then((module) => ({ default: module.AuthPage })));
@@ -22,7 +22,7 @@ export function AppRouter() {
   return (
     <Suspense fallback={<RouteLoadingState />}>
       <Routes>
-        <Route path={ROUTE_PATHS.home} element={<HomePage />} />
+        <Route path={ROUTE_PATHS.homeGuest} element={<HomeGuestPage />} />
         <Route path={ROUTE_PATHS.login} element={<AuthPage mode="login" />} />
         <Route path={ROUTE_PATHS.register} element={<AuthPage mode="register" />} />
         <Route path={ROUTE_PATHS.games} element={<GamesPage />} />
@@ -67,7 +67,7 @@ export function AppRouter() {
           <Route path="orders" element={<AdminOrdersPage />} />
           <Route path="deposits" element={<AdminDepositsPage />} />
         </Route>
-        <Route path="*" element={<Navigate to={ROUTE_PATHS.home} replace />} />
+        <Route path="*" element={<Navigate to={ROUTE_PATHS.homeGuest} replace />} />
       </Routes>
     </Suspense>
   );

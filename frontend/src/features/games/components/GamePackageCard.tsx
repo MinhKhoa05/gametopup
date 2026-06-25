@@ -1,10 +1,10 @@
 import { ImageBox } from '@/shared/components';
 import { formatCurrency } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
-import type { PublicGamePackage } from '@/features/games/contracts';
+import type { GamePackage } from '@/features/games/contracts';
 
 type GamePackageCardProps = {
-  gamePackage: PublicGamePackage;
+  gamePackage: GamePackage;
   isSelected: boolean;
   onSelect: (packageId: number) => void;
 };

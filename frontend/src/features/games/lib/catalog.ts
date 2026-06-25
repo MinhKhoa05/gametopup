@@ -1,4 +1,4 @@
-import type { PublicGame } from '../contracts';
+import type { Game } from '../contracts';
 
 export type CatalogPlatformFilter = 'all' | 'mobile' | 'pc' | 'console';
 export type CatalogCategoryFilter = 'all' | 'featured' | 'mobile' | 'pc' | 'console' | 'international';
@@ -35,11 +35,11 @@ const TOPUP_LABELS: Array<[RegExp, string]> = [
   [/minecraft/i, 'Minecoin'],
 ];
 
-export function buildFeaturedGameIds(games: PublicGame[]) {
+export function buildFeaturedGameIds(games: Game[]) {
   return new Set(games.slice(0, FEATURED_LIMIT).map((game) => game.id));
 }
 
-export function getGamePlatform(game: PublicGame): GamePlatformKey {
+export function getGamePlatform(game: Game): GamePlatformKey {
   const lowerName = game.name.toLowerCase();
 
   if (CONSOLE_KEYWORDS.some((keyword) => lowerName.includes(keyword))) {
@@ -53,7 +53,7 @@ export function getGamePlatform(game: PublicGame): GamePlatformKey {
   return 'pc';
 }
 
-export function getGamePlatformLabel(game: PublicGame) {
+export function getGamePlatformLabel(game: Game) {
   const platform = getGamePlatform(game);
 
   if (platform === 'mobile') return 'Mobile';
@@ -61,14 +61,14 @@ export function getGamePlatformLabel(game: PublicGame) {
   return 'PC';
 }
 
-export function getGameTopupLabel(game: PublicGame) {
+export function getGameTopupLabel(game: Game) {
   const lowerName = game.name.toLowerCase();
   const match = TOPUP_LABELS.find(([pattern]) => pattern.test(lowerName));
 
   return match?.[1] ?? 'gói nạp';
 }
 
-export function matchesPlatform(game: PublicGame, platformFilter: CatalogPlatformFilter) {
+export function matchesPlatform(game: Game, platformFilter: CatalogPlatformFilter) {
   if (platformFilter === 'all') {
     return true;
   }
@@ -76,7 +76,7 @@ export function matchesPlatform(game: PublicGame, platformFilter: CatalogPlatfor
   return getGamePlatform(game) === platformFilter;
 }
 
-export function matchesCategory(game: PublicGame, categoryFilter: CatalogCategoryFilter, featuredGameIds: Set<number>) {
+export function matchesCategory(game: Game, categoryFilter: CatalogCategoryFilter, featuredGameIds: Set<number>) {
   if (categoryFilter === 'all') {
     return true;
   }
@@ -92,7 +92,7 @@ export function matchesCategory(game: PublicGame, categoryFilter: CatalogCategor
   return getGamePlatform(game) === categoryFilter;
 }
 
-export function sortCatalogGames(games: PublicGame[], sortKey: CatalogSortKey, featuredGameIds: Set<number>) {
+export function sortCatalogGames(games: Game[], sortKey: CatalogSortKey, featuredGameIds: Set<number>) {
   const list = [...games];
 
   if (sortKey === 'name') {
@@ -128,7 +128,7 @@ function getFeaturedOrderIndex(name: string) {
   return index === -1 ? FEATURED_ORDER.length : index;
 }
 
-function isInternationalGame(game: PublicGame) {
+function isInternationalGame(game: Game) {
   const lowerName = game.name.toLowerCase();
   return (
     lowerName.includes('global') ||

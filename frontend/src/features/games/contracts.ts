@@ -1,10 +1,10 @@
-export type PublicGame = {
+export type Game = {
   id: number;
   name: string;
   imageUrl: string;
 };
 
-export type PublicGamePackage = {
+export type GamePackage = {
   id: number;
   name: string;
   description?: string | null;

@@ -8,7 +8,7 @@ export function SiteCredits() {
       <div className="mx-auto flex w-full max-w-[1480px] flex-col items-center gap-3 px-4 text-center sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <span className="flex flex-wrap items-center justify-center gap-1.5 sm:justify-start">
           <span>© {SITE.copyrightYear}</span>
-          <Link to={routes.home()} className="font-semibold gt-text-soft transition-colors hover:text-white">
+          <Link to={routes.homeGuest()} className="font-semibold gt-text-soft transition-colors hover:text-white">
             {SITE.name}
           </Link>
           <span>Mọi quyền được bảo lưu.</span>

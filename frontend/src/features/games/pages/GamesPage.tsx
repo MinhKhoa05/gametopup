@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Gamepad2, SlidersHorizontal, Sparkles, Smartphone } from 'lucide-react';
 import { AppPageContainer } from '@/app/components/AppPageContainer';
 import { routes } from '@/app/router/routes';
-import type { PublicGame } from '@/features/games/contracts';
+import type { Game } from '@/features/games/contracts';
 import { useGamesQuery } from '@/features/games/server';
 import {
   buildFeaturedGameIds,
@@ -157,9 +157,9 @@ function GameCatalogGrid({
   loading = false,
   onPick,
 }: {
-  games?: PublicGame[];
+  games?: Game[];
   loading?: boolean;
-  onPick?: (game: PublicGame) => void;
+  onPick?: (game: Game) => void;
 }) {
   const skeletonCount = 8;
 
@@ -176,7 +176,7 @@ function GameCard({
   game,
   onPick,
 }: {
-  game: PublicGame;
+  game: Game;
   onPick?: () => void;
 }) {
   const platformLabel = getGamePlatformLabel(game);

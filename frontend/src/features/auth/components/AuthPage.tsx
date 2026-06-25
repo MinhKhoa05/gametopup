@@ -50,7 +50,7 @@ export function AuthPage({ mode }: AuthPageProps) {
       return;
     }
 
-    const target = redirectTo && redirectTo !== routes.login() && redirectTo !== routes.register() ? redirectTo : routes.home();
+    const target = redirectTo && redirectTo !== routes.login() && redirectTo !== routes.register() ? redirectTo : routes.homeGuest();
     navigate(target, { replace: true });
   }, [navigate, redirectTo, status]);
 

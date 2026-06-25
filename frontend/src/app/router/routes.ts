@@ -4,7 +4,7 @@ export const ADMIN_SECTIONS = ['dashboard', 'games', 'packages', 'orders', 'depo
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
 
 export const ROUTE_PATHS = {
-  home: '/',
+  homeGuest: '/',
   login: '/login',
   register: '/register',
   games: '/games',
@@ -29,7 +29,7 @@ export function isGameDetailRoutePath(pathname: string) {
 }
 
 export const routes = {
-  home: () => ROUTE_PATHS.home,
+  homeGuest: () => ROUTE_PATHS.homeGuest,
   login: () => ROUTE_PATHS.login,
   register: () => ROUTE_PATHS.register,
   games: () => ROUTE_PATHS.games,

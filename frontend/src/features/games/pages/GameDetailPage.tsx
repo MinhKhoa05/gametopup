@@ -6,7 +6,7 @@ import { SiteCredits } from '@/app/site-shell/SiteCredits';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { useGamesQuery } from '@/features/games/server';
-import type { PublicGame } from '@/features/games/contracts';
+import type { Game } from '@/features/games/contracts';
 import { useGamePackagesQuery } from '@/features/packages/server';
 import { useCreateOrderMutation } from '@/features/orders/server';
 import { useWalletBalanceQuery } from '@/features/wallet/server';
@@ -64,7 +64,7 @@ export function GameDetailPage() {
 
   const gameId = Number(gameIdParam);
 
-  const game = useMemo<PublicGame | null>(() => {
+  const game = useMemo<Game | null>(() => {
     if (!gameId) {
       return null;
     }

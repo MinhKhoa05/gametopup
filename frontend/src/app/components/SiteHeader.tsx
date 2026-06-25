@@ -35,7 +35,7 @@ export function SiteHeader() {
     <header className="gt-shell-surface sticky top-0 z-50 border-b gt-border shadow-[0_12px_32px_rgba(2,6,23,0.18)]">
       <div className="mx-auto grid max-w-[1480px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-6">
-          <BrandLogo title={SITE.name} onClick={() => navigate(ROUTE_PATHS.home)} />
+          <BrandLogo title={SITE.name} onClick={() => navigate(ROUTE_PATHS.homeGuest)} />
 
           <nav className="hidden items-center gap-1 xl:flex" aria-label="Điều hướng chính">
             {visibleNavItems.map((item) => {
