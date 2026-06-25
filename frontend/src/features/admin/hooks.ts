@@ -15,7 +15,7 @@ import { walletKeys } from '@/features/wallet/server';
 import type { User } from '@/features/auth/types';
 import type { AdminGamePackage } from '@/features/admin/games/types';
 import type { AdminGameSummary } from './games/api';
-import type { AdminOrderResponse } from '@/features/orders/types';
+import type { AdminOrder } from '@/features/orders/types';
 import { useAdminGamesPageState } from './games/hooks';
 import { useAdminPackagesPageState } from './packages/hooks';
 import { useAdminOrdersPageState } from './orders/hooks';
@@ -41,7 +41,7 @@ export function useAdminMetrics({
 }: {
   games: AdminGameSummary[];
   packages: AdminGamePackage[];
-  orders: AdminOrderResponse[];
+  orders: AdminOrder[];
   users: User[];
 }) {
   const metrics = useMemo(() => {

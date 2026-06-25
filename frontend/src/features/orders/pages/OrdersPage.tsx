@@ -1,10 +1,52 @@
-import { Container, IconBox, PageHero } from '@/shared/components';
-import { ClipboardList } from 'lucide-react';
-import { useOrdersPage } from '@/features/orders/hooks/useOrdersPage';
-import { OrdersPageView } from '@/features/orders/components/OrdersPageView';
+import { useState } from "react";
+import { ClipboardList } from "lucide-react";
+import { useOrders } from "@/features/orders/hooks/useOrders";
+import { OrderListItem } from "@/features/orders/components/OrderListItem";
+import { OrderListSkeleton } from "@/features/orders/components/OrderListSkeleton";
+import { OrderDetailDialog } from "../components/OrderDetailDialog";
+import {
+  Container,
+  EmptyState,
+  FilterChipGroup,
+  IconBox,
+  PageHero,
+  Pagination,
+  PanelShell,
+  SearchBar,
+  StatCard,
+} from "@/shared/components";
+import { STATUS_OPTIONS } from "../hooks/useOrders";
+import { formatCurrency } from "@/shared/lib/format";
+import { Coins, Activity, Package, BadgeCheck } from "lucide-react";
+import { Order } from "@/features/orders/types";
+import { useOrderHistoryQuery } from "../server";
 
 export function OrdersPage() {
-  const ordersPage = useOrdersPage();
+  const {
+    orders,
+    filters,
+    currentPage,
+    totalPages,
+    isLoading,
+    isError,
+    setFilters,
+    setPage,
+    stats,
+  } = useOrders();
+
+  function updateFilters(updater: (current: typeof filters) => typeof filters) {
+    setFilters(updater);
+    setPage(1);
+  }
+
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const { data: history = [] } = useOrderHistoryQuery(
+    selectedOrder?.id ?? null,
+  );
+
+  const emptyDescription = filters.search
+    ? "Không tìm thấy đơn hàng phù hợp."
+    : "Các đơn hàng của bạn sẽ xuất hiện tại đây.";
 
   return (
     <div className="relative isolate overflow-hidden">
@@ -13,7 +55,11 @@ export function OrdersPage() {
           <PageHero
             eyebrow="LỊCH SỬ ĐƠN HÀNG"
             visual={
-              <IconBox size="lg" tone="primary" className="h-[62px] w-[62px] rounded-[18px]">
+              <IconBox
+                size="lg"
+                tone="primary"
+                className="h-[62px] w-[62px] rounded-[18px]"
+              >
                 <ClipboardList size={30} strokeWidth={1.8} />
               </IconBox>
             }
@@ -21,8 +67,109 @@ export function OrdersPage() {
             description="Theo dõi trạng thái và lịch sử các đơn nạp game của bạn."
           />
 
-          <OrdersPageView {...ordersPage} />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard
+              compact
+              tone="warning"
+              icon={<Activity size={20} />}
+              label="Đang theo dõi"
+              value={stats.active}
+              supporting="Cần xử lý"
+            />
+
+            <StatCard
+              compact
+              tone="success"
+              icon={<BadgeCheck size={20} />}
+              label="Hoàn thành"
+              value={stats.completed}
+              supporting="Đã giao"
+            />
+
+            <StatCard
+              compact
+              tone="primary"
+              icon={<Package size={20} />}
+              label="Tổng đơn"
+              value={stats.total}
+              supporting="Đơn hàng"
+            />
+
+            <StatCard
+              compact
+              tone="primary"
+              icon={<Coins size={20} />}
+              label="Tổng chi"
+              value={formatCurrency(stats.amount)}
+              supporting="Đã thanh toán"
+            />
+          </div>
+
+          <PanelShell>
+            <div className="space-y-6 p-6 lg:p-7">
+              <SearchBar
+                value={filters.search}
+                placeholder="Tìm kiếm đơn hàng..."
+                onChange={(search) =>
+                  updateFilters((current) => ({
+                    ...current,
+                    search,
+                  }))
+                }
+              />
+
+              <FilterChipGroup
+                items={STATUS_OPTIONS}
+                value={filters.status}
+                onChange={(status) =>
+                  updateFilters((current) => ({
+                    ...current,
+                    status,
+                  }))
+                }
+              />
+
+              {isLoading ? (
+                <OrderListSkeleton />
+              ) : isError ? (
+                <EmptyState
+                  title="Không tải được đơn hàng"
+                  description="Đã xảy ra lỗi khi tải lịch sử đơn hàng."
+                />
+              ) : orders.length === 0 ? (
+                <EmptyState
+                  title="Không có đơn hàng"
+                  description={emptyDescription}
+                />
+              ) : (
+                <>
+                  <div className="space-y-4">
+                    {orders.map((order) => (
+                      <OrderListItem
+                        key={order.id}
+                        order={order}
+                        onClick={() => setSelectedOrder(order)}
+                      />
+                    ))}
+                  </div>
+
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                  />
+                </>
+              )}
+            </div>
+          </PanelShell>
         </div>
+
+        <OrderDetailDialog
+          order={selectedOrder}
+          open={selectedOrder !== null}
+          history={history}
+          onClose={() => setSelectedOrder(null)}
+        />
       </Container>
     </div>
   );

@@ -1,6 +1,6 @@
 import { CheckCircle2, CircleSlash, Clock3, Send, TriangleAlert, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import type { AdminOrderResponse } from '@/features/orders/types';
+import type { AdminOrder } from '@/features/orders/types';
 import type { User } from '@/features/auth/types';
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, ImageBox, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
@@ -12,7 +12,7 @@ type OrderFilter = 'active' | 'all' | 'pending' | 'processing' | 'completed' | '
 type OrdersAdminPanelState = {
   filters: Array<{ key: OrderFilter; label: string }>;
   filter: OrderFilter;
-  filteredOrders: AdminOrderResponse[];
+  filteredOrders: AdminOrder[];
   query: string;
   setFilter: (value: OrderFilter) => void;
   setQuery: (value: string) => void;
@@ -34,7 +34,7 @@ export function OrdersAdminPanel({
   onCancelOrder: (orderId: number) => Promise<void>;
   onCompleteOrder: (orderId: number) => Promise<void>;
   onPickOrder: (orderId: number) => Promise<void>;
-  orders: AdminOrderResponse[];
+  orders: AdminOrder[];
   state: OrdersAdminPanelState;
 }) {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
@@ -191,7 +191,7 @@ export function OrdersAdminPanel({
   );
 }
 
-function summarizeOrders(orders: AdminOrderResponse[]) {
+function summarizeOrders(orders: AdminOrder[]) {
   return orders.reduce(
     (result, order) => {
       if (order.status === 1) result.pending += 1;
@@ -204,15 +204,15 @@ function summarizeOrders(orders: AdminOrderResponse[]) {
   );
 }
 
-function canPick(order: AdminOrderResponse) {
+function canPick(order: AdminOrder) {
   return order.status === 1;
 }
 
-function canAct(order: AdminOrderResponse, currentAdminId: number | null) {
+function canAct(order: AdminOrder, currentAdminId: number | null) {
   return order.status === 2 && order.assignedTo === currentAdminId;
 }
 
-function getOrderActionState(order: AdminOrderResponse, currentAdminId: number | null) {
+function getOrderActionState(order: AdminOrder, currentAdminId: number | null) {
   if (canPick(order)) {
     return {
       kind: 'pick' as const,

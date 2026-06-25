@@ -10,7 +10,7 @@ export enum OrderStatus {
 export type OrderTimelineState = 'complete' | 'current' | 'danger' | 'upcoming';
 
 // Mirrors OrderResponse.cs
-export type OrderResponse = {
+export type Order = {
   id: number;
   gameAccountInfo: string;
   gamePackageId: number;
@@ -24,7 +24,7 @@ export type OrderResponse = {
 };
 
 // Mirrors OrderHistoryResponse.cs
-export type OrderHistoryResponse = {
+export type OrderHistory = {
   id: number;
   orderId: number;
   fromStatus: OrderStatus;
@@ -36,7 +36,7 @@ export type OrderHistoryResponse = {
 };
 
 // Mirrors AdminOrderResponse.cs
-export type AdminOrderResponse = {
+export type AdminOrder = {
   id: number;
   userId: number;
   gameAccountInfo: string;

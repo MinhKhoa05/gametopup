@@ -6,7 +6,7 @@ import type { AdminDepositRequest } from '@/features/deposits/types';
 import type { AdminGameSummary } from '@/features/admin/games/api';
 import type { AdminGamePackage } from '@/features/admin/games/types';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
-import type { AdminOrderResponse } from '@/features/orders/types';
+import type { AdminOrder } from '@/features/orders/types';
 import { formatCurrency } from '@/shared/lib/format';
 
 export type QueueItem =
@@ -62,7 +62,7 @@ export function buildQueueItems({
 }: {
   depositRequests: AdminDepositRequest[];
   games: AdminGameSummary[];
-  orders: AdminOrderResponse[];
+  orders: AdminOrder[];
   packages: AdminGamePackage[];
 }) {
   const gameById = new Map(games.map((game) => [game.id, game]));
@@ -149,7 +149,7 @@ export function buildRecentUsers(users: User[]) {
     .slice(0, 4);
 }
 
-export function countOrdersToday(orders: AdminOrderResponse[]) {
+export function countOrdersToday(orders: AdminOrder[]) {
   const today = new Date();
 
   return orders.filter((order) => {

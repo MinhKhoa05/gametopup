@@ -5,9 +5,7 @@ import { Container } from '@/shared/components';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import type { User } from '@/features/auth/types';
-import { formatUserRoleLabel } from '@/features/auth/userRole';
-import { buildOrderHistoryItems } from '@/features/orders/components/OrderHistorySections';
-import type { OrderResponse } from '@/features/orders/types';
+import type { Order } from '@/features/orders/types';
 import { useMyOrdersQuery } from '@/features/orders/server';
 import { useUpdateMyProfileMutation } from '@/features/profile/server';
 import { useWalletOverviewQuery } from '@/features/wallet/server';
@@ -69,7 +67,6 @@ function ProfileContent({ user }: { user: User }) {
   }, [ordersQuery.data, walletOverviewQuery.data]);
 
   const tier = resolveVipTier(stats.totalDeposited);
-  const favoriteGames = useMemo(() => buildFavoriteGames(ordersQuery.data ?? []), [ordersQuery.data]);
   const loading = (walletOverviewQuery.isPending && walletOverviewQuery.data == null) || (ordersQuery.isPending && ordersQuery.data == null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -167,7 +164,6 @@ function ProfileContent({ user }: { user: User }) {
 
             <div className="grid gap-8">
               <VipCard cardRef={vipRef} tier={tier} totalDeposited={stats.totalDeposited} onMove={setVipTilt} tilt={vipTilt} />
-              <FavoriteGamesSection favorites={favoriteGames} loading={loading} onBrowse={() => navigate(routes.games())} />
             </div>
           </section>
         </div>
@@ -409,33 +405,6 @@ function getInitials(displayName: string, fallbackEmail: string) {
   const prefix = base.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').slice(0, 2);
   if (prefix.length >= 2) return prefix.toUpperCase();
   return base.slice(0, 2).toUpperCase();
-}
-
-function buildFavoriteGames(orders: OrderResponse[]) {
-  const grouped = new Map<string, FavoriteGameCard>();
-  const historyItems = buildOrderHistoryItems(orders);
-
-  for (const item of historyItems) {
-    const existing = grouped.get(item.gameKey);
-    if (!existing) {
-      grouped.set(item.gameKey, {
-        count: 1,
-        gameKey: item.gameKey,
-        imageUrl: item.gameThumbnailSrc,
-        name: item.gameName,
-        packageName: item.packageName,
-      });
-      continue;
-    }
-
-    existing.count += 1;
-    existing.packageName = item.packageName;
-    existing.imageUrl = item.gameThumbnailSrc;
-  }
-
-  return Array.from(grouped.values())
-    .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name))
-    .slice(0, 2);
 }
 
 function resolveVipTier(totalDeposited: number) {
