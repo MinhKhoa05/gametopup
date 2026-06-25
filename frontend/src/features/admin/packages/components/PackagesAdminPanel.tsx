@@ -1,6 +1,6 @@
 import { CheckCircle2, EyeOff, PencilLine, Plus, Save, Trash2, X } from 'lucide-react';
 import { useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from 'react';
-import type { GamePackage } from '@/features/games/types';
+
 import type { AdminGameSummary } from '@/features/admin/games/api';
 import {
   Badge,
@@ -23,9 +23,10 @@ import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
 import { inputClassName } from '@/shared/components/Field';
 import { AdminListSkeleton } from '@/features/admin/components/AdminShared';
+import { AdminGamePackage } from '../../games/types';
 
 type PackagesAdminPanelState = {
-  editing: GamePackage | null;
+  editing: AdminGamePackage | null;
   form: {
     gameId: number;
     importPrice: number;
@@ -37,9 +38,9 @@ type PackagesAdminPanelState = {
   };
   imageFile: File | null;
   query: string;
-  remove: (item: GamePackage) => Promise<void>;
+  remove: (item: AdminGamePackage) => Promise<void>;
   resetForm: () => void;
-  scopedPackages: GamePackage[];
+  scopedPackages: AdminGamePackage[];
   selectedGameId: number | null;
   setForm: Dispatch<
     SetStateAction<{
@@ -55,7 +56,7 @@ type PackagesAdminPanelState = {
   setImageFile: Dispatch<SetStateAction<File | null>>;
   setQuery: Dispatch<SetStateAction<string>>;
   setSelectedGameId: Dispatch<SetStateAction<number | null>>;
-  startEdit: (item: GamePackage) => void;
+  startEdit: (item: AdminGamePackage) => void;
   submit: (event: FormEvent) => Promise<void>;
   updatePackage: (payload: {
     id: number;
@@ -127,7 +128,7 @@ export function PackagesAdminPanel({
     setPanelMode('create');
   };
 
-  const openEditForm = (item: GamePackage) => {
+  const openEditForm = (item: AdminGamePackage) => {
     setSelectedPackageId(item.id);
     state.startEdit(item);
     setEditErrors({});
@@ -141,7 +142,7 @@ export function PackagesAdminPanel({
     setPanelMode(selectedPackage ? 'view' : 'empty');
   };
 
-  const handleSelectPackage = (item: GamePackage) => {
+  const handleSelectPackage = (item: AdminGamePackage) => {
     setSelectedPackageId(item.id);
     setEditErrors({});
     state.resetForm();
@@ -263,11 +264,17 @@ export function PackagesAdminPanel({
               <EmptyState title="Chọn game trước" description="Hãy chọn game để xem danh sách gói nạp của game đó." />
             ) : visiblePackages.length === 0 ? (
               <EmptyState
-                actionLabel={state.query.trim() ? 'Xóa bộ lọc' : undefined}
                 description="Chưa có gói phù hợp với bộ lọc hiện tại."
-                onAction={state.query.trim() ? () => state.setQuery('') : undefined}
                 title="Không tìm thấy gói"
-              />
+              >
+                {state.query.trim() && (
+                  <div className="mt-4 flex justify-center">
+                    <button className="gt-button gt-button-primary" onClick={() => state.setQuery('')}>
+                      Xóa bộ lọc
+                    </button>
+                  </div>
+                )}
+              </EmptyState>
             ) : (
               <div className="grid gap-2.5">
                 {visiblePackages.map((item) => {
@@ -516,7 +523,7 @@ export function PackagesAdminPanel({
   );
 }
 
-function PackageSummaryCard({ gameName, item }: { gameName: string; item: GamePackage }) {
+function PackageSummaryCard({ gameName, item }: { gameName: string; item: AdminGamePackage }) {
   return (
     <div className="grid gap-4 rounded-[24px] border border-cyan/15 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(8,24,39,0.86))] p-5 shadow-[0_18px_48px_rgba(2,6,23,0.2)]">
       <div className="flex items-center gap-4">
@@ -550,7 +557,7 @@ function PackageFormPanel({
   setForm,
 }: {
   busy: boolean;
-  editing: GamePackage | null;
+  editing: AdminGamePackage | null;
   form: PackagesAdminPanelState['form'];
   games: AdminGameSummary[];
   imageFile: File | null;

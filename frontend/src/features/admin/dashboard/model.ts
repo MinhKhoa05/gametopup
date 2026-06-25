@@ -4,7 +4,7 @@ import type { User } from '@/features/auth/types';
 import { getDepositRequestStatus } from '@/features/deposits/lib/deposit-request-status';
 import type { AdminDepositRequest } from '@/features/deposits/types';
 import type { AdminGameSummary } from '@/features/admin/games/api';
-import type { GamePackage } from '@/features/games/types';
+import type { AdminGamePackage } from '@/features/admin/games/types';
 import { getOrderStatusMeta } from '@/features/orders/lib/orderStatus';
 import type { AdminOrderResponse } from '@/features/orders/types';
 import { formatCurrency } from '@/shared/lib/format';
@@ -63,7 +63,7 @@ export function buildQueueItems({
   depositRequests: AdminDepositRequest[];
   games: AdminGameSummary[];
   orders: AdminOrderResponse[];
-  packages: GamePackage[];
+  packages: AdminGamePackage[];
 }) {
   const gameById = new Map(games.map((game) => [game.id, game]));
   const packageById = new Map(packages.map((item) => [item.id, item]));
@@ -119,7 +119,7 @@ export function buildQueueItems({
   return [...orderItems, ...depositItems].sort((left, right) => right.sortValue - left.sortValue);
 }
 
-export function buildWatchItems(packages: GamePackage[], games: AdminGameSummary[]) {
+export function buildWatchItems(packages: AdminGamePackage[], games: AdminGameSummary[]) {
   const gameById = new Map(games.map((game) => [game.id, game]));
 
   return packages

@@ -2,10 +2,6 @@ export type Game = {
   id: number;
   name: string;
   imageUrl: string;
-  imageRelativePath: string | null;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
 };
 
 export type GamePackage = {
@@ -13,13 +9,7 @@ export type GamePackage = {
   name: string;
   description?: string | null;
   imageUrl: string;
-  imageRelativePath: string | null;
-  gameId: number;
   salePrice: number;
   originalPrice: number;
-  importPrice: number;
-  availableSlots: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  isAvailable: boolean;
 };

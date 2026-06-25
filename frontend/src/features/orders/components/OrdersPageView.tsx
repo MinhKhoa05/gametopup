@@ -121,7 +121,6 @@ export function OrdersPageView({
               <EmptyState
                 title="Không tải được đơn hàng"
                 description="Đã có lỗi xảy ra khi tải lịch sử đơn hàng."
-                variant="compact"
               />
             ) : pageItems.length ? (
               <>
@@ -142,7 +141,6 @@ export function OrdersPageView({
               <EmptyState
                 title="Không có đơn hàng phù hợp"
                 description={filters.search.trim() ? 'Thử đổi từ khóa hoặc bộ lọc để xem kết quả khác.' : 'Đơn hàng sẽ xuất hiện ở đây sau khi bạn đặt nạp game.'}
-                variant="compact"
               />
             )}
           </div>
@@ -183,7 +181,6 @@ function OrderDetailPanel({
         <EmptyState
           title="Chưa có đơn được chọn"
           description="Chi tiết, thông tin thanh toán và timeline sẽ hiện ở đây."
-          variant="compact"
         />
       </PanelShell>
     );
@@ -227,7 +224,7 @@ function OrderDetailPanel({
             Đang tải timeline...
           </div>
         ) : timelineError || !timeline ? (
-          <EmptyState title="Không tải được timeline" description="Hãy thử chọn lại đơn hàng để tải lịch sử." variant="compact" />
+          <EmptyState title="Không tải được timeline" description="Hãy thử chọn lại đơn hàng để tải lịch sử." />
         ) : (
           <OrderTimeline steps={timelineSteps} />
         )}

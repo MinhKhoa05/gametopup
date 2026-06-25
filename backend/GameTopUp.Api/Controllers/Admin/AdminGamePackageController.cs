@@ -19,7 +19,7 @@ public sealed class AdminGamePackageController : ApiControllerBase
     [HttpGet("/api/admin/games/{gameId:long}/packages")]
     public async Task<IActionResult> GetByGameId(long gameId)
     {
-        var packages = await _packageService.GetPackagesByGameIdAsync(gameId);
+        var packages = await _packageService.GetPackageEntitiesByGameIdAsync(gameId);
         return ApiOk(packages);
     }
 

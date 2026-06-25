@@ -1,7 +1,7 @@
 import { api } from '@/shared/api/client';
 import { appendFormValue } from '@/shared/api/formData';
 import type { ApiResponse } from '@/shared/types/api';
-import type { GamePackage } from '@/features/games/types';
+import type { AdminGamePackage } from '@/features/admin/games/types';
 
 export const adminPackagesKeys = {
   all: ['admin', 'packages'] as const,
@@ -48,17 +48,17 @@ function buildPackageFormData(payload: AdminPackageWriteInput) {
 }
 
 export async function getAdminPackages() {
-  const response = await api.get<ApiResponse<GamePackage[]>>('/api/admin/packages');
+  const response = await api.get<ApiResponse<AdminGamePackage[]>>('/api/admin/packages');
   return response.data.data;
 }
 
 export async function createAdminPackage(payload: Omit<AdminPackageInput, 'id'>) {
-  const response = await api.post<ApiResponse<GamePackage>>(`/api/admin/games/${payload.gameId}/packages`, buildPackageFormData(payload));
+  const response = await api.post<ApiResponse<AdminGamePackage>>(`/api/admin/games/${payload.gameId}/packages`, buildPackageFormData(payload));
   return response.data.data;
 }
 
 export async function updateAdminPackage({ id, ...payload }: AdminPackageUpdateInput) {
-  const response = await api.put<ApiResponse<GamePackage>>(`/api/admin/packages/${id}`, buildPackageFormData(payload));
+  const response = await api.put<ApiResponse<AdminGamePackage>>(`/api/admin/packages/${id}`, buildPackageFormData(payload));
   return response.data.data;
 }
 

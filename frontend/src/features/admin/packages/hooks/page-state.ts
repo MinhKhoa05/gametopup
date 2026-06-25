@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { filterByQuery } from '@/shared/lib/search';
-import type { GamePackage } from '@/features/games/types';
+import type { AdminGamePackage } from '@/features/admin/games/types';
 import type { AdminGameSummary } from '@/features/admin/games/api';
 
 const emptyPackageForm = {
@@ -21,7 +21,7 @@ export function useAdminPackagesPageState({
   onUpdatePackage,
 }: {
   games: AdminGameSummary[];
-  packages: GamePackage[];
+  packages: AdminGamePackage[];
   onCreatePackage: (payload: {
     gameId: number;
     imageFile: File | null;
@@ -46,7 +46,7 @@ export function useAdminPackagesPageState({
     },
   ) => Promise<void>;
 }) {
-  const [editing, setEditing] = useState<GamePackage | null>(null);
+  const [editing, setEditing] = useState<AdminGamePackage | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
   const [form, setForm] = useState(emptyPackageForm);
   const [query, setQuery] = useState('');
@@ -75,7 +75,7 @@ export function useAdminPackagesPageState({
     return filterByQuery(selectedGamePackages, query, (item) => item.name);
   }, [packages, query, selectedGameId]);
 
-  function startEdit(item: GamePackage) {
+  function startEdit(item: AdminGamePackage) {
     setEditing(item);
     setSelectedGameId(item.gameId);
     setForm({
@@ -141,7 +141,7 @@ export function useAdminPackagesPageState({
     await onUpdatePackage(payload);
   }
 
-  async function remove(item: GamePackage) {
+  async function remove(item: AdminGamePackage) {
     if (!window.confirm(`Xóa gói "${item.name}"?`)) return;
     await onDeletePackage(item.id);
   }

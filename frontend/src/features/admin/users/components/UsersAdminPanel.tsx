@@ -57,7 +57,7 @@ export function UsersAdminPanel({
           {loading && state.filteredUsers.length === 0 ? (
             <AdminListSkeleton ariaLabel="Đang tải người dùng" rows={5} />
           ) : state.filteredUsers.length === 0 ? (
-            <EmptyState>Không tìm thấy người dùng phù hợp.</EmptyState>
+            <EmptyState title="Không tìm thấy người dùng phù hợp." />
           ) : (
             <div className="grid gap-2.5">
               {state.filteredUsers.map((user) => {

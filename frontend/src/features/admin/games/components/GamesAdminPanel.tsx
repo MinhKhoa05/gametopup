@@ -152,11 +152,17 @@ export function GamesAdminPanel({
               <AdminListSkeleton ariaLabel="Đang tải game" rows={5} />
             ) : visibleGames.length === 0 ? (
               <EmptyState
-                actionLabel={state.query.trim() ? 'Xóa bộ lọc' : undefined}
                 description="Chưa có game phù hợp với bộ lọc hiện tại."
-                onAction={state.query.trim() ? () => state.setQuery('') : undefined}
                 title="Không tìm thấy game"
-              />
+              >
+                {state.query.trim() && (
+                  <div className="mt-4 flex justify-center">
+                    <button className="gt-button gt-button-primary" onClick={() => state.setQuery('')}>
+                      Xóa bộ lọc
+                    </button>
+                  </div>
+                )}
+              </EmptyState>
             ) : (
               <div className="grid gap-2.5">
                 {visibleGames.map((game) => (

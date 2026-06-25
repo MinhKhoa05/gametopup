@@ -32,14 +32,20 @@ export function WalletPage() {
     return (
       <EmptyState
         className="mx-auto mt-12 max-w-lg"
-        icon={<WalletCards size={24} />}
-        iconSize="lg"
-        iconTone="neutral"
         title="Bạn chưa đăng nhập"
         description="Vui lòng đăng nhập để quản lý ví và tạo yêu cầu nạp tiền."
-        actionLabel="Đăng nhập ngay"
-        onAction={navigateToLogin}
-      />
+      >
+        <div className="flex justify-center mb-4 order-first">
+          <IconBox size="lg" tone="neutral">
+            <WalletCards size={24} />
+          </IconBox>
+        </div>
+        <div className="mt-4 flex justify-center">
+          <button className="gt-button gt-button-primary" onClick={navigateToLogin}>
+            Đăng nhập ngay
+          </button>
+        </div>
+      </EmptyState>
     );
   }
 

@@ -13,7 +13,7 @@ import { adminUsersKeys } from './users/api';
 import { useAdminUsersSection } from './users/hooks';
 import { walletKeys } from '@/features/wallet/server';
 import type { User } from '@/features/auth/types';
-import type { GamePackage } from '@/features/games/types';
+import type { AdminGamePackage } from '@/features/admin/games/types';
 import type { AdminGameSummary } from './games/api';
 import type { AdminOrderResponse } from '@/features/orders/types';
 import { useAdminGamesPageState } from './games/hooks';
@@ -40,7 +40,7 @@ export function useAdminMetrics({
   users,
 }: {
   games: AdminGameSummary[];
-  packages: GamePackage[];
+  packages: AdminGamePackage[];
   orders: AdminOrderResponse[];
   users: User[];
 }) {

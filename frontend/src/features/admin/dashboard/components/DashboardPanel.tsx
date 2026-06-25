@@ -13,7 +13,7 @@ import {
 import { routes } from '@/app/router/routes';
 import { AdminSkeleton } from '@/features/admin/components/AdminShared';
 import type { User } from '@/features/auth/types';
-import type { GamePackage } from '@/features/games/types';
+import type { AdminGamePackage } from '@/features/admin/games/types';
 import type { AdminGameSummary } from '@/features/admin/games/api';
 import type { AdminDepositRequest } from '@/features/deposits/types';
 import type { AdminOrderResponse } from '@/features/orders/types';
@@ -49,7 +49,7 @@ export function DashboardPanel({
   loading: boolean;
   metrics: AdminCatalogMetrics;
   orders: AdminOrderResponse[];
-  packages: GamePackage[];
+  packages: AdminGamePackage[];
   users: User[];
 }) {
   const navigate = useNavigate();
@@ -144,7 +144,6 @@ export function DashboardPanel({
               </div>
             ) : (
               <EmptyState
-                variant="compact"
                 title="Không có mục phù hợp"
                 description={query.trim() ? 'Thử đổi từ khóa hoặc chuyển sang bộ lọc khác.' : 'Danh sách sẽ hiển thị khi có đơn hàng hoặc yêu cầu nạp tiền mới.'}
               />
@@ -207,7 +206,6 @@ export function DashboardPanel({
                 ))
               ) : (
                 <EmptyState
-                  variant="compact"
                   title="Kho đang ổn"
                   description="Không có gói nào cần kiểm tra gấp vào lúc này."
                 />
@@ -255,7 +253,7 @@ export function DashboardPanel({
                   );
                 })
               ) : (
-                <EmptyState variant="compact" title="Chưa có dữ liệu" description="Danh sách người dùng sẽ xuất hiện ở đây khi hệ thống đã có tài khoản." />
+                <EmptyState title="Chưa có dữ liệu" description="Danh sách người dùng sẽ xuất hiện ở đây khi hệ thống đã có tài khoản." />
               )}
             </div>
           </PanelShell>

@@ -71,11 +71,17 @@ export function DepositsAdminPanel({
             <AdminListSkeleton ariaLabel="Đang tải yêu cầu nạp tiền" rows={5} />
           ) : state.filteredRequests.length === 0 ? (
             <EmptyState
-              actionLabel={state.query.trim() || state.filter !== 'all' ? 'Xóa bộ lọc' : undefined}
               description="Không có yêu cầu nào khớp với bộ lọc hiện tại."
-              onAction={state.query.trim() || state.filter !== 'all' ? state.resetFilters : undefined}
               title="Chưa có yêu cầu nạp tiền phù hợp."
-            />
+            >
+              {(state.query.trim() || state.filter !== 'all') && (
+                <div className="mt-4 flex justify-center">
+                  <button className="gt-button gt-button-primary" onClick={state.resetFilters}>
+                    Xóa bộ lọc
+                  </button>
+                </div>
+              )}
+            </EmptyState>
           ) : (
             <div className="grid gap-2.5">
               {state.filteredRequests.map((request) => {
@@ -125,12 +131,13 @@ export function DepositsAdminPanel({
             <EmptyState
               title="Chưa chọn yêu cầu"
               description="Chọn một yêu cầu từ danh sách bên trái để xem chi tiết và xử lý."
-              icon={
+            >
+              <div className="flex justify-center mb-4 order-first">
                 <span className="inline-flex size-10 items-center justify-center rounded-[16px] border border-white/[0.06] bg-white/[0.03] text-cyan-50">
                   <Clock3 size={16} />
                 </span>
-              }
-            />
+              </div>
+            </EmptyState>
           ) : (
             <div className="grid gap-4 pb-1">
               <div className="overflow-hidden rounded-[22px] border border-cyan/20 bg-[linear-gradient(135deg,rgba(34,211,238,0.16),rgba(15,23,42,0.72))] p-4 shadow-[0_18px_48px_rgba(2,6,23,0.24)]">

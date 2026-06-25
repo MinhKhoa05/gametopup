@@ -320,7 +320,6 @@ function HistoryList({
   if (!rows.length) {
     return (
       <EmptyState
-        variant="compact"
         title={mode === 'deposit' ? 'Chưa có lịch sử nạp phù hợp' : 'Chưa có biến động phù hợp'}
         description="Thử đổi bộ lọc hoặc chuyển sang sub-tab khác để xem dữ liệu."
       />

@@ -28,16 +28,20 @@ export function AdminAccessDenied({ onLogin }: { onLogin: () => void }) {
     <div className="flex min-h-screen items-center justify-center bg-[var(--gt-bg)] px-4 py-6 gt-text">
       <EmptyState
         className="max-w-[560px] py-10"
-        icon={
+        title="Cần quyền quản trị"
+        description="Bạn cần đăng nhập bằng tài khoản quản trị để truy cập khu vực này."
+      >
+        <div className="flex justify-center mb-4">
           <IconBox size="lg">
             <LayoutDashboard size={26} />
           </IconBox>
-        }
-        title="Cần quyền quản trị"
-        description="Bạn cần đăng nhập bằng tài khoản quản trị để truy cập khu vực này."
-        actionLabel="Đăng nhập"
-        onAction={onLogin}
-      />
+        </div>
+        <div className="mt-4">
+          <button className="gt-button gt-button-primary" onClick={onLogin}>
+            Đăng nhập
+          </button>
+        </div>
+      </EmptyState>
     </div>
   );
 }

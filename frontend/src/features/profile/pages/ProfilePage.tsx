@@ -309,12 +309,15 @@ function FavoriteGamesSection({
           </div>
         ) : (
           <EmptyState
-            variant="compact"
             title="Chưa có game yêu thích"
             description="Khi bạn có đơn hàng, các game được nạp nhiều sẽ xuất hiện tại đây."
-            actionLabel="Khám phá kho game"
-            onAction={onBrowse}
-          />
+          >
+            <div className="mt-4 flex justify-center">
+              <button className="gt-button gt-button-primary" onClick={onBrowse}>
+                Khám phá kho game
+              </button>
+            </div>
+          </EmptyState>
         )}
       </div>
     </PanelShell>
@@ -481,9 +484,13 @@ function ProfileGuestState() {
       className="mx-auto mt-12 max-w-lg"
       title="Không có phiên đăng nhập"
       description="Vui lòng đăng nhập lại để xem tài khoản của bạn."
-      actionLabel="Đăng nhập"
-      onAction={() => navigate(routes.login())}
-    />
+    >
+      <div className="mt-4 flex justify-center">
+        <button className="gt-button gt-button-primary" onClick={() => navigate(routes.login())}>
+          Đăng nhập
+        </button>
+      </div>
+    </EmptyState>
   );
 }
 
