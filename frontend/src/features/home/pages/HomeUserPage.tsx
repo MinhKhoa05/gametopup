@@ -82,6 +82,25 @@ export function HomeUserPage() {
                   Nạp tiền
                 </Button>
               </div>
+
+              <div className="mt-6 border-t border-white/10 pt-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <SectionHeading
+                    title="Biến động ví"
+                    titleClassName="text-base"
+                  />
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate(routes.wallet())}
+                  >
+                    Xem tất cả
+                  </Button>
+                </div>
+
+                {/* Transaction list */}
+              </div>
             </div>
           </PanelShell>
 

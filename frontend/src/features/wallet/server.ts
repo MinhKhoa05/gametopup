@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { getWalletBalance, getWalletOverview } from './api';
+import { getWalletBalance, getWalletTransactions } from './api';
 
 export const walletKeys = {
   all: ['wallet'] as const,
   balance: ['wallet', 'balance'] as const,
-  overview: ['wallet', 'overview'] as const,
+  transactions: ['wallet', 'transactions'] as const,
 };
 
 export function useWalletBalanceQuery(enabled = true) {
@@ -15,10 +15,10 @@ export function useWalletBalanceQuery(enabled = true) {
   });
 }
 
-export function useWalletOverviewQuery(enabled = true) {
+export function useWalletTransactionsQuery(enabled = true) {
   return useQuery({
-    queryKey: walletKeys.overview,
-    queryFn: getWalletOverview,
+    queryKey: walletKeys.transactions,
+    queryFn: getWalletTransactions,
     enabled,
   });
 }

@@ -1,6 +1,11 @@
-export type WalletDepositRequestStatus = 1 | 2 | 3 | 4;
+export enum WalletDepositStatus {
+  Pending = 1,
+  UserConfirmed = 2,
+  Approved = 3,
+  Rejected = 4,
+}
 
-export type WalletDepositRequest = {
+export type WalletDeposit = {
   id: number;
   amount: number;
   code: string;
@@ -9,7 +14,7 @@ export type WalletDepositRequest = {
   bankId: string;
   accountNo: string;
   accountName: string;
-  status: WalletDepositRequestStatus;
+  status: WalletDepositStatus;
   userConfirmedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -20,7 +25,7 @@ export type AdminDepositRequest = {
   userId: number;
   amount: number;
   code: string;
-  status: WalletDepositRequestStatus;
+  status: WalletDepositStatus;
   userConfirmedAt: string | null;
   reviewedBy: number | null;
   reviewedAt: string | null;

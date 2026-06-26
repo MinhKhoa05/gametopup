@@ -1,173 +1,168 @@
-import { ArrowUpRight, Clock3, ReceiptText, WalletCards } from 'lucide-react';
-import { Container } from '@/shared/components';
-import { WalletDepositDialog } from '@/features/wallet/components/WalletDepositDialog';
-import { WalletHistoryPanel } from '@/features/wallet/components/WalletHistoryPanel';
-import { useWalletPage } from '@/features/wallet/hooks/useWalletPage';
-import { EmptyState, IconBox, PageHero, StatCard } from '@/shared/components';
-import { formatCurrency } from '@/shared/lib/format';
-import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
+import { useState } from "react";
+import { ArrowDownToLine, ArrowLeftRight, Coins, Wallet } from "lucide-react";
+
+import {
+  Container,
+  EmptyState,
+  FilterChipGroup,
+  IconBox,
+  PageHero,
+  PanelShell,
+  SectionHeading,
+  StatCard,
+} from "@/shared/components";
+
+import { formatCurrency } from "@/shared/lib/format";
+
+import { WalletBalanceCard } from "@/features/wallet/components/WalletBalanceCard";
+import { WalletDepositDialog } from "@/features/deposits/components/WalletDepositDialog";
+import { WalletDepositItem } from "@/features/deposits/components/WalletDepositItem";
+import { WalletTransactionItem } from "@/features/wallet/components/WalletTransactionItem";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { useDepositRequestsQuery } from "../../deposits/server";
+import { useWalletBalanceQuery, useWalletTransactionsQuery } from "../server";
+
+const HISTORY_TABS = [
+  {
+    label: "Biến động số dư",
+    value: "ledger",
+  },
+  {
+    label: "Yêu cầu nạp tiền",
+    value: "deposit",
+  },
+] as const;
+
+type HistoryTab = (typeof HISTORY_TABS)[number]["value"];
 
 export function WalletPage() {
-  const {
-    bankOptions,
-    currentHistoryPage,
-    historyFilters,
-    historyPageRows,
-    historyTotalPages,
-    historyView,
-    isDepositOpen,
-    navigateToLogin,
-    setHistoryFilters,
-    setHistoryPage,
-    setHistoryView,
-    setIsDepositOpen,
-    stats,
-  } = useWalletPage();
+  const { isAuthenticated } = useAuthSession();
 
-  const { isChecking, user } = useAuthSession();
+  const balanceQuery = useWalletBalanceQuery(isAuthenticated);
+  const transactionsQuery = useWalletTransactionsQuery(isAuthenticated);
+  const depositsQuery = useDepositRequestsQuery(isAuthenticated);
 
-  if (isChecking && !user) {
-    return <WalletLoadingState />;
-  }
+  const balance = balanceQuery.data ?? 0;
+  const transactions = transactionsQuery.data ?? [];
+  const deposits = depositsQuery.data ?? [];
 
-  if (!user) {
-    return (
-      <EmptyState
-        className="mx-auto mt-12 max-w-lg"
-        title="Bạn chưa đăng nhập"
-        description="Vui lòng đăng nhập để quản lý ví và tạo yêu cầu nạp tiền."
-      >
-        <div className="flex justify-center mb-4 order-first">
-          <IconBox size="lg" tone="neutral">
-            <WalletCards size={24} />
-          </IconBox>
-        </div>
-        <div className="mt-4 flex justify-center">
-          <button className="gt-button gt-button-primary" onClick={navigateToLogin}>
-            Đăng nhập ngay
-          </button>
-        </div>
-      </EmptyState>
-    );
-  }
+  const loading =
+    balanceQuery.isLoading ||
+    transactionsQuery.isLoading ||
+    depositsQuery.isLoading;
+
+  const error =
+    balanceQuery.isError || transactionsQuery.isError || depositsQuery.isError;
+
+  const [tab, setTab] = useState<HistoryTab>("ledger");
+  const [isDepositOpen, setDepositOpen] = useState(false);
 
   return (
     <div className="relative isolate overflow-hidden">
       <Container className="relative z-10 py-5 sm:py-7 lg:py-8">
-        <div className="grid gap-10 lg:gap-12">
+        <div className="grid gap-6 lg:gap-7">
           <PageHero
-            eyebrow="QUẢN LÝ TÀI KHOẢN"
+            eyebrow="VÍ ĐIỆN TỬ"
             visual={
-              <IconBox size="lg" tone="primary" className="h-[62px] w-[62px] shrink-0 rounded-[18px]">
-                <WalletCards size={30} strokeWidth={1.8} />
+              <IconBox
+                size="lg"
+                tone="primary"
+                className="h-[62px] w-[62px] rounded-[18px]"
+              >
+                <Wallet size={30} strokeWidth={1.8} />
               </IconBox>
             }
-            title="Nạp tiền vào ví"
-            description="Nhập số tiền cần nạp, hệ thống sẽ tự động tạo mã QR kèm nội dung chuyển khoản chính xác."
+            title="Ví của bạn"
+            description="Quản lý số dư, nạp tiền và theo dõi lịch sử giao dịch."
           />
 
-          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,0.95fr)] xl:items-stretch">
-            <aside className="gt-panel relative overflow-hidden rounded-[30px] p-6 sm:p-7">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.08),transparent_20%),linear-gradient(135deg,rgba(255,255,255,0.05),transparent_40%,rgba(255,255,255,0.03))] opacity-70" />
+          <WalletBalanceCard
+            balance={balance}
+            onDeposit={() => setDepositOpen(true)}
+          />
 
-              <div className="relative flex min-h-[320px] flex-col gap-8">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="grid gap-1">
-                    <p className="m-0 text-[0.72rem] font-black uppercase tracking-[0.24em] text-cyan-100/80">VÍ NỘI BỘ GAMETOPUP</p>
-                  </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <StatCard
+              compact
+              tone="success"
+              icon={<Coins size={20} />}
+              label="Số dư"
+              value={formatCurrency(balance)}
+            />
 
-                  <div className="grid size-12 place-items-center rounded-[18px] border border-cyan-300/18 bg-cyan-400/12 text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                    <WalletCards size={20} />
-                  </div>
-                </div>
+            <StatCard
+              compact
+              tone="primary"
+              icon={<ArrowLeftRight size={20} />}
+              label="Giao dịch"
+              value={transactions.length}
+            />
 
-                <div className="flex items-end justify-between gap-4 border-t border-white/[0.08] pt-4">
-                  <div className="grid gap-1">
-                    <span className="text-[0.74rem] font-black uppercase tracking-[0.22em] gt-text-disabled">Số dư</span>
-                    <strong className="text-[clamp(2.2rem,3.9vw,4rem)] font-black tracking-[-0.08em] gt-text gt-tabular">
-                      {formatCurrency(stats.balance)}
-                    </strong>
-                  </div>
-                </div>
+            <StatCard
+              compact
+              tone="warning"
+              icon={<ArrowDownToLine size={20} />}
+              label="Yêu cầu nạp"
+              value={deposits.length}
+            />
+          </div>
 
-                <div className="mt-auto pt-2">
-                  <button
-                    type="button"
-                    className="gt-button gt-button-primary inline-flex min-h-12 w-full items-center justify-center rounded-[16px] px-4 text-sm font-black"
-                    onClick={() => setIsDepositOpen(true)}
-                  >
-                    Nạp tiền
-                  </button>
-                </div>
-              </div>
-            </aside>
+          <PanelShell>
+            <div className="space-y-6 p-6 lg:p-7">
+              <SectionHeading title="Lịch sử ví" />
 
-            <div className="grid gap-3 self-stretch">
-              <StatCard
-                compact
-                icon={<ArrowUpRight size={20} />}
-                label="Tổng đã nạp"
-                tone="success"
-                value={formatCurrency(stats.topupAmount)}
+              <FilterChipGroup
+                items={HISTORY_TABS}
+                value={tab}
+                onChange={(value) => setTab(value as HistoryTab)}
               />
-              <StatCard
-                compact
-                icon={<Clock3 size={20} />}
-                label="Yêu cầu nạp"
-                tone="warning"
-                value={`${stats.requests} yêu cầu`}
-              />
-              <StatCard
-                compact
-                icon={<ReceiptText size={20} />}
-                label="Giao dịch gần đây"
-                tone="primary"
-                value={`${stats.transactions} giao dịch`}
-              />
+
+              {loading ? (
+                <p className="py-10 text-center gt-text-muted">
+                  Đang tải dữ liệu...
+                </p>
+              ) : error ? (
+                <EmptyState
+                  title="Không tải được dữ liệu"
+                  description="Đã xảy ra lỗi khi tải lịch sử ví."
+                />
+              ) : tab === "ledger" ? (
+                transactions.length === 0 ? (
+                  <EmptyState
+                    title="Chưa có giao dịch"
+                    description="Các biến động số dư sẽ xuất hiện tại đây."
+                  />
+                ) : (
+                  <div className="space-y-3">
+                    {transactions.map((transaction) => (
+                      <WalletTransactionItem
+                        key={transaction.id}
+                        transaction={transaction}
+                      />
+                    ))}
+                  </div>
+                )
+              ) : deposits.length === 0 ? (
+                <EmptyState
+                  title="Chưa có yêu cầu nạp"
+                  description="Các yêu cầu nạp tiền sẽ xuất hiện tại đây."
+                />
+              ) : (
+                <div className="space-y-3">
+                  {deposits.map((request) => (
+                    <WalletDepositItem key={request.id} deposit={request} />
+                  ))}
+                </div>
+              )}
             </div>
-          </section>
-
-          <WalletHistoryPanel
-            bankOptions={bankOptions}
-            currentPage={currentHistoryPage}
-            filters={historyFilters}
-            mode={historyView}
-            onChange={(patch) => setHistoryFilters((current) => ({ ...current, ...patch }))}
-            onPageChange={setHistoryPage}
-            onViewChange={setHistoryView}
-            rows={historyPageRows}
-            totalPages={historyTotalPages}
-          />
+          </PanelShell>
         </div>
       </Container>
+
       <WalletDepositDialog
         isOpen={isDepositOpen}
-        onClose={() => setIsDepositOpen(false)}
-        onViewHistory={() => {
-          setHistoryView('deposit');
-          setIsDepositOpen(false);
-        }}
+        onClose={() => setDepositOpen(false)}
       />
     </div>
-  );
-}
-
-function WalletLoadingState() {
-  return (
-    <Container className="py-5 sm:py-7 lg:py-8" aria-busy="true">
-      <div className="grid gap-10 lg:gap-12">
-        <div className="h-[380px] animate-pulse rounded-[30px] border border-white/10 bg-white/[0.03]" />
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="h-[116px] animate-pulse rounded-[22px] border border-white/10 bg-white/[0.03]" />
-          ))}
-        </div>
-        <div className="grid gap-6 xl:grid-cols-2">
-          <div className="h-[480px] animate-pulse rounded-[26px] border border-white/10 bg-white/[0.03]" />
-          <div className="h-[480px] animate-pulse rounded-[26px] border border-white/10 bg-white/[0.03]" />
-        </div>
-        <div className="h-[260px] animate-pulse rounded-[26px] border border-white/10 bg-white/[0.03]" />
-      </div>
-    </Container>
   );
 }

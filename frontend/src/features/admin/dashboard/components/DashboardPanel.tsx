@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   CircleDollarSign,
@@ -9,19 +9,39 @@ import {
   ShoppingCart,
   UserRound,
   WalletCards,
-} from 'lucide-react';
-import { routes } from '@/app/router/routes';
-import { AdminSkeleton } from '@/features/admin/components/AdminShared';
-import type { User } from '@/features/auth/types';
-import type { AdminGamePackage } from '@/features/admin/games/types';
-import type { AdminGameSummary } from '@/features/admin/games/api';
-import type { AdminDepositRequest } from '@/features/deposits/types';
-import type { AdminOrder } from '@/features/orders/types';
-import { buildQueueItems, buildRecentUsers, buildWatchItems, countOrdersToday, type QueueItem } from '@/features/admin/dashboard/model';
-import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, IconBox, ImageBox, MediaListItem, PageHero, PanelShell, SearchBar, SectionHeading, StatCard } from '@/shared/components';
-import { classNames } from '@/shared/lib/classNames';
-import { formatCurrency, formatDate } from '@/shared/lib/format';
-import { UserRole } from '@/features/auth/types';
+} from "lucide-react";
+import { routes } from "@/app/router/routes";
+import { AdminSkeleton } from "@/features/admin/components/AdminShared";
+import type { User } from "@/features/auth/types";
+import type { AdminGamePackage } from "@/features/admin/games/types";
+import type { AdminGameSummary } from "@/features/admin/games/api";
+import type { AdminDepositRequest } from "@/features/deposits/types";
+import type { AdminOrder } from "@/features/orders/types";
+import {
+  buildQueueItems,
+  buildRecentUsers,
+  buildWatchItems,
+  countOrdersToday,
+  type QueueItem,
+} from "@/features/admin/dashboard/model";
+import {
+  Badge,
+  Button,
+  DetailRow,
+  EmptyState,
+  FilterChipGroup,
+  IconBox,
+  ImageBox,
+  MediaListItem,
+  PageHero,
+  PanelShell,
+  SearchBar,
+  SectionHeading,
+  StatCard,
+} from "@/shared/components";
+import { classNames } from "@/shared/lib/classNames";
+import { formatCurrency, formatDate } from "@/shared/lib/format";
+import { UserRole } from "@/features/auth/types";
 
 type AdminCatalogMetrics = {
   activeGames: number;
@@ -33,7 +53,7 @@ type AdminCatalogMetrics = {
   totalUsers: number;
 };
 
-type DashboardScope = 'all' | 'orders' | 'deposits';
+type DashboardScope = "all" | "orders" | "deposits";
 
 export function DashboardPanel({
   depositRequests,
@@ -53,54 +73,76 @@ export function DashboardPanel({
   users: User[];
 }) {
   const navigate = useNavigate();
-  const [query, setQuery] = useState('');
-  const [scope, setScope] = useState<DashboardScope>('all');
+  const [query, setQuery] = useState("");
+  const [scope, setScope] = useState<DashboardScope>("all");
 
   const queueItems = useMemo(
     () => buildQueueItems({ depositRequests, games, orders, packages }),
     [depositRequests, games, orders, packages],
   );
-  const watchItems = useMemo(() => buildWatchItems(packages, games), [games, packages]);
+  const watchItems = useMemo(
+    () => buildWatchItems(packages, games),
+    [games, packages],
+  );
   const recentUsers = useMemo(() => buildRecentUsers(users), [users]);
   const todayOrdersCount = useMemo(() => countOrdersToday(orders), [orders]);
 
-  const visibleQueueItems = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    const scopedItems =
-      scope === 'orders'
-        ? queueItems.filter((item) => item.kind === 'order')
-        : scope === 'deposits'
-          ? queueItems.filter((item) => item.kind === 'deposit')
-          : queueItems;
-
-    if (!normalizedQuery) {
-      return scopedItems;
-    }
-
-    return scopedItems.filter((item) => item.searchText.includes(normalizedQuery));
-  }, [query, queueItems, scope]);
-
   const systemRows = [
-    { label: 'Người dùng hoạt động', value: metrics.activeUsers.toString() },
-    { label: 'Gói nạp', value: metrics.totalPackages.toString() },
-    { label: 'Gói đang tắt', value: metrics.disabledPackages.toString() },
-    { label: 'Nạp tiền chờ duyệt', value: depositRequests.filter((request) => request.status === 1 || request.status === 2).length.toString() },
+    { label: "Người dùng hoạt động", value: metrics.activeUsers.toString() },
+    { label: "Gói nạp", value: metrics.totalPackages.toString() },
+    { label: "Gói đang tắt", value: metrics.disabledPackages.toString() },
+    {
+      label: "Nạp tiền chờ duyệt",
+      value: depositRequests
+        .filter((request) => request.status === 1 || request.status === 2)
+        .length.toString(),
+    },
   ];
 
   return (
     <div className="grid min-w-0 gap-10 lg:gap-12">
       <PageHero
         eyebrow="ADMIN"
-        visual={<DashboardHeroVisual metrics={metrics} depositCount={depositRequests.length} todayOrdersCount={todayOrdersCount} />}
+        visual={
+          <DashboardHeroVisual
+            metrics={metrics}
+            depositCount={depositRequests.length}
+            todayOrdersCount={todayOrdersCount}
+          />
+        }
         title="Điều hành hệ thống"
         description="Theo dõi đơn hàng, kiểm tra nạp tiền và giữ kho game luôn ở trạng thái sẵn sàng trong cùng một màn hình."
       />
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={<Gamepad2 size={18} />} label="Game hoạt động" supporting="Danh mục đang mở bán" tone="primary" value={`${metrics.activeGames} / ${games.length}`} />
-        <StatCard icon={<ShoppingCart size={18} />} label="Đơn hôm nay" supporting="Đơn tạo mới trong ngày" tone="success" value={todayOrdersCount.toString()} />
-        <StatCard icon={<Clock3 size={18} />} label="Đơn chờ xử lý" supporting="Cần thao tác ngay" tone="warning" value={metrics.pendingOrders.toString()} />
-        <StatCard icon={<CircleDollarSign size={18} />} label="Doanh thu" supporting="Tổng ghi nhận hệ thống" tone="primary" value={formatCurrency(metrics.revenue)} />
+        <StatCard
+          icon={<Gamepad2 size={18} />}
+          label="Game hoạt động"
+          supporting="Danh mục đang mở bán"
+          tone="primary"
+          value={`${metrics.activeGames} / ${games.length}`}
+        />
+        <StatCard
+          icon={<ShoppingCart size={18} />}
+          label="Đơn hôm nay"
+          supporting="Đơn tạo mới trong ngày"
+          tone="success"
+          value={todayOrdersCount.toString()}
+        />
+        <StatCard
+          icon={<Clock3 size={18} />}
+          label="Đơn chờ xử lý"
+          supporting="Cần thao tác ngay"
+          tone="warning"
+          value={metrics.pendingOrders.toString()}
+        />
+        <StatCard
+          icon={<CircleDollarSign size={18} />}
+          label="Doanh thu"
+          supporting="Tổng ghi nhận hệ thống"
+          tone="primary"
+          value={formatCurrency(metrics.revenue)}
+        />
       </section>
 
       <section className="grid gap-8 xl:grid-cols-[minmax(0,1.58fr)_minmax(320px,0.82fr)]">
@@ -111,7 +153,15 @@ export function DashboardPanel({
               title="Hàng đợi xử lý"
               titleClassName="text-[1.35rem]"
               description="Đơn hàng và yêu cầu nạp tiền mới nhất."
-              action={<Badge tone={loading ? 'primary' : 'success'} icon={<LayoutDashboard size={14} />} className="rounded-full px-3.5 py-2">{loading ? 'Đang tải' : 'Sẵn sàng'}</Badge>}
+              action={
+                <Badge
+                  tone={loading ? "primary" : "success"}
+                  icon={<LayoutDashboard size={14} />}
+                  className="rounded-full px-3.5 py-2"
+                >
+                  {loading ? "Đang tải" : "Sẵn sàng"}
+                </Badge>
+              }
             />
           </div>
 
@@ -126,35 +176,24 @@ export function DashboardPanel({
 
             <FilterChipGroup
               items={[
-                { value: 'all', label: 'Tất cả' },
-                { value: 'orders', label: 'Đơn hàng' },
-                { value: 'deposits', label: 'Nạp tiền' },
+                { value: "all", label: "Tất cả" },
+                { value: "orders", label: "Đơn hàng" },
+                { value: "deposits", label: "Nạp tiền" },
               ]}
               value={scope}
               onChange={(value) => setScope(value as DashboardScope)}
             />
-
-            {loading && visibleQueueItems.length === 0 ? (
-              <AdminSkeleton rows={5} />
-            ) : visibleQueueItems.length ? (
-              <div className="grid gap-3">
-                {visibleQueueItems.map((item) => (
-                  <QueueItemCard key={item.id} item={item} onOpen={() => navigate(item.actionHref)} />
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                title="Không có mục phù hợp"
-                description={query.trim() ? 'Thử đổi từ khóa hoặc chuyển sang bộ lọc khác.' : 'Danh sách sẽ hiển thị khi có đơn hàng hoặc yêu cầu nạp tiền mới.'}
-              />
-            )}
           </div>
         </PanelShell>
 
         <div className="grid gap-8">
           <PanelShell>
             <div className="px-5 pt-5 sm:px-6 sm:pt-6">
-              <SectionHeading title="Tóm tắt vận hành" titleClassName="text-[1.25rem]" description="Những chỉ số quan trọng cần nhìn nhanh." />
+              <SectionHeading
+                title="Tóm tắt vận hành"
+                titleClassName="text-[1.25rem]"
+                description="Những chỉ số quan trọng cần nhìn nhanh."
+              />
             </div>
 
             <div className="grid gap-2 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
@@ -165,11 +204,19 @@ export function DashboardPanel({
               ))}
 
               <div className="grid gap-3 pt-2 sm:grid-cols-2">
-                <Button variant="primary" className="justify-center rounded-[16px] px-4" onClick={() => navigate(routes.admin('orders'))}>
+                <Button
+                  variant="primary"
+                  className="justify-center rounded-[16px] px-4"
+                  onClick={() => navigate(routes.admin("orders"))}
+                >
                   Mở đơn hàng
                   <ArrowRight size={16} />
                 </Button>
-                <Button variant="outline" className="justify-center rounded-[16px] px-4" onClick={() => navigate(routes.admin('deposits'))}>
+                <Button
+                  variant="outline"
+                  className="justify-center rounded-[16px] px-4"
+                  onClick={() => navigate(routes.admin("deposits"))}
+                >
                   Duyệt nạp tiền
                 </Button>
               </div>
@@ -182,26 +229,42 @@ export function DashboardPanel({
                 title="Kho cần chú ý"
                 titleClassName="text-[1.25rem]"
                 description="Gói nạp có tồn thấp hoặc đang tắt."
-                action={<Button variant="ghost" className="px-0 text-cyan" onClick={() => navigate(routes.admin('packages'))}>Xem kho</Button>}
+                action={
+                  <Button
+                    variant="ghost"
+                    className="px-0 text-cyan"
+                    onClick={() => navigate(routes.admin("packages"))}
+                  >
+                    Xem kho
+                  </Button>
+                }
               />
             </div>
 
             <div className="grid gap-3 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
-                {watchItems.length ? (
-                  watchItems.map((item) => (
-                    <MediaListItem
-                      key={item.id}
-                      onClick={() => navigate(item.actionHref)}
-                      leading={<ImageBox src={item.imageUrl} alt={item.title} className="object-cover" />}
-                      title={item.title}
-                      subtitle={item.subtitle}
-                      meta={item.description}
+              {watchItems.length ? (
+                watchItems.map((item) => (
+                  <MediaListItem
+                    key={item.id}
+                    onClick={() => navigate(item.actionHref)}
+                    leading={
+                      <ImageBox
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className="object-cover"
+                      />
+                    }
+                    title={item.title}
+                    subtitle={item.subtitle}
+                    meta={item.description}
                     titleAccessory={
                       <Badge tone={item.tone} className="rounded-full">
                         {item.stockLabel}
                       </Badge>
                     }
-                    trailing={<span className="text-xs text-slate-500">Mở kho</span>}
+                    trailing={
+                      <span className="text-xs text-slate-500">Mở kho</span>
+                    }
                   />
                 ))
               ) : (
@@ -219,7 +282,11 @@ export function DashboardPanel({
                 title="Người dùng gần đây"
                 titleClassName="text-[1.25rem]"
                 description="Tài khoản mới nhất trong hệ thống."
-                action={<Badge tone="neutral" className="rounded-full px-3.5 py-2">{recentUsers.length} tài khoản</Badge>}
+                action={
+                  <Badge tone="neutral" className="rounded-full px-3.5 py-2">
+                    {recentUsers.length} tài khoản
+                  </Badge>
+                }
               />
             </div>
 
@@ -232,7 +299,11 @@ export function DashboardPanel({
                     <MediaListItem
                       key={user.id}
                       leading={
-                        <IconBox size="md" tone="neutral" className="h-12 w-12 rounded-[18px]">
+                        <IconBox
+                          size="md"
+                          tone="neutral"
+                          className="h-12 w-12 rounded-[18px]"
+                        >
                           <UserRound size={18} />
                         </IconBox>
                       }
@@ -240,12 +311,18 @@ export function DashboardPanel({
                       subtitle={user.email}
                       meta={formatDate(user.createdAt)}
                       titleAccessory={
-                        <Badge tone={user.isActive !== false ? 'success' : 'neutral'} className="rounded-full">
-                          {user.isActive !== false ? 'Hoạt động' : 'Ngưng'}
+                        <Badge
+                          tone={user.isActive !== false ? "success" : "neutral"}
+                          className="rounded-full"
+                        >
+                          {user.isActive !== false ? "Hoạt động" : "Ngưng"}
                         </Badge>
                       }
                       trailing={
-                        <Badge tone={roleLabel === 'Member' ? 'neutral' : 'primary'} className="rounded-full">
+                        <Badge
+                          tone={roleLabel === "Member" ? "neutral" : "primary"}
+                          className="rounded-full"
+                        >
                           {roleLabel}
                         </Badge>
                       }
@@ -253,7 +330,10 @@ export function DashboardPanel({
                   );
                 })
               ) : (
-                <EmptyState title="Chưa có dữ liệu" description="Danh sách người dùng sẽ xuất hiện ở đây khi hệ thống đã có tài khoản." />
+                <EmptyState
+                  title="Chưa có dữ liệu"
+                  description="Danh sách người dùng sẽ xuất hiện ở đây khi hệ thống đã có tài khoản."
+                />
               )}
             </div>
           </PanelShell>
@@ -281,8 +361,12 @@ function DashboardHeroVisual({
       <div className="gt-panel relative grid gap-3 rounded-[26px] p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="grid gap-1">
-            <p className="m-0 text-[0.68rem] font-black uppercase tracking-[0.22em] text-cyan-100/80">Live control</p>
-            <strong className="text-sm font-bold text-white">Tình trạng hệ thống</strong>
+            <p className="m-0 text-[0.68rem] font-black uppercase tracking-[0.22em] text-cyan-100/80">
+              Live control
+            </p>
+            <strong className="text-sm font-bold text-white">
+              Tình trạng hệ thống
+            </strong>
           </div>
           <IconBox size="sm" tone="primary" className="rounded-[18px]">
             <LayoutDashboard size={16} />
@@ -290,21 +374,40 @@ function DashboardHeroVisual({
         </div>
 
         <div className="grid gap-2">
-          <MiniPulse label="Đơn chờ" value={metrics.pendingOrders.toString()} tone="warning" />
-          <MiniPulse label="Nạp chờ" value={depositCount.toString()} tone="primary" />
-          <MiniPulse label="Đơn hôm nay" value={todayOrdersCount.toString()} tone="success" />
+          <MiniPulse
+            label="Đơn chờ"
+            value={metrics.pendingOrders.toString()}
+            tone="warning"
+          />
+          <MiniPulse
+            label="Nạp chờ"
+            value={depositCount.toString()}
+            tone="primary"
+          />
+          <MiniPulse
+            label="Đơn hôm nay"
+            value={todayOrdersCount.toString()}
+            tone="success"
+          />
         </div>
 
         <div className="gt-card rounded-[18px] p-3">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs font-semibold gt-text-muted">Nhịp giao dịch</span>
-            <span className="text-xs font-semibold text-cyan-100">7 ngày gần nhất</span>
+            <span className="text-xs font-semibold gt-text-muted">
+              Nhịp giao dịch
+            </span>
+            <span className="text-xs font-semibold text-cyan-100">
+              7 ngày gần nhất
+            </span>
           </div>
           <div className="mt-3 flex items-end gap-1.5">
             {bars.map((height, index) => (
               <span
                 key={height}
-                className={classNames('h-20 flex-1 rounded-t-[10px]', index === bars.length - 1 ? 'bg-cyan-400' : 'bg-cyan-400/40')}
+                className={classNames(
+                  "h-20 flex-1 rounded-t-[10px]",
+                  index === bars.length - 1 ? "bg-cyan-400" : "bg-cyan-400/40",
+                )}
                 style={{ height: `${height}px` }}
               />
             ))}
@@ -321,20 +424,25 @@ function MiniPulse({
   value,
 }: {
   label: string;
-  tone: 'primary' | 'success' | 'warning';
+  tone: "primary" | "success" | "warning";
   value: string;
 }) {
   const toneClass =
-    tone === 'success'
-      ? 'border-emerald-400/15 bg-emerald-500/10 text-emerald-100'
-      : tone === 'warning'
-        ? 'border-amber-400/15 bg-amber-500/10 text-amber-100'
-        : 'border-cyan-400/15 bg-cyan-500/10 text-cyan-100';
+    tone === "success"
+      ? "border-emerald-400/15 bg-emerald-500/10 text-emerald-100"
+      : tone === "warning"
+        ? "border-amber-400/15 bg-amber-500/10 text-amber-100"
+        : "border-cyan-400/15 bg-cyan-500/10 text-cyan-100";
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-[18px] border border-white/[0.06] bg-[var(--gt-card)] px-3 py-3">
       <div className="flex items-center gap-3">
-        <span className={classNames('inline-flex size-9 items-center justify-center rounded-[18px] border text-sm font-black', toneClass)}>
+        <span
+          className={classNames(
+            "inline-flex size-9 items-center justify-center rounded-[18px] border text-sm font-black",
+            toneClass,
+          )}
+        >
           {label.slice(0, 1)}
         </span>
         <div className="grid gap-0.5">
@@ -342,7 +450,9 @@ function MiniPulse({
           <span className="text-xs gt-text-muted">Theo dõi trực tiếp</span>
         </div>
       </div>
-      <strong className="text-lg font-black tracking-[-0.04em] gt-text">{value}</strong>
+      <strong className="text-lg font-black tracking-[-0.04em] gt-text">
+        {value}
+      </strong>
     </div>
   );
 }
@@ -354,20 +464,36 @@ function QueueItemCard({
   item: QueueItem;
   onOpen: () => void;
 }) {
-  if (item.kind === 'order') {
+  if (item.kind === "order") {
     return (
       <MediaListItem
         onClick={onOpen}
-        leading={item.imageUrl ? <ImageBox src={item.imageUrl} alt={item.imageAlt} className="object-cover transition-transform duration-300 group-hover:scale-[1.04]" /> : null}
+        leading={
+          item.imageUrl ? (
+            <ImageBox
+              src={item.imageUrl}
+              alt={item.imageAlt}
+              className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+            />
+          ) : null
+        }
         title={item.title}
         subtitle={item.description}
         meta={formatDate(item.createdAt)}
         titleAccessory={
-          <Badge tone={item.statusTone} icon={item.statusIcon} className="rounded-full">
+          <Badge
+            tone={item.statusTone}
+            icon={item.statusIcon}
+            className="rounded-full"
+          >
             {item.statusLabel}
           </Badge>
         }
-        trailing={<strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">{item.amountLabel}</strong>}
+        trailing={
+          <strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">
+            {item.amountLabel}
+          </strong>
+        }
       />
     );
   }
@@ -375,16 +501,28 @@ function QueueItemCard({
   return (
     <MediaListItem
       onClick={onOpen}
-      leading={<IconBox size="md" tone="neutral"><WalletCards size={18} /></IconBox>}
+      leading={
+        <IconBox size="md" tone="neutral">
+          <WalletCards size={18} />
+        </IconBox>
+      }
       title={item.title}
       subtitle={item.description}
       meta={formatDate(item.createdAt)}
       titleAccessory={
-        <Badge tone={item.statusTone} icon={item.statusIcon} className="rounded-full">
+        <Badge
+          tone={item.statusTone}
+          icon={item.statusIcon}
+          className="rounded-full"
+        >
           {item.statusLabel}
         </Badge>
       }
-      trailing={<strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">{item.amountLabel}</strong>}
+      trailing={
+        <strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">
+          {item.amountLabel}
+        </strong>
+      }
     />
   );
 }

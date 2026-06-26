@@ -1,6 +1,9 @@
-import type { WalletDepositRequest } from '@/features/deposits/types';
-
-export type WalletTransactionType = 1 | 2 | 3 | 4;
+export enum WalletTransactionType {
+  Deposit = 1,
+  Withdraw = 2,
+  PurchaseOrder = 3,
+  Refund = 4,
+}
 
 export type WalletTransaction = {
   id: number;
@@ -10,10 +13,4 @@ export type WalletTransaction = {
   type: WalletTransactionType;
   referenceId: string | null;
   createdAt: string;
-};
-
-export type WalletOverview = {
-  balance: number;
-  transactions: WalletTransaction[];
-  depositRequests: WalletDepositRequest[];
 };

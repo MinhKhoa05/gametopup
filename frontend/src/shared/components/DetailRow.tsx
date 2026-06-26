@@ -11,7 +11,7 @@ export function DetailRow({ label, children, className }: DetailRowProps) {
   return (
     <div
       className={classNames(
-        'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b gt-border py-3.5 last:border-b-0',
+        'grid grid-cols-[140px_minmax(0,1fr)] items-center gap-4 border-b gt-border py-3.5 last:border-b-0',
         className,
       )}
     >

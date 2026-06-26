@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getDepositRequestStatus } from '@/features/deposits/lib/deposit-request-status';
 import type { AdminDepositRequest } from '@/features/deposits/types';
 
 type DepositRequestFilter = 'active' | 'all' | 'pending' | 'user-confirmed' | 'approved' | 'rejected';
@@ -47,7 +46,6 @@ export function useAdminDepositRequestsPageState({
         String(request.userId),
         String(request.amount),
         request.code,
-        getDepositRequestStatus(request.status).label,
       ]
         .join(' ')
         .toLowerCase()
@@ -96,8 +94,6 @@ export function useAdminDepositRequestsPageState({
     clearSelection();
   }
 
-  const selectedStatus = selectedRequest ? getDepositRequestStatus(selectedRequest.status) : null;
-
   return {
     filters: DEPOSIT_REQUEST_FILTERS,
     clearSelection,
@@ -108,7 +104,6 @@ export function useAdminDepositRequestsPageState({
     reviewNote,
     reviewRequest,
     selectedRequest,
-    selectedStatus,
     selectRequest,
     setFilter,
     setQuery,

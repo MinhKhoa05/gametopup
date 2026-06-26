@@ -15,11 +15,11 @@
 
 GameTopUp is a web-based operations system for intermediary game top-up services.
 
-In this business model, service owners purchase game packages or credits at discounted rates and resell them to players at lower prices than the official store while keeping the margin. Players receive a better deal, while the service earns from the price difference.
+In this business model, service owners offer game top-up packages at prices lower than the official in-game store. Players receive the same in-game value while paying less, and the service earns from the margin between sourcing and selling costs.
 
-A typical workflow begins when a customer requests a top-up package and transfers payment. The service owner then verifies the transaction and fulfills the order in-game. Many small services still manage this process manually through chat platforms, making deposits, orders, and fulfillment increasingly difficult to track as order volume grows.
+A typical workflow begins when a customer places a top-up request and completes payment. The service owner then verifies the payment, processes the order, and delivers the requested package in-game. Many small services still manage these workflows manually through chat platforms, making deposits, orders, package availability, service capacity, and fulfillment increasingly difficult to track as order volume grows.
 
-GameTopUp centralizes these workflows into a single system, helping service owners manage deposits, orders, package availability, and fulfillment more reliably.
+GameTopUp centralizes these workflows into a single system, helping service owners manage deposits, orders, package availability, available slots, and fulfillment more reliably.
 
 ## Tech Stack
 
@@ -58,19 +58,19 @@ dotnet test backend/GameTopUp.slnx
 ### Administrator
 
 * Review, approve, or reject deposit requests
-* Manage games and package inventory
-* Process paid orders
-* Control package availability
+* Manage games and top-up packages
+* Control package availability and available slots
+* Process customer orders
 * Monitor operational records and transaction history
 
 ## Technical Highlights
 
 * **Wallet-based payment flow** - customers deposit funds into an internal wallet before paying for orders.
 * **Order lifecycle management** - orders move through defined states so the workflow stays predictable and traceable.
-* **Inventory controls** - package availability is tracked to help prevent overselling and keep fulfillment consistent.
+* **Package availability controls** - available slots are tracked to help prevent overselling and keep fulfillment consistent.
 * **Concurrency control** - transactional workflows help maintain correct wallet balances and package availability under concurrent requests.
 * **Idempotent operations** - repeated requests do not produce duplicate business actions.
-* **Audit-friendly history** - deposits, payments, refunds, and balance changes are retained for operational review.
+* **Audit-friendly history** - deposits, payments, refunds, order changes, and balance changes are retained for operational review.
 * **Responsive interface** - the frontend is designed to work across mobile, tablet, laptop, and desktop layouts.
 * **Server-state caching** - TanStack Query helps reduce unnecessary requests and keeps data synchronized across screens.
 
@@ -123,3 +123,10 @@ Available services:
 * Frontend: http://localhost:3000
 * Backend API: http://localhost:5000
 * Swagger UI: http://localhost:5000/swagger
+
+## Documentation
+
+Additional documentation:
+
+- Backend Architecture: `backend/README.md`
+- Frontend Architecture: `frontend/README.md` (future)

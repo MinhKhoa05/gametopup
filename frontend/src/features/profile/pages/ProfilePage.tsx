@@ -4,11 +4,10 @@ import { LockKeyhole, PencilLine, ShieldCheck, UserRound } from "lucide-react";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import type { User } from "@/features/auth/types";
 import { useUpdateMyProfileMutation } from "@/features/profile/server";
-import { ChangePasswordDialog } from "@/features/profile/components/ChangePasswordDialog";
+import { ChangePasswordDialog } from "@/features/auth/components/ChangePasswordDialog";
 import { formatDate } from "@/shared/lib/format";
 
 import {
-  Button,
   Container,
   Field,
   FormActions,
