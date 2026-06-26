@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { HEADER_ADMIN_MENU_ITEMS } from '@/app/config';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { useAdminPage } from '@/features/admin/hooks';
+import { UserRole } from '@/features/auth/types';
 import {
   AdminAccessDenied,
   AdminDesktopLayout,
@@ -23,7 +24,7 @@ export function AdminLayoutPage() {
 
   const accountMenuItems = HEADER_ADMIN_MENU_ITEMS;
 
-  if (!auth.user || String(auth.user.role ?? '').trim().toLowerCase() !== 'admin') {
+  if (!auth.user || auth.user.role !== UserRole.Admin) {
     return <AdminAccessDenied onLogin={() => navigate(routes.login())} />;
   }
 
