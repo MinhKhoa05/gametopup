@@ -125,7 +125,7 @@ public sealed class GamePackageService
             request.ApplyTo(package);
             ApplyImage(package, uploadedImage);
 
-            package.UpdatedAt = DateTime.UtcNow;
+            package.UpdatedAt = DateTimeOffset.UtcNow;
 
             await _packageRepository.UpdateAsync(package);
 

@@ -12,6 +12,6 @@ public sealed class OrderResponse
     public decimal PackagePrice { get; set; }
     public string PackageImageUrl { get; set; } = string.Empty;
     public OrderStatus Status { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }

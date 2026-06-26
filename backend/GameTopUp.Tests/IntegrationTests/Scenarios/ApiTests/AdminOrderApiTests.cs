@@ -68,7 +68,7 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
         {
             o.Status = OrderStatus.Processing;
             o.AssignedTo = admin.Id;
-            o.AssignedAt = DateTime.UtcNow;
+            o.AssignedAt = DateTimeOffset.UtcNow;
         });
 
         var orderId = orderScenario.Order.Id;
@@ -121,7 +121,7 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
         {
             o.Status = OrderStatus.Processing;
             o.AssignedTo = admin.Id;
-            o.AssignedAt = DateTime.UtcNow;
+            o.AssignedAt = DateTimeOffset.UtcNow;
         });
 
         var orderId = orderScenario.Order.Id;
@@ -150,7 +150,7 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
         {
             o.Status = OrderStatus.Processing;
             o.AssignedTo = assignedAdmin.Id;
-            o.AssignedAt = DateTime.UtcNow;
+            o.AssignedAt = DateTimeOffset.UtcNow;
         });
 
         var userId = orderScenario.User.Id;

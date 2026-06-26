@@ -25,7 +25,7 @@ public sealed class WalletDepositUseCase
     {
         await _transaction.ExecuteAsync(async () =>
         {
-            var now = DateTime.UtcNow;
+            var now = DateTimeOffset.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);
 
             if (request.Status == WalletDepositStatus.UserConfirmed)
@@ -42,7 +42,7 @@ public sealed class WalletDepositUseCase
     {
         await _transaction.ExecuteAsync(async () =>
         {
-            var now = DateTime.UtcNow;
+            var now = DateTimeOffset.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);
 
             if (request.Status == WalletDepositStatus.Approved)
@@ -66,7 +66,7 @@ public sealed class WalletDepositUseCase
     {
         await _transaction.ExecuteAsync(async () =>
         {
-            var now = DateTime.UtcNow;
+            var now = DateTimeOffset.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);
 
             if (request.Status == WalletDepositStatus.Rejected)

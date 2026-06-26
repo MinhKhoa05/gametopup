@@ -11,5 +11,5 @@ public sealed class OrderHistoryResponse
     public string? Note { get; set; }
     public long ActionBy { get; set; }
     public bool IsAdmin { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }

@@ -155,8 +155,8 @@ public class AuthUseCaseTests
                 PasswordHash = passwordHash,
                 Role = UserRole.Member,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow.AddDays(-1),
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+                UpdatedAt = DateTimeOffset.UtcNow
             });
         _refreshTokenRepository.Setup(repo => repo.CreateAsync(It.IsAny<RefreshToken>()))
             .ReturnsAsync(12)
@@ -217,8 +217,8 @@ public class AuthUseCaseTests
                 Id = 5,
                 UserId = 7,
                 TokenHash = hash,
-                CreatedAt = DateTime.UtcNow.AddDays(-1),
-                ExpiresAt = DateTime.UtcNow.AddDays(6)
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+                ExpiresAt = DateTimeOffset.UtcNow.AddDays(6)
             });
         _refreshTokenRepository.Setup(repo => repo.RevokeAsync(hash))
             .ReturnsAsync(true);
@@ -255,8 +255,8 @@ public class AuthUseCaseTests
                 Id = 5,
                 UserId = 7,
                 TokenHash = hash,
-                CreatedAt = DateTime.UtcNow.AddDays(-1),
-                ExpiresAt = DateTime.UtcNow.AddDays(6)
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+                ExpiresAt = DateTimeOffset.UtcNow.AddDays(6)
             });
         _refreshTokenRepository.Setup(repo => repo.RevokeAsync(hash))
             .ReturnsAsync(true);

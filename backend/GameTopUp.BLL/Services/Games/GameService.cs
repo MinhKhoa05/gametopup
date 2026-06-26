@@ -63,7 +63,7 @@ public sealed class GameService
                 game.ApplyImage(uploadedImage.Url, uploadedImage.RelativePath);
             }
 
-            game.UpdatedAt = DateTime.UtcNow;
+            game.UpdatedAt = DateTimeOffset.UtcNow;
             await _repository.UpdateAsync(game);
 
             if (uploadedImage is not null)

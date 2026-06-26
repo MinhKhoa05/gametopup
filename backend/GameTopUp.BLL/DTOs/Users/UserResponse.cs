@@ -9,6 +9,6 @@ public sealed class UserResponse
     public string Email { get; set; } = string.Empty;
     public UserRole Role { get; set; }
     public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }

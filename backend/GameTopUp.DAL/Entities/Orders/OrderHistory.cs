@@ -15,7 +15,7 @@ public class OrderHistory
     public string? Note { get; set; }
     public long ActionBy { get; set; }
     public bool IsAdmin { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     public static OrderHistory Create(
         long orderId,
@@ -33,7 +33,7 @@ public class OrderHistory
             Note = note,
             ActionBy = actionBy,
             IsAdmin = isAdmin,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
     }
 }

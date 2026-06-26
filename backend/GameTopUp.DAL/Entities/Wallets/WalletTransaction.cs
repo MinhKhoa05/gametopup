@@ -21,7 +21,7 @@ public class WalletTransaction
 
     public string? ReferenceId { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     public static WalletTransaction Create(
         long userId,
@@ -39,7 +39,7 @@ public class WalletTransaction
             BalanceAfter = balanceAfter,
             Type = type,
             ReferenceId = referenceId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
     }
 }

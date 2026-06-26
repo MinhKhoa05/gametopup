@@ -18,8 +18,8 @@ public class GamePackage
     public decimal ImportPrice { get; set; }
     public int AvailableSlots { get; set; }
     public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
     public static GamePackage Create(
         string name,
@@ -29,7 +29,7 @@ public class GamePackage
         decimal importPrice,
         int availableSlots = 0)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
 
         return new GamePackage
         {

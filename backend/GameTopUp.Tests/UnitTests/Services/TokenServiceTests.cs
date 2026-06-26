@@ -66,8 +66,8 @@ public class TokenServiceTests
 
         jwt.Issuer.Should().Be("GameTopUp.Tests");
         jwt.Audiences.Should().Contain("GameTopUp.Tests");
-        jwt.ValidTo.Should().BeAfter(DateTime.UtcNow.AddMinutes(55));
-        jwt.ValidTo.Should().BeBefore(DateTime.UtcNow.AddMinutes(61));
+        jwt.ValidTo.Should().BeAfter(DateTimeOffset.UtcNow.AddMinutes(55).UtcDateTime);
+        jwt.ValidTo.Should().BeBefore(DateTimeOffset.UtcNow.AddMinutes(61).UtcDateTime);
     }
 
     private static TokenPayload Payload() => TokenPayload.Create(new UserContext

@@ -81,7 +81,7 @@ public sealed class LocalImageStorageService : IImageStorageService
     {
         var safeFolder = SanitizeSegment(folder);
         var extension = ResolveExtension(contentType);
-        var datePath = DateTime.UtcNow.ToString("yyyy/MM");
+        var datePath = DateTimeOffset.UtcNow.ToString("yyyy/MM");
         var fileName = $"{Guid.NewGuid():N}{extension}";
         return Path.Combine("uploads", safeFolder, datePath, fileName);
     }

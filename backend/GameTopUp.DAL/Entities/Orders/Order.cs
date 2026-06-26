@@ -16,10 +16,10 @@ public class Order
     public decimal PackagePrice { get; set; }
     public decimal PackageCost { get; set; }
     public long? AssignedTo { get; set; }
-    public DateTime? AssignedAt { get; set; }
+    public DateTimeOffset? AssignedAt { get; set; }
     public OrderStatus Status { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
     public static Order Create(
         long userId,
@@ -29,7 +29,7 @@ public class Order
         string gameAccountInfo,
         OrderStatus status = OrderStatus.Pending)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
 
         return new Order
         {
@@ -47,7 +47,7 @@ public class Order
 
     public void UpdateStatus(OrderStatus newStatus, long? assignedTo = null)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
 
         Status = newStatus;
         UpdatedAt = now;

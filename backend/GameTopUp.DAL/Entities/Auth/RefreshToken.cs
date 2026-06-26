@@ -13,15 +13,15 @@ public class RefreshToken
 
     public string TokenHash { get; set; } = string.Empty;
 
-    public DateTime ExpiresAt { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
-    public DateTime? RevokedAt { get; set; }
+    public DateTimeOffset? RevokedAt { get; set; }
 
     public static RefreshToken Create(long userId, string tokenHash, TimeSpan lifetime)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
 
         return new RefreshToken
         {

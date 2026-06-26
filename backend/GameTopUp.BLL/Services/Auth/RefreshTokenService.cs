@@ -24,7 +24,7 @@ public sealed class RefreshTokenService
             ?? throw new UnauthorizedException(ErrorCode.InvalidRefreshToken);
 
         if (refreshToken.RevokedAt is not null ||
-            refreshToken.ExpiresAt <= DateTime.UtcNow)
+            refreshToken.ExpiresAt <= DateTimeOffset.UtcNow)
         {
             throw new UnauthorizedException(ErrorCode.InvalidRefreshToken);            
         }

@@ -10,5 +10,5 @@ public sealed class WalletTransactionResponse
     public decimal BalanceAfter { get; set; }
     public WalletTransactionType Type { get; set; }
     public string? ReferenceId { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }

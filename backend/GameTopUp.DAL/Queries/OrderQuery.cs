@@ -84,6 +84,6 @@ public sealed class OrderQueryRow
     public decimal PackagePrice { get; set; }
     public decimal PackageCost { get; set; }
     public OrderStatus Status { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }

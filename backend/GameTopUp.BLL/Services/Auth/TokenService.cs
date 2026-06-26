@@ -24,7 +24,7 @@ public sealed class TokenService
 
     public string GenerateAccessToken(TokenPayload payload)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
 
         var claims = new List<Claim>
         {
@@ -40,7 +40,7 @@ public sealed class TokenService
             issuer: _jwtSettings.Issuer,
             audience: _jwtSettings.Audience,
             claims: claims,
-            expires: now.AddMinutes(_jwtSettings.ExpireMinutes),
+            expires: now.AddMinutes(_jwtSettings.ExpireMinutes).UtcDateTime,
             signingCredentials: new SigningCredentials(_securityKey, SecurityAlgorithms.HmacSha256));
 
         return _tokenHandler.WriteToken(token);

@@ -14,8 +14,8 @@ public sealed class AdminOrderResponse
     public decimal PackageCost { get; set; }
     public string PackageImageUrl { get; set; } = string.Empty; 
     public long? AssignedTo { get; set; }
-    public DateTime? AssignedAt { get; set; }
+    public DateTimeOffset? AssignedAt { get; set; }
     public OrderStatus Status { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }

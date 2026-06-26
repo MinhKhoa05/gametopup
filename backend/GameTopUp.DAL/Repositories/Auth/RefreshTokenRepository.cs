@@ -25,7 +25,7 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
     {
         var affected = await _database.ExecuteAsync(
             "UPDATE refresh_tokens SET revoked_at = @Now WHERE token_hash = @TokenHash AND revoked_at IS NULL",
-            new { TokenHash = tokenHash, Now = DateTime.UtcNow });
+            new { TokenHash = tokenHash, Now = DateTimeOffset.UtcNow });
 
         return affected > 0;
     }

@@ -34,7 +34,7 @@ public sealed class UserService
         var user = await GetByIdOrThrowAsync(id);
 
         user.DisplayName = InputTextNormalizer.NullIfWhiteSpace(request.DisplayName) ?? string.Empty;
-        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedAt = DateTimeOffset.UtcNow;
         
         await _repository.UpdateAsync(user);
     }

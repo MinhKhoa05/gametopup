@@ -83,7 +83,7 @@ public sealed class WalletDepositService
         return BuildPublicResponse(request);
     }
 
-    public WalletDeposit Confirm(WalletDeposit deposit, UserContext actor, DateTime now)
+    public WalletDeposit Confirm(WalletDeposit deposit, UserContext actor, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(deposit);
         ArgumentNullException.ThrowIfNull(actor);
@@ -102,7 +102,7 @@ public sealed class WalletDepositService
         return deposit;
     }
 
-    public WalletDeposit Approve(WalletDeposit deposit, UserContext admin, DateTime now, string? note = null)
+    public WalletDeposit Approve(WalletDeposit deposit, UserContext admin, DateTimeOffset now, string? note = null)
     {
         ArgumentNullException.ThrowIfNull(deposit);
         ArgumentNullException.ThrowIfNull(admin);
@@ -116,7 +116,7 @@ public sealed class WalletDepositService
         return deposit;
     }
 
-    public WalletDeposit Reject(WalletDeposit deposit, UserContext admin, DateTime now, string? note = null)
+    public WalletDeposit Reject(WalletDeposit deposit, UserContext admin, DateTimeOffset now, string? note = null)
     {
         ArgumentNullException.ThrowIfNull(deposit);
         ArgumentNullException.ThrowIfNull(admin);

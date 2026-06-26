@@ -240,7 +240,7 @@ public class OrderUseCaseTests
         var order = Order.Create(7, 44, 199m, "Diamond 86", "hero-123", OrderStatus.Processing);
         order.Id = 88;
         order.AssignedTo = 3;
-        order.AssignedAt = DateTime.UtcNow.AddMinutes(-5);
+        order.AssignedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
             .ReturnsAsync(new GamePackage
             {

@@ -19,17 +19,17 @@ public class WalletDeposit
 
     public WalletDepositStatus Status { get; set; } = WalletDepositStatus.Pending;
 
-    public DateTime? UserConfirmedAt { get; set; }
+    public DateTimeOffset? UserConfirmedAt { get; set; }
 
     public long? ReviewedBy { get; set; }
 
-    public DateTime? ReviewedAt { get; set; }
+    public DateTimeOffset? ReviewedAt { get; set; }
 
     public string? AdminNote { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
     public static WalletDeposit Create(
         long userId,
@@ -37,7 +37,7 @@ public class WalletDeposit
         string code,
         string transferContent)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
 
         return new WalletDeposit
         {
@@ -51,14 +51,14 @@ public class WalletDeposit
         };
     }
 
-    public void MarkUserConfirmed(DateTime now)
+    public void MarkUserConfirmed(DateTimeOffset now)
     {
         Status = WalletDepositStatus.UserConfirmed;
         UserConfirmedAt = now;
         UpdatedAt = now;
     }
 
-    public void MarkApproved(long reviewedBy, string? note, DateTime now)
+    public void MarkApproved(long reviewedBy, string? note, DateTimeOffset now)
     {
         Status = WalletDepositStatus.Approved;
         ReviewedBy = reviewedBy;
@@ -67,7 +67,7 @@ public class WalletDeposit
         UpdatedAt = now;
     }
 
-    public void MarkRejected(long reviewedBy, string? note, DateTime now)
+    public void MarkRejected(long reviewedBy, string? note, DateTimeOffset now)
     {
         Status = WalletDepositStatus.Rejected;
         ReviewedBy = reviewedBy;

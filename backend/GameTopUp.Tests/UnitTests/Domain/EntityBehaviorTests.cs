@@ -38,7 +38,7 @@ public class EntityBehaviorTests
     public void WalletDeposit_ShouldMoveFromPendingToUserConfirmedThenApproved()
     {
         var request = WalletDeposit.Create(7, 100000m, "GTU7", "NAP GTU7");
-        var confirmedAt = DateTime.UtcNow;
+        var confirmedAt = DateTimeOffset.UtcNow;
         var reviewedAt = confirmedAt.AddMinutes(1);
 
         request.Status.Should().Be(WalletDepositStatus.Pending);
@@ -57,7 +57,7 @@ public class EntityBehaviorTests
     public void WalletDeposit_ShouldMoveFromPendingToRejected()
     {
         var request = WalletDeposit.Create(7, 100000m, "GTU7", "NAP GTU7");
-        var reviewedAt = DateTime.UtcNow;
+        var reviewedAt = DateTimeOffset.UtcNow;
 
         request.MarkRejected(2, "nope", reviewedAt);
 

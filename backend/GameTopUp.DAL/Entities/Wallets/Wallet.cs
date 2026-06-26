@@ -13,13 +13,13 @@ public class Wallet
 
     public decimal Balance { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
     public static Wallet CreateForUser(long userId, decimal initialBalance = 0)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
 
         return new Wallet
         {

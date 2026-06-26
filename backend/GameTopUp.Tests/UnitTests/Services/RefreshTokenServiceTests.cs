@@ -85,16 +85,16 @@ public class RefreshTokenServiceTests
         {
             UserId = 7,
             TokenHash = "HASH",
-            CreatedAt = DateTime.UtcNow.AddDays(-1),
-            ExpiresAt = DateTime.UtcNow.AddDays(6),
-            RevokedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(6),
+            RevokedAt = DateTimeOffset.UtcNow
         },
         new RefreshToken
         {
             UserId = 7,
             TokenHash = "HASH",
-            CreatedAt = DateTime.UtcNow.AddDays(-8),
-            ExpiresAt = DateTime.UtcNow.AddMinutes(-1)
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-8),
+            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(-1)
         }
     };
 
@@ -102,7 +102,7 @@ public class RefreshTokenServiceTests
     {
         UserId = 7,
         TokenHash = "HASH",
-        CreatedAt = DateTime.UtcNow.AddDays(-1),
-        ExpiresAt = DateTime.UtcNow.AddDays(6)
+        CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+        ExpiresAt = DateTimeOffset.UtcNow.AddDays(6)
     };
 }

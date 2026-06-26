@@ -29,5 +29,5 @@ public sealed class WalletRepository : IWalletRepository
     public Task<int> UpdateBalanceAsync(long walletId, decimal newBalance) =>
         _database.ExecuteAsync(
             "UPDATE wallets SET balance = @Balance, updated_at = @UpdatedAt WHERE id = @Id",
-            new { Id = walletId, Balance = newBalance, UpdatedAt = DateTime.UtcNow });
+            new { Id = walletId, Balance = newBalance, UpdatedAt = DateTimeOffset.UtcNow });
 }
