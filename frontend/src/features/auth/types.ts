@@ -20,3 +20,8 @@ export type AuthFormData = {
   email: string;
   password: string;
 };
+
+export type ChangePasswordRequest = {
+  currentPassword: string;
+  newPassword: string;
+}

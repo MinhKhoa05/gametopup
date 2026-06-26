@@ -1,5 +1,5 @@
-import type { InputHTMLAttributes, ReactNode } from 'react';
-import { classNames } from '@/shared/lib/classNames';
+import type { InputHTMLAttributes, ReactNode } from "react";
+import { classNames } from "@/shared/lib/classNames";
 
 type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
@@ -9,23 +9,67 @@ type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
   trailing?: ReactNode;
 };
 
-export const inputClassName =
-  'gt-input h-12 rounded-2xl border gt-border bg-[var(--gt-panel)] px-4 text-base placeholder:text-[var(--gt-text-disabled)] transition-all duration-200 hover:border-cyan/20 hover:bg-[var(--gt-panel-hover)] focus:border-cyan/80 focus:shadow-[0_0_0_2px_rgba(34,211,238,0.075)] disabled:cursor-not-allowed disabled:opacity-70 read-only:cursor-default read-only:opacity-95 [appearance:textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none';
+export const inputClassName = `
+  gt-input
+  h-12
+  px-4
 
-export function Field({ label, className, wrapperClassName, hint, error, trailing, ...props }: FieldProps) {
-  const input = <input className={classNames(inputClassName, trailing ? 'pr-[52px]' : '', className)} {...props} />;
+  text-base
+  text-[var(--gt-text)]
+  placeholder:text-[var(--gt-text-disabled)]
+
+  disabled:cursor-not-allowed
+  disabled:opacity-70
+
+  read-only:cursor-default
+
+  [appearance:textfield]
+  [&::-webkit-inner-spin-button]:m-0
+  [&::-webkit-inner-spin-button]:appearance-none
+  [&::-webkit-outer-spin-button]:m-0
+  [&::-webkit-outer-spin-button]:appearance-none
+`;
+
+export function Field({
+  label,
+  className,
+  wrapperClassName,
+  hint,
+  error,
+  trailing,
+  ...props
+}: FieldProps) {
+  const input = (
+    <div className="gt-input-shell relative">
+      <input
+        className={classNames(
+          inputClassName,
+          trailing ? "pr-[52px]" : undefined,
+          className,
+        )}
+        {...props}
+      />
+
+      {trailing ? (
+        <span className="absolute inset-y-0 right-4 flex items-center">
+          {trailing}
+        </span>
+      ) : null}
+    </div>
+  );
 
   if (!label) {
     return input;
   }
 
   return (
-    <label className={classNames('mb-4 block', wrapperClassName)}>
-      <span className="mb-2 block text-sm font-semibold gt-text-soft">{label}</span>
-      <div className="relative">
-        {input}
-        {trailing ? <span className="absolute inset-y-0 right-3 grid place-items-center">{trailing}</span> : null}
-      </div>
+    <label className={classNames("mb-4 block", wrapperClassName)}>
+      <span className="mb-2 block text-sm font-semibold gt-text-soft">
+        {label}
+      </span>
+
+      {input}
+
       {error ? (
         <span className="mt-2 block text-sm text-rose-200">{error}</span>
       ) : hint ? (

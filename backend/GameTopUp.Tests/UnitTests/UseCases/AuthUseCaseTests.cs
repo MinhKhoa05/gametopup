@@ -273,7 +273,7 @@ public class AuthUseCaseTests
     [Fact]
     public async Task ChangePasswordAsync_ShouldThrow_WhenNewPasswordIsWeak_AndSkipPasswordUpdate()
     {
-        var act = async () => await _useCase.ChangePasswordAsync(new UserContext { UserId = 7 }, new PasswordChangeRequest
+        var act = async () => await _useCase.ChangePasswordAsync(new UserContext { UserId = 7 }, new ChangePasswordRequest
         {
             CurrentPassword = "Password123!",
             NewPassword = "weakpass"
@@ -297,7 +297,7 @@ public class AuthUseCaseTests
                 IsActive = true
             });
 
-        var act = async () => await _useCase.ChangePasswordAsync(new UserContext { UserId = 7 }, new PasswordChangeRequest
+        var act = async () => await _useCase.ChangePasswordAsync(new UserContext { UserId = 7 }, new ChangePasswordRequest
         {
             CurrentPassword = "WrongPass123!",
             NewPassword = "NewPass123!"
@@ -324,7 +324,7 @@ public class AuthUseCaseTests
             .ReturnsAsync(1)
             .Callback<long, string>((_, hash) => persistedHash = hash);
 
-        await _useCase.ChangePasswordAsync(new UserContext { UserId = 7 }, new PasswordChangeRequest
+        await _useCase.ChangePasswordAsync(new UserContext { UserId = 7 }, new ChangePasswordRequest
         {
             CurrentPassword = "Password123!",
             NewPassword = "NewPass123!"

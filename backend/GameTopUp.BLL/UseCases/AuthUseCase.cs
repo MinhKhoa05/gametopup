@@ -114,7 +114,7 @@ public sealed class AuthUseCase
         }
     }
 
-    public async Task ChangePasswordAsync(UserContext context, PasswordChangeRequest request)
+    public async Task ChangePasswordAsync(UserContext context, ChangePasswordRequest request)
     {
         _passwordService.Validate(request.NewPassword);
 

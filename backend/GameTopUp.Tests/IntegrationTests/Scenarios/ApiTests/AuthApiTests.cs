@@ -124,7 +124,7 @@ public sealed class AuthApiTests : BaseIntegrationTest
         using var client = CreateHeaderAuthenticatedClient(session.User);
 
         var response = await client.PutJsonAsync("/api/auth/password",
-            new PasswordChangeRequest
+            new ChangePasswordRequest
             {
                 CurrentPassword = TestDatabaseExtensions.DefaultUserPassword,
                 NewPassword = newPassword
@@ -144,7 +144,7 @@ public sealed class AuthApiTests : BaseIntegrationTest
     public async Task ProtectedEndpoints_ShouldReturnUnauthorized_WhenAnonymous()
     {
         var changePasswordResponse = await Client.PutJsonAsync("/api/auth/password",
-            new PasswordChangeRequest
+            new ChangePasswordRequest
             {
                 CurrentPassword = TestDatabaseExtensions.DefaultUserPassword,
                 NewPassword = "NewPassword123!"

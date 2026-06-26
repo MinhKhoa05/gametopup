@@ -38,7 +38,7 @@ public sealed class AuthController : ApiControllerBase
 
     [Authorize]
     [HttpPut("password")]
-    public async Task<IActionResult> ChangePassword(PasswordChangeRequest request)
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
     {
         await _auth.ChangePasswordAsync(CurrentUser, request);
         return ApiOk();

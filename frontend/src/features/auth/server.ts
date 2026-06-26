@@ -1,12 +1,17 @@
-import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import axios from 'axios';
-import { toast } from 'sonner';
-import { getMe, login, logout, register } from './api';
-import type { User } from './types';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
+import axios from "axios";
+import { toast } from "sonner";
+import { getMe, login, logout, register, changePassword } from "./api";
+import type { User, ChangePasswordRequest } from "./types";
 
-export const AUTH_USER_QUERY_KEY = ['auth', 'me'] as const;
-const PRIVATE_QUERY_PREFIXES = new Set(['auth', 'wallet', 'orders', 'admin']);
-const REMEMBERED_EMAIL_KEY = 'gametopup:last-auth-email';
+export const AUTH_USER_QUERY_KEY = ["auth", "me"] as const;
+const PRIVATE_QUERY_PREFIXES = new Set(["auth", "wallet", "orders", "admin"]);
+const REMEMBERED_EMAIL_KEY = "gametopup:last-auth-email";
 
 export function clearAuthSessionCache(queryClient: QueryClient) {
   queryClient.setQueryData(AUTH_USER_QUERY_KEY, null);
@@ -24,7 +29,10 @@ export async function bootstrapAuthSession(queryClient: QueryClient) {
     queryClient.setQueryData(AUTH_USER_QUERY_KEY, user);
     return user;
   } catch (error) {
-    if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+    if (
+      axios.isAxiosError(error) &&
+      (error.response?.status === 401 || error.response?.status === 403)
+    ) {
       clearAuthSessionCache(queryClient);
     }
 
@@ -33,7 +41,7 @@ export async function bootstrapAuthSession(queryClient: QueryClient) {
 }
 
 export function rememberAuthEmail(email: string) {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 
@@ -44,17 +52,19 @@ export function rememberAuthEmail(email: string) {
 }
 
 export function getRememberedAuthEmail() {
-  if (typeof window === 'undefined') {
-    return '';
+  if (typeof window === "undefined") {
+    return "";
   }
 
-  return window.localStorage.getItem(REMEMBERED_EMAIL_KEY) ?? '';
+  return window.localStorage.getItem(REMEMBERED_EMAIL_KEY) ?? "";
 }
 
 function isPrivateQueryKey(queryKey: readonly unknown[]) {
   const [firstSegment] = queryKey;
 
-  return typeof firstSegment === 'string' && PRIVATE_QUERY_PREFIXES.has(firstSegment);
+  return (
+    typeof firstSegment === "string" && PRIVATE_QUERY_PREFIXES.has(firstSegment)
+  );
 }
 
 export function useAuthUserQuery() {
@@ -76,7 +86,7 @@ export function useLoginMutation() {
     onSuccess(user, variables) {
       rememberAuthEmail(variables.email);
       queryClient.setQueryData<User>(AUTH_USER_QUERY_KEY, user);
-      toast.success('Đăng nhập thành công.');
+      toast.success("Đăng nhập thành công.");
     },
   });
 }
@@ -85,7 +95,16 @@ export function useRegisterMutation() {
   return useMutation({
     mutationFn: register,
     onSuccess() {
-      toast.success('Đăng ký thành công.');
+      toast.success("Đăng ký thành công.");
+    },
+  });
+}
+
+export function useChangePasswordMutation() {
+  return useMutation({
+    mutationFn: changePassword,
+    onSuccess() {
+      toast.success("Đổi mật khẩu thành công");
     },
   });
 }
@@ -96,14 +115,16 @@ export function useLogoutMutation() {
   return useMutation({
     mutationFn: logout,
     onSuccess() {
-      const currentUser = queryClient.getQueryData<User | null>(AUTH_USER_QUERY_KEY);
+      const currentUser = queryClient.getQueryData<User | null>(
+        AUTH_USER_QUERY_KEY,
+      );
       if (currentUser?.email) {
         rememberAuthEmail(currentUser.email);
       }
 
       clearAuthSessionCache(queryClient);
 
-      toast.success('Đăng xuất thành công.');
+      toast.success("Đăng xuất thành công.");
     },
   });
 }

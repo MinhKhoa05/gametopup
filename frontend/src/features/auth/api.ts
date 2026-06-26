@@ -1,6 +1,6 @@
 import { api } from '@/shared/api/client';
 import type { ApiResponse } from '@/shared/types/api';
-import type { AuthFormData, User } from './types';
+import type { AuthFormData, User, ChangePasswordRequest } from './types';
 
 type AuthResponse = {
   user: User;
@@ -18,6 +18,10 @@ export async function login(payload: Pick<AuthFormData, 'email' | 'password'>) {
 
 export async function register(payload: AuthFormData) {
   await api.post<ApiResponse<void>>('/api/auth/register', payload);
+}
+
+export async function changePassword(payload: ChangePasswordRequest) {
+  await api.put<ApiResponse<void>>('/api/auth/password', payload);
 }
 
 export async function logout() {
