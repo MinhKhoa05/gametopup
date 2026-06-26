@@ -21,7 +21,7 @@ import { buildQueueItems, buildRecentUsers, buildWatchItems, countOrdersToday, t
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, IconBox, ImageBox, MediaListItem, PageHero, PanelShell, SearchBar, SectionHeading, StatCard } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
-import { formatUserRoleLabel } from '@/features/auth/userRole';
+import { UserRole } from '@/features/auth/types';
 
 type AdminCatalogMetrics = {
   activeGames: number;
@@ -226,7 +226,7 @@ export function DashboardPanel({
             <div className="grid gap-3 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
               {recentUsers.length ? (
                 recentUsers.map((user) => {
-                  const roleLabel = formatUserRoleLabel(user.role);
+                  const roleLabel = user.role?.toString();
 
                   return (
                     <MediaListItem

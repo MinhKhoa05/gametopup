@@ -1,9 +1,8 @@
 import { CheckCircle2, Save, UserCheck2, UserRound, X } from 'lucide-react';
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
-import type { User } from '@/features/auth/types';
+import { User, UserRole } from '@/features/auth/types';
 import { Badge, EmptyState, Field, FormActions, MediaListItem, PanelShell, SearchBar, SectionHeading, ToggleField } from '@/shared/components';
 import { formatDate } from '@/shared/lib/format';
-import { formatUserRoleLabel, isAdminUserRole, type UserRoleValue } from '@/features/auth/userRole';
 import { AdminListSkeleton } from '@/features/admin/components/AdminShared';
 
 type UsersAdminPanelState = {
@@ -13,7 +12,7 @@ type UsersAdminPanelState = {
     displayName: string;
     email: string;
     isActive: boolean;
-    role: UserRoleValue;
+    role: UserRole;
   };
   query: string;
   remove: (user: User, currentUserId?: number) => Promise<void>;
@@ -23,7 +22,7 @@ type UsersAdminPanelState = {
       displayName: string;
       email: string;
       isActive: boolean;
-      role: UserRoleValue;
+      role: UserRole;
     }>
   >;
   setQuery: Dispatch<SetStateAction<string>>;
@@ -62,8 +61,8 @@ export function UsersAdminPanel({
             <div className="grid gap-2.5">
               {state.filteredUsers.map((user) => {
                 const isSelf = user.id === currentUser?.id;
-                const userRoleLabel = formatUserRoleLabel(user.role);
-                const isAdminRole = isAdminUserRole(user.role);
+                const userRoleLabel = user.role?.toString();
+                const isAdminRole = user.role === UserRole.Admin;
 
                 return (
                   <MediaListItem
@@ -106,7 +105,7 @@ export function UsersAdminPanel({
                 <select
                   className="min-h-12 w-full rounded-[16px] border border-white/[0.08] bg-[rgba(7,16,31,0.72)] px-4 text-white outline-none transition-all duration-200 hover:border-cyan/25 focus:border-cyan focus:shadow-[0_0_0_3px_rgba(34,211,238,0.1)]"
                   value={state.form.role}
-                  onChange={(event) => state.setForm({ ...state.form, role: event.target.value as UserRoleValue })}
+                  onChange={(event) => state.setForm({ ...state.form, role: Number(event.target.value) as UserRole })}
                 >
                   <option value="0">Member</option>
                   <option value="1">Admin</option>

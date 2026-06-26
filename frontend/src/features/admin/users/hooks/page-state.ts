@@ -1,6 +1,6 @@
 import { FormEvent, useMemo, useState } from 'react';
 import type { User } from '@/features/auth/types';
-import { formatUserRoleLabel, normalizeUserRoleValue, type UserRoleValue } from '@/features/auth/userRole';
+import { UserRole } from '@/features/auth/types';
 
 export function useAdminUsersPageState({
   onDeleteUser,
@@ -17,7 +17,7 @@ export function useAdminUsersPageState({
     displayName: '',
     email: '',
     isActive: true,
-    role: '0' as UserRoleValue,
+    role: UserRole.Member,
   });
 
   const filteredUsers = useMemo(() => {
@@ -25,7 +25,7 @@ export function useAdminUsersPageState({
     if (!normalizedQuery) return users;
 
     return users.filter((user) =>
-      [String(user.id), user.displayName ?? '', user.email, formatUserRoleLabel(user.role)]
+      [String(user.id), user.displayName ?? '', user.email, user.role?.toString()]
         .join(' ')
         .toLowerCase()
         .includes(normalizedQuery),
@@ -38,7 +38,7 @@ export function useAdminUsersPageState({
       displayName: user.displayName ?? '',
       email: user.email,
       isActive: user.isActive !== false,
-      role: normalizeUserRoleValue(user.role) as UserRoleValue,
+      role: user.role ?? UserRole.Member,
     });
   }
 
@@ -48,7 +48,7 @@ export function useAdminUsersPageState({
       displayName: '',
       email: '',
       isActive: true,
-      role: '0',
+      role: UserRole.Member,
     });
   }
 

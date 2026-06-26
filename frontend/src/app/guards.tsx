@@ -32,13 +32,13 @@ export function RequireAuth({ children }: GuardProps) {
 }
 
 export function RequireAdmin({ children }: GuardProps) {
-  const { user, isChecking } = useAuthSession();
+  const { userRole, isChecking } = useAuthSession();
 
   if (isChecking) {
     return <GuardLoadingState />;
   }
 
-  if (user?.role !== UserRole.Admin) {
+  if (userRole !== UserRole.Admin) {
     return <Navigate to={ROUTE_PATHS.home} replace />;
   }
 

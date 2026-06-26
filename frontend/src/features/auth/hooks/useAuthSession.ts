@@ -8,7 +8,7 @@ import {
   useLogoutMutation,
   useRegisterMutation,
 } from "../server";
-import type { AuthFormData } from "../types";
+import type { AuthFormData, UserRole } from "../types";
 
 export type AuthMode = "login" | "register";
 
@@ -54,6 +54,7 @@ export function useAuthSession() {
 
   return {
     user,
+    userRole: user?.role as UserRole | undefined,
     userDisplayName,
 
     isAuthenticated,
