@@ -28,13 +28,25 @@ export function HomeUserPage() {
   const navigate = useNavigate();
   const auth = useAuthSession();
 
-  const { data: games = [], isLoading: gamesLoading } = useGamesQuery();
-  const { data: walletBalance, isLoading: walletLoading } =
-    useWalletBalanceQuery();
-  const { data: walletTransactions = [], isLoading: walletTransactionsLoading } =
-    useWalletTransactionsQuery(auth.isAuthenticated);
-  const { data: recentOrders = [], isLoading: ordersLoading } =
-    useRecentOrders();
+  const gamesQuery = useGamesQuery();
+  const walletQuery = useWalletBalanceQuery();
+  const walletTransactionsQuery = useWalletTransactionsQuery(
+    auth.isAuthenticated,
+  );
+  const recentOrdersQuery = useRecentOrders();
+
+  const games = gamesQuery.data ?? [];
+  const walletBalance = walletQuery.data ?? 0;
+  const walletTransactions = walletTransactionsQuery.data ?? [];
+  const recentOrders = recentOrdersQuery.data ?? [];
+
+  const gamesLoading = gamesQuery.isPending && gamesQuery.data === undefined;
+  const walletLoading = walletQuery.isPending && walletQuery.data === undefined;
+  const walletTransactionsLoading =
+    walletTransactionsQuery.isPending &&
+    walletTransactionsQuery.data === undefined;
+  const ordersLoading =
+    recentOrdersQuery.isPending && recentOrdersQuery.data === undefined;
 
   const featuredGames = games.slice(0, 15);
 
@@ -74,7 +86,7 @@ export function HomeUserPage() {
                   <p className="text-sm gt-text-muted">Số dư ví</p>
 
                   <h2 className="text-[2.5rem] font-black leading-none gt-text gt-tabular">
-                    {walletLoading ? "..." : formatCurrency(walletBalance ?? 0)}
+                    {walletLoading ? "..." : formatCurrency(walletBalance)}
                   </h2>
 
                   <p className="text-sm gt-text-muted">

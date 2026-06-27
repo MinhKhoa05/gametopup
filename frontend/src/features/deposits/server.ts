@@ -11,6 +11,9 @@ import {
   getMyDepositRequest,
 } from "./api";
 
+const DEPOSIT_REQUESTS_STALE_TIME = 1000 * 30;
+const DEPOSIT_REQUESTS_GC_TIME = 1000 * 60 * 5;
+
 export const depositKeys = {
   all: ["deposits"] as const,
   list: ["deposits", "list"] as const,
@@ -21,6 +24,10 @@ export function useDepositRequestsQuery(enabled = true) {
     queryKey: depositKeys.list,
     queryFn: getMyDepositRequest,
     enabled,
+    staleTime: DEPOSIT_REQUESTS_STALE_TIME,
+    gcTime: DEPOSIT_REQUESTS_GC_TIME,
+    refetchOnWindowFocus: false,
+    meta: { persist: true },
   });
 }
 

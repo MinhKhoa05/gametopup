@@ -2,7 +2,8 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getGamePackagesByGame } from './api';
 import type { GamePackage } from '@/features/games/contracts';
 
-const GAME_PACKAGES_STALE_TIME = 1000 * 60 * 10;
+const GAME_PACKAGES_STALE_TIME = 1000 * 60 * 60;
+const GAME_PACKAGES_GC_TIME = 1000 * 60 * 60;
 
 export const packagesKeys = {
   all: ['packages'] as const,
@@ -21,6 +22,8 @@ export function useGamePackagesQuery<TData = GamePackage[]>(
     enabled: typeof gameId === 'number',
     placeholderData: keepPreviousData,
     staleTime: GAME_PACKAGES_STALE_TIME,
+    gcTime: GAME_PACKAGES_GC_TIME,
+    refetchOnWindowFocus: false,
     meta: { persist: true },
     select: options?.select,
   });

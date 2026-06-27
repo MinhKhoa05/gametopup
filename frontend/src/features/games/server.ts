@@ -2,7 +2,8 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getGames } from './api';
 import type { Game } from './contracts';
 
-const GAMES_STALE_TIME = 1000 * 60 * 10;
+const GAMES_STALE_TIME = 1000 * 60 * 60;
+const GAMES_GC_TIME = 1000 * 60 * 60;
 
 export const gamesKeys = {
   all: ['games'] as const,
@@ -16,6 +17,8 @@ export function useGamesQuery<TData = Game[]>(options?: {
     queryFn: getGames,
     placeholderData: keepPreviousData,
     staleTime: GAMES_STALE_TIME,
+    gcTime: GAMES_GC_TIME,
+    refetchOnWindowFocus: false,
     meta: { persist: true },
     select: options?.select,
   });

@@ -38,9 +38,8 @@ export function OrdersPage() {
   }
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const { data: history = [] } = useOrderHistoryQuery(
-    selectedOrder?.id ?? null,
-  );
+  const { data: history = [], isFetching: historyLoading } =
+    useOrderHistoryQuery(selectedOrder?.id ?? null);
 
   const emptyDescription = filters.search
     ? "Không tìm thấy đơn hàng phù hợp."
@@ -166,6 +165,7 @@ export function OrdersPage() {
           order={selectedOrder}
           isOpen={selectedOrder !== null}
           history={history}
+          historyLoading={historyLoading}
           onClose={() => setSelectedOrder(null)}
         />
       </Container>

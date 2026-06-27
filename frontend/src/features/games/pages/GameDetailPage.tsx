@@ -75,7 +75,8 @@ export function GameDetailPage() {
 
   const selectedPackage = packages.find((item) => item.id === selectedPackageId) ?? null;
   const walletBalance = walletQuery.data ?? 0;
-  const walletLoading = walletQuery.isPending && !walletQuery.data;
+  const walletLoading =
+    walletQuery.isPending && walletQuery.data === undefined;
   const orderLoading = createOrderMutation.isPending;
   const canRequestPurchase = !!selectedPackage && !walletLoading && isAuthenticated && selectedPackage.salePrice <= walletBalance;
 
@@ -172,7 +173,9 @@ export function GameDetailPage() {
 
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,6.9fr)_minmax(0,3.1fr)] lg:gap-8">
           <GamePackageGrid
-            isLoading={packagesQuery.isPending && !packagesQuery.data}
+            isLoading={
+              packagesQuery.isPending && packagesQuery.data === undefined
+            }
             onSelectPackage={setSelectedPackageId}
             packages={packages}
             selectedPackageId={selectedPackageId}

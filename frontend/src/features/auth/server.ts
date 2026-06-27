@@ -10,6 +10,7 @@ import { getMe, login, logout, register, changePassword } from "./api";
 import type { User, ChangePasswordRequest } from "./types";
 
 export const AUTH_USER_QUERY_KEY = ["auth", "me"] as const;
+const AUTH_USER_STALE_TIME = 1000 * 60 * 5;
 const PRIVATE_QUERY_PREFIXES = new Set(["auth", "wallet", "orders", "admin"]);
 const REMEMBERED_EMAIL_KEY = "gametopup:last-auth-email";
 
@@ -24,6 +25,29 @@ export function clearAuthSessionCache(queryClient: QueryClient) {
 }
 
 export async function bootstrapAuthSession(queryClient: QueryClient) {
+  const cachedUser = queryClient.getQueryData<User | null>(AUTH_USER_QUERY_KEY);
+  const authState = queryClient.getQueryState(AUTH_USER_QUERY_KEY);
+  const cacheAge = Date.now() - (authState?.dataUpdatedAt ?? 0);
+  const hasFreshAuthCache =
+    authState?.dataUpdatedAt !== undefined && cacheAge < AUTH_USER_STALE_TIME;
+
+  if (cachedUser && hasFreshAuthCache) {
+    return cachedUser;
+  }
+
+  if (authState?.data === null && hasFreshAuthCache) {
+    return null;
+  }
+
+  if (cachedUser) {
+    void refreshAuthSession(queryClient);
+    return cachedUser;
+  }
+
+  return refreshAuthSession(queryClient);
+}
+
+async function refreshAuthSession(queryClient: QueryClient) {
   try {
     const user = await getMe();
     queryClient.setQueryData(AUTH_USER_QUERY_KEY, user);
@@ -71,7 +95,7 @@ export function useAuthUserQuery() {
   return useQuery({
     queryKey: AUTH_USER_QUERY_KEY,
     queryFn: getMe,
-    staleTime: 1000 * 60 * 5,
+    staleTime: AUTH_USER_STALE_TIME,
     retry: false,
     enabled: false,
     meta: { persist: true },

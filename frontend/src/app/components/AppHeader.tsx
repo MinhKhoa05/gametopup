@@ -33,6 +33,8 @@ export function AppHeader() {
   const isAdmin = user?.role === UserRole.Admin;
 
   const walletQuery = useWalletBalanceQuery(isAuthenticated);
+  const walletBalanceLoading =
+    walletQuery.isPending && walletQuery.data === undefined;
 
   const navigationItems = HEADER_NAV_ITEMS.filter(
     (item) => !item.requiresAuth || isAuthenticated,
@@ -115,7 +117,9 @@ export function AppHeader() {
                 <WalletCards size={15} />
               </IconBox>
               <span className="tabular-nums">
-                {formatCurrency(walletQuery.data || 0)}
+                {walletBalanceLoading
+                  ? "..."
+                  : formatCurrency(walletQuery.data ?? 0)}
               </span>
             </button>
           ) : null}

@@ -39,7 +39,8 @@ function getOrderSearchText(
 }
 
 export function useOrders() {
-  const { data = [], isPending, isError } = useMyOrdersQuery();
+  const ordersQuery = useMyOrdersQuery();
+  const data = ordersQuery.data ?? [];
 
   const [filters, setFilters] = useState<OrderFilters>({
     search: "",
@@ -92,8 +93,8 @@ export function useOrders() {
     currentPage,
     totalPages,
     setPage,
-    isLoading: isPending,
-    isError,
+    isLoading: ordersQuery.isPending && ordersQuery.data === undefined,
+    isError: ordersQuery.isError,
     stats,
   };
 }

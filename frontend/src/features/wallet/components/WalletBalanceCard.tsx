@@ -5,11 +5,13 @@ import { formatCurrency } from "@/shared/lib/format";
 
 type WalletBalanceCardProps = {
   balance: number;
+  loading?: boolean;
   onDeposit: () => void;
 };
 
 export function WalletBalanceCard({
   balance,
+  loading = false,
   onDeposit,
 }: WalletBalanceCardProps) {
   return (
@@ -24,7 +26,7 @@ export function WalletBalanceCard({
             </p>
 
             <h2 className="mt-2 text-4xl font-black tracking-tight gt-tabular">
-              {formatCurrency(balance)}
+              {loading ? "..." : formatCurrency(balance)}
             </h2>
 
             <p className="mt-2 text-sm gt-text-soft">

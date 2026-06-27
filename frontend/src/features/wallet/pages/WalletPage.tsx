@@ -94,13 +94,12 @@ export function WalletPage() {
   const transactions = transactionsQuery.data ?? [];
   const deposits = depositsQuery.data ?? [];
 
-  const loading =
-    balanceQuery.isLoading ||
-    transactionsQuery.isLoading ||
-    depositsQuery.isLoading;
-
-  const error =
-    balanceQuery.isError || transactionsQuery.isError || depositsQuery.isError;
+  const balanceLoading =
+    balanceQuery.isPending && balanceQuery.data === undefined;
+  const transactionsLoading =
+    transactionsQuery.isPending && transactionsQuery.data === undefined;
+  const depositsLoading =
+    depositsQuery.isPending && depositsQuery.data === undefined;
 
   const [tab, setTab] = useState<HistoryTab>("ledger");
   const [transactionFilter, setTransactionFilter] =
@@ -134,6 +133,10 @@ export function WalletPage() {
   const transactionFilterLabel =
     TRANSACTION_FILTERS.find((item) => item.value === transactionFilter)?.label ??
     "Tất cả";
+  const historyLoading =
+    tab === "ledger" ? transactionsLoading : depositsLoading;
+  const historyError =
+    tab === "ledger" ? transactionsQuery.isError : depositsQuery.isError;
 
   return (
     <div className="relative isolate overflow-hidden">
@@ -156,6 +159,7 @@ export function WalletPage() {
 
           <WalletBalanceCard
             balance={balance}
+            loading={balanceLoading}
             onDeposit={() => setDepositOpen(true)}
           />
 
@@ -165,7 +169,7 @@ export function WalletPage() {
               tone="success"
               icon={<Coins size={20} />}
               label="Số dư"
-              value={formatCurrency(balance)}
+              value={balanceLoading ? "..." : formatCurrency(balance)}
             />
 
             <StatCard
@@ -173,7 +177,7 @@ export function WalletPage() {
               tone="primary"
               icon={<ArrowLeftRight size={20} />}
               label="Giao dịch"
-              value={transactions.length}
+              value={transactionsLoading ? "..." : transactions.length}
             />
 
             <StatCard
@@ -181,7 +185,7 @@ export function WalletPage() {
               tone="warning"
               icon={<ArrowDownToLine size={20} />}
               label="Yêu cầu nạp"
-              value={deposits.length}
+              value={depositsLoading ? "..." : deposits.length}
             />
           </div>
 
@@ -195,11 +199,12 @@ export function WalletPage() {
                 onChange={(value) => setTab(value as HistoryTab)}
               />
 
-              {loading ? (
+              <div className="min-h-[260px]">
+              {historyLoading ? (
                 <p className="py-10 text-center gt-text-muted">
                   Đang tải dữ liệu...
                 </p>
-              ) : error ? (
+              ) : historyError ? (
                 <EmptyState
                   title="Không tải được dữ liệu"
                   description="Đã xảy ra lỗi khi tải lịch sử ví."
@@ -300,6 +305,7 @@ export function WalletPage() {
                   )}
                 </div>
               )}
+              </div>
             </div>
           </PanelShell>
         </div>

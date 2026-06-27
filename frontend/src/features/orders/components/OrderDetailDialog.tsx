@@ -56,11 +56,18 @@ const TIMELINE_STATUS_META: Record<
 type Props = {
   order: Order | null;
   history: OrderHistory[];
+  historyLoading: boolean;
   isOpen: boolean;
   onClose: () => void;
 };
 
-export function OrderDetailDialog({ order, history, isOpen, onClose }: Props) {
+export function OrderDetailDialog({
+  order,
+  history,
+  historyLoading,
+  isOpen,
+  onClose,
+}: Props) {
   if (!isOpen || !order) return null;
 
   const timelineEvents = history.map((item) => {
@@ -166,17 +173,23 @@ export function OrderDetailDialog({ order, history, isOpen, onClose }: Props) {
         </div>
 
         <div className="max-h-[500px] overflow-y-auto pr-1">
-          {timelineEvents.map((event, index) => (
-            <TimelineItem
-              key={event.id}
-              icon={event.icon}
-              iconClassName={event.color}
-              title={event.title}
-              description={event.description}
-              time={formatDate(event.time)}
-              last={index === timelineEvents.length - 1}
-            />
-          ))}
+          {historyLoading && timelineEvents.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-[var(--gt-border)] bg-[var(--gt-panel)] px-4 py-5 text-sm gt-text-muted">
+              Đang tải lịch sử xử lý...
+            </div>
+          ) : (
+            timelineEvents.map((event, index) => (
+              <TimelineItem
+                key={event.id}
+                icon={event.icon}
+                iconClassName={event.color}
+                title={event.title}
+                description={event.description}
+                time={formatDate(event.time)}
+                last={index === timelineEvents.length - 1}
+              />
+            ))
+          )}
         </div>
       </PanelShell>
     </Dialog>

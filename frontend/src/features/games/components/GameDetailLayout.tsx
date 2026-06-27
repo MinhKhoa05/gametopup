@@ -12,30 +12,41 @@ export function GameDetailPageSkeleton() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,6.9fr)_minmax(0,3.1fr)] lg:gap-8">
         <div className="grid gap-4">
           <div className="space-y-2">
             <div className="h-8 w-44 animate-pulse rounded-full bg-white/10" />
             <div className="h-4 w-72 animate-pulse rounded-full bg-white/8" />
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,214px))] justify-start gap-3 sm:gap-4">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={`package-skeleton-${index}`} className="gt-card-hover flex min-h-[280px] flex-col gap-3 rounded-[24px] border border-white/[0.06] bg-[var(--gt-card)] p-3" aria-hidden="true">
-                <div className="aspect-[1.05/0.82] rounded-[18px] bg-white/[0.05]" />
+              <div key={`package-skeleton-${index}`} className="flex aspect-[0.82/1] w-full max-w-[214px] flex-col gap-3 rounded-[20px] border border-white/[0.06] bg-white/[0.025] p-2" aria-hidden="true">
+                <div className="aspect-square rounded-[16px] bg-white/[0.05]" />
                 <div className="h-4 w-3/4 animate-pulse rounded-full bg-white/8" />
-                <div className="h-3 w-1/2 animate-pulse rounded-full bg-white/6" />
-                <div className="mt-auto h-10 rounded-2xl bg-white/8" />
+                <div className="h-8 w-28 rounded-[12px] bg-white/8" />
+                <div className="h-3 w-20 rounded-full bg-white/6" />
               </div>
             ))}
           </div>
         </div>
-        <aside className="gt-panel rounded-[28px] p-5 backdrop-blur-xl sm:p-6">
-          <div className="mb-4 h-5 w-40 animate-pulse rounded-full bg-white/10" />
-          <div className="grid gap-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={`field-skeleton-${index}`} className="h-12 rounded-xl bg-white/6" aria-hidden="true" />
-            ))}
-            <div className="h-12 rounded-xl bg-white/8" />
+        <aside className="lg:sticky lg:top-20 lg:self-start">
+          <div className="gt-panel rounded-[28px] p-4 backdrop-blur-xl sm:p-5">
+            <div className="grid gap-5">
+              <div className="flex items-start gap-3">
+                <div className="h-16 w-16 shrink-0 rounded-[16px] bg-white/[0.06] sm:h-[72px] sm:w-[72px]" />
+                <div className="min-w-0 flex-1 space-y-2 pt-0.5">
+                  <div className="h-4 w-40 max-w-full animate-pulse rounded-full bg-white/10" />
+                  <div className="h-3.5 w-24 animate-pulse rounded-full bg-white/8" />
+                </div>
+              </div>
+              <div className="h-px w-full bg-[var(--gt-border)] opacity-80" />
+              <div className="space-y-3">
+                <div className="h-8 w-full rounded-xl bg-white/6" />
+                <div className="h-5 w-full rounded-xl bg-white/6" />
+                <div className="h-5 w-full rounded-xl bg-white/6" />
+              </div>
+              <div className="h-12 rounded-xl bg-white/8" />
+            </div>
           </div>
         </aside>
       </div>
