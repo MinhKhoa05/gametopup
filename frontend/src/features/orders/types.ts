@@ -66,6 +66,10 @@ export type CreateOrderInput = {
   gameAccountInfo: string;
 };
 
+export type CreateOrderResponse = {
+  orderId: number;
+};
+
 export type CancelOrderInput = {
   orderId: number;
 };

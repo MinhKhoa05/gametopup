@@ -1,5 +1,5 @@
 import type { GamePackage } from '@/features/games/contracts';
-import { GamePackageCard } from './GamePackageCard';
+import { GamePackageCard } from '../../games/components/GamePackageCard';
 
 type GamePackageGridProps = {
   isLoading: boolean;
@@ -11,9 +11,8 @@ type GamePackageGridProps = {
 export function GamePackageGrid({ isLoading, packages, selectedPackageId, onSelectPackage }: GamePackageGridProps) {
   return (
     <section id="packages" className="grid gap-4 scroll-mt-24">
-      <div className="space-y-2">
+      <div className="space-y-1">
         <h2 className="text-[clamp(1.2rem,1.8vw,1.6rem)] font-black tracking-tight text-white">Chọn gói nạp</h2>
-        <p className="max-w-[52ch] text-sm leading-6 text-slate-400">Lựa chọn gói phù hợp với nhu cầu của bạn.</p>
       </div>
 
       {isLoading && packages.length === 0 ? (

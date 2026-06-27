@@ -1,6 +1,12 @@
 import { api } from '@/shared/api/client';
 import type { ApiResponse } from '@/shared/types/api';
-import type { CancelOrderInput, CreateOrderInput, OrderHistory, Order } from './types';
+import type {
+  CancelOrderInput,
+  CreateOrderInput,
+  CreateOrderResponse,
+  OrderHistory,
+  Order,
+} from './types';
 
 export async function getMyOrders() {
   const response = await api.get<ApiResponse<Order[]>>('/api/orders');
@@ -13,8 +19,14 @@ export async function getOrder(orderId: number) {
 }
 
 export async function createOrder(payload: CreateOrderInput) {
-  const response = await api.post<ApiResponse<number>>('/api/orders', payload);
-  return response.data.data;
+  const response = await api.post<ApiResponse<CreateOrderResponse | number>>('/api/orders', payload);
+  const data = response.data.data;
+
+  if (typeof data === 'number') {
+    return data;
+  }
+
+  return data.orderId;
 }
 
 export async function cancelOrder({ orderId }: CancelOrderInput) {

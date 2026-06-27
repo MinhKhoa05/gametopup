@@ -13,8 +13,9 @@ import { useWalletBalanceQuery } from '@/features/wallet/server';
 import { EmptyState, ImageBox, PageHero } from '@/shared/components';
 import { GameDetailPageSkeleton } from '@/features/games/components/GameDetailLayout';
 import { GamePackageDetailPanel } from '@/features/games/components/GamePackageDetailPanel';
-import { GamePackageGrid } from '@/features/games/components/GamePackageGrid';
-import { PackagePurchaseDialog, PurchaseSuccessDialog } from '@/features/games/components/PurchasePackageDialog';
+import { GamePackageGrid } from '@/features/packages/components/GamePackageGrid';
+import { PurchasePackageDialog } from '@/features/games/components/PurchasePackageDialog';
+import { PurchaseSuccessDialog } from '@/features/games/components/PurchaseSuccessDialog';
 
 type GameDetailDraftState = {
   selectedPackageId: number | null;
@@ -175,18 +176,28 @@ export function GameDetailPage() {
   return (
     <Container className="py-5 sm:py-7 lg:py-8">
       <div className="grid gap-10 lg:gap-12">
-        <PageHero
-          eyebrow="NẠP GAME"
-          visual={
-            <div className="h-[72px] w-[72px] overflow-hidden rounded-[22px] border border-[color:var(--gt-border)] bg-[var(--gt-panel-soft)] shadow-[0_10px_24px_rgba(2,6,23,0.18)] sm:h-[88px] sm:w-[88px]">
-              <ImageBox src={game.imageUrl} alt={game.name} className="h-full w-full object-cover" />
-            </div>
-          }
-          title={game.name}
-          description="Chọn gói nạp phù hợp và tạo đơn hàng chỉ trong vài bước."
-        />
+        <button
+          type="button"
+          className="group rounded-[24px] text-left transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gt-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--gt-bg)]"
+          onClick={() => navigate(routes.games())}
+        >
+          <PageHero
+            eyebrow="NẠP GAME"
+            visual={
+              <div className="h-[72px] w-[72px] overflow-hidden rounded-[22px] border border-[color:var(--gt-border)] bg-[var(--gt-panel-soft)] shadow-[0_10px_24px_rgba(2,6,23,0.18)] transition-transform duration-200 group-hover:scale-[1.02] sm:h-[88px] sm:w-[88px]">
+                <ImageBox
+                  src={game.imageUrl}
+                  alt={game.name}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            }
+            title={game.name}
+            description="Chọn gói nạp phù hợp và tạo đơn hàng."
+          />
+        </button>
 
-        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,3fr)]">
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,6.9fr)_minmax(0,3.1fr)] lg:gap-8">
           <GamePackageGrid
             isLoading={packagesQuery.isPending && !packagesQuery.data}
             onSelectPackage={(packageId) => dispatch({ type: 'set-package', value: packageId })}
@@ -197,11 +208,13 @@ export function GameDetailPage() {
           <GamePackageDetailPanel gameName={game.name} onPurchase={handleRequestPurchase} selectedPackage={selectedPackage} />
         </div>
 
-        <SiteCredits />
+        <div className="mt-16 sm:mt-20">
+          <SiteCredits />
+        </div>
       </div>
 
       {selectedPackage ? (
-        <PackagePurchaseDialog
+        <PurchasePackageDialog
           busy={busy}
           game={game}
           isOpen={isConfirmOpen}

@@ -2,6 +2,7 @@ export { Badge } from './Badge';
 export { Button } from './Button';
 export { Container } from './Container';
 export { BrandLogo } from './BrandLogo';
+export { Dialog } from './Dialog';
 export { FilterChip } from './FilterChip';
 export { FilterChipGroup } from './FilterChipGroup';
 export type { FilterChipGroupItem } from "./FilterChipGroup";
