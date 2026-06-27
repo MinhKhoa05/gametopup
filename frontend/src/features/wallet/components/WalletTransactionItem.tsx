@@ -3,7 +3,7 @@ import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { Badge, IconBox, MediaListItem } from "@/shared/components";
 
 import { classNames } from "@/shared/lib/classNames";
-import { formatCurrency, formatDate } from "@/shared/lib/format";
+import { formatCurrency, formatDateTimeCompact } from "@/shared/lib/format";
 
 import { WalletTransaction, WalletTransactionType } from "../types";
 
@@ -14,24 +14,29 @@ type Props = {
 const TRANSACTION_META: Record<
   WalletTransactionType,
   {
-    label: string;
+    badgeLabel: string;
+    titleBase: string;
     badgeTone: "success" | "danger" | "primary";
   }
 > = {
   [WalletTransactionType.Deposit]: {
-    label: "Nạp tiền",
+    badgeLabel: "Nạp tiền",
+    titleBase: "Nạp tiền vào ví",
     badgeTone: "success",
   },
   [WalletTransactionType.Withdraw]: {
-    label: "Rút tiền",
+    badgeLabel: "Rút tiền",
+    titleBase: "Rút tiền khỏi ví",
     badgeTone: "danger",
   },
   [WalletTransactionType.PurchaseOrder]: {
-    label: "Thanh toán đơn hàng",
+    badgeLabel: "Thanh toán đơn",
+    titleBase: "Thanh toán đơn hàng",
     badgeTone: "primary",
   },
   [WalletTransactionType.Refund]: {
-    label: "Hoàn tiền",
+    badgeLabel: "Hoàn tiền",
+    titleBase: "Hoàn tiền đơn hàng",
     badgeTone: "success",
   },
 };
@@ -53,11 +58,36 @@ export function WalletTransactionItem({ transaction }: Props) {
           {income ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
         </IconBox>
       }
-      title={meta.label}
-      subtitle={transaction.referenceId ?? "Không có mã tham chiếu"}
-      meta={formatDate(transaction.createdAt)}
+      title={
+        <span className="flex min-w-0 items-baseline gap-2">
+          <span className="truncate font-bold gt-text">
+            {meta.titleBase}
+          </span>
+
+          {transaction.referenceId ? (
+            <span className="truncate text-sm font-medium gt-text-soft">
+              #{transaction.referenceId}
+            </span>
+          ) : null}
+        </span>
+      }
+      subtitle={
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="text-xs gt-text-soft">Số dư sau</span>
+
+          <span className="text-xs font-semibold gt-text">
+            {formatCurrency(transaction.balanceAfter)}
+          </span>
+
+          <span className="gt-text-disabled">&bull;</span>
+
+          <span className="text-xs gt-text-muted">
+            {formatDateTimeCompact(transaction.createdAt)}
+          </span>
+        </span>
+      }
       titleAccessory={
-        <Badge tone={meta.badgeTone}>{income ? "Cộng tiền" : "Trừ tiền"}</Badge>
+        <Badge tone={meta.badgeTone}>{meta.badgeLabel}</Badge>
       }
       trailing={
         <div className="text-right">
@@ -69,10 +99,6 @@ export function WalletTransactionItem({ transaction }: Props) {
           >
             {income ? "+" : "-"}
             {formatCurrency(Math.abs(transaction.amount))}
-          </div>
-
-          <div className="text-xs gt-text-disabled">
-            {formatCurrency(transaction.balanceAfter)}
           </div>
         </div>
       }

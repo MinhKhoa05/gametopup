@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowDownToLine, ArrowLeftRight, Coins, Wallet } from "lucide-react";
 
 import {
@@ -11,29 +11,59 @@ import {
   SectionHeading,
   StatCard,
 } from "@/shared/components";
-
-import { formatCurrency } from "@/shared/lib/format";
+import { formatCurrency, formatGroupedDate } from "@/shared/lib/format";
 
 import { WalletBalanceCard } from "@/features/wallet/components/WalletBalanceCard";
+import { WalletTransactionItem } from "@/features/wallet/components/WalletTransactionItem";
+import { WalletTransactionType } from "@/features/wallet/types";
 import { WalletDepositDialog } from "@/features/deposits/components/WalletDepositDialog";
 import { WalletDepositItem } from "@/features/deposits/components/WalletDepositItem";
-import { WalletTransactionItem } from "@/features/wallet/components/WalletTransactionItem";
+import { WalletDepositStatus } from "@/features/deposits/types";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { useDepositRequestsQuery } from "../../deposits/server";
 import { useWalletBalanceQuery, useWalletTransactionsQuery } from "../server";
 
 const HISTORY_TABS = [
-  {
-    label: "Biến động số dư",
-    value: "ledger",
-  },
-  {
-    label: "Yêu cầu nạp tiền",
-    value: "deposit",
-  },
+  { label: "Biến động số dư", value: "ledger" },
+  { label: "Yêu cầu nạp", value: "deposit" },
 ] as const;
 
 type HistoryTab = (typeof HISTORY_TABS)[number]["value"];
+
+const TRANSACTION_FILTERS = [
+  { label: "Tất cả", value: "all" },
+  { label: "Nạp tiền", value: "deposit" },
+  { label: "Hoàn tiền", value: "refund" },
+  { label: "Thanh toán đơn", value: "purchaseOrder" },
+] as const;
+
+type TransactionFilter = (typeof TRANSACTION_FILTERS)[number]["value"];
+
+const DEPOSIT_FILTERS = [
+  { label: "Tất cả", value: "all" },
+  { label: "Đang chờ", value: "pending" },
+  { label: "Đã chuyển", value: "confirmed" },
+  { label: "Đã duyệt", value: "approved" },
+] as const;
+
+type DepositFilter = (typeof DEPOSIT_FILTERS)[number]["value"];
+
+type DatedItem = {
+  createdAt: string;
+};
+
+function groupByDay<T extends DatedItem>(items: T[]) {
+  const groups = new Map<string, T[]>();
+
+  items.forEach((item) => {
+    const label = formatGroupedDate(item.createdAt);
+    const current = groups.get(label) ?? [];
+    current.push(item);
+    groups.set(label, current);
+  });
+
+  return Array.from(groups.entries());
+}
 
 export function WalletPage() {
   const { isAuthenticated } = useAuthSession();
@@ -55,7 +85,58 @@ export function WalletPage() {
     balanceQuery.isError || transactionsQuery.isError || depositsQuery.isError;
 
   const [tab, setTab] = useState<HistoryTab>("ledger");
+  const [transactionFilter, setTransactionFilter] =
+    useState<TransactionFilter>("all");
+  const [depositFilter, setDepositFilter] = useState<DepositFilter>("all");
   const [isDepositOpen, setDepositOpen] = useState(false);
+
+  const filteredTransactions = useMemo(() => {
+    if (transactionFilter === "all") return transactions;
+
+    return transactions.filter((transaction) => {
+      if (transactionFilter === "deposit") {
+        return transaction.type === WalletTransactionType.Deposit;
+      }
+
+      if (transactionFilter === "refund") {
+        return transaction.type === WalletTransactionType.Refund;
+      }
+
+      if (transactionFilter === "purchaseOrder") {
+        return transaction.type === WalletTransactionType.PurchaseOrder;
+      }
+
+      return true;
+    });
+  }, [transactionFilter, transactions]);
+
+  const transactionGroups = useMemo(
+    () => groupByDay(filteredTransactions),
+    [filteredTransactions],
+  );
+
+  const depositGroups = useMemo(() => {
+    const filteredDeposits = deposits.filter((deposit) => {
+      if (depositFilter === "all") return true;
+      if (depositFilter === "pending") {
+        return deposit.status === WalletDepositStatus.Pending;
+      }
+      if (depositFilter === "confirmed") {
+        return deposit.status === WalletDepositStatus.UserConfirmed;
+      }
+      if (depositFilter === "approved") {
+        return deposit.status === WalletDepositStatus.Approved;
+      }
+
+      return true;
+    });
+
+    return groupByDay(filteredDeposits);
+  }, [depositFilter, deposits]);
+
+  const transactionFilterLabel =
+    TRANSACTION_FILTERS.find((item) => item.value === transactionFilter)?.label ??
+    "Tất cả";
 
   return (
     <div className="relative isolate overflow-hidden">
@@ -72,7 +153,7 @@ export function WalletPage() {
                 <Wallet size={30} strokeWidth={1.8} />
               </IconBox>
             }
-            title="Ví của bạn"
+            title="Ví điện tử GameTopUp"
             description="Quản lý số dư, nạp tiền và theo dõi lịch sử giao dịch."
           />
 
@@ -108,7 +189,7 @@ export function WalletPage() {
           </div>
 
           <PanelShell>
-            <div className="space-y-6 p-6 lg:p-7">
+            <div className="space-y-5 p-6 lg:p-7">
               <SectionHeading title="Lịch sử ví" />
 
               <FilterChipGroup
@@ -127,31 +208,99 @@ export function WalletPage() {
                   description="Đã xảy ra lỗi khi tải lịch sử ví."
                 />
               ) : tab === "ledger" ? (
-                transactions.length === 0 ? (
-                  <EmptyState
-                    title="Chưa có giao dịch"
-                    description="Các biến động số dư sẽ xuất hiện tại đây."
+                <div className="space-y-5">
+                  <FilterChipGroup
+                    items={TRANSACTION_FILTERS}
+                    value={transactionFilter}
+                    onChange={(value) =>
+                      setTransactionFilter(value as TransactionFilter)
+                    }
                   />
-                ) : (
-                  <div className="space-y-3">
-                    {transactions.map((transaction) => (
-                      <WalletTransactionItem
-                        key={transaction.id}
-                        transaction={transaction}
-                      />
-                    ))}
-                  </div>
-                )
+
+                  {transactionGroups.length === 0 ? (
+                    <EmptyState
+                      title="Không có giao dịch phù hợp"
+                      description={
+                        transactionFilter === "all"
+                          ? "Các biến động số dư sẽ xuất hiện tại đây."
+                          : `Chưa có giao dịch ${transactionFilterLabel.toLowerCase()} trong ví.`
+                      }
+                    />
+                  ) : (
+                    <div className="space-y-5">
+                      {transactionGroups.map(([label, group]) => (
+                        <section key={label} className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-sm font-semibold gt-text-soft">
+                              {label}
+                            </h3>
+
+                            <div className="h-px flex-1 bg-[var(--gt-border)]" />
+
+                            <span className="text-xs gt-text-muted">
+                              {group.length} giao dịch
+                            </span>
+                          </div>
+
+                          <div className="space-y-3">
+                            {group.map((transaction) => (
+                              <WalletTransactionItem
+                                key={transaction.id}
+                                transaction={transaction}
+                              />
+                            ))}
+                          </div>
+                        </section>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ) : deposits.length === 0 ? (
                 <EmptyState
                   title="Chưa có yêu cầu nạp"
                   description="Các yêu cầu nạp tiền sẽ xuất hiện tại đây."
                 />
               ) : (
-                <div className="space-y-3">
-                  {deposits.map((request) => (
-                    <WalletDepositItem key={request.id} deposit={request} />
-                  ))}
+                <div className="space-y-5">
+                  <FilterChipGroup
+                    items={DEPOSIT_FILTERS}
+                    value={depositFilter}
+                    onChange={(value) => setDepositFilter(value as DepositFilter)}
+                  />
+
+                  {depositGroups.length === 0 ? (
+                    <EmptyState
+                      title="Không có yêu cầu phù hợp"
+                      description="Thử đổi bộ lọc để xem các yêu cầu khác."
+                    />
+                  ) : (
+                    <div className="space-y-5">
+                      {depositGroups.map(([label, group]) => (
+                        <section key={label} className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-sm font-semibold gt-text-soft">
+                              {label}
+                            </h3>
+
+                            <div className="h-px flex-1 bg-[var(--gt-border)]" />
+
+                            <span className="text-xs gt-text-muted">
+                              {group.length} giao dịch
+                            </span>
+                          </div>
+
+                          <div className="space-y-2">
+                            {group.map((request) => (
+                              <WalletDepositItem
+                                key={request.id}
+                                deposit={request}
+                              />
+                            ))}
+                          </div>
+                        </section>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

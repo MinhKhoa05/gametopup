@@ -7,7 +7,11 @@ import { GameGrid } from "@/features/games/components/GameGrid";
 import { useGamesQuery } from "@/features/games/server";
 import { HeroSection } from "@/features/home/components/HeroSection";
 import { useRecentOrders } from "@/features/orders/server";
-import { useWalletBalanceQuery } from "@/features/wallet/server";
+import {
+  useWalletBalanceQuery,
+  useWalletTransactionsQuery,
+} from "@/features/wallet/server";
+import { WalletTransactionItem } from "@/features/wallet/components/WalletTransactionItem";
 import {
   Button,
   Container,
@@ -27,6 +31,8 @@ export function HomeUserPage() {
   const { data: games = [], isLoading: gamesLoading } = useGamesQuery();
   const { data: walletBalance, isLoading: walletLoading } =
     useWalletBalanceQuery();
+  const { data: walletTransactions = [], isLoading: walletTransactionsLoading } =
+    useWalletTransactionsQuery(auth.isAuthenticated);
   const { data: recentOrders = [], isLoading: ordersLoading } =
     useRecentOrders();
 
@@ -39,7 +45,15 @@ export function HomeUserPage() {
       <div className="grid gap-10 lg:gap-12">
         <HeroSection
           eyebrow="TRANG CHỦ"
-          title={`Xin chào ${userName} 👋`}
+          title={
+            <>
+              Xin chào{" "}
+              <span className="text-[var(--gt-primary)] font-bold">
+                {userName}
+              </span>{" "}
+              👋
+            </>
+          }
           description="Chọn game yêu thích và tiếp tục hành trình của bạn."
           actions={
             <Button
@@ -99,7 +113,23 @@ export function HomeUserPage() {
                   </Button>
                 </div>
 
-                {/* Transaction list */}
+                {walletTransactionsLoading ? (
+                  <p className="gt-text-muted">Đang tải...</p>
+                ) : walletTransactions.length === 0 ? (
+                  <EmptyState
+                    title="Chưa có giao dịch"
+                    description="Biến động số dư sẽ hiển thị tại đây."
+                  />
+                ) : (
+                  <div className="grid gap-2">
+                    {walletTransactions.slice(0, 3).map((transaction) => (
+                      <WalletTransactionItem
+                        key={transaction.id}
+                        transaction={transaction}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </PanelShell>

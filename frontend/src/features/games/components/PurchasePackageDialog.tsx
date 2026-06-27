@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { BadgeCheck, X } from 'lucide-react';
 import { Button, ImageBox, DetailRow } from '@/shared/components';
-import { formatCurrency } from '@/shared/lib/format';
+import { formatCurrency, formatDateTimeShort } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
 import type { Game, GamePackage } from '@/features/games/contracts';
 
@@ -232,16 +232,7 @@ export function PackagePurchaseDialog({ busy, game, isOpen, onClose, onConfirm, 
 export { PackagePurchaseDialog as PurchasePackageDialog };
 
 export function PurchaseSuccessDialog({ game, isOpen, onContinue, onViewOrders, packageItem, purchaseInfo, result }: PurchaseSuccessDialogProps) {
-  const successTime = result.successAt
-    ? new Intl.DateTimeFormat('vi-VN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      }).format(new Date(result.successAt))
-    : '--/--/---- - --:--';
+  const successTime = formatDateTimeShort(result.successAt);
   const orderCode = `#GTU-${String(result.orderId).padStart(6, '0')}`;
 
   useEffect(() => {
