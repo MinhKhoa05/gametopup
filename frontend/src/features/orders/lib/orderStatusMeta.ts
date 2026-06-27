@@ -1,9 +1,3 @@
-/**
- * TODO:
- * Replace orderStatus.ts after OrderPage refactor.
- * Temporary file to avoid breaking existing screens.
- */
-
 import { OrderStatus } from "../types";
 
 export type OrderStatusTone =

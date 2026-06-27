@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Container } from '@/shared/components';
@@ -6,24 +6,15 @@ import { SiteCredits } from '@/app/components';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { useGamesQuery } from '@/features/games/server';
-import type { Game } from '@/features/games/contracts';
 import { useGamePackagesQuery } from '@/features/packages/server';
 import { useCreateOrderMutation } from '@/features/orders/server';
 import { useWalletBalanceQuery } from '@/features/wallet/server';
 import { EmptyState, ImageBox, PageHero } from '@/shared/components';
 import { GameDetailPageSkeleton } from '@/features/games/components/GameDetailLayout';
-import { GamePackageDetailPanel } from '@/features/games/components/GamePackageDetailPanel';
+import { GamePackageDetailPanel } from '@/features/packages/components/GamePackageDetailPanel';
 import { GamePackageGrid } from '@/features/packages/components/GamePackageGrid';
-import { PurchasePackageDialog } from '@/features/games/components/PurchasePackageDialog';
-import { PurchaseSuccessDialog } from '@/features/games/components/PurchaseSuccessDialog';
-
-type GameDetailDraftState = {
-  selectedPackageId: number | null;
-};
-
-type GameDetailDraftAction =
-  | { type: 'reset' }
-  | { type: 'set-package'; value: number | null };
+import { PurchasePackageDialog } from '@/features/packages/components/PurchasePackageDialog';
+import { PurchaseSuccessDialog } from '@/features/packages/components/PurchaseSuccessDialog';
 
 type GameDetailCheckoutResult = {
   orderId: number;
@@ -35,21 +26,6 @@ type GameDetailPurchaseInfo = {
   uidServer: string;
 };
 
-const initialDraftState: GameDetailDraftState = {
-  selectedPackageId: null,
-};
-
-function draftReducer(state: GameDetailDraftState, action: GameDetailDraftAction): GameDetailDraftState {
-  switch (action.type) {
-    case 'reset':
-      return initialDraftState;
-    case 'set-package':
-      return { ...state, selectedPackageId: action.value };
-    default:
-      return state;
-  }
-}
-
 export function GameDetailPage() {
   const navigate = useNavigate();
   const { gameId: gameIdParam } = useParams<{ gameId?: string }>();
@@ -57,7 +33,7 @@ export function GameDetailPage() {
   const gamesQuery = useGamesQuery();
   const createOrderMutation = useCreateOrderMutation();
   const walletQuery = useWalletBalanceQuery(isAuthenticated);
-  const [draftState, dispatch] = useReducer(draftReducer, initialDraftState);
+  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
   const [isConfirmOpen, setConfirmOpen] = useState(false);
   const [isSuccessOpen, setSuccessOpen] = useState(false);
   const [checkoutResult, setCheckoutResult] = useState<GameDetailCheckoutResult | null>(null);
@@ -65,19 +41,13 @@ export function GameDetailPage() {
 
   const gameId = Number(gameIdParam);
 
-  const game = useMemo<Game | null>(() => {
-    if (!gameId) {
-      return null;
-    }
-
-    return gamesQuery.data?.find((item) => item.id === gameId) ?? null;
-  }, [gameId, gamesQuery.data]);
+  const game = gameId ? gamesQuery.data?.find((item) => item.id === gameId) ?? null : null;
 
   const packagesQuery = useGamePackagesQuery(game?.id ?? null);
   const packages = packagesQuery.data ?? [];
 
   useEffect(() => {
-    dispatch({ type: 'reset' });
+    setSelectedPackageId(null);
     setConfirmOpen(false);
     setSuccessOpen(false);
     setCheckoutResult(null);
@@ -86,14 +56,14 @@ export function GameDetailPage() {
 
   useEffect(() => {
     if (!packages.length) {
-      dispatch({ type: 'set-package', value: null });
+      setSelectedPackageId(null);
       return;
     }
 
-    if (!draftState.selectedPackageId || !packages.some((item) => item.id === draftState.selectedPackageId)) {
-      dispatch({ type: 'set-package', value: packages[0].id });
+    if (!selectedPackageId || !packages.some((item) => item.id === selectedPackageId)) {
+      setSelectedPackageId(packages[0].id);
     }
-  }, [draftState.selectedPackageId, packages]);
+  }, [selectedPackageId, packages]);
 
   if (gamesQuery.isPending && !game) {
     return <GameDetailPageSkeleton />;
@@ -103,10 +73,10 @@ export function GameDetailPage() {
     return <EmptyState className="mx-auto max-w-2xl" title="Không tìm thấy game." description="Vui lòng quay lại kho game và chọn lại." />;
   }
 
-  const selectedPackage = packages.find((item) => item.id === draftState.selectedPackageId) ?? null;
+  const selectedPackage = packages.find((item) => item.id === selectedPackageId) ?? null;
   const walletBalance = walletQuery.data ?? 0;
   const walletLoading = walletQuery.isPending && !walletQuery.data;
-  const busy = createOrderMutation.isPending;
+  const orderLoading = createOrderMutation.isPending;
   const canRequestPurchase = !!selectedPackage && !walletLoading && isAuthenticated && selectedPackage.salePrice <= walletBalance;
 
   const handleRequestPurchase = () => {
@@ -136,14 +106,17 @@ export function GameDetailPage() {
       return;
     }
 
+    const characterName = draft.characterName.trim();
+    const uidServer = draft.uidServer.trim();
+
     setPurchaseInfo({
-      characterName: draft.characterName.trim(),
-      uidServer: draft.uidServer.trim(),
+      characterName,
+      uidServer,
     });
 
-    const gameAccountInfo = draft.characterName.trim()
-      ? `${draft.uidServer.trim()} | Nhân vật: ${draft.characterName.trim()}`
-      : draft.uidServer.trim();
+    const gameAccountInfo = characterName
+      ? `${uidServer} | Nhân vật: ${characterName}`
+      : uidServer;
 
     void (async () => {
       try {
@@ -170,7 +143,7 @@ export function GameDetailPage() {
     setSuccessOpen(false);
     setCheckoutResult(null);
     setPurchaseInfo(null);
-    dispatch({ type: 'reset' });
+    setSelectedPackageId(null);
   };
 
   return (
@@ -200,9 +173,9 @@ export function GameDetailPage() {
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,6.9fr)_minmax(0,3.1fr)] lg:gap-8">
           <GamePackageGrid
             isLoading={packagesQuery.isPending && !packagesQuery.data}
-            onSelectPackage={(packageId) => dispatch({ type: 'set-package', value: packageId })}
+            onSelectPackage={setSelectedPackageId}
             packages={packages}
-            selectedPackageId={draftState.selectedPackageId}
+            selectedPackageId={selectedPackageId}
           />
 
           <GamePackageDetailPanel gameName={game.name} onPurchase={handleRequestPurchase} selectedPackage={selectedPackage} />
@@ -215,9 +188,9 @@ export function GameDetailPage() {
 
       {selectedPackage ? (
         <PurchasePackageDialog
-          busy={busy}
           game={game}
           isOpen={isConfirmOpen}
+          loading={orderLoading}
           onClose={() => setConfirmOpen(false)}
           onConfirm={handleConfirmPurchase}
           selectedPackage={selectedPackage}

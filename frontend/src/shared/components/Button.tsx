@@ -63,6 +63,7 @@ export function Button({
       {...props}
       type={type}
       disabled={loading || disabled}
+      aria-busy={loading || undefined}
       className={classNames(
         BASE_CLASS,
         sizeClasses[size],
@@ -71,7 +72,7 @@ export function Button({
         className,
       )}
     >
-      {loading ? <Loader2 size={16} className="animate-spin" /> : leadingIcon}
+      {loading ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : leadingIcon}
 
       {children ? <span>{children}</span> : null}
 

@@ -1,6 +1,6 @@
 import type { Game } from "@/features/games/contracts";
 import { GameCard } from "./GameCard";
-import { GameCardSkeleton } from "./GameCardSkeletion";
+import { GameCardSkeleton } from "./GameCardSkeleton";
 
 type GameGridProps = {
   games?: Game[];

@@ -45,6 +45,7 @@ export function DepositTransferInfo({
               </span>
 
               <Button
+                aria-label="Sao chép nội dung chuyển khoản"
                 size="sm"
                 variant="ghost"
                 className="h-8 w-8 opacity-60 transition hover:bg-white/10 hover:opacity-100"
@@ -62,6 +63,7 @@ export function DepositTransferInfo({
               </span>
 
               <Button
+                aria-label="Sao chép số tiền"
                 size="sm"
                 variant="ghost"
                 className="h-8 w-8 opacity-60 transition hover:bg-white/10 hover:opacity-100"
@@ -77,6 +79,7 @@ export function DepositTransferInfo({
               <span className="font-semibold gt-text">{deposit.bankId}</span>
 
               <Button
+                aria-label="Sao chép ngân hàng"
                 size="sm"
                 variant="ghost"
                 className="h-8 w-8 opacity-60 transition hover:bg-white/10 hover:opacity-100"
@@ -92,6 +95,7 @@ export function DepositTransferInfo({
               <span className="font-semibold gt-text">{deposit.accountNo}</span>
 
               <Button
+                aria-label="Sao chép số tài khoản"
                 size="sm"
                 variant="ghost"
                 className="h-8 w-8 opacity-60 transition hover:bg-white/10 hover:opacity-100"

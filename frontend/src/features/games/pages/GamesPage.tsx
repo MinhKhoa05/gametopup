@@ -5,6 +5,7 @@ import { Gamepad2 } from "lucide-react";
 import { routes } from "@/app/router/routes";
 import { GameGrid } from "@/features/games/components/GameGrid";
 import { useGamesQuery } from "@/features/games/server";
+import { filterByQuery } from "@/shared/lib/search";
 import {
   Container,
   IconBox,
@@ -22,11 +23,7 @@ export function GamesPage() {
 
   const [query, setQuery] = useState("");
 
-  const keyword = query.trim().toLowerCase();
-
-  const filteredGames = keyword
-    ? games.filter((game) => game.name.toLowerCase().includes(keyword))
-    : games;
+  const filteredGames = filterByQuery(games, query, (game) => game.name);
 
   return (
     <Container className="relative z-10 py-5 sm:py-7 lg:py-8">

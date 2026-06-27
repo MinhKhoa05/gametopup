@@ -1,4 +1,4 @@
-import { ArrowRight, Package, Package2, Wallet2 } from "lucide-react";
+import { ArrowRight, Package2, Wallet2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { routes } from "@/app/router/routes";

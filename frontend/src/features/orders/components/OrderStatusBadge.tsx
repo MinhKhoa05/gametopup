@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/shared/components";
-import { getOrderStatusMeta } from "../lib/orderStatus.v2";
+import { getOrderStatusMeta } from "../lib/orderStatusMeta";
 import { OrderStatus } from "../types";
 
 type Props = {

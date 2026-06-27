@@ -1,4 +1,4 @@
-import React from "react";
+import type { ComponentType } from "react";
 import {
   ShieldCheck,
   Clock3,
@@ -10,7 +10,8 @@ import {
 import { Button, DetailRow, Dialog, ImageBox, PanelShell } from "@/shared/components";
 import { formatCurrency, formatDate } from "@/shared/lib/format";
 
-import { Order, OrderHistory, OrderStatus } from "../types";
+import { OrderStatus } from "../types";
+import type { Order, OrderHistory } from "../types";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 
 const TIMELINE_STATUS_META: Record<
@@ -55,12 +56,12 @@ const TIMELINE_STATUS_META: Record<
 type Props = {
   order: Order | null;
   history: OrderHistory[];
-  open: boolean;
+  isOpen: boolean;
   onClose: () => void;
 };
 
-export function OrderDetailDialog({ order, history, open, onClose }: Props) {
-  if (!open || !order) return null;
+export function OrderDetailDialog({ order, history, isOpen, onClose }: Props) {
+  if (!isOpen || !order) return null;
 
   const timelineEvents = history.map((item) => {
     const meta = TIMELINE_STATUS_META[item.toStatus];
@@ -94,7 +95,7 @@ export function OrderDetailDialog({ order, history, open, onClose }: Props) {
       }
       headerAccessory={<OrderStatusBadge status={order.status} />}
       icon={<ShieldCheck size={18} />}
-      isOpen={open}
+      isOpen={isOpen}
       maxWidthClassName="max-w-5xl"
       onClose={onClose}
       panelClassName="flex max-h-[85vh] flex-col"
@@ -190,7 +191,7 @@ function TimelineItem({
   time,
   last,
 }: {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: ComponentType<{ size?: number; className?: string }>;
   iconClassName?: string;
   title: string;
   description?: string;

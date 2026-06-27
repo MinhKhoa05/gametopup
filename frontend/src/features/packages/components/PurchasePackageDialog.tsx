@@ -11,9 +11,9 @@ type PackagePurchaseDraft = {
 };
 
 type PackagePurchaseDialogProps = {
-  busy: boolean;
   game: Game;
   isOpen: boolean;
+  loading: boolean;
   onClose: () => void;
   onConfirm: (draft: PackagePurchaseDraft) => void;
   selectedPackage: GamePackage;
@@ -21,9 +21,9 @@ type PackagePurchaseDialogProps = {
 };
 
 export function PurchasePackageDialog({
-  busy,
   game,
   isOpen,
+  loading,
   onClose,
   onConfirm,
   selectedPackage,
@@ -73,7 +73,7 @@ export function PurchasePackageDialog({
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button
             className="sm:min-w-32"
-            disabled={busy}
+            disabled={loading}
             variant="outline"
             onClick={onClose}
           >
@@ -81,8 +81,8 @@ export function PurchasePackageDialog({
           </Button>
           <Button
             className="sm:min-w-40"
-            disabled={busy || !canConfirm}
-            loading={busy}
+            disabled={loading || !canConfirm}
+            loading={loading}
             variant="primary"
             onClick={handleConfirm}
           >
@@ -92,7 +92,7 @@ export function PurchasePackageDialog({
       }
       icon={<ShoppingCart size={18} />}
       isOpen={isOpen}
-      loading={busy}
+      loading={loading}
       maxWidthClassName="max-w-[560px]"
       onClose={onClose}
       title="Xác nhận đơn hàng"

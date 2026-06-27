@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { useMyOrdersQuery } from "@/features/orders/server";
 import { OrderStatus } from "@/features/orders/types";
+import type { Order } from "@/features/orders/types";
 import type { FilterChipGroupItem } from "@/shared/components";
+import { filterByQuery } from "@/shared/lib/search";
 
 const PAGE_SIZE = 6;
 
@@ -21,6 +23,21 @@ export const STATUS_OPTIONS = [
   { label: "Đã hủy", value: OrderStatus.Cancelled },
 ] satisfies readonly FilterChipGroupItem<OrderStatusFilter>[];
 
+function isActiveOrderStatus(status: OrderStatus) {
+  return status === OrderStatus.Pending || status === OrderStatus.Processing;
+}
+
+function getOrderSearchText(
+  order: Pick<Order, "gameName" | "packageName" | "gameAccountInfo" | "id">,
+) {
+  return [
+    order.gameName,
+    order.packageName,
+    order.gameAccountInfo,
+    String(order.id),
+  ].join(" ");
+}
+
 export function useOrders() {
   const { data = [], isPending, isError } = useMyOrdersQuery();
 
@@ -32,45 +49,34 @@ export function useOrders() {
   const [page, setPage] = useState(1);
 
   const orders = useMemo(() => {
-    const keyword = filters.search.trim().toLowerCase();
+    const statusFilteredOrders = data.filter((order) => {
+      if (filters.status === "active" && !isActiveOrderStatus(order.status)) {
+        return false;
+      }
 
-    return data
-      .filter((order) => {
-        if (
-          filters.status === "active" &&
-          ![OrderStatus.Pending, OrderStatus.Processing].includes(order.status)
-        ) {
-          return false;
-        }
+      if (
+        filters.status !== "active" &&
+        filters.status !== "all" &&
+        order.status !== filters.status
+      ) {
+        return false;
+      }
 
-        if (
-          filters.status !== "active" &&
-          filters.status !== "all" &&
-          order.status !== filters.status
-        ) {
-          return false;
-        }
+      return true;
+    });
 
-        if (!keyword) return true;
-
-        return [
-          order.gameName,
-          order.packageName,
-          order.gameAccountInfo,
-          String(order.id),
-        ].some((value) => value.toLowerCase().includes(keyword));
-      })
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return filterByQuery(
+      statusFilteredOrders,
+      filters.search,
+      getOrderSearchText,
+    ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [data, filters]);
 
   const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
 
   const stats = {
-    active: orders.filter(
-      (x) =>
-        x.status === OrderStatus.Pending || x.status === OrderStatus.Processing,
-    ).length,
+    active: orders.filter((order) => isActiveOrderStatus(order.status)).length,
     completed: orders.filter((x) => x.status === OrderStatus.Completed).length,
     total: orders.length,
     amount: orders.reduce((sum, x) => sum + x.packagePrice, 0),

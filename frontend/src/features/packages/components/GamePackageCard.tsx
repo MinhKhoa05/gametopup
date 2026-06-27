@@ -36,6 +36,7 @@ export function GamePackageCard({
       className={classNames(
         "group relative mx-auto flex aspect-[0.82/1] w-full max-w-[214px] min-w-0 flex-col overflow-hidden rounded-2xl border p-1.5 text-center transition-all duration-300",
         "border-white/[0.06] bg-[var(--gt-card)]",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gt-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--gt-bg)]",
         "hover:-translate-y-1 hover:border-cyan-400/20 hover:shadow-[0_10px_24px_rgba(0,0,0,.25)]",
         !isSelected && "opacity-[0.96] hover:opacity-100",
         isSelected &&

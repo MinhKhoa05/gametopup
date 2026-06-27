@@ -7,11 +7,11 @@ import { useChangePasswordMutation } from "../../auth/server";
 import { Button, IconBox, Field, FormActions } from "@/shared/components";
 
 type Props = {
-  open: boolean;
+  isOpen: boolean;
   onClose: () => void;
 };
 
-export function ChangePasswordDialog({ open, onClose }: Props) {
+export function ChangePasswordDialog({ isOpen, onClose }: Props) {
   const changePasswordMutation = useChangePasswordMutation();
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -23,7 +23,7 @@ export function ChangePasswordDialog({ open, onClose }: Props) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    if (!open) {
+    if (!isOpen) {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -34,19 +34,23 @@ export function ChangePasswordDialog({ open, onClose }: Props) {
 
       changePasswordMutation.reset();
     }
-  }, [open]);
+  }, [isOpen]);
 
-  if (!open) {
+  if (!isOpen) {
     return null;
   }
 
   const passwordMismatch =
     confirmPassword.length > 0 && confirmPassword !== newPassword;
 
+  const hasCurrentPassword = currentPassword.trim().length > 0;
+  const hasNewPassword = newPassword.trim().length > 0;
+  const hasConfirmPassword = confirmPassword.trim().length > 0;
+
   const canSubmit =
-    currentPassword.trim() &&
-    newPassword.trim() &&
-    confirmPassword.trim() &&
+    hasCurrentPassword &&
+    hasNewPassword &&
+    hasConfirmPassword &&
     !passwordMismatch &&
     !changePasswordMutation.isPending;
 
@@ -68,8 +72,6 @@ export function ChangePasswordDialog({ open, onClose }: Props) {
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
       <div className="flex w-full max-w-xl flex-col overflow-hidden rounded-[28px] border gt-border bg-[var(--gt-panel)] shadow-[0_30px_80px_rgba(0,0,0,.55)]">
-        {/* Header */}
-
         <div className="flex items-start justify-between border-b gt-border px-6 py-5">
           <div className="flex items-start gap-4">
             <IconBox tone="primary" className="h-12 w-12 rounded-[16px]">
@@ -96,81 +98,35 @@ export function ChangePasswordDialog({ open, onClose }: Props) {
           </Button>
         </div>
 
-        {/* Body */}
-
         <form className="flex flex-col" onSubmit={handleSubmit}>
           <div className="grid gap-5 p-6">
-            <Field
-              required
+            <PasswordField
               label="Mật khẩu hiện tại"
-              type={showCurrentPassword ? "text" : "password"}
               autoComplete="current-password"
               value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              trailing={
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPassword((v) => !v)}
-                  className="pointer-events-auto rounded-md p-1 text-slate-400 transition hover:text-cyan-300"
-                  aria-label={
-                    showCurrentPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
-                  }
-                >
-                  {showCurrentPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
-              }
+              onChange={setCurrentPassword}
+              visible={showCurrentPassword}
+              onToggleVisibility={() => setShowCurrentPassword((value) => !value)}
             />
 
-            <Field
-              required
+            <PasswordField
               label="Mật khẩu mới"
-              type={showNewPassword ? "text" : "password"}
               autoComplete="new-password"
               hint="Ít nhất 8 ký tự, gồm chữ hoa, chữ số và ký tự đặc biệt."
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              trailing={
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword((v) => !v)}
-                  className="pointer-events-auto rounded-md p-1 text-slate-400 transition hover:text-cyan-300"
-                  aria-label={showNewPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                >
-                  {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              }
+              onChange={setNewPassword}
+              visible={showNewPassword}
+              onToggleVisibility={() => setShowNewPassword((value) => !value)}
             />
 
-            <Field
-              required
+            <PasswordField
               label="Xác nhận mật khẩu mới"
-              type={showConfirmPassword ? "text" : "password"}
               autoComplete="new-password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              error={
-                passwordMismatch ? "Mật khẩu xác nhận không khớp." : undefined
-              }
-              trailing={
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword((v) => !v)}
-                  className="pointer-events-auto rounded-md p-1 text-slate-400 transition hover:text-cyan-300"
-                  aria-label={
-                    showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
-                  }
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
-              }
+              onChange={setConfirmPassword}
+              error={passwordMismatch ? "Mật khẩu xác nhận không khớp." : undefined}
+              visible={showConfirmPassword}
+              onToggleVisibility={() => setShowConfirmPassword((value) => !value)}
             />
 
             {changePasswordMutation.error instanceof Error && (
@@ -179,8 +135,6 @@ export function ChangePasswordDialog({ open, onClose }: Props) {
               </div>
             )}
           </div>
-
-          {/* Footer */}
 
           <div className="border-t gt-border bg-[var(--gt-panel-soft)] px-6 py-5">
             <FormActions
@@ -199,5 +153,50 @@ export function ChangePasswordDialog({ open, onClose }: Props) {
       </div>
     </div>,
     document.body,
+  );
+}
+
+type PasswordFieldProps = {
+  autoComplete: string;
+  error?: string;
+  hint?: string;
+  label: string;
+  onChange: (value: string) => void;
+  onToggleVisibility: () => void;
+  value: string;
+  visible: boolean;
+};
+
+function PasswordField({
+  autoComplete,
+  error,
+  hint,
+  label,
+  onChange,
+  onToggleVisibility,
+  value,
+  visible,
+}: PasswordFieldProps) {
+  return (
+    <Field
+      required
+      autoComplete={autoComplete}
+      error={error}
+      hint={hint}
+      label={label}
+      type={visible ? "text" : "password"}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      trailing={
+        <button
+          type="button"
+          onClick={onToggleVisibility}
+          className="pointer-events-auto rounded-md p-1 text-slate-400 transition hover:text-cyan-300"
+          aria-label={visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+        >
+          {visible ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
+      }
+    />
   );
 }

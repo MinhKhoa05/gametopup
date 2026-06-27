@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button, IconBox } from "@/shared/components";
 import { classNames } from "@/shared/lib/classNames";
 import { formatCurrency } from "@/shared/lib/format";
+import { normalizeQuery } from "@/shared/lib/search";
 import {
   HEADER_NAV_ITEMS,
   HEADER_ADMIN_MENU_ITEMS,
@@ -90,7 +91,7 @@ export function AppHeader() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === "Enter" && query.trim()) {
+                if (event.key === "Enter" && normalizeQuery(query)) {
                   navigate(routes.games());
                 }
               }}
@@ -133,6 +134,7 @@ export function AppHeader() {
                 <button
                   type="button"
                   className="gt-button gt-button-secondary relative inline-flex h-11 w-11 items-center justify-center rounded-2xl gt-text-soft"
+                  aria-label="Thông báo"
                   title="Thông báo"
                 >
                   <Bell size={18} />

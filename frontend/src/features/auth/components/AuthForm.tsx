@@ -8,14 +8,14 @@ import type { AuthFormData } from '../types';
 
 type AuthFormProps = {
   mode: AuthMode;
-  busy: boolean;
+  loading: boolean;
   onSubmitAuth: (mode: AuthMode, form: AuthFormData) => Promise<unknown>;
   switchHref: string;
   switchLabel: string;
   switchPrompt: string;
 };
 
-export function AuthForm({ busy, mode, onSubmitAuth, switchHref, switchLabel, switchPrompt }: AuthFormProps) {
+export function AuthForm({ loading, mode, onSubmitAuth, switchHref, switchLabel, switchPrompt }: AuthFormProps) {
   const [form, setForm] = useState<AuthFormData>(() => ({
     displayName: '',
     email: getRememberedAuthEmail(),
@@ -106,8 +106,8 @@ export function AuthForm({ busy, mode, onSubmitAuth, switchHref, switchLabel, sw
 
       {error ? <p className="text-sm font-medium text-rose-200">{error}</p> : null}
 
-      <Button type="submit" variant="primary" disabled={busy}>
-        {busy ? 'Đang xử lý...' : isRegister ? 'Đăng ký' : 'Đăng nhập'}
+      <Button type="submit" variant="primary" disabled={loading}>
+        {loading ? 'Đang xử lý...' : isRegister ? 'Đăng ký' : 'Đăng nhập'}
       </Button>
 
       <p className="text-center text-sm gt-text-muted">

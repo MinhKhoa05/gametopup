@@ -39,6 +39,15 @@ const TRANSACTION_FILTERS = [
 
 type TransactionFilter = (typeof TRANSACTION_FILTERS)[number]["value"];
 
+const TRANSACTION_TYPE_BY_FILTER: Record<
+  Exclude<TransactionFilter, "all">,
+  WalletTransactionType
+> = {
+  deposit: WalletTransactionType.Deposit,
+  refund: WalletTransactionType.Refund,
+  purchaseOrder: WalletTransactionType.PurchaseOrder,
+};
+
 const DEPOSIT_FILTERS = [
   { label: "Tất cả", value: "all" },
   { label: "Đang chờ", value: "pending" },
@@ -47,6 +56,15 @@ const DEPOSIT_FILTERS = [
 ] as const;
 
 type DepositFilter = (typeof DEPOSIT_FILTERS)[number]["value"];
+
+const DEPOSIT_STATUS_BY_FILTER: Record<
+  Exclude<DepositFilter, "all">,
+  WalletDepositStatus
+> = {
+  pending: WalletDepositStatus.Pending,
+  confirmed: WalletDepositStatus.UserConfirmed,
+  approved: WalletDepositStatus.Approved,
+};
 
 type DatedItem = {
   createdAt: string;
@@ -93,21 +111,10 @@ export function WalletPage() {
   const filteredTransactions = useMemo(() => {
     if (transactionFilter === "all") return transactions;
 
-    return transactions.filter((transaction) => {
-      if (transactionFilter === "deposit") {
-        return transaction.type === WalletTransactionType.Deposit;
-      }
-
-      if (transactionFilter === "refund") {
-        return transaction.type === WalletTransactionType.Refund;
-      }
-
-      if (transactionFilter === "purchaseOrder") {
-        return transaction.type === WalletTransactionType.PurchaseOrder;
-      }
-
-      return true;
-    });
+    return transactions.filter(
+      (transaction) =>
+        transaction.type === TRANSACTION_TYPE_BY_FILTER[transactionFilter],
+    );
   }, [transactionFilter, transactions]);
 
   const transactionGroups = useMemo(
@@ -118,17 +125,7 @@ export function WalletPage() {
   const depositGroups = useMemo(() => {
     const filteredDeposits = deposits.filter((deposit) => {
       if (depositFilter === "all") return true;
-      if (depositFilter === "pending") {
-        return deposit.status === WalletDepositStatus.Pending;
-      }
-      if (depositFilter === "confirmed") {
-        return deposit.status === WalletDepositStatus.UserConfirmed;
-      }
-      if (depositFilter === "approved") {
-        return deposit.status === WalletDepositStatus.Approved;
-      }
-
-      return true;
+      return deposit.status === DEPOSIT_STATUS_BY_FILTER[depositFilter];
     });
 
     return groupByDay(filteredDeposits);

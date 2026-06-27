@@ -37,6 +37,8 @@ function ProfileContent({ user }: { user: User }) {
 
   const [draftName, setDraftName] = useState("");
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const trimmedDraftName = draftName.trim();
+  const currentDisplayName = (user.displayName ?? "").trim();
 
   useEffect(() => {
     setDraftName(user.displayName ?? "");
@@ -46,7 +48,7 @@ function ProfileContent({ user }: { user: User }) {
     event.preventDefault();
 
     await updateProfileMutation.mutateAsync({
-      displayName: draftName.trim(),
+      displayName: trimmedDraftName,
     });
   }
 
@@ -72,8 +74,6 @@ function ProfileContent({ user }: { user: User }) {
 
             <section className="w-full">
               <div className="grid items-stretch gap-6 xl:grid-cols-[minmax(0,2fr)_500px]">
-                {/* ========================= PROFILE ========================= */}
-
                 <PanelShell className="flex h-full flex-col">
                   <div className="px-6 pt-6">
                     <SectionHeading
@@ -118,17 +118,14 @@ function ProfileContent({ user }: { user: User }) {
                             : "Lưu thay đổi"
                         }
                         disabled={
-                          draftName.trim().length === 0 ||
-                          draftName.trim() ===
-                            (user.displayName ?? "").trim() ||
+                          trimmedDraftName.length === 0 ||
+                          trimmedDraftName === currentDisplayName ||
                           updateProfileMutation.isPending
                         }
                       />
                     </div>
                   </form>
                 </PanelShell>
-
-                {/* ========================= SECURITY ========================= */}
 
                 <PanelShell className="flex flex-col sticky top-24 h-fit">
                   <div className="px-6 pt-6">
@@ -176,7 +173,7 @@ function ProfileContent({ user }: { user: User }) {
       </div>
 
       <ChangePasswordDialog
-        open={isChangePasswordOpen}
+        isOpen={isChangePasswordOpen}
         onClose={() => setIsChangePasswordOpen(false)}
       />
     </>

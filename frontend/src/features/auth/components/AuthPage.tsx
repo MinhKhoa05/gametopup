@@ -74,7 +74,7 @@ export function AuthPage({ mode }: AuthPageProps) {
             <div className="mt-5">
               <AuthForm
                 mode={mode}
-                busy={isSubmitting}
+                loading={isSubmitting}
                 onSubmitAuth={submitAuth}
                 switchHref={meta.switchHref}
                 switchLabel={meta.switchLabel}

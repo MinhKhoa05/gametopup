@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
@@ -14,10 +13,7 @@ export function HomeGuestPage() {
 
   const gamesQuery = useGamesQuery();
 
-  const games = useMemo(
-    () => (gamesQuery.data ?? []).slice(0, 10),
-    [gamesQuery.data],
-  );
+  const games = (gamesQuery.data ?? []).slice(0, 10);
 
   const isGamesLoading = gamesQuery.isPending && games.length === 0;
 

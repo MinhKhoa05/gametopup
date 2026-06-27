@@ -1,5 +1,5 @@
 import type { GamePackage } from '@/features/games/contracts';
-import { GamePackageCard } from '../../games/components/GamePackageCard';
+import { GamePackageCard } from './GamePackageCard';
 
 type GamePackageGridProps = {
   isLoading: boolean;

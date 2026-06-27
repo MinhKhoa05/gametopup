@@ -11,9 +11,9 @@ export function GameCard({ game, onClick }: GameCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className="group w-full text-center"
+      className="group w-full rounded-2xl text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gt-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--gt-bg)]"
     >
-      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[var(--gt-card)] p-2 transition-all duration-200 hover:-translate-y-1 hover:border-cyan-400/20 hover:shadow-[0_10px_24px_rgba(0,0,0,.25)]">
+      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[var(--gt-card)] p-2 transition-all duration-200 group-hover:-translate-y-1 group-hover:border-cyan-400/20 group-hover:shadow-[0_10px_24px_rgba(0,0,0,.25)]">
         <div className="aspect-square overflow-hidden rounded-xl bg-[var(--gt-bg-soft)]">
           <ImageBox
             src={game.imageUrl}

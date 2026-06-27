@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { ClipboardList } from "lucide-react";
-import { useOrders } from "@/features/orders/hooks/useOrders";
+import { Activity, BadgeCheck, ClipboardList, Coins, Package } from "lucide-react";
+import { STATUS_OPTIONS, useOrders } from "@/features/orders/hooks/useOrders";
 import { OrderListItem } from "@/features/orders/components/OrderListItem";
 import { OrderListSkeleton } from "@/features/orders/components/OrderListSkeleton";
 import { OrderDetailDialog } from "../components/OrderDetailDialog";
@@ -15,10 +15,8 @@ import {
   SearchBar,
   StatCard,
 } from "@/shared/components";
-import { STATUS_OPTIONS } from "../hooks/useOrders";
 import { formatCurrency } from "@/shared/lib/format";
-import { Coins, Activity, Package, BadgeCheck } from "lucide-react";
-import { Order } from "@/features/orders/types";
+import type { Order } from "@/features/orders/types";
 import { useOrderHistoryQuery } from "../server";
 
 export function OrdersPage() {
@@ -166,7 +164,7 @@ export function OrdersPage() {
 
         <OrderDetailDialog
           order={selectedOrder}
-          open={selectedOrder !== null}
+          isOpen={selectedOrder !== null}
           history={history}
           onClose={() => setSelectedOrder(null)}
         />
