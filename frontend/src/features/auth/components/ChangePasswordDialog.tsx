@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { LockKeyhole, ShieldCheck } from "lucide-react";
 
 import { useChangePasswordMutation } from "../../auth/server";
@@ -6,33 +6,15 @@ import { useChangePasswordMutation } from "../../auth/server";
 import { Dialog, FormActions, PasswordField } from "@/shared/components";
 
 type Props = {
-  isOpen: boolean;
   onClose: () => void;
 };
 
-export function ChangePasswordDialog({ isOpen, onClose }: Props) {
+export function ChangePasswordDialog({ onClose }: Props) {
   const changePasswordMutation = useChangePasswordMutation();
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  function resetForm() {
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    changePasswordMutation.reset();
-  }
-
-  useEffect(() => {
-    if (!isOpen) {
-      resetForm();
-    }
-  }, [isOpen, changePasswordMutation]);
-
-  if (!isOpen) {
-    return null;
-  }
 
   const passwordMismatch =
     confirmPassword !== "" && confirmPassword !== newPassword;
@@ -52,7 +34,6 @@ export function ChangePasswordDialog({ isOpen, onClose }: Props) {
       newPassword,
     });
 
-    resetForm();
     onClose();
   }
 
@@ -73,7 +54,7 @@ export function ChangePasswordDialog({ isOpen, onClose }: Props) {
         />
       }
       icon={<LockKeyhole size={18} />}
-      isOpen={isOpen}
+      isOpen
       loading={changePasswordMutation.isPending}
       maxWidthClassName="max-w-xl"
       onClose={onClose}

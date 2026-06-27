@@ -172,10 +172,9 @@ function ProfileContent({ user }: { user: User }) {
         </Container>
       </div>
 
-      <ChangePasswordDialog
-        isOpen={isChangePasswordOpen}
-        onClose={() => setIsChangePasswordOpen(false)}
-      />
+      {isChangePasswordOpen && (
+        <ChangePasswordDialog onClose={() => setIsChangePasswordOpen(false)} />
+      )}
     </>
   );
 }

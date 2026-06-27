@@ -5,8 +5,8 @@ export type AdminSection = (typeof ADMIN_SECTIONS)[number];
 
 export const ROUTE_PATHS = {
   home: '/',
-  login: '/login',
-  register: '/register',
+  login: '/auth/login',
+  register: '/auth/register',
   games: '/games',
   gameDetail: '/games/:gameId',
   wallet: '/wallet',

@@ -124,11 +124,11 @@ export function AppHeader() {
             </button>
           ) : null}
 
-          <div className="hidden items-center gap-3 sm:flex">
+          <div className="flex items-center gap-2 sm:gap-3">
             {isChecking ? (
-              <div className="flex h-11 min-w-44 items-center gap-3 rounded-2xl border gt-border bg-[var(--gt-card)] px-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border gt-border bg-[var(--gt-card)] px-2 sm:h-11 sm:w-auto sm:min-w-44 sm:justify-start sm:gap-3 sm:px-3">
                 <div className="h-8 w-8 animate-pulse rounded-full bg-white/10" />
-                <div className="grid gap-1">
+                <div className="hidden gap-1 sm:grid">
                   <div className="h-3 w-24 animate-pulse rounded-full bg-white/10" />
                   <div className="h-2.5 w-16 animate-pulse rounded-full bg-white/10" />
                 </div>
@@ -137,7 +137,7 @@ export function AppHeader() {
               <>
                 <button
                   type="button"
-                  className="gt-button gt-button-secondary relative inline-flex h-11 w-11 items-center justify-center rounded-2xl gt-text-soft"
+                  className="gt-button gt-button-secondary relative hidden h-11 w-11 items-center justify-center rounded-2xl gt-text-soft sm:inline-flex"
                   aria-label="Thông báo"
                   title="Thông báo"
                 >
@@ -157,7 +157,8 @@ export function AppHeader() {
                 type="button"
                 variant="primary"
                 size="md"
-                className="min-h-11 rounded-2xl px-4 text-sm font-bold text-slate-950 shadow-[0_8px_22px_rgba(34,211,238,0.2)]"
+                aria-label="Đăng nhập"
+                className="min-h-10 rounded-2xl px-3 text-sm font-bold text-slate-950 shadow-[0_8px_22px_rgba(34,211,238,0.2)] sm:min-h-11 sm:px-4"
                 onClick={() => navigate(routes.login())}
                 leadingIcon={<UserRound size={17} />}
               >

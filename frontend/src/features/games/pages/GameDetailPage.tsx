@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Container } from '@/shared/components';
-import { SiteCredits } from '@/app/components';
 import { routes } from '@/app/router/routes';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { useGamesQuery } from '@/features/games/server';
@@ -184,9 +183,6 @@ export function GameDetailPage() {
           <GamePackageDetailPanel gameName={game.name} onPurchase={handleRequestPurchase} selectedPackage={selectedPackage} />
         </div>
 
-        <div className="mt-16 sm:mt-20">
-          <SiteCredits />
-        </div>
       </div>
 
       {selectedPackage ? (

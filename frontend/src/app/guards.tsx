@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { ROUTE_PATHS } from "@/app/router/routes";
 import { UserRole } from "@/features/auth/types";
@@ -10,22 +10,13 @@ type GuardProps = {
 
 export function RequireAuth({ children }: GuardProps) {
   const { isAuthenticated, isChecking } = useAuthSession();
-  const location = useLocation();
 
   if (isChecking) {
     return <GuardLoadingState />;
   }
 
   if (!isAuthenticated) {
-    return (
-      <Navigate
-        to={ROUTE_PATHS.login}
-        replace
-        state={{
-          from: `${location.pathname}${location.search}${location.hash}`,
-        }}
-      />
-    );
+    return <Navigate to={ROUTE_PATHS.login} replace />;
   }
 
   return children;

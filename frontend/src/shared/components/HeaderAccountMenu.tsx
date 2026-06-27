@@ -71,10 +71,12 @@ export function HeaderAccountMenu({
         aria-expanded={open}
         onClick={toggleMenu}
         className={classNames(
-          "gt-button gt-button-secondary min-h-10 rounded-2xl px-2.5 py-2",
+          "gt-button gt-button-secondary min-h-10 gap-2 rounded-2xl px-2.5 py-2",
           open && "border-cyan/25 bg-cyan/10 text-cyan-50",
         )}
       >
+        <UserRound size={17} className="gt-text sm:hidden" />
+
         <span className="hidden max-w-[140px] truncate text-sm font-semibold gt-text sm:block">
           {displayName}
         </span>

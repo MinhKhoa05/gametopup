@@ -1,121 +1,130 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, UserRound } from 'lucide-react';
-import { Button, Field } from '@/shared/components';
-import { getRememberedAuthEmail } from '../server';
-import type { AuthMode } from '../hooks/useAuthSession';
-import type { AuthFormData } from '../types';
+import { useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+
+import { Mail, UserRound } from "lucide-react";
+
+import { Button, Field, PasswordField } from "@/shared/components";
+
+import { getRememberedAuthEmail } from "../server";
+import type { AuthMode } from "../hooks/useAuthSession";
+import type { AuthFormData } from "../types";
 
 type AuthFormProps = {
   mode: AuthMode;
   loading: boolean;
   onSubmitAuth: (mode: AuthMode, form: AuthFormData) => Promise<unknown>;
-  switchHref: string;
-  switchLabel: string;
-  switchPrompt: string;
 };
 
-export function AuthForm({ loading, mode, onSubmitAuth, switchHref, switchLabel, switchPrompt }: AuthFormProps) {
-  const [form, setForm] = useState<AuthFormData>(() => ({
-    displayName: '',
-    email: getRememberedAuthEmail(),
-    password: '',
-  }));
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+const AUTH_FIELD_WRAPPER_CLASS = "mb-0";
 
-  const isRegister = mode === 'register';
-  const passwordType = showPassword ? 'text' : 'password';
+export function AuthForm({ mode, loading, onSubmitAuth }: AuthFormProps) {
+  const [form, setForm] = useState<AuthFormData>(() => ({
+    displayName: "",
+    email: getRememberedAuthEmail(),
+    password: "",
+  }));
+
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const isRegister = mode === "register";
+
+  function updateForm<K extends keyof AuthFormData>(
+    key: K,
+    value: AuthFormData[K],
+  ) {
+    setForm((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (isRegister && confirmPassword !== form.password) {
+      setError("Mật khẩu xác nhận chưa khớp.");
+      return;
+    }
+
+    setError("");
+
+    try {
+      await onSubmitAuth(mode, form);
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Không thể thực hiện yêu cầu.",
+      );
+    }
+  }
 
   return (
-    <form
-      className="grid gap-4"
-      onSubmit={async (event) => {
-        event.preventDefault();
-
-        if (isRegister && confirmPassword !== form.password) {
-          setError('Mật khẩu xác nhận chưa khớp.');
-          return;
-        }
-
-        setError('');
-
-        try {
-          await onSubmitAuth(mode, form);
-        } catch (submitError) {
-          setError(submitError instanceof Error ? submitError.message : 'Không thể thực hiện yêu cầu.');
-        }
-      }}
-    >
-      {isRegister ? (
+    <form className="grid gap-3.5" onSubmit={handleSubmit}>
+      {isRegister && (
         <Field
+          required
           label="Tên hiển thị"
-          value={form.displayName}
-          onChange={(event) => setForm((current) => ({ ...current, displayName: event.target.value }))}
+          wrapperClassName={AUTH_FIELD_WRAPPER_CLASS}
           placeholder="Nguyễn Văn A"
           autoComplete="name"
+          value={form.displayName}
           trailing={<UserRound size={18} />}
-          required
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            updateForm("displayName", event.target.value)
+          }
         />
-      ) : null}
+      )}
 
       <Field
+        required
         label="Email"
-        value={form.email}
-        onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-        placeholder="Nhập email của bạn"
+        wrapperClassName={AUTH_FIELD_WRAPPER_CLASS}
         type="email"
+        placeholder="Nhập email của bạn"
         autoComplete="email"
+        value={form.email}
         trailing={<Mail size={18} />}
-        required
-      />
-
-      <Field
-        label="Mật khẩu"
-        value={form.password}
-        onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-        placeholder="Nhập mật khẩu"
-        type={passwordType}
-        autoComplete={isRegister ? 'new-password' : 'current-password'}
-        trailing={
-          <button
-            type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-transparent bg-transparent gt-text-muted transition-all duration-200 hover:-translate-y-px hover:bg-cyan/10 hover:text-cyan-50 focus-visible:-translate-y-px focus-visible:bg-cyan/10 focus-visible:text-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/40"
-            onClick={() => setShowPassword((current) => !current)}
-            aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-          >
-            {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
-          </button>
+        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+          updateForm("email", event.target.value)
         }
-        required
       />
 
-      {isRegister ? (
-        <Field
-          label="Xác nhận mật khẩu"
-          value={confirmPassword}
-          onChange={(event) => setConfirmPassword(event.target.value)}
-          placeholder="Nhập lại mật khẩu"
-          type={passwordType}
-          autoComplete="new-password"
-          trailing={<Lock size={18} />}
+      <PasswordField
+        required
+        label="Mật khẩu"
+        wrapperClassName={AUTH_FIELD_WRAPPER_CLASS}
+        autoComplete={isRegister ? "new-password" : "current-password"}
+        value={form.password}
+        onChange={(event) => updateForm("password", event.target.value)}
+      />
+
+      {isRegister && (
+        <PasswordField
           required
+          label="Xác nhận mật khẩu"
+          wrapperClassName={AUTH_FIELD_WRAPPER_CLASS}
+          autoComplete="new-password"
+          value={confirmPassword}
+          error={
+            confirmPassword && confirmPassword !== form.password
+              ? "Mật khẩu xác nhận chưa khớp."
+              : undefined
+          }
+          onChange={(event) => setConfirmPassword(event.target.value)}
         />
-      ) : null}
+      )}
 
-      {error ? <p className="text-sm font-medium text-rose-200">{error}</p> : null}
+      {error && (
+        <div className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          {error}
+        </div>
+      )}
 
-      <Button type="submit" variant="primary" disabled={loading}>
-        {loading ? 'Đang xử lý...' : isRegister ? 'Đăng ký' : 'Đăng nhập'}
+      <Button type="submit" variant="primary" loading={loading} className="mt-1">
+        {isRegister ? "Đăng ký" : "Đăng nhập"}
       </Button>
-
-      <p className="text-center text-sm gt-text-muted">
-        {switchPrompt}{' '}
-        <Link to={switchHref} className="font-semibold text-cyan-200 transition-colors hover:text-cyan-50">
-          {switchLabel}
-        </Link>
-      </p>
     </form>
   );
 }

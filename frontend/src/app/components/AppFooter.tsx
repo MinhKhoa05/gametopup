@@ -2,7 +2,6 @@ import { Github, Linkedin, Mail, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { FOOTER_CONTACT_LINKS, FOOTER_LINK_COLUMNS } from "@/app/config";
 import { routes } from "@/app/router/routes";
-import { SiteCredits } from "@/app/components/";
 import { BrandLogo } from "@/shared/components";
 import { Button } from "@/shared/components";
 
@@ -10,9 +9,9 @@ export function AppFooter() {
   const navigate = useNavigate();
 
   return (
-    <footer className="gt-shell-surface mt-auto border-t gt-border pt-14 pb-10">
+    <footer className="gt-shell-surface mt-auto border-t gt-border pt-12 pb-8">
       <div className="mx-auto max-w-[1480px] px-6">
-        <div className="grid gap-12 border-b gt-border pb-10 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+        <div className="grid gap-12 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <section className="flex max-w-md flex-col gap-5">
             <BrandLogo
               className="w-fit"
@@ -59,8 +58,6 @@ export function AppFooter() {
           ))}
         </div>
       </div>
-
-      <SiteCredits />
     </footer>
   );
 }
