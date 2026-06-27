@@ -1,7 +1,7 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { classNames } from "@/shared/lib/classNames";
 
-type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
+export type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
   wrapperClassName?: string;
   hint?: string;

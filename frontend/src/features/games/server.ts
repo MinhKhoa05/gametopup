@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getGames } from './api';
-import type { Game } from './contracts';
+import type { Game } from './types';
 
 const GAMES_STALE_TIME = 1000 * 60 * 60;
 const GAMES_GC_TIME = 1000 * 60 * 60;

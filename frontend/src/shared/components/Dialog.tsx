@@ -14,7 +14,7 @@ type DialogProps = {
   title: ReactNode;
   description?: ReactNode;
   icon?: ReactNode;
-  headerAccessory?: ReactNode;
+  headerActions?: ReactNode;
   footer?: ReactNode;
 
   loading?: boolean;
@@ -30,7 +30,7 @@ export function Dialog({
   title,
   description,
   icon,
-  headerAccessory,
+  headerActions,
   footer,
   loading = false,
   maxWidthClassName = "max-w-3xl",
@@ -106,8 +106,8 @@ export function Dialog({
             </div>
 
             <div className="flex shrink-0 items-center gap-2 self-end sm:self-start">
-              {headerAccessory ? (
-                <div className="shrink-0">{headerAccessory}</div>
+              {headerActions ? (
+                <div className="shrink-0">{headerActions}</div>
               ) : null}
 
               <Button

@@ -3,7 +3,7 @@ import { ShoppingCart } from "lucide-react";
 
 import { Button, Dialog, Field, ImageBox } from "@/shared/components";
 import { formatCurrency } from "@/shared/lib/format";
-import type { Game, GamePackage } from "@/features/games/contracts";
+import type { Game, GamePackage } from "@/features/games/types";
 
 type PackagePurchaseDraft = {
   characterName: string;

@@ -1,6 +1,6 @@
 import { Button, ImageBox, PanelShell } from "@/shared/components";
 import { formatCurrency } from "@/shared/lib/format";
-import type { GamePackage } from "@/features/games/contracts";
+import type { GamePackage } from "@/features/games/types";
 
 type GamePackageDetailPanelProps = {
   gameName: string;

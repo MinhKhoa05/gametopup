@@ -1,4 +1,4 @@
-import type { Game } from "@/features/games/contracts";
+import type { Game } from "@/features/games/types";
 import { GameCard } from "./GameCard";
 import { GameCardSkeleton } from "./GameCardSkeleton";
 

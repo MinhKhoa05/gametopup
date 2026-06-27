@@ -100,7 +100,7 @@ export function OrderDetailDialog({
           </Button>
         </div>
       }
-      headerAccessory={<OrderStatusBadge status={order.status} />}
+      headerActions={<OrderStatusBadge status={order.status} />}
       icon={<ShieldCheck size={18} />}
       isOpen={isOpen}
       maxWidthClassName="max-w-5xl"

@@ -9,6 +9,8 @@ export type { FilterChipGroupItem } from "./FilterChipGroup";
 export { FilterSelectField } from './FilterSelectField';
 export { EmptyState } from './EmptyState';
 export { Field } from './Field';
+export type { FieldProps } from './Field';
+export { PasswordField } from './PasswordField';
 export { FormActions } from './FormActions';
 export { ImageBox, ImagePicker } from './image';
 export { IconBox } from './IconBox';

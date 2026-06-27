@@ -1,4 +1,4 @@
-import type { GamePackage } from '@/features/games/contracts';
+import type { GamePackage } from '@/features/games/types';
 import { GamePackageCard } from './GamePackageCard';
 
 type GamePackageGridProps = {

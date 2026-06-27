@@ -1,5 +1,5 @@
 import { ImageBox } from "@/shared/components";
-import type { Game } from "@/features/games/contracts";
+import type { Game } from "@/features/games/types";
 
 type GameCardProps = {
   game: Game;

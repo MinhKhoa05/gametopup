@@ -33,10 +33,7 @@ export function useAuthSession() {
     toast.error(getApiMessage(userQuery.error));
   }, [userQuery.error]);
 
-  async function submitAuth(
-    mode: AuthMode,
-    form: AuthFormData,
-  ) {
+  async function submitAuth(mode: AuthMode, form: AuthFormData) {
     const payload = {
       email: form.email.trim(),
       password: form.password,

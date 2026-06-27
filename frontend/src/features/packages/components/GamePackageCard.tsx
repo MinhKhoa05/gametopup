@@ -4,7 +4,7 @@ import { ImageBox } from "@/shared/components";
 import { classNames } from "@/shared/lib/classNames";
 import { formatCurrency } from "@/shared/lib/format";
 
-import type { GamePackage } from "@/features/games/contracts";
+import type { GamePackage } from "@/features/games/types";
 
 type GamePackageCardProps = {
   gamePackage: GamePackage;
