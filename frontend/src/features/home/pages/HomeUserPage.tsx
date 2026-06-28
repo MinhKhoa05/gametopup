@@ -216,7 +216,6 @@ export function HomeUserPage() {
           <GameGrid
             games={featuredGames}
             loading={gamesLoading}
-            skeletonCount={10}
             onGameClick={(game) => navigate(routes.gameDetail(game.id))}
           />
         </section>

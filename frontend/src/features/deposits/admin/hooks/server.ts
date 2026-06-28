@@ -48,7 +48,7 @@ export function useAdminDepositRequestsSection() {
   };
 
   const requests = requestsQuery.data ?? [];
-  const loading = requestsQuery.isPending && !requestsQuery.data;
+  const loading = requestsQuery.isPending && requestsQuery.data === undefined;
   const busy = [requestMutations.approve.isPending, requestMutations.reject.isPending].some(Boolean);
 
   return {

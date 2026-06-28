@@ -60,7 +60,7 @@ export function useAdminUsersSection() {
   };
 
   const users = usersQuery.data ?? [];
-  const loading = usersQuery.isPending && !usersQuery.data;
+  const loading = usersQuery.isPending && usersQuery.data === undefined;
   const busy = [userMutations.update.isPending, userMutations.remove.isPending].some(Boolean);
 
   return {

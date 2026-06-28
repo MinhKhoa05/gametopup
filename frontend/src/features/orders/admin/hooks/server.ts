@@ -62,7 +62,7 @@ export function useAdminOrdersSection() {
   };
 
   const orders = ordersQuery.data ?? [];
-  const loading = ordersQuery.isPending && !ordersQuery.data;
+  const loading = ordersQuery.isPending && ordersQuery.data === undefined;
   const busy = [orderMutations.pick.isPending, orderMutations.complete.isPending, orderMutations.cancel.isPending].some(Boolean);
 
   return {

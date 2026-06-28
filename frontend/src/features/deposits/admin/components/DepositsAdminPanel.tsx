@@ -5,6 +5,7 @@ import {
   DetailRow,
   EmptyState,
   FilterChipGroup,
+  LoadingState,
   MediaListItem,
   PanelShell,
   SearchBar,
@@ -13,7 +14,6 @@ import {
 import { formatCurrency, formatDate } from "@/shared/lib/format";
 import { classNames } from "@/shared/lib/classNames";
 import type { AdminDepositRequest } from "@/features/deposits/types";
-import { AdminListSkeleton } from "@/features/admin/components/AdminShared";
 
 type DepositRequestFilter =
   | "active"
@@ -100,7 +100,7 @@ export function DepositsAdminPanel({
           />
 
           {loading && state.filteredRequests.length === 0 ? (
-            <AdminListSkeleton ariaLabel="Đang tải yêu cầu nạp tiền" rows={5} />
+            <LoadingState title="Dang tai yeu cau nap tien..." />
           ) : state.filteredRequests.length === 0 ? (
             <EmptyState
               description="Không có yêu cầu nào khớp với bộ lọc hiện tại."

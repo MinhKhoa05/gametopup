@@ -1,9 +1,8 @@
 import { CheckCircle2, Save, UserCheck2, UserRound, X } from 'lucide-react';
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import { User, UserRole } from '@/features/auth/types';
-import { Badge, EmptyState, Field, FormActions, MediaListItem, PanelShell, SearchBar, SectionHeading, ToggleField } from '@/shared/components';
+import { Badge, EmptyState, Field, FormActions, LoadingState, MediaListItem, PanelShell, SearchBar, SectionHeading, ToggleField } from '@/shared/components';
 import { formatDate } from '@/shared/lib/format';
-import { AdminListSkeleton } from '@/features/admin/components/AdminShared';
 
 type UsersAdminPanelState = {
   editing: User | null;
@@ -54,7 +53,7 @@ export function UsersAdminPanel({
           <SearchBar className="mb-1" value={state.query} onChange={state.setQuery} placeholder="Tìm theo tên, email, vai trò..." dense />
 
           {loading && state.filteredUsers.length === 0 ? (
-            <AdminListSkeleton ariaLabel="Đang tải người dùng" rows={5} />
+            <LoadingState title="Dang tai nguoi dung..." />
           ) : state.filteredUsers.length === 0 ? (
             <EmptyState title="Không tìm thấy người dùng phù hợp." />
           ) : (

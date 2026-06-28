@@ -12,6 +12,7 @@ import {
   Field,
   FormActions,
   IconBox,
+  LoadingState,
   MediaListItem,
   PageHero,
   PanelShell,
@@ -24,7 +25,11 @@ export function ProfilePage() {
   const user = userQuery.data ?? null;
 
   if (isChecking) {
-    return <ProfilePageSkeleton />;
+    return (
+      <Container className="py-5 sm:py-7 lg:py-8">
+        <LoadingState title="Dang tai ho so..." />
+      </Container>
+    );
   }
 
   if (!user) {
@@ -181,14 +186,3 @@ function ProfileContent({ user }: { user: User }) {
   );
 }
 
-function ProfilePageSkeleton() {
-  return (
-    <Container className="py-5 sm:py-7 lg:py-8">
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.8fr)_minmax(340px,1fr)]">
-        <div className="h-[340px] animate-pulse rounded-[26px] border gt-border bg-white/[0.03]" />
-
-        <div className="h-[180px] animate-pulse rounded-[26px] border gt-border bg-white/[0.03]" />
-      </div>
-    </Container>
-  );
-}

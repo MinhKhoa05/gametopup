@@ -3,11 +3,10 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { routes } from '@/app/router/routes';
-import { AdminListSkeleton } from '@/features/admin/components/AdminShared';
 import { GameGrid } from '@/features/games/components/GameGrid';
 import { GameFormDialog } from '@/features/games/components/GameFormDialog';
 import { useAdminGamesQuery, useCreateGameMutation } from '@/features/games/server';
-import { Button, EmptyState, FilterChipGroup, IconBox, PageHero, SearchBar } from '@/shared/components';
+import { Button, EmptyState, FilterChipGroup, IconBox, LoadingState, PageHero, SearchBar } from '@/shared/components';
 import { filterByQuery } from '@/shared/lib/search';
 
 type StatusFilter = 'all' | 'active' | 'inactive';
@@ -30,7 +29,7 @@ export function GameAdminPage() {
     });
   }, [games, query, statusFilter]);
 
-  const loading = gamesQuery.isPending && !gamesQuery.data;
+  const loading = gamesQuery.isPending && gamesQuery.data === undefined;
 
   const openCreateDialog = () => {
     setCreateOpen(true);
@@ -68,7 +67,7 @@ export function GameAdminPage() {
       />
 
       {loading && visibleGames.length === 0 ? (
-        <AdminListSkeleton ariaLabel="Đang tải game" rows={5} />
+        <LoadingState title="Dang tai game..." />
       ) : visibleGames.length === 0 ? (
         <EmptyState description="Chưa có game phù hợp với bộ lọc hiện tại." title="Không tìm thấy game">
           {query.trim() && (

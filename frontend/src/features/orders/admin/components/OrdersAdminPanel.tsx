@@ -2,7 +2,7 @@ import { CheckCircle2, CircleSlash, Clock3, Send } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { AdminOrder } from '@/features/orders/types';
 import type { User } from '@/features/auth/types';
-import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, ImageBox, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
+import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, ImageBox, LoadingState, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { OrderStatusBadge } from '@/features/orders/components/OrderStatusBadge';
 import { DEFAULT_IMAGE_SRC } from '@/shared/lib/image';
@@ -78,7 +78,7 @@ export function OrdersAdminPanel({
           />
 
           {loading ? (
-            <OrderListSkeleton />
+            <LoadingState title="Dang tai don hang..." />
           ) : state.filteredOrders.length ? (
             <div className="grid gap-3">
               {state.filteredOrders.map((order) => {
@@ -236,23 +236,3 @@ function getOrderActionState(order: AdminOrder, currentAdminId: number | null) {
   };
 }
 
-function OrderListSkeleton() {
-  return (
-    <div className="grid gap-3" aria-busy="true" aria-label="Đang tải đơn hàng">
-      {Array.from({ length: 5 }).map((_, index) => (
-        <div key={index} className="grid gap-4 rounded-[20px] border border-white/[0.06] bg-white/[0.025] p-3 sm:grid-cols-[96px_minmax(0,1fr)_auto] sm:items-center">
-          <div className="aspect-square animate-pulse rounded-[18px] bg-white/6" />
-          <div className="grid gap-2">
-            <div className="h-4 w-40 animate-pulse rounded-full bg-white/6" />
-            <div className="h-3.5 w-52 animate-pulse rounded-full bg-white/6" />
-            <div className="h-3 w-28 animate-pulse rounded-full bg-white/6" />
-          </div>
-          <div className="grid justify-items-end gap-2">
-            <div className="h-6 w-20 animate-pulse rounded-full bg-white/6" />
-            <div className="h-3 w-14 animate-pulse rounded-full bg-white/6" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}

@@ -15,6 +15,7 @@ export { FormActions } from './FormActions';
 export { ImageBox, ImagePicker } from './image';
 export { IconBox } from './IconBox';
 export { HeaderAccountMenu } from './HeaderAccountMenu';
+export { LoadingState } from './LoadingState';
 export { PanelShell } from './PanelShell';
 export { DetailRow } from './DetailRow';
 export { MediaListItem } from './MediaListItem';

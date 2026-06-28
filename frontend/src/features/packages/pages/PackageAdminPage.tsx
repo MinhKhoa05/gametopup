@@ -6,13 +6,13 @@ import { EyeOff, PencilLine, Plus, Save } from 'lucide-react';
 import { routes } from '@/app/router/routes';
 import { useAdminGamesQuery, useUpdateGameMutation } from '@/features/games/server';
 import { GameFormDialog } from '@/features/games/components/GameFormDialog';
-import { GamePackageCard } from '@/features/packages/components/PackageCard';
+import { PackageCard } from '@/features/packages/components/PackageCard';
 import {
   useAdminPackagesQuery,
   useCreatePackageMutation,
   useUpdatePackageMutation,
 } from '@/features/packages/server';
-import type { AdminGamePackage } from '@/features/packages/types';
+import type { AdminGamePackage, GamePackageInput } from '@/features/packages/types';
 import {
   Badge,
   Button,
@@ -24,10 +24,12 @@ import {
   FormActions,
   ImageBox,
   ImagePicker,
+  LoadingState,
   PageHero,
   SearchBar,
   ToggleField,
 } from '@/shared/components';
+import { useAutoSelectId } from '@/shared/hooks/useAutoSelectId';
 import { classNames } from '@/shared/lib/classNames';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 
@@ -52,6 +54,33 @@ const emptyPackageForm: PackageFormState = {
   salePrice: 0,
 };
 
+type PackageInputValues = Omit<GamePackageInput, 'imageFile'> & {
+  imageFile: File | null;
+};
+
+function createPackageFormState(item: AdminGamePackage): PackageFormState {
+  return {
+    availableSlots: item.availableSlots,
+    importPrice: item.importPrice,
+    isActive: item.isActive,
+    name: item.name,
+    originalPrice: item.originalPrice,
+    salePrice: item.salePrice,
+  };
+}
+
+function buildPackageInput(values: PackageInputValues): GamePackageInput {
+  return {
+    imageFile: values.imageFile,
+    importPrice: values.importPrice,
+    isActive: values.isActive,
+    name: values.name.trim(),
+    originalPrice: values.originalPrice,
+    salePrice: values.salePrice,
+    availableSlots: values.availableSlots,
+  };
+}
+
 export function GamePackageAdminPage() {
   const navigate = useNavigate();
   const { gameId: gameIdParam } = useParams<{ gameId?: string }>();
@@ -63,7 +92,6 @@ export function GamePackageAdminPage() {
   const updatePackageMutation = useUpdatePackageMutation();
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
   const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null);
   const [editingPackage, setEditingPackage] = useState<AdminGamePackage | null>(null);
   const [packageForm, setPackageForm] = useState<PackageFormState>(emptyPackageForm);
@@ -72,6 +100,8 @@ export function GamePackageAdminPage() {
   const game = Number.isFinite(gameId)
     ? gamesQuery.data?.find((item) => item.id === gameId) ?? null
     : null;
+  const isInitialGamesLoading = gamesQuery.isPending && gamesQuery.data === undefined;
+  const isInitialPackagesLoading = packagesQuery.isPending && packagesQuery.data === undefined;
 
   const packages = packagesQuery.data ?? [];
 
@@ -91,6 +121,8 @@ export function GamePackageAdminPage() {
     });
   }, [gamePackages, query, statusFilter]);
 
+  const [selectedPackageId, setSelectedPackageId] = useAutoSelectId(visiblePackages, gameId);
+
   const selectedPackage = useMemo(() => {
     if (!selectedPackageId) {
       return null;
@@ -101,28 +133,16 @@ export function GamePackageAdminPage() {
   useEffect(() => {
     setQuery('');
     setStatusFilter('all');
-    setSelectedPackageId(null);
     setActiveDialog(null);
     setEditingPackage(null);
     setPackageImageFile(null);
     setPackageForm(emptyPackageForm);
   }, [gameId]);
 
-  useEffect(() => {
-    if (visiblePackages.length === 0) {
-      setSelectedPackageId(null);
-      return;
-    }
-
-    if (!selectedPackageId || !visiblePackages.some((item) => item.id === selectedPackageId)) {
-      setSelectedPackageId(visiblePackages[0].id);
-    }
-  }, [selectedPackageId, visiblePackages]);
-
-  if (gamesQuery.isPending && !game) {
+  if (isInitialGamesLoading && !game) {
     return (
       <div className="grid gap-5">
-        <PackagesAdminSkeleton />
+        <LoadingState title="Dang tai quan ly goi nap..." />
       </div>
     );
   }
@@ -143,7 +163,7 @@ export function GamePackageAdminPage() {
     );
   }
 
-  const loading = (gamesQuery.isPending && !gamesQuery.data) || (packagesQuery.isPending && !packagesQuery.data);
+  const loading = isInitialGamesLoading || isInitialPackagesLoading;
   const busy =
     updateGameMutation.isPending ||
     createPackageMutation.isPending ||
@@ -194,14 +214,7 @@ export function GamePackageAdminPage() {
 
   const openEditPackageDialog = (item: AdminGamePackage) => {
     setEditingPackage(item);
-    setPackageForm({
-      availableSlots: item.availableSlots,
-      importPrice: item.importPrice,
-      isActive: item.isActive,
-      name: item.name,
-      originalPrice: item.originalPrice,
-      salePrice: item.salePrice,
-    });
+    setPackageForm(createPackageFormState(item));
     setPackageImageFile(null);
     setActiveDialog('package-form');
   };
@@ -212,28 +225,12 @@ export function GamePackageAdminPage() {
     if (editingPackage) {
       await updatePackageMutation.mutateAsync({
         id: editingPackage.id,
-        input: {
-          imageFile: packageImageFile,
-          importPrice: packageForm.importPrice,
-          isActive: packageForm.isActive,
-          name: packageForm.name.trim(),
-          originalPrice: packageForm.originalPrice,
-          salePrice: packageForm.salePrice,
-          availableSlots: packageForm.availableSlots,
-        },
+        input: buildPackageInput({ ...packageForm, imageFile: packageImageFile }),
       });
     } else {
       await createPackageMutation.mutateAsync({
         gameId: game.id,
-        input: {
-          imageFile: packageImageFile,
-          importPrice: packageForm.importPrice,
-          isActive: packageForm.isActive,
-          name: packageForm.name.trim(),
-          originalPrice: packageForm.originalPrice,
-          salePrice: packageForm.salePrice,
-          availableSlots: packageForm.availableSlots,
-        },
+        input: buildPackageInput({ ...packageForm, imageFile: packageImageFile }),
       });
     }
   };
@@ -241,7 +238,7 @@ export function GamePackageAdminPage() {
   const handleTogglePackage = async (item: AdminGamePackage) => {
     await updatePackageMutation.mutateAsync({
       id: item.id,
-      input: {
+      input: buildPackageInput({
         imageFile: null,
         importPrice: item.importPrice,
         isActive: !item.isActive,
@@ -249,7 +246,7 @@ export function GamePackageAdminPage() {
         originalPrice: item.originalPrice,
         salePrice: item.salePrice,
         availableSlots: item.availableSlots,
-      },
+      }),
     });
   };
 
@@ -327,7 +324,7 @@ export function GamePackageAdminPage() {
       />
 
       {loading && visiblePackages.length === 0 ? (
-        <PackagesGridSkeleton />
+        <LoadingState title="Dang tai goi nap..." />
       ) : visiblePackages.length === 0 ? (
         <EmptyState
           title="Không tìm thấy gói"
@@ -347,7 +344,7 @@ export function GamePackageAdminPage() {
       ) : (
         <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,214px))] justify-start gap-3 sm:gap-4">
           {visiblePackages.map((item) => (
-            <GamePackageCard
+            <PackageCard
               key={item.id}
               gamePackage={item}
               overlay={
@@ -617,36 +614,3 @@ function GamePackageFormDialog({
   );
 }
 
-function PackagesGridSkeleton() {
-  return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,214px))] justify-start gap-3 sm:gap-4" aria-busy="true" aria-label="Đang tải gói nạp">
-      {Array.from({ length: 6 }).map((_, index) => (
-        <div
-          key={`package-skeleton-${index}`}
-          className="flex aspect-[0.82/1] w-full max-w-[214px] flex-col gap-3 rounded-[20px] border border-white/[0.06] bg-white/[0.025] p-2"
-          aria-hidden="true"
-        >
-          <div className="aspect-square rounded-[16px] bg-white/[0.05]" />
-          <div className="h-4 w-3/4 animate-pulse rounded-full bg-white/8" />
-          <div className="h-8 w-28 rounded-[12px] bg-white/8" />
-          <div className="h-3 w-20 rounded-full bg-white/6" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function PackagesAdminSkeleton() {
-  return (
-    <div className="grid gap-5">
-      <div className="h-[220px] rounded-[24px] border border-white/[0.08] bg-white/[0.03] animate-pulse" />
-      <div className="h-[3.25rem] rounded-[22px] border border-white/[0.08] bg-white/[0.03] animate-pulse" />
-      <div className="flex flex-wrap gap-2">
-        <div className="h-10 w-24 rounded-full bg-white/[0.05] animate-pulse" />
-        <div className="h-10 w-24 rounded-full bg-white/[0.05] animate-pulse" />
-        <div className="h-10 w-24 rounded-full bg-white/[0.05] animate-pulse" />
-      </div>
-      <PackagesGridSkeleton />
-    </div>
-  );
-}

@@ -19,7 +19,9 @@ import {
 
 export function GamesPage() {
   const navigate = useNavigate();
-  const { data: games = [], isPending } = useGamesQuery();
+  const gamesQuery = useGamesQuery();
+  const games = gamesQuery.data ?? [];
+  const isInitialLoading = gamesQuery.isPending && gamesQuery.data === undefined;
 
   const [query, setQuery] = useState("");
 
@@ -53,7 +55,7 @@ export function GamesPage() {
           </div>
         </PanelShell>
 
-        {isPending || filteredGames.length > 0 ? (
+        {isInitialLoading || filteredGames.length > 0 ? (
           <>
             <SectionHeading
               title="Danh sách game"
@@ -62,7 +64,7 @@ export function GamesPage() {
 
             <GameGrid
               games={filteredGames}
-              loading={isPending && games.length === 0}
+              loading={isInitialLoading}
               onGameClick={(game) => navigate(routes.gameDetail(game.id))}
             />
           </>

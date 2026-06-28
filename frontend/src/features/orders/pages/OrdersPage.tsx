@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Activity, BadgeCheck, ClipboardList, Coins, Package } from "lucide-react";
 import { STATUS_OPTIONS, useOrders } from "@/features/orders/hooks/useOrders";
 import { OrderListItem } from "@/features/orders/components/OrderListItem";
-import { OrderListSkeleton } from "@/features/orders/components/OrderListSkeleton";
 import { OrderDetailDialog } from "../components/OrderDetailDialog";
 import {
   Container,
   EmptyState,
   FilterChipGroup,
   IconBox,
+  LoadingState,
   PageHero,
   Pagination,
   PanelShell,
@@ -127,7 +127,7 @@ export function OrdersPage() {
               />
 
               {isLoading ? (
-                <OrderListSkeleton />
+                <LoadingState title="Dang tai don hang..." />
               ) : isError ? (
                 <EmptyState
                   title="Không tải được đơn hàng"

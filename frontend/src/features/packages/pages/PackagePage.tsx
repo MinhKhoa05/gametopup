@@ -1,18 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { routes } from '@/app/router/routes';
 import { useAuthUserQuery } from '@/features/auth/server';
-import { GamePackagePageSkeleton } from '@/features/packages/components/PackagePageSkeleton';
 import { usePurchaseFlow } from '../usePurchaseFlow';
 import { useGamesQuery } from '@/features/games/server';
-import { GamePackageDetailPanel } from '@/features/packages/components/PackageDetailPanel';
-import { GamePackageGrid } from '@/features/packages/components/PackageGrid';
+import { PackageDetailPanel } from '@/features/packages/components/PackageDetailPanel';
+import { PackageGrid } from '@/features/packages/components/PackageGrid';
 import { PurchasePackageDialog } from '@/features/packages/components/PurchasePackageDialog';
 import { PurchaseSuccessDialog } from '@/features/packages/components/PurchaseSuccessDialog';
 import { usePackagesQuery } from '@/features/packages/server';
 import { useWalletBalanceQuery } from '@/features/wallet/server';
-import { Container, EmptyState, ImageBox, PageHero } from '@/shared/components';
+import { Container, EmptyState, ImageBox, LoadingState, PageHero } from '@/shared/components';
+import { useAutoSelectId } from '@/shared/hooks/useAutoSelectId';
 
 export function GamePackagePage() {
   const navigate = useNavigate();
@@ -20,12 +20,14 @@ export function GamePackagePage() {
   const userQuery = useAuthUserQuery();
   const isAuthenticated = userQuery.data !== null && userQuery.data !== undefined;
   const gamesQuery = useGamesQuery();
-  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
 
   const gameId = Number(gameIdParam ?? 0);
   const game = gamesQuery.data?.find((item) => item.id === gameId);
   const packagesQuery = usePackagesQuery(game?.id ?? null);
   const packages = packagesQuery.data ?? [];
+  const isInitialGamesLoading = gamesQuery.isPending && gamesQuery.data === undefined;
+  const isInitialPackagesLoading = packagesQuery.isPending && packagesQuery.data === undefined;
+  const [selectedPackageId, setSelectedPackageId] = useAutoSelectId(packages, game?.id ?? null);
   const walletQuery = useWalletBalanceQuery(isAuthenticated);
   const walletBalance = walletQuery.data ?? 0;
   const selectedPackage = packages.find((item) => item.id === selectedPackageId);
@@ -37,24 +39,16 @@ export function GamePackagePage() {
   });
 
   useEffect(() => {
-    setSelectedPackageId(null);
     purchase.closeConfirm();
     purchase.closeSuccess();
   }, [gameId]);
 
-  useEffect(() => {
-    if (!packages.length) {
-      setSelectedPackageId(null);
-      return;
-    }
-
-    if (!selectedPackageId || !packages.some((item) => item.id === selectedPackageId)) {
-      setSelectedPackageId(packages[0].id);
-    }
-  }, [selectedPackageId, packages]);
-
-  if (gamesQuery.isPending && !game) {
-    return <GamePackagePageSkeleton />;
+  if (isInitialGamesLoading && !game) {
+    return (
+      <Container className="py-5 sm:py-7 lg:py-8">
+        <LoadingState title="Dang tai trang dat hang..." />
+      </Container>
+    );
   }
 
   if (!game) {
@@ -89,14 +83,14 @@ export function GamePackagePage() {
         />
 
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,6.9fr)_minmax(0,3.1fr)] lg:gap-8">
-          <GamePackageGrid
-            isLoading={packagesQuery.isPending}
+          <PackageGrid
+            isLoading={isInitialPackagesLoading}
             onSelectPackage={setSelectedPackageId}
             packages={packages}
             selectedPackageId={selectedPackageId}
           />
 
-          <GamePackageDetailPanel gameName={game.name} onPurchase={handleRequestPurchase} selectedPackage={selectedPackage ?? null} />
+          <PackageDetailPanel gameName={game.name} onPurchase={handleRequestPurchase} selectedPackage={selectedPackage ?? null} />
         </div>
       </div>
 

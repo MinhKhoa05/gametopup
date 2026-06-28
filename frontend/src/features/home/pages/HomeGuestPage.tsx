@@ -15,7 +15,7 @@ export function HomeGuestPage() {
 
   const games = (gamesQuery.data ?? []).slice(0, 10);
 
-  const isGamesLoading = gamesQuery.isPending && games.length === 0;
+  const isGamesLoading = gamesQuery.isPending && gamesQuery.data === undefined;
 
   return (
     <Container className="relative z-10 py-5 sm:py-7 lg:py-8">
@@ -67,7 +67,6 @@ export function HomeGuestPage() {
           <GameGrid
             games={games}
             loading={isGamesLoading}
-            skeletonCount={10}
             onGameClick={(game) => navigate(routes.gameDetail(game.id))}
           />
         </section>

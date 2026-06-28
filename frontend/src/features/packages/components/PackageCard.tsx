@@ -19,7 +19,7 @@ type GamePackageCardProps = {
   overlay?: ReactNode;
 };
 
-export function GamePackageCard({
+export function PackageCard({
   gamePackage,
   selected = false,
   onClick,

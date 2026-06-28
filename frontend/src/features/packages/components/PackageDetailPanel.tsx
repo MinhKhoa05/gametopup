@@ -8,7 +8,7 @@ type GamePackageDetailPanelProps = {
   selectedPackage: GamePackage | null;
 };
 
-export function GamePackageDetailPanel({
+export function PackageDetailPanel({
   gameName,
   onPurchase,
   selectedPackage,

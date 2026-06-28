@@ -88,9 +88,9 @@ export function useAdminPage({ user }: { user: User | null }) {
     users: usersSection.users,
   });
   const loading =
-    (gamesQuery.isPending && !gamesQuery.data) ||
+    (gamesQuery.isPending && gamesQuery.data === undefined) ||
     depositsSection.loading ||
-    (packagesQuery.isPending && !packagesQuery.data) ||
+    (packagesQuery.isPending && packagesQuery.data === undefined) ||
     ordersSection.loading ||
     usersSection.loading;
   const busy =

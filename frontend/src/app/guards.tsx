@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { ROUTE_PATHS } from "@/app/router/routes";
 import { UserRole } from "@/features/auth/types";
 import { useAuthUserQuery } from "@/features/auth/server";
+import { LoadingState } from "@/shared/components";
 
 type GuardProps = {
   children: ReactNode;
@@ -43,11 +44,5 @@ export function RequireAdmin({ children }: GuardProps) {
 }
 
 function GuardLoadingState() {
-  return (
-    <div className="flex min-h-[50vh] items-center justify-center px-4 py-10 gt-text">
-      <div className="rounded-3xl border border-white/10 bg-[var(--gt-panel)] px-6 py-4 text-sm shadow-xl shadow-black/20">
-        Đang kiểm tra phiên đăng nhập...
-      </div>
-    </div>
-  );
+  return <LoadingState className="min-h-[50vh]" title="Dang kiem tra phien dang nhap..." />;
 }

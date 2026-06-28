@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { ROUTE_PATHS } from './routes';
 import { RequireAdmin, RequireAuth } from '@/app/guards';
+import { LoadingState } from '@/shared/components';
 import { HomePage } from '@/features/home/pages/HomePage';
 import { GamesPage } from '@/features/games/pages/GamePage';
 import { GamePackagePage } from '@/features/packages/pages/PackagePage';
@@ -75,11 +76,5 @@ export function AppRouter() {
 }
 
 function RouteLoadingState() {
-  return (
-    <div className="flex min-h-[50vh] items-center justify-center px-4 py-10 gt-text">
-      <div className="rounded-3xl border border-white/10 bg-[var(--gt-panel)] px-6 py-4 text-sm shadow-xl shadow-black/20">
-        Đang tải trang...
-      </div>
-    </div>
-  );
+  return <LoadingState className="min-h-[50vh]" title="Dang tai trang..." />;
 }
