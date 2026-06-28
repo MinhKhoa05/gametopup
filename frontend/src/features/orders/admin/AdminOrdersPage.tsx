@@ -1,6 +1,6 @@
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { useAdminOrdersPageState, useAdminOrdersSection } from './hooks';
-import { OrdersAdminPanel } from '@/features/admin/orders/components/OrdersAdminPanel';
+import { OrdersAdminPanel } from './components/OrdersAdminPanel';
 
 export function AdminOrdersPage() {
   const auth = useAuthSession();

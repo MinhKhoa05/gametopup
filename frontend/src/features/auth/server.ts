@@ -7,7 +7,7 @@ import {
 import axios from "axios";
 import { toast } from "sonner";
 import { getMe, login, logout, register, changePassword } from "./api";
-import type { User, ChangePasswordRequest } from "./types";
+import type { User } from "./types";
 
 export const AUTH_USER_QUERY_KEY = ["auth", "me"] as const;
 const AUTH_USER_STALE_TIME = 1000 * 60 * 5;

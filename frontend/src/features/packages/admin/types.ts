@@ -1,12 +1,3 @@
-export type AdminGame = {
-  id: number;
-  name: string;
-  imageUrl: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
 export type AdminGamePackage = {
   id: number;
   name: string;

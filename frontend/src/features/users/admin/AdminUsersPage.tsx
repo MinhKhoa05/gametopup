@@ -1,6 +1,6 @@
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
 import { useAdminUsersPageState, useAdminUsersSection } from './hooks';
-import { UsersAdminPanel } from '@/features/admin/users/components/UsersAdminPanel';
+import { UsersAdminPanel } from './components/UsersAdminPanel';
 
 export function AdminUsersPage() {
   const auth = useAuthSession();

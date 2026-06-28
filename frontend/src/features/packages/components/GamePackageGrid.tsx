@@ -22,7 +22,12 @@ export function GamePackageGrid({ isLoading, packages, selectedPackageId, onSele
       ) : (
         <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,214px))] justify-start gap-3 sm:gap-4">
           {packages.map((pkg) => (
-            <GamePackageCard key={pkg.id} gamePackage={pkg} isSelected={selectedPackageId === pkg.id} onSelect={onSelectPackage} />
+            <GamePackageCard
+              key={pkg.id}
+              gamePackage={pkg}
+              selected={selectedPackageId === pkg.id}
+              onClick={() => onSelectPackage(pkg.id)}
+            />
           ))}
         </div>
       )}

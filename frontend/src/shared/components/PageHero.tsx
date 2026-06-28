@@ -3,13 +3,14 @@ import { classNames } from '@/shared/lib/classNames';
 
 type PageHeroProps = {
   className?: string;
+  actions?: ReactNode;
   description?: ReactNode;
   eyebrow?: ReactNode;
   visual?: ReactNode;
   title: ReactNode;
 };
 
-export function PageHero({ className, description, eyebrow, title, visual }: PageHeroProps) {
+export function PageHero({ actions, className, description, eyebrow, title, visual }: PageHeroProps) {
   return (
     <section
       className={classNames(
@@ -21,7 +22,7 @@ export function PageHero({ className, description, eyebrow, title, visual }: Pag
       <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-cyan-400/10 blur-3xl" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_30%,rgba(34,211,238,0.08),transparent_24rem)]" />
 
-      <div className="relative flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:gap-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="relative flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:px-6 sm:py-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-4">
           {visual ? <div className="shrink-0">{visual}</div> : null}
 
@@ -43,6 +44,8 @@ export function PageHero({ className, description, eyebrow, title, visual }: Pag
             ) : null}
           </div>
         </div>
+
+        {actions ? <div className="shrink-0 sm:pt-1">{actions}</div> : null}
       </div>
     </section>
   );

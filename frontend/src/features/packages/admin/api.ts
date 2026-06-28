@@ -1,7 +1,7 @@
 import { api } from '@/shared/api/client';
 import { appendFormValue } from '@/shared/api/formData';
 import type { ApiResponse } from '@/shared/types/api';
-import type { AdminGamePackage } from '@/features/admin/games/types';
+import type { AdminGamePackage } from './types';
 
 export const adminPackagesKeys = {
   all: ['admin', 'packages'] as const,

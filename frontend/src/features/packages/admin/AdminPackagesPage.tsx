@@ -1,6 +1,6 @@
-import { useAdminGamesQuery } from '@/features/admin/games/hooks';
+import { useAdminGamesQuery } from '@/features/games/admin/hooks';
 import { useAdminPackagesPageState, useAdminPackagesSection } from './hooks';
-import { PackagesAdminPanel } from '@/features/admin/packages/components/PackagesAdminPanel';
+import { PackagesAdminPanel } from './components/PackagesAdminPanel';
 
 export function AdminPackagesPage() {
   const section = useAdminPackagesSection();

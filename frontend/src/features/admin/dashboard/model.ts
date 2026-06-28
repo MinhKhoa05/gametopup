@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { routes } from "@/app/router/routes";
 import type { User } from "@/features/auth/types";
 import type { AdminDepositRequest } from "@/features/deposits/types";
-import type { AdminGameSummary } from "@/features/admin/games/api";
-import type { AdminGamePackage } from "@/features/admin/games/types";
+import type { AdminGameSummary } from "@/features/games/admin/api";
+import type { AdminGamePackage } from "@/features/packages/admin/types";
 import { getOrderStatusMeta } from "@/features/orders/lib/orderStatus";
 import type { AdminOrder } from "@/features/orders/types";
 import { formatCurrency } from "@/shared/lib/format";
@@ -54,7 +54,6 @@ export type WatchItem = {
 };
 
 export function buildQueueItems({
-  depositRequests,
   games,
   orders,
   packages,

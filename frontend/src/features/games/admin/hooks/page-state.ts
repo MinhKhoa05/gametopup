@@ -1,6 +1,6 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { filterByQuery } from '@/shared/lib/search';
-import type { AdminGameSummary } from '../api';
+import type { AdminGame } from '@/features/games/types';
 
 export function useAdminGamesPageState({
   games,
@@ -8,12 +8,12 @@ export function useAdminGamesPageState({
   onDeleteGame,
   onUpdateGame,
 }: {
-  games: AdminGameSummary[];
-  onCreateGame: (payload: { imageFile: File | null; isActive: boolean; name: string }) => Promise<void>;
+  games: AdminGame[];
+  onCreateGame: (payload: { imageFile: File | null; isActive: boolean; name: string }) => Promise<AdminGame>;
   onDeleteGame: (id: number) => Promise<void>;
-  onUpdateGame: (payload: { id: number; imageFile: File | null; isActive: boolean; name: string }) => Promise<void>;
+  onUpdateGame: (payload: { id: number; imageFile: File | null; isActive: boolean; name: string }) => Promise<AdminGame>;
 }) {
-  const [editing, setEditing] = useState<AdminGameSummary | null>(null);
+  const [editing, setEditing] = useState<AdminGame | null>(null);
   const [form, setForm] = useState({
     isActive: true,
     name: '',
@@ -23,7 +23,7 @@ export function useAdminGamesPageState({
 
   const filteredGames = useMemo(() => filterByQuery(games, query, (game) => game.name), [games, query]);
 
-  function startEdit(game: AdminGameSummary) {
+  function startEdit(game: AdminGame) {
     setEditing(game);
     setForm({ isActive: game.isActive, name: game.name });
     setImageFile(null);
@@ -41,21 +41,22 @@ export function useAdminGamesPageState({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!editing && !imageFile) {
-      return;
+      return null;
     }
 
     const payload = { ...form, imageFile, name: form.name.trim() };
-    await (editing ? onUpdateGame({ id: editing.id, ...payload }) : onCreateGame(payload));
+    const savedGame = await (editing ? onUpdateGame({ id: editing.id, ...payload }) : onCreateGame(payload));
     resetForm();
+    return savedGame;
   }
 
-  async function remove(game: AdminGameSummary) {
+  async function remove(game: AdminGame) {
     if (!window.confirm(`Xóa game "${game.name}"?`)) return;
     await onDeleteGame(game.id);
   }
 
   async function updateGame(payload: { id: number; imageFile: File | null; isActive: boolean; name: string }) {
-    await onUpdateGame(payload);
+    return onUpdateGame(payload);
   }
 
   return {

@@ -8,14 +8,14 @@ import type { GamePackage } from "@/features/games/types";
 
 type GamePackageCardProps = {
   gamePackage: GamePackage;
-  isSelected: boolean;
-  onSelect: (packageId: number) => void;
+  selected?: boolean;
+  onClick?: () => void;
 };
 
 export function GamePackageCard({
   gamePackage,
-  isSelected,
-  onSelect,
+  selected = false,
+  onClick,
 }: GamePackageCardProps) {
   const hasDiscount = gamePackage.originalPrice > gamePackage.salePrice;
 
@@ -28,32 +28,27 @@ export function GamePackageCard({
       )
     : 0;
 
-  return (
-    <button
-      type="button"
-      aria-pressed={isSelected}
-      onClick={() => onSelect(gamePackage.id)}
-      className={classNames(
-        "group relative mx-auto flex aspect-[0.82/1] w-full max-w-[214px] min-w-0 flex-col overflow-hidden rounded-2xl border p-1.5 text-center transition-all duration-300",
-        "border-white/[0.06] bg-[var(--gt-card)]",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gt-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--gt-bg)]",
-        "hover:-translate-y-1 hover:border-cyan-400/20 hover:shadow-[0_10px_24px_rgba(0,0,0,.25)]",
-        !isSelected && "opacity-[0.96] hover:opacity-100",
-        isSelected &&
-          "border-[var(--gt-primary-border)] bg-[rgba(34,211,238,.04)] shadow-[0_0_0_1px_rgba(34,211,238,.18),0_14px_30px_rgba(0,0,0,.28)]",
-      )}
-    >
-      {isSelected && (
-        <>
-          <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_top,rgba(34,211,238,.12),transparent_72%)]" />
+  const className = classNames(
+    "group relative mx-auto flex aspect-[0.82/1] w-full max-w-[214px] min-w-0 flex-col overflow-hidden rounded-2xl border p-1.5 text-center transition-all duration-300",
+    "border-white/[0.06] bg-[var(--gt-card)]",
+    onClick &&
+      "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gt-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--gt-bg)]",
+    onClick &&
+      "hover:-translate-y-1 hover:border-cyan-400/20 hover:shadow-[0_10px_24px_rgba(0,0,0,.25)]",
+    !selected && onClick && "opacity-[0.96] hover:opacity-100",
+    selected &&
+      "border-[var(--gt-primary-border)] bg-[rgba(34,211,238,.04)] shadow-[0_0_0_1px_rgba(34,211,238,.18),0_14px_30px_rgba(0,0,0,.28)]",
+  );
 
-          <div className="absolute right-3 top-3 z-20">
-            <CheckCircle2
-              size={20}
-              className="fill-[var(--gt-primary)] text-[var(--gt-primary)]"
-            />
-          </div>
-        </>
+  const content = (
+    <>
+      {selected && (
+        <div className="absolute right-3 top-3 z-20">
+          <CheckCircle2
+            size={20}
+            className="fill-[var(--gt-primary)] text-[var(--gt-primary)]"
+          />
+        </div>
       )}
 
       {hasDiscount && (
@@ -69,10 +64,7 @@ export function GamePackageCard({
           <ImageBox
             src={gamePackage.imageUrl}
             alt={gamePackage.name}
-            className={classNames(
-              "h-full w-full object-cover transition-all duration-300 group-hover:scale-[1.03]",
-              isSelected && "brightness-110 saturate-110",
-            )}
+            className="h-full w-full object-cover transition-all duration-300 group-hover:scale-[1.03]"
           />
         </div>
       </div>
@@ -82,7 +74,7 @@ export function GamePackageCard({
           title={gamePackage.name}
           className={classNames(
             "min-h-[2.55rem] overflow-hidden px-0.5 text-[15px] font-semibold leading-5 transition-colors [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]",
-            isSelected ? "gt-text" : "gt-text-soft",
+            selected ? "gt-text" : "gt-text-soft",
           )}
         >
           {gamePackage.name}
@@ -91,10 +83,8 @@ export function GamePackageCard({
         <div className="grid gap-0.5">
           <div
             className={classNames(
-              "text-xl font-black leading-none transition-all duration-300",
-              isSelected
-                ? "scale-[1.04] text-[var(--gt-primary-hover)]"
-                : "text-[var(--gt-primary)]",
+              "text-xl font-black leading-none text-[var(--gt-primary)] transition-colors duration-300",
+              selected && "text-[var(--gt-primary-hover)]",
             )}
           >
             {formatCurrency(gamePackage.salePrice)}
@@ -107,6 +97,19 @@ export function GamePackageCard({
           )}
         </div>
       </div>
+    </>
+  );
+
+  return onClick ? (
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onClick}
+      className={className}
+    >
+      {content}
     </button>
+  ) : (
+    <div className={className}>{content}</div>
   );
 }

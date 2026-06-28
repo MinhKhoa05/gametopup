@@ -1,5 +1,5 @@
 import { useAdminDepositRequestsPageState, useAdminDepositRequestsSection } from './hooks';
-import { DepositsAdminPanel } from '@/features/admin/deposits/components/DepositsAdminPanel';
+import { DepositsAdminPanel } from './components/DepositsAdminPanel';
 
 export function AdminDepositsPage() {
   const section = useAdminDepositRequestsSection();

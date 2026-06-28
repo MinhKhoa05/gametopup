@@ -4,7 +4,7 @@ import { ROUTE_PATHS } from './routes';
 import { RequireAdmin, RequireAuth } from '@/app/guards';
 import { HomePage } from '@/features/home/pages/HomePage';
 import { GamesPage } from '@/features/games/pages/GamesPage';
-import { GameDetailPage } from '@/features/games/pages/GameDetailPage';
+import { GamePackagePage } from '@/features/games/pages/GamePackagePage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { WalletPage } from '@/features/wallet/pages/WalletPage';
@@ -13,11 +13,11 @@ import { ProfilePage } from '@/features/profile/pages/ProfilePage';
 
 const AdminLayoutPage = lazy(() => import('@/features/admin/pages/AdminLayoutPage').then((module) => ({ default: module.AdminLayoutPage })));
 const AdminDashboardPage = lazy(() => import('@/features/admin/dashboard/pages/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })));
-const AdminUsersPage = lazy(() => import('@/features/admin/users/AdminUsersPage').then((module) => ({ default: module.AdminUsersPage })));
-const AdminGamesPage = lazy(() => import('@/features/admin/games/AdminGamesPage').then((module) => ({ default: module.AdminGamesPage })));
-const AdminPackagesPage = lazy(() => import('@/features/admin/packages/AdminPackagesPage').then((module) => ({ default: module.AdminPackagesPage })));
-const AdminOrdersPage = lazy(() => import('@/features/admin/orders/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })));
-const AdminDepositsPage = lazy(() => import('@/features/admin/deposits/AdminDepositsPage').then((module) => ({ default: module.AdminDepositsPage })));
+const AdminUsersPage = lazy(() => import('@/features/users/admin/AdminUsersPage').then((module) => ({ default: module.AdminUsersPage })));
+const AdminGamesPage = lazy(() => import('@/features/games/admin/AdminGamesPage').then((module) => ({ default: module.AdminGamesPage })));
+const AdminPackagesPage = lazy(() => import('@/features/packages/admin/AdminPackagesPage').then((module) => ({ default: module.AdminPackagesPage })));
+const AdminOrdersPage = lazy(() => import('@/features/orders/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })));
+const AdminDepositsPage = lazy(() => import('@/features/deposits/admin/AdminDepositsPage').then((module) => ({ default: module.AdminDepositsPage })));
 
 export function AppRouter() {
   return (
@@ -26,7 +26,7 @@ export function AppRouter() {
       <Route path={ROUTE_PATHS.login} element={<LoginPage />} />
       <Route path={ROUTE_PATHS.register} element={<RegisterPage />} />
       <Route path={ROUTE_PATHS.games} element={<GamesPage />} />
-      <Route path={ROUTE_PATHS.gameDetail} element={<GameDetailPage />} />
+      <Route path={ROUTE_PATHS.gameDetail} element={<GamePackagePage />} />
       <Route
         path={ROUTE_PATHS.wallet}
         element={

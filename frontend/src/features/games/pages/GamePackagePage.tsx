@@ -25,7 +25,7 @@ type GameDetailPurchaseInfo = {
   uidServer: string;
 };
 
-export function GameDetailPage() {
+export function GamePackagePage() {
   const navigate = useNavigate();
   const { gameId: gameIdParam } = useParams<{ gameId?: string }>();
   const { isAuthenticated } = useAuthSession();

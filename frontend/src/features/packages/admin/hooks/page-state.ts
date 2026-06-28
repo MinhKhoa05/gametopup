@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { filterByQuery } from '@/shared/lib/search';
-import type { AdminGamePackage } from '@/features/admin/games/types';
-import type { AdminGameSummary } from '@/features/admin/games/api';
+import type { AdminGamePackage } from '../types';
+import type { AdminGameSummary } from '@/features/games/admin/api';
 
 const emptyPackageForm = {
   gameId: 0,

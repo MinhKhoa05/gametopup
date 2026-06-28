@@ -1,5 +1,5 @@
-import { useAdminGamesPageState, useAdminGamesSection } from './hooks';
-import { GamesAdminPanel } from '@/features/admin/games/components/GamesAdminPanel';
+import { useAdminGamesPageState, useAdminGamesSection } from '@/features/games/admin/hooks';
+import { GamesAdminContent } from './components/GamesAdminContent';
 
 export function AdminGamesPage() {
   const section = useAdminGamesSection();
@@ -10,5 +10,5 @@ export function AdminGamesPage() {
     onUpdateGame: section.updateGame,
   });
 
-  return <GamesAdminPanel busy={section.busy} loading={section.loading} state={state} />;
+  return <GamesAdminContent busy={section.busy} loading={section.loading} state={state} />;
 }

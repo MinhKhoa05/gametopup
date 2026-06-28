@@ -2,7 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { toast } from 'sonner';
 import { gamesKeys } from '@/features/games/server';
 import { packagesKeys } from '@/features/packages/server';
-import { adminGamesKeys } from '@/features/admin/games/hooks';
+import { adminGamesKeys } from '@/features/games/admin/hooks';
 import { adminPackagesKeys, createAdminPackage, deleteAdminPackage, getAdminPackages, updateAdminPackage } from '../api';
 
 const STALE_TIME = 1000 * 60 * 5;

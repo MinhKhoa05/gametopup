@@ -1,7 +1,7 @@
 import { CheckCircle2, EyeOff, PencilLine, Plus, Save, Trash2, X } from 'lucide-react';
 import { useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from 'react';
 
-import type { AdminGameSummary } from '@/features/admin/games/api';
+import type { AdminGameSummary } from '@/features/games/admin/api';
 import {
   Badge,
   Button,
@@ -23,7 +23,7 @@ import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
 import { inputClassName } from '@/shared/components/Field';
 import { AdminListSkeleton } from '@/features/admin/components/AdminShared';
-import { AdminGamePackage } from '../../games/types';
+import { AdminGamePackage } from '../types';
 
 type PackagesAdminPanelState = {
   editing: AdminGamePackage | null;
@@ -669,4 +669,3 @@ function PackageFormPanel({
     </form>
   );
 }
-
