@@ -2,7 +2,8 @@ import { CheckCircle2 } from "lucide-react";
 
 import { Button, DetailRow, Dialog, PanelShell } from "@/shared/components";
 import { formatCurrency, formatDateTimeShort } from "@/shared/lib/format";
-import type { Game, GamePackage } from "@/features/games/types";
+import type { Game } from "@/features/games/types";
+import type { GamePackage } from "@/features/packages/types";
 
 type PurchaseSuccessDialogProps = {
   game: Game;

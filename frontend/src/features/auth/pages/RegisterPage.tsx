@@ -3,20 +3,35 @@ import { useNavigate } from "react-router-dom";
 
 import { AuthLayout } from "../components/AuthLayout";
 import { AuthForm } from "../components/AuthForm";
-import { useAuthSession } from "../hooks/useAuthSession";
-
+import { useAuthUserQuery, useRegisterMutation } from "../server";
 import { routes } from "@/app/router/routes";
+import type { AuthFormData } from "@/features/auth/types";
 
 export function RegisterPage() {
-  const { isSubmitting, isAuthenticated, submitAuth } = useAuthSession();
+  const userQuery = useAuthUserQuery();
+  const registerMutation = useRegisterMutation();
 
   const navigate = useNavigate();
+  const isAuthenticated = !!userQuery.data;
+  const isSubmitting = registerMutation.isPending;
 
   useEffect(() => {
     if (isAuthenticated) {
       navigate(routes.home(), { replace: true });
     }
   }, [isAuthenticated, navigate]);
+
+  async function handleRegister(form: AuthFormData) {
+    const payload = {
+      email: form.email.trim(),
+      password: form.password,
+    };
+
+    return registerMutation.mutateAsync({
+      displayName: form.displayName.trim(),
+      ...payload,
+    });
+  }
 
   return (
     <AuthLayout
@@ -26,7 +41,7 @@ export function RegisterPage() {
       <AuthForm
         mode="register"
         loading={isSubmitting}
-        onSubmitAuth={submitAuth}
+        onSubmit={handleRegister}
       />
 
       <p className="mt-3 text-center text-sm gt-text-muted">

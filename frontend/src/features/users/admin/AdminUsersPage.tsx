@@ -1,9 +1,9 @@
-import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
+import { useAuthUserQuery } from '@/features/auth/server';
 import { useAdminUsersPageState, useAdminUsersSection } from './hooks';
 import { UsersAdminPanel } from './components/UsersAdminPanel';
 
 export function AdminUsersPage() {
-  const auth = useAuthSession();
+  const authQuery = useAuthUserQuery();
   const section = useAdminUsersSection();
   const state = useAdminUsersPageState({
     onDeleteUser: section.removeUser,
@@ -11,5 +11,5 @@ export function AdminUsersPage() {
     users: section.users,
   });
 
-  return <UsersAdminPanel busy={section.busy} currentUser={auth.user} loading={section.loading} state={state} />;
+  return <UsersAdminPanel busy={section.busy} currentUser={authQuery.data ?? null} loading={section.loading} state={state} />;
 }

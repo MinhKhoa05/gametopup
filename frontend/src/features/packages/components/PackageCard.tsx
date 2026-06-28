@@ -3,19 +3,27 @@ import { CheckCircle2 } from "lucide-react";
 import { ImageBox } from "@/shared/components";
 import { classNames } from "@/shared/lib/classNames";
 import { formatCurrency } from "@/shared/lib/format";
-
-import type { GamePackage } from "@/features/games/types";
+import type { ReactNode } from "react";
 
 type GamePackageCardProps = {
-  gamePackage: GamePackage;
+  gamePackage: {
+    id: number;
+    imageUrl: string;
+    name: string;
+    originalPrice: number;
+    salePrice: number;
+    isAvailable?: boolean;
+  };
   selected?: boolean;
   onClick?: () => void;
+  overlay?: ReactNode;
 };
 
 export function GamePackageCard({
   gamePackage,
   selected = false,
   onClick,
+  overlay,
 }: GamePackageCardProps) {
   const hasDiscount = gamePackage.originalPrice > gamePackage.salePrice;
 
@@ -58,6 +66,10 @@ export function GamePackageCard({
           </div>
         </div>
       )}
+
+      {overlay ? (
+        <div className="absolute right-3 top-3 z-20">{overlay}</div>
+      ) : null}
 
       <div className="relative flex flex-[1.18] items-center justify-center">
         <div className="relative h-[118px] w-full overflow-hidden rounded-xl bg-[var(--gt-bg-soft)]">

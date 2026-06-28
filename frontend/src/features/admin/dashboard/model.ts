@@ -1,12 +1,10 @@
-import type { ReactNode } from "react";
-import { routes } from "@/app/router/routes";
-import type { User } from "@/features/auth/types";
-import type { AdminDepositRequest } from "@/features/deposits/types";
-import type { AdminGameSummary } from "@/features/games/admin/api";
-import type { AdminGamePackage } from "@/features/packages/admin/types";
-import { getOrderStatusMeta } from "@/features/orders/lib/orderStatus";
-import type { AdminOrder } from "@/features/orders/types";
-import { formatCurrency } from "@/shared/lib/format";
+import { routes } from '@/app/router/routes';
+import type { User } from '@/features/auth/types';
+import type { AdminGame } from '@/features/games/types';
+import type { AdminDepositRequest } from '@/features/deposits/types';
+import type { AdminGamePackage } from '@/features/packages/types';
+import type { AdminOrder } from '@/features/orders/types';
+import { formatCurrency } from '@/shared/lib/format';
 
 export type QueueItem =
   | {
@@ -17,12 +15,10 @@ export type QueueItem =
       id: string;
       imageAlt: string;
       imageUrl: string | null;
-      kind: "order";
+      kind: 'order';
       searchText: string;
       sortValue: number;
-      statusIcon: ReactNode;
-      statusLabel: string;
-      statusTone: "primary" | "success" | "warning" | "danger" | "neutral";
+      status: number;
       title: string;
     }
   | {
@@ -33,12 +29,10 @@ export type QueueItem =
       id: string;
       imageAlt: string;
       imageUrl: null;
-      kind: "deposit";
+      kind: 'deposit';
       searchText: string;
       sortValue: number;
-      statusIcon: ReactNode;
-      statusLabel: string;
-      statusTone: "primary" | "success" | "warning" | "danger" | "neutral";
+      status: number;
       title: string;
     };
 
@@ -50,7 +44,7 @@ export type WatchItem = {
   subtitle: string;
   title: string;
   stockLabel: string;
-  tone: "primary" | "success" | "warning" | "danger" | "neutral";
+  tone: 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
 };
 
 export function buildQueueItems({
@@ -59,7 +53,7 @@ export function buildQueueItems({
   packages,
 }: {
   depositRequests: AdminDepositRequest[];
-  games: AdminGameSummary[];
+  games: AdminGame[];
   orders: AdminOrder[];
   packages: AdminGamePackage[];
 }) {
@@ -72,73 +66,48 @@ export function buildQueueItems({
     .map<QueueItem>((order) => {
       const gamePackage = packageById.get(order.gamePackageId);
       const game = gamePackage ? gameById.get(gamePackage.gameId) : undefined;
-      const statusMeta = getOrderStatusMeta(order.status);
       const amount = formatCurrency(order.packagePrice);
-      const title = gamePackage
-        ? `${game?.name ?? "Game"} · ${gamePackage.name}`
-        : `Đơn #${order.id}`;
-      const description = `${order.gameAccountInfo || "Chưa có thông tin"} · #${order.id}`;
+      const title = gamePackage ? `${game?.name ?? 'Game'} · ${gamePackage.name}` : `Đơn #${order.id}`;
+      const description = `${order.gameAccountInfo || 'Chưa có thông tin'} · #${order.id}`;
 
       return {
-        actionHref: routes.admin("orders"),
+        actionHref: routes.admin('orders'),
         amountLabel: amount,
         createdAt: order.createdAt,
         description,
         id: `order-${order.id}`,
         imageAlt: game?.name ?? gamePackage?.name ?? `Đơn ${order.id}`,
         imageUrl: gamePackage?.imageUrl ?? game?.imageUrl ?? null,
-        kind: "order",
-        searchText: [
-          order.id,
-          order.gameAccountInfo,
-          game?.name,
-          gamePackage?.name,
-          statusMeta.label,
-          amount,
-        ]
-          .join(" ")
-          .toLowerCase(),
+        kind: 'order',
+        searchText: [order.id, order.gameAccountInfo, game?.name, gamePackage?.name, amount].join(' ').toLowerCase(),
         sortValue: new Date(order.createdAt).getTime(),
-        statusIcon: statusMeta.icon,
-        statusLabel: statusMeta.label,
-        statusTone: statusMeta.tone,
+        status: order.status,
         title,
       };
     });
+
+  return orderItems;
 }
 
-export function buildWatchItems(
-  packages: AdminGamePackage[],
-  games: AdminGameSummary[],
-) {
+export function buildWatchItems(packages: AdminGamePackage[], games: AdminGame[]) {
   const gameById = new Map(games.map((game) => [game.id, game]));
 
   return packages
     .filter((item) => !item.isActive || item.availableSlots <= 20)
-    .sort(
-      (left, right) =>
-        Number(left.isActive) - Number(right.isActive) ||
-        left.availableSlots - right.availableSlots,
-    )
+    .sort((left, right) => Number(left.isActive) - Number(right.isActive) || left.availableSlots - right.availableSlots)
     .slice(0, 4)
     .map<WatchItem>((item) => {
       const game = gameById.get(item.gameId);
 
       return {
-        actionHref: routes.admin("packages"),
-        description: item.isActive
-          ? `Còn ${item.availableSlots} slot`
-          : "Đang tắt hiển thị",
+        actionHref: routes.admin('packages'),
+        description: item.isActive ? `Còn ${item.availableSlots} slot` : 'Đang tắt hiển thị',
         id: `package-${item.id}`,
-        imageUrl: item.imageUrl ?? game?.imageUrl ?? "",
-        subtitle: `${game?.name ?? "Game"} · ${item.name}`,
-        stockLabel: item.isActive ? `Còn ${item.availableSlots}` : "Đang tắt",
+        imageUrl: item.imageUrl ?? game?.imageUrl ?? '',
+        subtitle: `${game?.name ?? 'Game'} · ${item.name}`,
+        stockLabel: item.isActive ? `Còn ${item.availableSlots}` : 'Đang tắt',
         title: item.name,
-        tone: item.isActive
-          ? item.availableSlots <= 10
-            ? "warning"
-            : "success"
-          : "neutral",
+        tone: item.isActive ? (item.availableSlots <= 10 ? 'warning' : 'success') : 'neutral',
       };
     });
 }
@@ -146,11 +115,7 @@ export function buildWatchItems(
 export function buildRecentUsers(users: User[]) {
   return users
     .slice()
-    .sort(
-      (left, right) =>
-        new Date(right.createdAt ?? 0).getTime() -
-        new Date(left.createdAt ?? 0).getTime(),
-    )
+    .sort((left, right) => new Date(right.createdAt ?? 0).getTime() - new Date(left.createdAt ?? 0).getTime())
     .slice(0, 4);
 }
 

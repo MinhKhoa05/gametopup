@@ -1,34 +1,39 @@
-import {
-  CheckCircle2,
-  Clock3,
-  LoaderCircle,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Clock3, LoaderCircle, XCircle } from "lucide-react";
 
 import { Badge } from "@/shared/components";
-import { getOrderStatusMeta } from "../lib/orderStatusMeta";
 import { OrderStatus } from "../types";
 
-type Props = {
-  status: OrderStatus;
-};
+const ORDER_STATUS_META = {
+  [OrderStatus.Pending]: {
+    label: "Chờ xử lý",
+    tone: "warning",
+    icon: <Clock3 size={14} />,
+  },
+  [OrderStatus.Processing]: {
+    label: "Đang xử lý",
+    tone: "primary",
+    icon: <LoaderCircle size={14} />,
+  },
+  [OrderStatus.Completed]: {
+    label: "Hoàn thành",
+    tone: "success",
+    icon: <CheckCircle2 size={14} />,
+  },
+  [OrderStatus.Cancelled]: {
+    label: "Đã hủy",
+    tone: "danger",
+    icon: <XCircle size={14} />,
+  },
+} as const;
 
-export function OrderStatusBadge({ status }: Props) {
-  const meta = getOrderStatusMeta(status);
-
-  const icon =
-    status === OrderStatus.Pending ? (
-      <Clock3 size={14} />
-    ) : status === OrderStatus.Processing ? (
-      <LoaderCircle size={14} />
-    ) : status === OrderStatus.Completed ? (
-      <CheckCircle2 size={14} />
-    ) : (
-      <XCircle size={14} />
-    );
+export function OrderStatusBadge({ status }: { status: OrderStatus }) {
+  const meta = ORDER_STATUS_META[status] ?? {
+    label: `Trạng thái ${status}`,
+    tone: "neutral" as const,
+  };
 
   return (
-    <Badge tone={meta.tone} icon={icon}>
+    <Badge tone={meta.tone} icon={meta.icon}>
       {meta.label}
     </Badge>
   );

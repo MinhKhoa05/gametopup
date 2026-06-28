@@ -1,4 +1,4 @@
-import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { useAuthUserQuery } from "@/features/auth/server";
 import { useAdminPage } from "@/features/admin/hooks";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 import { routes } from "@/app/router/routes";
 import type { User } from "@/features/auth/types";
-import type { AdminGamePackage } from "@/features/packages/admin/types";
-import type { AdminGameSummary } from "@/features/games/admin/api";
+import type { AdminGamePackage } from "@/features/packages/types";
+import type { AdminGame } from "@/features/games/types";
 import type { AdminDepositRequest } from "@/features/deposits/types";
 import type { AdminOrder } from "@/features/orders/types";
 import {
@@ -42,8 +42,8 @@ import { classNames } from "@/shared/lib/classNames";
 import { formatCurrency, formatDate } from "@/shared/lib/format";
 
 export function AdminDashboardPage() {
-  const auth = useAuthSession();
-  const adminPage = useAdminPage({ user: auth.user });
+  const userQuery = useAuthUserQuery();
+  const adminPage = useAdminPage({ user: userQuery.data ?? null });
 
   return (
     <DashboardPanel
@@ -80,7 +80,7 @@ export function DashboardPanel({
   users,
 }: {
   depositRequests: AdminDepositRequest[];
-  games: AdminGameSummary[];
+  games: AdminGame[];
   loading: boolean;
   metrics: AdminCatalogMetrics;
   orders: AdminOrder[];

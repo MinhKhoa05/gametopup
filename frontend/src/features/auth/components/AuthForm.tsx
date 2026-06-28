@@ -6,18 +6,19 @@ import { Mail, UserRound } from "lucide-react";
 import { Button, Field, PasswordField } from "@/shared/components";
 
 import { getRememberedAuthEmail } from "../server";
-import type { AuthMode } from "../hooks/useAuthSession";
 import type { AuthFormData } from "../types";
+
+export type AuthMode = "login" | "register";
 
 type AuthFormProps = {
   mode: AuthMode;
   loading: boolean;
-  onSubmitAuth: (mode: AuthMode, form: AuthFormData) => Promise<unknown>;
+  onSubmit: (form: AuthFormData) => Promise<unknown>;
 };
 
 const AUTH_FIELD_WRAPPER_CLASS = "mb-0";
 
-export function AuthForm({ mode, loading, onSubmitAuth }: AuthFormProps) {
+export function AuthForm({ mode, loading, onSubmit }: AuthFormProps) {
   const [form, setForm] = useState<AuthFormData>(() => ({
     displayName: "",
     email: getRememberedAuthEmail(),
@@ -50,7 +51,7 @@ export function AuthForm({ mode, loading, onSubmitAuth }: AuthFormProps) {
     setError("");
 
     try {
-      await onSubmitAuth(mode, form);
+      await onSubmit(form);
     } catch (submitError) {
       setError(
         submitError instanceof Error

@@ -1,9 +1,10 @@
-import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { useAuthUserQuery } from "@/features/auth/server";
 import { HomeGuestPage } from "./HomeGuestPage";
 import { HomeUserPage } from "./HomeUserPage";
 
 export function HomePage() {
-  const { isAuthenticated } = useAuthSession();
+  const userQuery = useAuthUserQuery();
+  const isAuthenticated = userQuery.data !== null && userQuery.data !== undefined;
 
   if (!isAuthenticated) {
     return <HomeGuestPage />;

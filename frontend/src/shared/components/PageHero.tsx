@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import { classNames } from '@/shared/lib/classNames';
 
 type PageHeroProps = {
@@ -6,11 +6,23 @@ type PageHeroProps = {
   actions?: ReactNode;
   description?: ReactNode;
   eyebrow?: ReactNode;
+  onClick?: () => void;
   visual?: ReactNode;
   title: ReactNode;
 };
 
-export function PageHero({ actions, className, description, eyebrow, title, visual }: PageHeroProps) {
+export function PageHero({ actions, className, description, eyebrow, onClick, title, visual }: PageHeroProps) {
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!onClick) {
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <section
       className={classNames(
@@ -23,7 +35,16 @@ export function PageHero({ actions, className, description, eyebrow, title, visu
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_30%,rgba(34,211,238,0.08),transparent_24rem)]" />
 
       <div className="relative flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:px-6 sm:py-6 lg:px-8">
-        <div className="flex min-w-0 items-center gap-4">
+        <div
+          role={onClick ? 'button' : undefined}
+          tabIndex={onClick ? 0 : undefined}
+          onClick={onClick}
+          onKeyDown={handleKeyDown}
+          className={classNames(
+            'flex min-w-0 items-center gap-4',
+            onClick && 'cursor-pointer outline-none transition-opacity duration-200 hover:opacity-95 focus-visible:opacity-95',
+          )}
+        >
           {visual ? <div className="shrink-0">{visual}</div> : null}
 
           <div className="min-w-0">

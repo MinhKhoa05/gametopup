@@ -74,7 +74,7 @@ export function useCreateOrderMutation() {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       queryClient.invalidateQueries({ queryKey: walletKeys.all });
 
-      toast.success("Đã mua gói thành công.");
+      toast.success('Đơn hàng đã được tạo thành công.');
     },
   });
 }

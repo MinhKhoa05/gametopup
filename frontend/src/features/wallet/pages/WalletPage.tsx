@@ -19,7 +19,7 @@ import { WalletTransactionType } from "@/features/wallet/types";
 import { WalletDepositDialog } from "@/features/deposits/components/WalletDepositDialog";
 import { WalletDepositItem } from "@/features/deposits/components/WalletDepositItem";
 import { WalletDepositStatus } from "@/features/deposits/types";
-import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { useAuthUserQuery } from "@/features/auth/server";
 import { useDepositRequestsQuery } from "../../deposits/server";
 import { useWalletBalanceQuery, useWalletTransactionsQuery } from "../server";
 
@@ -84,7 +84,8 @@ function groupByDay<T extends DatedItem>(items: T[]) {
 }
 
 export function WalletPage() {
-  const { isAuthenticated } = useAuthSession();
+  const userQuery = useAuthUserQuery();
+  const isAuthenticated = userQuery.data !== null && userQuery.data !== undefined;
 
   const balanceQuery = useWalletBalanceQuery(isAuthenticated);
   const transactionsQuery = useWalletTransactionsQuery(isAuthenticated);

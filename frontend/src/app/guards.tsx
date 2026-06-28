@@ -1,15 +1,18 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { ROUTE_PATHS } from "@/app/router/routes";
 import { UserRole } from "@/features/auth/types";
+import { useAuthUserQuery } from "@/features/auth/server";
 
 type GuardProps = {
   children: ReactNode;
 };
 
 export function RequireAuth({ children }: GuardProps) {
-  const { isAuthenticated, isChecking } = useAuthSession();
+  const userQuery = useAuthUserQuery();
+  const user = userQuery.data ?? null;
+  const isChecking = userQuery.isPending && userQuery.data === undefined;
+  const isAuthenticated = user !== null;
 
   if (isChecking) {
     return <GuardLoadingState />;
@@ -23,7 +26,10 @@ export function RequireAuth({ children }: GuardProps) {
 }
 
 export function RequireAdmin({ children }: GuardProps) {
-  const { userRole, isChecking } = useAuthSession();
+  const userQuery = useAuthUserQuery();
+  const user = userQuery.data ?? null;
+  const isChecking = userQuery.isPending && userQuery.data === undefined;
+  const userRole = user?.role;
 
   if (isChecking) {
     return <GuardLoadingState />;

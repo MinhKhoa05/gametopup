@@ -1,10 +1,10 @@
-import { CheckCircle2, CircleSlash, Clock3, Send, TriangleAlert, XCircle } from 'lucide-react';
+import { CheckCircle2, CircleSlash, Clock3, Send } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { AdminOrder } from '@/features/orders/types';
 import type { User } from '@/features/auth/types';
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, ImageBox, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
-import { getOrderStatusMeta as getSharedOrderStatusMeta } from '@/features/orders/lib/orderStatus';
+import { OrderStatusBadge } from '@/features/orders/components/OrderStatusBadge';
 import { DEFAULT_IMAGE_SRC } from '@/shared/lib/image';
 
 type OrderFilter = 'active' | 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
@@ -43,7 +43,6 @@ export function OrdersAdminPanel({
     () => state.filteredOrders.find((order) => order.id === selectedOrderId) ?? state.filteredOrders[0] ?? null,
     [selectedOrderId, state.filteredOrders],
   );
-  const selectedStatus = selectedOrder ? getOrderStatusMeta(selectedOrder.status) : null;
   const selectedActionState = selectedOrder ? getOrderActionState(selectedOrder, currentUser?.id ?? null) : null;
   const summary = useMemo(() => summarizeOrders(orders), [orders]);
 
@@ -84,7 +83,6 @@ export function OrdersAdminPanel({
             <div className="grid gap-3">
               {state.filteredOrders.map((order) => {
                 const isSelected = order.id === selectedOrder?.id;
-                const statusMeta = getOrderStatusMeta(order.status);
 
                 return (
                   <MediaListItem
@@ -95,7 +93,7 @@ export function OrdersAdminPanel({
                     title={`Đơn #${order.id}`}
                     subtitle={`User #${order.userId} · Gói #${order.gamePackageId}`}
                     meta={`${order.gameAccountInfo} · ${formatDate(order.createdAt)}`}
-                    titleAccessory={<Badge tone={statusMeta.tone} icon={statusMeta.icon}>{statusMeta.label}</Badge>}
+                    titleAccessory={<OrderStatusBadge status={order.status} />}
                     trailing={<strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">{formatCurrency(order.packagePrice)}</strong>}
                   />
                 );
@@ -113,7 +111,7 @@ export function OrdersAdminPanel({
             title="Xử lý đơn hàng"
             titleClassName="text-[1.2rem]"
             description="Kiểm tra nhanh rồi thao tác bước tiếp theo."
-            action={selectedStatus ? <Badge tone={selectedStatus.tone}>{selectedStatus.label}</Badge> : undefined}
+            action={selectedOrder ? <OrderStatusBadge status={selectedOrder.status} /> : undefined}
           />
 
           {!selectedOrder ? (
@@ -132,9 +130,7 @@ export function OrdersAdminPanel({
                         <strong className="mt-1 block text-2xl font-black tracking-[-0.04em] text-white">{formatCurrency(selectedOrder.packagePrice)}</strong>
                         <span className="mt-1 block truncate text-sm text-slate-300">User #{selectedOrder.userId} · Gói #{selectedOrder.gamePackageId}</span>
                       </div>
-                      <Badge tone={selectedStatus?.tone ?? 'neutral'} icon={selectedStatus?.icon} className="shrink-0 rounded-full">
-                        {selectedStatus?.label}
-                      </Badge>
+                      <OrderStatusBadge status={selectedOrder.status} />
                     </div>
                   </div>
                 </div>
@@ -238,21 +234,6 @@ function getOrderActionState(order: AdminOrder, currentAdminId: number | null) {
     kind: 'none' as const,
     message: 'Không có thao tác nào cho trạng thái hiện tại.',
   };
-}
-
-function getOrderStatusMeta(status: number) {
-  return getSharedOrderStatusMeta(status, getOrderStatusIcon(status));
-}
-
-function getOrderStatusIcon(status: number) {
-  const icons = {
-    1: <Clock3 size={14} />,
-    2: <Send size={14} />,
-    3: <CheckCircle2 size={14} />,
-    4: <XCircle size={14} />,
-  } as const;
-
-  return icons[status as keyof typeof icons] ?? <TriangleAlert size={14} />;
 }
 
 function OrderListSkeleton() {

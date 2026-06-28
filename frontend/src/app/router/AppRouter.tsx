@@ -3,19 +3,19 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { ROUTE_PATHS } from './routes';
 import { RequireAdmin, RequireAuth } from '@/app/guards';
 import { HomePage } from '@/features/home/pages/HomePage';
-import { GamesPage } from '@/features/games/pages/GamesPage';
-import { GamePackagePage } from '@/features/games/pages/GamePackagePage';
+import { GamesPage } from '@/features/games/pages/GamePage';
+import { GamePackagePage } from '@/features/packages/pages/PackagePage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { WalletPage } from '@/features/wallet/pages/WalletPage';
 import { OrdersPage } from '@/features/orders/pages/OrdersPage';
 import { ProfilePage } from '@/features/profile/pages/ProfilePage';
+const GamePackageAdminPage = lazy(() => import('@/features/packages/pages/PackageAdminPage').then((module) => ({ default: module.GamePackageAdminPage })));
 
 const AdminLayoutPage = lazy(() => import('@/features/admin/pages/AdminLayoutPage').then((module) => ({ default: module.AdminLayoutPage })));
 const AdminDashboardPage = lazy(() => import('@/features/admin/dashboard/pages/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })));
 const AdminUsersPage = lazy(() => import('@/features/users/admin/AdminUsersPage').then((module) => ({ default: module.AdminUsersPage })));
-const AdminGamesPage = lazy(() => import('@/features/games/admin/AdminGamesPage').then((module) => ({ default: module.AdminGamesPage })));
-const AdminPackagesPage = lazy(() => import('@/features/packages/admin/AdminPackagesPage').then((module) => ({ default: module.AdminPackagesPage })));
+const GameAdminPage = lazy(() => import('@/features/games/pages/GameAdminPage').then((module) => ({ default: module.GameAdminPage })));
 const AdminOrdersPage = lazy(() => import('@/features/orders/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })));
 const AdminDepositsPage = lazy(() => import('@/features/deposits/admin/AdminDepositsPage').then((module) => ({ default: module.AdminDepositsPage })));
 
@@ -64,8 +64,8 @@ export function AppRouter() {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="users" element={<AdminUsersPage />} />
-        <Route path="games" element={<AdminGamesPage />} />
-        <Route path="packages" element={<AdminPackagesPage />} />
+        <Route path="games" element={<GameAdminPage />} />
+        <Route path="games/:gameId/packages" element={<GamePackageAdminPage />} />
         <Route path="orders" element={<AdminOrdersPage />} />
         <Route path="deposits" element={<AdminDepositsPage />} />
       </Route>

@@ -11,20 +11,24 @@ import {
   HEADER_USER_MENU_ITEMS,
 } from "@/app/config";
 import { BrandLogo, HeaderAccountMenu } from "@/shared/components";
-import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { useAuthUserQuery, useLogoutMutation } from "@/features/auth/server";
 import { useWalletBalanceQuery } from "@/features/wallet/server";
 import { ROUTE_PATHS, routes } from "@/app/router/routes";
 import { UserRole } from "@/features/auth/types";
 
 export function AppHeader() {
-  const { user, userDisplayName, isAuthenticated, isChecking, logout } =
-    useAuthSession();
+  const userQuery = useAuthUserQuery();
+  const logoutMutation = useLogoutMutation();
+  const user = userQuery.data ?? null;
+  const userDisplayName = user?.displayName ?? "Khách";
+  const isAuthenticated = user !== null;
+  const isChecking = userQuery.isPending && userQuery.data === undefined;
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logoutMutation.mutateAsync();
     navigate(routes.home(), { replace: true });
   }
 

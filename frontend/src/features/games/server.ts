@@ -3,10 +3,9 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-  type QueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { packagesKeys } from "@/features/packages/server";
+
 import {
   createGame,
   deleteGame,
@@ -16,48 +15,37 @@ import {
 } from "./api";
 import type { AdminGame, Game, GameInput } from "./types";
 
-const GAMES_STALE_TIME = 1000 * 60 * 60;
-const GAMES_GC_TIME = 1000 * 60 * 60;
+const HOUR = 1000 * 60 * 60;
+const ADMIN_STALE_TIME = 1000 * 60 * 5;
 
-export const gamesKeys = {
+export const gameKeys = {
   all: ["games"] as const,
+  admin: ["admin", "games"] as const,
 };
-
-export const adminGamesKeys = {
-  all: ["admin", "games"] as const,
-};
-
-type UpdateGameInput = {
-  id: number;
-} & GameInput;
-
-function invalidateGameQueries(queryClient: QueryClient) {
-  queryClient.invalidateQueries({ queryKey: gamesKeys.all });
-  queryClient.invalidateQueries({ queryKey: adminGamesKeys.all });
-  queryClient.invalidateQueries({ queryKey: packagesKeys.all });
-}
 
 export function useGamesQuery<TData = Game[]>(options?: {
   select?: (games: Game[]) => TData;
 }) {
   return useQuery<Game[], Error, TData>({
-    queryKey: gamesKeys.all,
+    queryKey: gameKeys.all,
     queryFn: getGames,
     placeholderData: keepPreviousData,
-    staleTime: GAMES_STALE_TIME,
-    gcTime: GAMES_GC_TIME,
+    staleTime: HOUR,
+    gcTime: HOUR,
     refetchOnWindowFocus: false,
     meta: { persist: true },
     select: options?.select,
   });
 }
 
+// ---------- ADMIN ----------
+
 export function useAdminGamesQuery() {
-  return useQuery<AdminGame[], Error>({
-    queryKey: adminGamesKeys.all,
+  return useQuery<AdminGame[]>({
+    queryKey: gameKeys.admin,
     queryFn: getAdminGames,
     placeholderData: keepPreviousData,
-    staleTime: 1000 * 60 * 5,
+    staleTime: ADMIN_STALE_TIME,
     meta: { persist: true },
   });
 }
@@ -67,8 +55,11 @@ export function useCreateGameMutation() {
 
   return useMutation({
     mutationFn: createGame,
+
     onSuccess() {
-      invalidateGameQueries(queryClient);
+      queryClient.invalidateQueries({ queryKey: gameKeys.all });
+      queryClient.invalidateQueries({ queryKey: gameKeys.admin });
+
       toast.success("Đã tạo game mới.");
     },
   });
@@ -78,11 +69,13 @@ export function useUpdateGameMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, ...payload }: UpdateGameInput) =>
-      updateGame(id, payload),
+    mutationFn: ({ id, input }: { id: number; input: GameInput }) =>
+      updateGame(id, input),
 
     onSuccess() {
-      invalidateGameQueries(queryClient);
+      queryClient.invalidateQueries({ queryKey: gameKeys.all });
+      queryClient.invalidateQueries({ queryKey: gameKeys.admin });
+
       toast.success("Đã cập nhật game.");
     },
   });
@@ -95,34 +88,10 @@ export function useDeleteGameMutation() {
     mutationFn: deleteGame,
 
     onSuccess() {
-      invalidateGameQueries(queryClient);
+      queryClient.invalidateQueries({ queryKey: gameKeys.all });
+      queryClient.invalidateQueries({ queryKey: gameKeys.admin });
+
       toast.success("Đã xóa game.");
     },
   });
-}
-
-export function useAdminGamesSection() {
-  const gamesQuery = useAdminGamesQuery();
-
-  const createMutation = useCreateGameMutation();
-  const updateMutation = useUpdateGameMutation();
-  const deleteMutation = useDeleteGameMutation();
-
-  const games = gamesQuery.data ?? [];
-
-  return {
-    games,
-    loading: gamesQuery.isPending && !gamesQuery.data,
-    busy:
-      createMutation.isPending ||
-      updateMutation.isPending ||
-      deleteMutation.isPending,
-
-    createGame: createMutation.mutateAsync,
-
-    updateGame: (payload: UpdateGameInput) =>
-      updateMutation.mutateAsync(payload),
-
-    removeGame: (id: number) => deleteMutation.mutateAsync(id),
-  };
 }

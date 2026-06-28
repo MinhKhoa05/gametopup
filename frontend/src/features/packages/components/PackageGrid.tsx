@@ -1,5 +1,5 @@
-import type { GamePackage } from '@/features/games/types';
-import { GamePackageCard } from './GamePackageCard';
+import type { GamePackage } from '@/features/packages/types';
+import { GamePackageCard } from './PackageCard';
 
 type GamePackageGridProps = {
   isLoading: boolean;

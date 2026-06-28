@@ -1,11 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { LockKeyhole, PencilLine, ShieldCheck, UserRound } from "lucide-react";
 
-import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import type { User } from "@/features/auth/types";
 import { useUpdateMyProfileMutation } from "@/features/profile/server";
 import { ChangePasswordDialog } from "@/features/auth/components/ChangePasswordDialog";
 import { formatDate } from "@/shared/lib/format";
+import { useAuthUserQuery } from "@/features/auth/server";
 
 import {
   Container,
@@ -19,7 +19,9 @@ import {
 } from "@/shared/components";
 
 export function ProfilePage() {
-  const { isChecking, user } = useAuthSession();
+  const userQuery = useAuthUserQuery();
+  const isChecking = userQuery.isPending && userQuery.data === undefined;
+  const user = userQuery.data ?? null;
 
   if (isChecking) {
     return <ProfilePageSkeleton />;

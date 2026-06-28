@@ -2,9 +2,9 @@ import { ArrowRight, Package2, Wallet2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { routes } from "@/app/router/routes";
-import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 import { GameGrid } from "@/features/games/components/GameGrid";
 import { useGamesQuery } from "@/features/games/server";
+import { useAuthUserQuery } from "@/features/auth/server";
 import { HeroSection } from "@/features/home/components/HeroSection";
 import { useRecentOrders } from "@/features/orders/server";
 import {
@@ -26,13 +26,13 @@ import { OrderStatusBadge } from "@/features/orders/components/OrderStatusBadge"
 
 export function HomeUserPage() {
   const navigate = useNavigate();
-  const auth = useAuthSession();
+  const authQuery = useAuthUserQuery();
+  const user = authQuery.data ?? null;
+  const isAuthenticated = user !== null;
 
   const gamesQuery = useGamesQuery();
   const walletQuery = useWalletBalanceQuery();
-  const walletTransactionsQuery = useWalletTransactionsQuery(
-    auth.isAuthenticated,
-  );
+  const walletTransactionsQuery = useWalletTransactionsQuery(isAuthenticated);
   const recentOrdersQuery = useRecentOrders();
 
   const games = gamesQuery.data ?? [];
@@ -50,7 +50,7 @@ export function HomeUserPage() {
 
   const featuredGames = games.slice(0, 15);
 
-  const userName = auth.user?.displayName ?? "Bạn";
+  const userName = user?.displayName ?? "Bạn";
 
   return (
     <Container className="relative z-10 py-5 sm:py-7 lg:py-8">

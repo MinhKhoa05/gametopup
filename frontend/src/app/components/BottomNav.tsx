@@ -6,7 +6,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { NavItem, BOTTOM_NAV_ITEMS } from "@/app/config";
-import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
+import { useAuthUserQuery } from "@/features/auth/server";
 import { classNames } from "@/shared/lib/classNames";
 import { useLocation, useNavigate } from "react-router-dom";
 import { routes } from "@/app/router/routes";
@@ -20,7 +20,8 @@ const bottomNavIcons = {
 } as const;
 
 export function BottomNav() {
-  const { isAuthenticated } = useAuthSession();
+  const userQuery = useAuthUserQuery();
+  const isAuthenticated = userQuery.data !== null && userQuery.data !== undefined;
   const location = useLocation();
   const navigate = useNavigate();
   const visibleItems = isAuthenticated

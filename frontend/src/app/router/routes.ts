@@ -14,6 +14,7 @@ export const ROUTE_PATHS = {
   profile: '/profile',
   admin: '/admin',
   adminSection: '/admin/:section',
+  adminGamePackages: '/admin/games/:gameId/packages',
 } as const;
 
 export function isAdminRoutePath(pathname: string) {
@@ -38,4 +39,5 @@ export const routes = {
   orders: () => ROUTE_PATHS.orders,
   profile: () => ROUTE_PATHS.profile,
   admin: (section?: AdminSection) => (section && section !== 'dashboard' ? generatePath(ROUTE_PATHS.adminSection, { section }) : ROUTE_PATHS.admin),
+  adminGamePackages: (gameId: number) => generatePath(ROUTE_PATHS.adminGamePackages, { gameId: String(gameId) }),
 } as const;

@@ -1,4 +1,4 @@
-export function GameDetailPageSkeleton() {
+export function GamePackagePageSkeleton() {
   return (
     <div className="mx-auto grid max-w-[1480px] gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10" aria-busy="true" aria-label="Đang tải trang đặt hàng">
       <div className="gt-panel rounded-[30px] p-5 sm:p-6 lg:p-7">

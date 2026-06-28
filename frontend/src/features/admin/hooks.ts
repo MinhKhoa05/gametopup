@@ -1,23 +1,24 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { gamesKeys } from '@/features/games/server';
-import { packagesKeys } from '@/features/packages/server';
+import { gameKeys, useAdminGamesQuery, useCreateGameMutation, useDeleteGameMutation, useUpdateGameMutation } from '@/features/games/server';
 import { adminDepositsKeys } from '@/features/deposits/admin/api';
 import { useAdminDepositRequestsSection } from '@/features/deposits/admin/hooks';
-import { adminGamesKeys, useAdminGamesSection } from '@/features/games/admin/hooks';
 import { adminOrdersKeys } from '@/features/orders/admin/api';
 import { useAdminOrdersSection } from '@/features/orders/admin/hooks';
-import { adminPackagesKeys } from '@/features/packages/admin/api';
-import { useAdminPackagesSection } from '@/features/packages/admin/hooks';
+import {
+  packageKeys,
+  useAdminPackagesQuery,
+  useCreatePackageMutation,
+  useDeletePackageMutation,
+  useUpdatePackageMutation,
+} from '@/features/packages/server';
 import { adminUsersKeys } from '@/features/users/admin/api';
 import { useAdminUsersSection } from '@/features/users/admin/hooks';
 import { walletKeys } from '@/features/wallet/server';
 import type { User } from '@/features/auth/types';
-import type { AdminGamePackage } from '@/features/packages/admin/types';
-import type { AdminGameSummary } from '@/features/games/admin/api';
+import type { AdminGamePackage } from '@/features/packages/types';
+import type { AdminGame } from '@/features/games/types';
 import type { AdminOrder } from '@/features/orders/types';
-import { useAdminGamesPageState } from '@/features/games/admin/hooks';
-import { useAdminPackagesPageState } from '@/features/packages/admin/hooks';
 import { useAdminOrdersPageState } from '@/features/orders/admin/hooks';
 import { useAdminDepositRequestsPageState } from '@/features/deposits/admin/hooks';
 import { useAdminUsersPageState } from '@/features/users/admin/hooks';
@@ -39,7 +40,7 @@ export function useAdminMetrics({
   orders,
   users,
 }: {
-  games: AdminGameSummary[];
+  games: AdminGame[];
   packages: AdminGamePackage[];
   orders: AdminOrder[];
   users: User[];
@@ -66,30 +67,52 @@ export function useAdminMetrics({
 
 export function useAdminPage({ user }: { user: User | null }) {
   const queryClient = useQueryClient();
-  const gamesSection = useAdminGamesSection();
+  const gamesQuery = useAdminGamesQuery();
+  const createGameMutation = useCreateGameMutation();
+  const updateGameMutation = useUpdateGameMutation();
+  const deleteGameMutation = useDeleteGameMutation();
   const depositsSection = useAdminDepositRequestsSection();
-  const packagesSection = useAdminPackagesSection();
+  const firstGameId = gamesQuery.data?.[0]?.id ?? 0;
+  const packagesQuery = useAdminPackagesQuery(firstGameId);
+  const createPackageMutation = useCreatePackageMutation();
+  const updatePackageMutation = useUpdatePackageMutation();
+  const deletePackageMutation = useDeletePackageMutation();
   const ordersSection = useAdminOrdersSection();
   const usersSection = useAdminUsersSection();
+  const packages = packagesQuery.data ?? [];
+  const games = gamesQuery.data ?? [];
   const metrics = useAdminMetrics({
-    games: gamesSection.games,
+    games,
     orders: ordersSection.orders,
-    packages: packagesSection.packages,
+    packages,
     users: usersSection.users,
   });
   const loading =
-    gamesSection.loading || depositsSection.loading || packagesSection.loading || ordersSection.loading || usersSection.loading;
-  const busy = gamesSection.busy || depositsSection.busy || packagesSection.busy || ordersSection.busy || usersSection.busy;
+    (gamesQuery.isPending && !gamesQuery.data) ||
+    depositsSection.loading ||
+    (packagesQuery.isPending && !packagesQuery.data) ||
+    ordersSection.loading ||
+    usersSection.loading;
+  const busy =
+    createGameMutation.isPending ||
+    updateGameMutation.isPending ||
+    deleteGameMutation.isPending ||
+    depositsSection.busy ||
+    createPackageMutation.isPending ||
+    updatePackageMutation.isPending ||
+    deletePackageMutation.isPending ||
+    ordersSection.busy ||
+    usersSection.busy;
   const section = 'dashboard' as const;
 
   const refreshAll = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: gamesKeys.all }),
-      queryClient.invalidateQueries({ queryKey: adminGamesKeys.all }),
-      queryClient.invalidateQueries({ queryKey: packagesKeys.all }),
+      queryClient.invalidateQueries({ queryKey: gameKeys.all }),
+      queryClient.invalidateQueries({ queryKey: gameKeys.admin }),
+      queryClient.invalidateQueries({ queryKey: ['packages'] }),
       queryClient.invalidateQueries({ queryKey: adminDepositsKeys.all }),
       queryClient.invalidateQueries({ queryKey: adminOrdersKeys.all }),
-      queryClient.invalidateQueries({ queryKey: adminPackagesKeys.all }),
+      queryClient.invalidateQueries({ queryKey: packageKeys.adminByGame(firstGameId) }),
       queryClient.invalidateQueries({ queryKey: adminUsersKeys.all }),
       queryClient.invalidateQueries({ queryKey: walletKeys.all }),
     ]);
@@ -99,24 +122,24 @@ export function useAdminPage({ user }: { user: User | null }) {
     busy,
     cancelOrder: ordersSection.cancelOrder,
     completeOrder: ordersSection.completeOrder,
-    createGame: gamesSection.createGame,
+    createGame: createGameMutation.mutateAsync,
     depositRequests: depositsSection.requests,
     approveDepositRequest: depositsSection.approveRequest,
     rejectDepositRequest: depositsSection.rejectRequest,
-    createPackage: packagesSection.createPackage,
-    games: gamesSection.games,
+    createPackage: createPackageMutation.mutateAsync,
+    games,
     loading,
     metrics,
     orders: ordersSection.orders,
-    packages: packagesSection.packages,
+    packages,
     pickOrder: ordersSection.pickOrder,
     refreshAll,
-    removeGame: gamesSection.removeGame,
-    removePackage: packagesSection.removePackage,
+    removeGame: deleteGameMutation.mutateAsync,
+    removePackage: deletePackageMutation.mutateAsync,
     removeUser: usersSection.removeUser,
     section,
-    updateGame: gamesSection.updateGame,
-    updatePackage: packagesSection.updatePackage,
+    updateGame: updateGameMutation.mutateAsync,
+    updatePackage: updatePackageMutation.mutateAsync,
     updateUser: usersSection.updateUser,
     user,
     users: usersSection.users,
@@ -125,8 +148,6 @@ export function useAdminPage({ user }: { user: User | null }) {
 
 export {
   useAdminDepositRequestsPageState,
-  useAdminGamesPageState,
   useAdminOrdersPageState,
-  useAdminPackagesPageState,
   useAdminUsersPageState,
 };
