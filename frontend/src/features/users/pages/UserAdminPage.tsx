@@ -43,7 +43,6 @@ export function UserAdminPage() {
     <>
       <div className="grid gap-5">
         <PageHero
-          eyebrow="ADMIN"
           visual={
             <IconBox size="lg" tone="primary" className="h-[56px] w-[56px] rounded-[18px]">
               <Users size={28} strokeWidth={1.8} />

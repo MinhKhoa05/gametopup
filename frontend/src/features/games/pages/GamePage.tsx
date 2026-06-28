@@ -31,7 +31,6 @@ export function GamesPage() {
     <Container className="relative z-10 py-5 sm:py-7 lg:py-8">
       <div className="grid gap-10 lg:gap-12">
         <PageHero
-          eyebrow="KHO GAME"
           title="Kho game"
           description="Tìm và nạp game nhanh chóng."
           visual={

@@ -58,7 +58,6 @@ export function ProfilePage() {
       <Container className="py-5 sm:py-7 lg:py-8">
         <div className="grid gap-10 lg:gap-12">
           <PageHero
-            eyebrow="TAI KHOAN CUA TOI"
             visual={
               <IconBox
                 size="lg"

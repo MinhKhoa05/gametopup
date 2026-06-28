@@ -5,13 +5,12 @@ type PageHeroProps = {
   className?: string;
   actions?: ReactNode;
   description?: ReactNode;
-  eyebrow?: ReactNode;
   onClick?: () => void;
   visual?: ReactNode;
   title: ReactNode;
 };
 
-export function PageHero({ actions, className, description, eyebrow, onClick, title, visual }: PageHeroProps) {
+export function PageHero({ actions, className, description, onClick, title, visual }: PageHeroProps) {
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!onClick) {
       return;
@@ -48,12 +47,6 @@ export function PageHero({ actions, className, description, eyebrow, onClick, ti
           {visual ? <div className="shrink-0">{visual}</div> : null}
 
           <div className="min-w-0">
-            {eyebrow ? (
-              <p className="m-0 text-[0.72rem] font-black uppercase tracking-[0.2em] text-cyan-100/90">
-                {eyebrow}
-              </p>
-            ) : null}
-
             <h1 className="mt-2 text-[clamp(1.9rem,4vw,3.6rem)] font-black leading-none tracking-[-0.06em] text-white">
               {title}
             </h1>

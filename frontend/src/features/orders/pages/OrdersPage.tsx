@@ -50,7 +50,6 @@ export function OrdersPage() {
       <Container className="relative z-10 py-5 sm:py-7 lg:py-8">
         <div className="grid gap-6 lg:gap-7">
           <PageHero
-            eyebrow="LỊCH SỬ ĐƠN HÀNG"
             visual={
               <IconBox
                 size="lg"

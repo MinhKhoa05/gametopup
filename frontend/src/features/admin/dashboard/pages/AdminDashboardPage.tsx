@@ -139,7 +139,6 @@ export function DashboardPanel({
   return (
     <div className="grid min-w-0 gap-10 lg:gap-12">
       <PageHero
-        eyebrow="ADMIN"
         visual={
           <DashboardHeroVisual
             metrics={metrics}

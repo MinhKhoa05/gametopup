@@ -144,7 +144,6 @@ export function WalletPage() {
       <Container className="relative z-10 py-5 sm:py-7 lg:py-8">
         <div className="grid gap-6 lg:gap-7">
           <PageHero
-            eyebrow="VÍ ĐIỆN TỬ"
             visual={
               <IconBox
                 size="lg"
@@ -154,7 +153,7 @@ export function WalletPage() {
                 <Wallet size={30} strokeWidth={1.8} />
               </IconBox>
             }
-            title="Ví điện tử GameTopUp"
+            title="Ví điện tử"
             description="Quản lý số dư, nạp tiền và theo dõi lịch sử giao dịch."
           />
 
