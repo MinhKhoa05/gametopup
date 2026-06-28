@@ -1,5 +1,3 @@
-import { useAuthUserQuery } from "@/features/auth/server";
-import { useAdminPage } from "@/features/admin/hooks";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -17,6 +15,11 @@ import type { AdminGamePackage } from "@/features/packages/types";
 import type { AdminGame } from "@/features/games/types";
 import type { AdminDepositRequest } from "@/features/deposits/types";
 import type { AdminOrder } from "@/features/orders/types";
+import { useAdminGamesQuery } from "@/features/games/server";
+import { useAdminPackagesQuery } from "@/features/packages/server";
+import { useAdminOrdersSection } from "@/features/orders/admin/hooks";
+import { useAdminDepositRequestsSection } from "@/features/deposits/admin/hooks";
+import { useAdminUsersQuery } from "@/features/users/server";
 import {
   buildQueueItems,
   buildRecentUsers,
@@ -42,18 +45,41 @@ import { classNames } from "@/shared/lib/classNames";
 import { formatCurrency, formatDate } from "@/shared/lib/format";
 
 export function AdminDashboardPage() {
-  const userQuery = useAuthUserQuery();
-  const adminPage = useAdminPage({ user: userQuery.data ?? null });
+  const gamesQuery = useAdminGamesQuery();
+  const games = gamesQuery.data ?? [];
+  const firstGameId = games[0]?.id ?? 0;
+  const packagesQuery = useAdminPackagesQuery(firstGameId);
+  const ordersSection = useAdminOrdersSection();
+  const depositsSection = useAdminDepositRequestsSection();
+  const usersQuery = useAdminUsersQuery();
+
+  const packages = packagesQuery.data ?? [];
+  const users = usersQuery.data ?? [];
+  const loading =
+    (gamesQuery.isPending && gamesQuery.data === undefined) ||
+    (packagesQuery.isPending && packagesQuery.data === undefined) ||
+    ordersSection.loading ||
+    depositsSection.loading ||
+    (usersQuery.isPending && usersQuery.data === undefined);
+  const metrics = {
+    activeGames: games.filter((game) => game.isActive).length,
+    activeUsers: users.filter((user) => user.isActive !== false).length,
+    disabledPackages: packages.filter((item) => !item.isActive).length,
+    pendingOrders: ordersSection.orders.filter((order) => order.status === 1 || order.status === 2).length,
+    revenue: ordersSection.orders.filter((order) => order.status !== 4).reduce((sum, order) => sum + order.packagePrice, 0),
+    totalPackages: packages.length,
+    totalUsers: users.length,
+  };
 
   return (
     <DashboardPanel
-      depositRequests={adminPage.depositRequests}
-      games={adminPage.games}
-      loading={adminPage.loading}
-      metrics={adminPage.metrics}
-      orders={adminPage.orders}
-      packages={adminPage.packages}
-      users={adminPage.users}
+      depositRequests={depositsSection.requests}
+      games={games}
+      loading={loading}
+      metrics={metrics}
+      orders={ordersSection.orders}
+      packages={packages}
+      users={users}
     />
   );
 }
@@ -318,7 +344,7 @@ export function DashboardPanel({
                           <UserRound size={18} />
                         </IconBox>
                       }
-                      title={user.displayName?.trim() || user.email}
+                      title={user.displayName}
                       subtitle={user.email}
                       meta={formatDate(user.createdAt)}
                       titleAccessory={

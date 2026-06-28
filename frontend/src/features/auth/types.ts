@@ -1,10 +1,10 @@
 export type User = {
   id: number;
-  displayName?: string;
+  displayName: string;
   email: string;
   role?: UserRole;
   isActive?: boolean;
-  createdAt?: string;
+  createdAt: string;
   updatedAt?: string;
 };
 

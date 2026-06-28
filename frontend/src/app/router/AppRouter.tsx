@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { ROUTE_PATHS } from './routes';
-import { RequireAdmin, RequireAuth } from '@/app/guards';
+import { RequireAuth } from '@/app/router/RequireAuth';
 import { LoadingState } from '@/shared/components';
 import { HomePage } from '@/features/home/pages/HomePage';
 import { GamesPage } from '@/features/games/pages/GamePage';
@@ -10,15 +10,17 @@ import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { WalletPage } from '@/features/wallet/pages/WalletPage';
 import { OrdersPage } from '@/features/orders/pages/OrdersPage';
-import { ProfilePage } from '@/features/profile/pages/ProfilePage';
+import { ProfilePage } from '@/features/users/pages/ProfilePage';
 const GamePackageAdminPage = lazy(() => import('@/features/packages/pages/PackageAdminPage').then((module) => ({ default: module.GamePackageAdminPage })));
 
 const AdminLayoutPage = lazy(() => import('@/features/admin/pages/AdminLayoutPage').then((module) => ({ default: module.AdminLayoutPage })));
 const AdminDashboardPage = lazy(() => import('@/features/admin/dashboard/pages/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })));
-const AdminUsersPage = lazy(() => import('@/features/users/admin/AdminUsersPage').then((module) => ({ default: module.AdminUsersPage })));
+const UserAdminPage = lazy(() => import('@/features/users/pages/UserAdminPage').then((module) => ({ default: module.UserAdminPage })));
 const GameAdminPage = lazy(() => import('@/features/games/pages/GameAdminPage').then((module) => ({ default: module.GameAdminPage })));
 const AdminOrdersPage = lazy(() => import('@/features/orders/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })));
 const AdminDepositsPage = lazy(() => import('@/features/deposits/admin/AdminDepositsPage').then((module) => ({ default: module.AdminDepositsPage })));
+
+import { UserRole } from '@/features/auth/types';
 
 export function AppRouter() {
   return (
@@ -55,17 +57,18 @@ export function AppRouter() {
       <Route
         path={ROUTE_PATHS.admin}
         element={
-          <Suspense fallback={<RouteLoadingState />}>
-            <RequireAdmin>
+          <Suspense fallback={<LoadingState className="min-h-[50vh]" title="Đang tải trang..." />}>
+            <RequireAuth role={UserRole.Admin}>
               <AdminLayoutPage />
-            </RequireAdmin>
+            </RequireAuth>
           </Suspense>
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
-        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="users" element={<UserAdminPage />} />
         <Route path="games" element={<GameAdminPage />} />
+        <Route path="packages" element={<Navigate to="../games" replace />} />
         <Route path="games/:gameId/packages" element={<GamePackageAdminPage />} />
         <Route path="orders" element={<AdminOrdersPage />} />
         <Route path="deposits" element={<AdminDepositsPage />} />
@@ -73,8 +76,4 @@ export function AppRouter() {
       <Route path="*" element={<Navigate to={ROUTE_PATHS.home} replace />} />
     </Routes>
   );
-}
-
-function RouteLoadingState() {
-  return <LoadingState className="min-h-[50vh]" title="Dang tai trang..." />;
 }

@@ -44,7 +44,7 @@ export function GameAdminPage() {
             <Gamepad2 size={28} strokeWidth={1.8} />
           </IconBox>
         }
-        title="Games"
+        title="Danh sách game"
         description="Quản lý danh mục game."
         actions={
           <Button variant="primary" className="justify-center rounded-[16px] px-4" onClick={openCreateDialog} leadingIcon={<Plus size={16} />}>

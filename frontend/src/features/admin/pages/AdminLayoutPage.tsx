@@ -1,72 +1,71 @@
-import { useMemo, useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import { HEADER_ADMIN_MENU_ITEMS } from '@/app/config';
-import { useAuthUserQuery } from '@/features/auth/server';
-import { useAdminPage } from '@/features/admin/hooks';
+import { ADMIN_SECTIONS, routes, type AdminSection } from '@/app/router/routes';
 import { UserRole } from '@/features/auth/types';
+import { useAuthUserQuery } from '@/features/auth/server';
 import {
   AdminAccessDenied,
   AdminDesktopLayout,
   AdminMobileLayout,
   AdminSectionShell,
 } from '@/features/admin/components/AdminLayoutShell';
-import { ADMIN_SECTIONS, routes, type AdminSection } from '@/app/router/routes';
 
 export function AdminLayoutPage() {
   const navigate = useNavigate();
   const { section: sectionParam } = useParams<{ section?: AdminSection }>();
   const userQuery = useAuthUserQuery();
   const user = userQuery.data ?? null;
-  const adminPage = useAdminPage({ user });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const activeSection = ADMIN_SECTIONS.includes(sectionParam as AdminSection) ? (sectionParam as AdminSection) : 'dashboard';
-
-  const accountMenuItems = HEADER_ADMIN_MENU_ITEMS;
+  const activeSection = ADMIN_SECTIONS.includes(sectionParam as AdminSection)
+    ? (sectionParam as AdminSection)
+    : 'dashboard';
 
   if (!user || user.role !== UserRole.Admin) {
     return <AdminAccessDenied onLogin={() => navigate(routes.login())} />;
   }
 
-  const brandCollapsed = sidebarCollapsed;
   const shell = (
-    <AdminSectionShell activeSection={activeSection} busy={adminPage.busy} loading={adminPage.loading}>
+    <AdminSectionShell activeSection={activeSection} busy={false} loading={userQuery.isPending}>
       <Outlet />
     </AdminSectionShell>
   );
 
+  const refresh = () => window.location.reload();
+
   return (
     <div className="gt-app-shell min-h-screen">
       <AdminMobileLayout
-        // accountMenuItems={accountMenuItems}
         activeSection={activeSection}
-        children={shell}
         isOpen={mobileSidebarOpen}
-        loading={adminPage.loading || adminPage.busy}
+        loading={userQuery.isPending}
         onBrandClick={() => navigate(routes.admin('dashboard'))}
         onCloseSidebar={() => setMobileSidebarOpen(false)}
         onNavigate={(nextSection) => {
           setMobileSidebarOpen(false);
           navigate(routes.admin(nextSection));
         }}
-        onRefresh={adminPage.refreshAll}
+        onRefresh={refresh}
         onToggleSidebar={() => setMobileSidebarOpen((value) => !value)}
-        userName={user.displayName ?? "Khách"}
-      />
+        userName={user.displayName}
+      >
+        {shell}
+      </AdminMobileLayout>
 
       <AdminDesktopLayout
-        accountMenuItems={accountMenuItems}
+        accountMenuItems={HEADER_ADMIN_MENU_ITEMS}
         activeSection={activeSection}
-        brandCollapsed={brandCollapsed}
-        children={shell}
-        loading={adminPage.loading || adminPage.busy}
+        brandCollapsed={sidebarCollapsed}
+        loading={userQuery.isPending}
         onBrandClick={() => navigate(routes.admin('dashboard'))}
         onNavigate={(nextSection) => navigate(routes.admin(nextSection))}
-        onRefresh={adminPage.refreshAll}
+        onRefresh={refresh}
         onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
-        userName={user.displayName ?? "Khách"}
-      />
+        userName={user.displayName}
+      >
+        {shell}
+      </AdminDesktopLayout>
     </div>
   );
 }
