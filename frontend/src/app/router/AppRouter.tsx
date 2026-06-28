@@ -11,7 +11,7 @@ import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { WalletPage } from '@/features/wallet/pages/WalletPage';
 import { OrdersPage } from '@/features/orders/pages/OrdersPage';
 import { ProfilePage } from '@/features/users/pages/ProfilePage';
-const GamePackageAdminPage = lazy(() => import('@/features/packages/pages/PackageAdminPage').then((module) => ({ default: module.GamePackageAdminPage })));
+const PackageAdminPage = lazy(() => import('@/features/packages/pages/PackageAdminPage').then((module) => ({ default: module.PackageAdminPage })));
 
 const AdminLayoutPage = lazy(() => import('@/features/admin/pages/AdminLayoutPage').then((module) => ({ default: module.AdminLayoutPage })));
 const AdminDashboardPage = lazy(() => import('@/features/admin/dashboard/pages/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })));
@@ -20,7 +20,7 @@ const GameAdminPage = lazy(() => import('@/features/games/pages/GameAdminPage').
 const AdminOrdersPage = lazy(() => import('@/features/orders/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })));
 const AdminDepositsPage = lazy(() => import('@/features/deposits/admin/AdminDepositsPage').then((module) => ({ default: module.AdminDepositsPage })));
 
-import { UserRole } from '@/features/auth/types';
+import { UserRole } from '@/features/users/types';
 
 export function AppRouter() {
   return (
@@ -69,7 +69,7 @@ export function AppRouter() {
         <Route path="users" element={<UserAdminPage />} />
         <Route path="games" element={<GameAdminPage />} />
         <Route path="packages" element={<Navigate to="../games" replace />} />
-        <Route path="games/:gameId/packages" element={<GamePackageAdminPage />} />
+        <Route path="games/:gameId/packages" element={<PackageAdminPage />} />
         <Route path="orders" element={<AdminOrdersPage />} />
         <Route path="deposits" element={<AdminDepositsPage />} />
       </Route>

@@ -1,5 +1,5 @@
 import { routes } from '@/app/router/routes';
-import type { User } from '@/features/auth/types';
+import type { User } from '@/features/users/types';
 import type { AdminGame } from '@/features/games/types';
 import type { AdminDepositRequest } from '@/features/deposits/types';
 import type { AdminGamePackage } from '@/features/packages/types';

@@ -14,13 +14,13 @@ import { BrandLogo, HeaderAccountMenu } from "@/shared/components";
 import { useAuthUserQuery, useLogoutMutation } from "@/features/auth/server";
 import { useWalletBalanceQuery } from "@/features/wallet/server";
 import { ROUTE_PATHS, routes } from "@/app/router/routes";
-import { UserRole } from "@/features/auth/types";
+import { UserRole } from "@/features/users/types";
 
 export function AppHeader() {
   const userQuery = useAuthUserQuery();
   const logoutMutation = useLogoutMutation();
   const user = userQuery.data ?? null;
-  const userDisplayName = user?.displayName ?? "Khách";
+  const userDisplayName = user?.displayName ?? "Khách";
   const isAuthenticated = user !== null;
   const isChecking = userQuery.isPending && userQuery.data === undefined;
 

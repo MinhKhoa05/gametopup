@@ -1,4 +1,4 @@
-import { UserRole } from "@/features/auth/types";
+import { UserRole } from "@/features/users/types";
 import { IconBox, Badge } from "@/shared/components";
 import { ShieldCheck, UserRound, CheckCircle2, X } from "lucide-react";
 

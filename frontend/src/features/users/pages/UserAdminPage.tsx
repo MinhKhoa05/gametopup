@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Users } from "lucide-react";
-import type { User } from "@/features/auth/types";
+import type { User } from "@/features/users/types";
 import { useAdminUsersQuery } from "@/features/users/server";
 import {
   EmptyState,

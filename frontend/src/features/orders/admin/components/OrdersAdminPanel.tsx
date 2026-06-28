@@ -1,7 +1,7 @@
-import { CheckCircle2, CircleSlash, Clock3, Send } from 'lucide-react';
+import { CheckCircle2, CircleSlash, Send } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { AdminOrder } from '@/features/orders/types';
-import type { User } from '@/features/auth/types';
+import type { User } from '@/features/users/types';
 import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, ImageBox, LoadingState, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { OrderStatusBadge } from '@/features/orders/components/OrderStatusBadge';

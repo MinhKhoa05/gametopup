@@ -1,5 +1,5 @@
 import { UserRound } from "lucide-react";
-import type { User } from "@/features/auth/types";
+import type { User } from "@/features/users/types";
 import { UserIcon, RoleBadge, StatusBadge } from "./UserDisplay";
 import { DetailRow, Dialog, PanelShell } from "@/shared/components";
 import { formatDate } from "@/shared/lib/format";

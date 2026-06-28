@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AUTH_USER_QUERY_KEY } from "@/features/auth/server";
-import type { User } from "@/features/auth/types";
+import type { User } from "@/features/users/types";
 import { getAdminUsers, updateMyProfile } from "./api";
 
 export const adminUsersKeys = {

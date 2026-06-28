@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { ROUTE_PATHS } from "@/app/router/routes";
-import { UserRole } from "@/features/auth/types";
+import { UserRole } from "@/features/users/types";
 import { useAuthUserQuery } from "@/features/auth/server";
 import { LoadingState } from "@/shared/components";
 

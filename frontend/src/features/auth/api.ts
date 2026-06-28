@@ -1,6 +1,7 @@
 import { api } from '@/shared/api/client';
 import type { ApiResponse } from '@/shared/types/api';
-import type { AuthFormData, User, ChangePasswordRequest } from './types';
+import type { AuthFormData, ChangePasswordRequest } from '@/features/auth/types';
+import type { User } from '@/features/users/types'
 
 type AuthResponse = {
   user: User;
