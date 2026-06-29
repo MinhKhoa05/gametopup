@@ -1,18 +1,13 @@
 using FluentAssertions;
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.DTOs.Auths;
-using GameTopUp.BLL.DTOs.Users;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Options;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
-using GameTopUp.DAL.Entities.Auth;
-using GameTopUp.DAL.Entities.Users;
-using GameTopUp.DAL.Entities.Wallets;
-using GameTopUp.DAL.Interfaces.Auth;
-using GameTopUp.DAL.Interfaces.Users;
-using GameTopUp.DAL.Interfaces.Wallets;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 using Microsoft.Extensions.Options;
 using Moq;
 

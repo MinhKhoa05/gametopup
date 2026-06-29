@@ -1,11 +1,10 @@
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.DTOs.Orders;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Mappers;
-using GameTopUp.DAL.Entities.Orders;
-using GameTopUp.DAL.Interfaces.Orders;
-using GameTopUp.DAL.Queries.Orders;
-using GameTopUp.DAL.Repositories.Orders;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
+using GameTopUp.DAL.Queries;
 
 namespace GameTopUp.BLL.Services.Orders;
 

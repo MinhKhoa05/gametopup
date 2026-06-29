@@ -1,8 +1,8 @@
 using FluentAssertions;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services.Auth;
-using GameTopUp.DAL.Entities.Auth;
-using GameTopUp.DAL.Interfaces.Auth;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 using Moq;
 
 namespace GameTopUp.Tests.UnitTests.Services;

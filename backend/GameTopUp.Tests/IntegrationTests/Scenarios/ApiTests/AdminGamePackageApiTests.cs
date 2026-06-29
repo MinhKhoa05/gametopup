@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using FluentAssertions;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.DAL.Entities.Games;
+using GameTopUp.DAL.Entities;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 

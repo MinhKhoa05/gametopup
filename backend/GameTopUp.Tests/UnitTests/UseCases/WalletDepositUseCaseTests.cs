@@ -5,8 +5,8 @@ using GameTopUp.BLL.Options;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
-using GameTopUp.DAL.Entities.Wallets;
-using GameTopUp.DAL.Interfaces.Wallets;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -129,7 +129,7 @@ public class WalletDepositUseCaseTests
         {
             UserId = 1,
             DisplayName = "Admin",
-            Role = DAL.Entities.Users.UserRole.Admin
+            Role = UserRole.Admin
         }, "verified");
 
         request.Status.Should().Be(WalletDepositStatus.Approved);
@@ -158,7 +158,7 @@ public class WalletDepositUseCaseTests
         {
             UserId = 1,
             DisplayName = "Admin",
-            Role = DAL.Entities.Users.UserRole.Admin
+            Role = UserRole.Admin
         }, "verified");
 
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
@@ -178,7 +178,7 @@ public class WalletDepositUseCaseTests
         {
             UserId = 1,
             DisplayName = "Admin",
-            Role = DAL.Entities.Users.UserRole.Admin
+            Role = UserRole.Admin
         }, "verified");
 
         await act.Should().ThrowAsync<BusinessException>()
@@ -202,7 +202,7 @@ public class WalletDepositUseCaseTests
         {
             UserId = 1,
             DisplayName = "Admin",
-            Role = DAL.Entities.Users.UserRole.Admin
+            Role = UserRole.Admin
         }, "verified");
 
         await act.Should().ThrowAsync<NotFoundException>()
@@ -236,7 +236,7 @@ public class WalletDepositUseCaseTests
         {
             UserId = 1,
             DisplayName = "Admin",
-            Role = DAL.Entities.Users.UserRole.Admin
+            Role = UserRole.Admin
         }, "verified");
 
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -258,7 +258,7 @@ public class WalletDepositUseCaseTests
         {
             UserId = 1,
             DisplayName = "Admin",
-            Role = DAL.Entities.Users.UserRole.Admin
+            Role = UserRole.Admin
         }, "not enough proof");
 
         request.Status.Should().Be(WalletDepositStatus.Rejected);
@@ -283,7 +283,7 @@ public class WalletDepositUseCaseTests
         {
             UserId = 1,
             DisplayName = "Admin",
-            Role = DAL.Entities.Users.UserRole.Admin
+            Role = UserRole.Admin
         }, "duplicate transfer");
 
         request.Status.Should().Be(WalletDepositStatus.Rejected);
@@ -306,7 +306,7 @@ public class WalletDepositUseCaseTests
         {
             UserId = 1,
             DisplayName = "Admin",
-            Role = DAL.Entities.Users.UserRole.Admin
+            Role = UserRole.Admin
         }, "not enough proof");
 
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
@@ -325,7 +325,7 @@ public class WalletDepositUseCaseTests
         {
             UserId = 1,
             DisplayName = "Admin",
-            Role = DAL.Entities.Users.UserRole.Admin
+            Role = UserRole.Admin
         }, "too late");
 
         await act.Should().ThrowAsync<BusinessException>()

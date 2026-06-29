@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using GameTopUp.BLL.Context;
-using GameTopUp.DAL.Entities.Users;
+using GameTopUp.DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameTopUp.Api.Controllers;

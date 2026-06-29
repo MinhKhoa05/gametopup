@@ -1,7 +1,7 @@
 using System.Net;
 using FluentAssertions;
-using GameTopUp.BLL.DTOs.Users;
-using GameTopUp.DAL.Entities.Users;
+using GameTopUp.BLL.Contracts;
+using GameTopUp.DAL.Entities;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 

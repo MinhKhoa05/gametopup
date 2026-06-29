@@ -1,6 +1,6 @@
 using System.Net;
 using FluentAssertions;
-using GameTopUp.BLL.DTOs.Wallets;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 

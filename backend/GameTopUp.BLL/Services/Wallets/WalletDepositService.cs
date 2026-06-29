@@ -1,13 +1,13 @@
 using System.Globalization;
 using System.Security.Cryptography;
-using GameTopUp.BLL.Common;
+using GameTopUp.BLL.Utilities;
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.DTOs.Wallets;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Mappers;
 using GameTopUp.BLL.Options;
-using GameTopUp.DAL.Entities.Wallets;
-using GameTopUp.DAL.Interfaces.Wallets;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 using Microsoft.Extensions.Options;
 
 namespace GameTopUp.BLL.Services.Wallets;

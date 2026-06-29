@@ -1,8 +1,8 @@
 using FluentAssertions;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services.Wallets;
-using GameTopUp.DAL.Entities.Wallets;
-using GameTopUp.DAL.Interfaces.Wallets;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 using Moq;
 
 namespace GameTopUp.Tests.UnitTests.Services;

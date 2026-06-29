@@ -1,10 +1,10 @@
-using GameTopUp.BLL.Common;
+using GameTopUp.BLL.Utilities;
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.DTOs.Users;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Mappers;
-using GameTopUp.DAL.Entities.Users;
-using GameTopUp.DAL.Interfaces.Users;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 
 namespace GameTopUp.BLL.Services.Users;
 

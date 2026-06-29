@@ -1,17 +1,9 @@
-using GameTopUp.BLL.Common;
-using GameTopUp.BLL.DTOs.Orders;
-using GameTopUp.BLL.DTOs.GamePackages;
-using GameTopUp.BLL.DTOs.Games;
-using GameTopUp.BLL.DTOs.Users;
-using GameTopUp.BLL.DTOs.Wallets;
-using GameTopUp.DAL.Entities.Games;
-using GameTopUp.DAL.Entities.Orders;
-using GameTopUp.DAL.Entities.Users;
-using GameTopUp.DAL.Entities.Wallets;
+using GameTopUp.BLL.Utilities;
+using GameTopUp.BLL.Contracts;
+using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Queries;
 using Mapster;
 using GameTopUp.BLL.Context;
-using GameTopUp.DAL.Queries.Orders;
 
 namespace GameTopUp.BLL.Mappers;
 

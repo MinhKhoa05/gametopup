@@ -1,12 +1,9 @@
 using GameTopUp.DAL.Database;
-using GameTopUp.DAL.Entities.Auth;
-using GameTopUp.DAL.Entities.Games;
-using GameTopUp.DAL.Entities.Orders;
-using GameTopUp.DAL.Entities.Users;
+using GameTopUp.DAL.Entities;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
-using WalletEntity = GameTopUp.DAL.Entities.Wallets.Wallet;
-using WalletDepositEntity = GameTopUp.DAL.Entities.Wallets.WalletDeposit;
-using WalletTransactionEntity = GameTopUp.DAL.Entities.Wallets.WalletTransaction;
+using WalletEntity = GameTopUp.DAL.Entities.Wallet;
+using WalletDepositEntity = GameTopUp.DAL.Entities.WalletDeposit;
+using WalletTransactionEntity = GameTopUp.DAL.Entities.WalletTransaction;
 
 namespace GameTopUp.Tests.IntegrationTests.Extensions;
 

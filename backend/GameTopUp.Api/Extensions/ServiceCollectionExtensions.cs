@@ -1,26 +1,16 @@
-using GameTopUp.BLL.Common;
 using GameTopUp.BLL.Options;
-using GameTopUp.BLL.Interfaces;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.BLL.Services.Games;
 using GameTopUp.BLL.Services.Users;
 using GameTopUp.BLL.Services.Wallets;
+using GameTopUp.BLL.Services.Images;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
-using GameTopUp.DAL.Interfaces.Auth;
-using GameTopUp.DAL.Interfaces.Games;
-using GameTopUp.DAL.Interfaces.Orders;
-using GameTopUp.DAL.Interfaces.Users;
-using GameTopUp.DAL.Interfaces.Wallets;
-using GameTopUp.DAL.Repositories.Auth;
-using GameTopUp.DAL.Repositories.Games;
-using GameTopUp.DAL.Repositories.Orders;
-using GameTopUp.DAL.Repositories.Users;
-using GameTopUp.DAL.Repositories.Wallets;
+using GameTopUp.DAL.Interfaces;
+using GameTopUp.DAL.Repositories;
 using GameTopUp.DAL.Queries;
-using GameTopUp.DAL.Queries.Orders;
 
 namespace GameTopUp.Api.Extensions;
 

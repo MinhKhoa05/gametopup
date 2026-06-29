@@ -1,14 +1,13 @@
-using GameTopUp.BLL.Common;
+using GameTopUp.BLL.Utilities;
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.DTOs.Orders;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.Services.Games;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.DAL.Database;
-using GameTopUp.DAL.Interfaces.Games;
-using GameTopUp.DAL.Entities.Orders;
-using GameTopUp.DAL.Entities.Wallets;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 using System.Globalization;
 
 namespace GameTopUp.BLL.UseCases;

@@ -1,7 +1,7 @@
-using GameTopUp.BLL.DTOs.Wallets;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.UseCases;
-using GameTopUp.DAL.Entities.Wallets;
+using GameTopUp.DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

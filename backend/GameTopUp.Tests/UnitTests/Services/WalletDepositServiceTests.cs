@@ -3,9 +3,8 @@ using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Options;
 using GameTopUp.BLL.Services.Wallets;
-using GameTopUp.DAL.Entities.Users;
-using GameTopUp.DAL.Entities.Wallets;
-using GameTopUp.DAL.Interfaces.Wallets;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 using Microsoft.Extensions.Options;
 using Moq;
 

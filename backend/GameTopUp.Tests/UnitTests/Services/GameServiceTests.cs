@@ -1,10 +1,9 @@
 using FluentAssertions;
-using GameTopUp.BLL.DTOs.Games;
-using GameTopUp.BLL.DTOs.Images;
-using GameTopUp.BLL.Interfaces;
+using GameTopUp.BLL.Contracts;
+using GameTopUp.BLL.Services.Images;
 using GameTopUp.BLL.Services.Games;
-using GameTopUp.DAL.Entities.Games;
-using GameTopUp.DAL.Interfaces.Games;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 using GameTopUp.Tests.UnitTests.Helpers;
 using Microsoft.AspNetCore.Http;
 using Moq;

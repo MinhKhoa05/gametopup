@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using GameTopUp.BLL.DTOs.Auths;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;

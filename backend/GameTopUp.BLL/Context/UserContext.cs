@@ -1,4 +1,4 @@
-using GameTopUp.DAL.Entities.Users;
+using GameTopUp.DAL.Entities;
 
 namespace GameTopUp.BLL.Context;
 

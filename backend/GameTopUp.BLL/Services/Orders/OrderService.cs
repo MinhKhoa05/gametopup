@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using GameTopUp.BLL.Common;
+using GameTopUp.BLL.Utilities;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.DAL.Entities.Orders;
-using GameTopUp.DAL.Interfaces.Orders;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 
 namespace GameTopUp.BLL.Services.Orders;
 

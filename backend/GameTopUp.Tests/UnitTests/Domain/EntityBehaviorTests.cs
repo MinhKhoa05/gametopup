@@ -1,7 +1,5 @@
 using FluentAssertions;
-using GameTopUp.DAL.Entities.Games;
-using GameTopUp.DAL.Entities.Orders;
-using GameTopUp.DAL.Entities.Wallets;
+using GameTopUp.DAL.Entities;
 
 namespace GameTopUp.Tests.UnitTests.Domain;
 

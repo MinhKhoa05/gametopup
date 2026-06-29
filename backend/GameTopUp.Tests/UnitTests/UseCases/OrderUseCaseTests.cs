@@ -1,20 +1,15 @@
 using FluentAssertions;
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.DTOs.Orders;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.BLL.Interfaces;
+using GameTopUp.BLL.Services.Images;
 using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.Services.Games;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
-using GameTopUp.DAL.Entities.Games;
-using GameTopUp.DAL.Entities.Orders;
-using GameTopUp.DAL.Entities.Users;
-using GameTopUp.DAL.Entities.Wallets;
-using GameTopUp.DAL.Interfaces.Games;
-using GameTopUp.DAL.Interfaces.Orders;
-using GameTopUp.DAL.Interfaces.Wallets;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 using Moq;
 
 namespace GameTopUp.Tests.UnitTests.UseCases;

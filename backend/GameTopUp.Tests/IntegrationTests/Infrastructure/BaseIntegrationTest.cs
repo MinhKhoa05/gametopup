@@ -1,4 +1,4 @@
-using GameTopUp.DAL.Entities.Users;
+using GameTopUp.DAL.Entities;
 using Microsoft.AspNetCore.Mvc.Testing;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 

@@ -1,4 +1,4 @@
-using GameTopUp.BLL.DTOs.Games;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Mappers;
 using GameTopUp.DAL.Queries;

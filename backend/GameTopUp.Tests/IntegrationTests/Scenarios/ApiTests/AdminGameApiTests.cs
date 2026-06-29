@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using FluentAssertions;
-using GameTopUp.BLL.DTOs.Games;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;

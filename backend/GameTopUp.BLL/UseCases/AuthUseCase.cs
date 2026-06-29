@@ -1,14 +1,11 @@
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.DTOs.Auths;
-using GameTopUp.BLL.DTOs.Users;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Mappers;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.DAL.Database;
-using GameTopUp.DAL.Entities.Users;
-using GameTopUp.DAL.Entities.Wallets;
-using GameTopUp.DAL.Interfaces.Users;
-using GameTopUp.DAL.Interfaces.Wallets;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 
 namespace GameTopUp.BLL.UseCases;
 
@@ -129,7 +126,13 @@ public sealed class AuthUseCase
 
     private async Task<(string AccessToken, string RefreshToken)> IssueTokenPairAsync(UserContext user)
     {
-        var tokenPayload = TokenPayload.Create(user);
+        var tokenPayload = new TokenPayload
+        {
+            UserId = user.UserId,
+            DisplayName = user.DisplayName,
+            Email = user.Email,
+            Role = user.Role
+        };
         var accessToken = _tokenService.GenerateAccessToken(tokenPayload);
         var refreshToken = _tokenService.GenerateRefreshToken();
         var refreshTokenHash = _tokenService.HashToken(refreshToken);

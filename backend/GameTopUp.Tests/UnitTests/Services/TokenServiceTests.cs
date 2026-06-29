@@ -2,10 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using FluentAssertions;
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.DTOs.Auths;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Options;
 using GameTopUp.BLL.Services.Auth;
-using GameTopUp.DAL.Entities.Users;
+using GameTopUp.DAL.Entities;
 using Microsoft.Extensions.Options;
 
 namespace GameTopUp.Tests.UnitTests.Services;
@@ -70,11 +70,11 @@ public class TokenServiceTests
         jwt.ValidTo.Should().BeBefore(DateTimeOffset.UtcNow.AddMinutes(61).UtcDateTime);
     }
 
-    private static TokenPayload Payload() => TokenPayload.Create(new UserContext
+    private static TokenPayload Payload() => new()
     {
         UserId = 7,
         DisplayName = "Test User",
         Email = "user@test.local",
         Role = UserRole.Admin
-    });
+    };
 }

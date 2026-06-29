@@ -1,11 +1,10 @@
-using GameTopUp.BLL.Common;
-using GameTopUp.BLL.DTOs.GamePackages;
-using GameTopUp.BLL.DTOs.Images;
+using GameTopUp.BLL.Utilities;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.BLL.Interfaces;
+using GameTopUp.BLL.Services.Images;
 using GameTopUp.BLL.Mappers;
-using GameTopUp.DAL.Entities.Games;
-using GameTopUp.DAL.Interfaces.Games;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 namespace GameTopUp.BLL.Services.Games;
 
 public sealed class GamePackageService

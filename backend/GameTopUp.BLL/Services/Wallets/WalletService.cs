@@ -1,9 +1,9 @@
 using GameTopUp.BLL.Context;
-using GameTopUp.BLL.DTOs.Wallets;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Mappers;
-using GameTopUp.DAL.Entities.Wallets;
-using GameTopUp.DAL.Interfaces.Wallets;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 
 namespace GameTopUp.BLL.Services.Wallets;
 

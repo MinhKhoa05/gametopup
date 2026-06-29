@@ -1,6 +1,5 @@
 using GameTopUp.Api.Extensions;
-using GameTopUp.BLL.DTOs.Auths;
-using GameTopUp.BLL.DTOs.Users;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

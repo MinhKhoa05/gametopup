@@ -1,4 +1,3 @@
-using Dapper;
 using GameTopUp.DAL.Database;
 
 namespace GameTopUp.DAL.Queries;

@@ -1,7 +1,7 @@
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.DAL.Database;
-using GameTopUp.DAL.Entities.Wallets;
+using GameTopUp.DAL.Entities;
 
 namespace GameTopUp.BLL.UseCases;
 

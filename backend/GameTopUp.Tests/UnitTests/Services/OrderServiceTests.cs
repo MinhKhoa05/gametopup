@@ -2,9 +2,8 @@ using FluentAssertions;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services.Orders;
-using GameTopUp.DAL.Entities.Orders;
-using GameTopUp.DAL.Entities.Users;
-using GameTopUp.DAL.Interfaces.Orders;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 using Moq;
 
 namespace GameTopUp.Tests.UnitTests.Services;

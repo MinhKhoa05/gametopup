@@ -1,7 +1,6 @@
 using FluentAssertions;
-using GameTopUp.BLL.DTOs.Orders;
-using GameTopUp.BLL.DTOs.Wallets;
-using GameTopUp.DAL.Entities.Orders;
+using GameTopUp.BLL.Contracts;
+using GameTopUp.DAL.Entities;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 using System.Net;

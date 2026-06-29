@@ -1,7 +1,5 @@
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
-using GameTopUp.DAL.Entities.Users;
-using GameTopUp.DAL.Entities.Games;
-using GameTopUp.DAL.Entities.Orders;
+using GameTopUp.DAL.Entities;
 
 namespace GameTopUp.Tests.IntegrationTests.Extensions;
 

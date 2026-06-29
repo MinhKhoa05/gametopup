@@ -1,4 +1,4 @@
-using GameTopUp.BLL.DTOs.GamePackages;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Services.Games;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

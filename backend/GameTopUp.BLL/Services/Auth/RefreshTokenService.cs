@@ -1,6 +1,6 @@
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.DAL.Entities.Auth;
-using GameTopUp.DAL.Interfaces.Auth;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Interfaces;
 
 namespace GameTopUp.BLL.Services.Auth;
 

@@ -1,8 +1,7 @@
-using Dapper;
 using GameTopUp.DAL.Database;
-using GameTopUp.DAL.Entities.Orders;
+using GameTopUp.DAL.Entities;
 
-namespace GameTopUp.DAL.Queries.Orders;
+namespace GameTopUp.DAL.Queries;
 
 public sealed class OrderQuery
 {
