@@ -17,23 +17,4 @@ public class OrderHistory
     public bool IsAdmin { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 
-    public static OrderHistory Create(
-        long orderId,
-        OrderStatus fromStatus,
-        OrderStatus toStatus,
-        long actionBy,
-        string? note = null,
-        bool isAdmin = false)
-    {
-        return new OrderHistory
-        {
-            OrderId = orderId,
-            FromStatus = fromStatus,
-            ToStatus = toStatus,
-            Note = note,
-            ActionBy = actionBy,
-            IsAdmin = isAdmin,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
-    }
 }

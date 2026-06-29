@@ -59,12 +59,7 @@ public class AuthUseCaseTests
             .Returns(Task.CompletedTask)
             .Callback<Wallet>(wallet => createdWallet = wallet);
 
-        await _useCase.RegisterAsync(new CreateUserRequest
-        {
-            DisplayName = "Test User",
-            Email = "user@test.local",
-            Password = "Password123!"
-        });
+        await _useCase.RegisterAsync(CreateUserRequest());
 
         createdUser.Should().NotBeNull();
         createdUser!.PasswordHash.Should().NotBe("Password123!");
@@ -80,12 +75,7 @@ public class AuthUseCaseTests
         _userRepository.Setup(repo => repo.ExistsByEmailAsync("user@test.local"))
             .ReturnsAsync(true);
 
-        var act = async () => await _useCase.RegisterAsync(new CreateUserRequest
-        {
-            DisplayName = "Test User",
-            Email = "user@test.local",
-            Password = "Password123!"
-        });
+        var act = async () => await _useCase.RegisterAsync(CreateUserRequest());
 
         await act.Should().ThrowAsync<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.EmailExists);
@@ -97,15 +87,7 @@ public class AuthUseCaseTests
     {
         var wrongHash = _passwordService.Hash("Password123!");
         _userRepository.Setup(repo => repo.GetByEmailAsync("user@test.local"))
-            .ReturnsAsync(new User
-            {
-                Id = 7,
-                DisplayName = "Test User",
-                Email = "user@test.local",
-                PasswordHash = wrongHash,
-                Role = UserRole.Member,
-                IsActive = true
-            });
+            .ReturnsAsync(CreateUser(passwordHash: wrongHash));
 
         var act = async () => await _useCase.LoginAsync(new LoginRequest
         {
@@ -142,17 +124,7 @@ public class AuthUseCaseTests
         var passwordHash = _passwordService.Hash("Password123!");
 
         _userRepository.Setup(repo => repo.GetByEmailAsync("user@test.local"))
-            .ReturnsAsync(new User
-            {
-                Id = 7,
-                DisplayName = "Test User",
-                Email = "user@test.local",
-                PasswordHash = passwordHash,
-                Role = UserRole.Member,
-                IsActive = true,
-                CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
-                UpdatedAt = DateTimeOffset.UtcNow
-            });
+            .ReturnsAsync(CreateUser(passwordHash: passwordHash, createdAt: DateTimeOffset.UtcNow.AddDays(-1)));
         _refreshTokenRepository.Setup(repo => repo.CreateAsync(It.IsAny<RefreshToken>()))
             .ReturnsAsync(12)
             .Callback<RefreshToken>(token => savedRefreshToken = token);
@@ -204,14 +176,7 @@ public class AuthUseCaseTests
         var hash = _tokenService.HashToken("refresh-token");
 
         _refreshTokenRepository.Setup(repo => repo.GetByTokenHashAsync(hash))
-            .ReturnsAsync(new RefreshToken
-            {
-                Id = 5,
-                UserId = 7,
-                TokenHash = hash,
-                CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
-                ExpiresAt = DateTimeOffset.UtcNow.AddDays(6)
-            });
+            .ReturnsAsync(CreateRefreshToken(hash, DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(6)));
         _refreshTokenRepository.Setup(repo => repo.RevokeAsync(hash))
             .ReturnsAsync(true);
         _userRepository.Setup(repo => repo.GetByIdAsync(7))
@@ -281,13 +246,7 @@ public class AuthUseCaseTests
     public async Task ChangePasswordAsync_ShouldThrow_WhenCurrentPasswordDoesNotMatch()
     {
         _userRepository.Setup(repo => repo.GetByIdAsync(7))
-            .ReturnsAsync(new User
-            {
-                Id = 7,
-                PasswordHash = _passwordService.Hash("Password123!"),
-                Role = UserRole.Member,
-                IsActive = true
-            });
+            .ReturnsAsync(CreateUser(passwordHash: _passwordService.Hash("Password123!")));
 
         var act = async () => await _useCase.ChangePasswordAsync(new UserContext { UserId = 7 }, new ChangePasswordRequest
         {
@@ -305,13 +264,7 @@ public class AuthUseCaseTests
     {
         string? persistedHash = null;
         _userRepository.Setup(repo => repo.GetByIdAsync(7))
-            .ReturnsAsync(new User
-            {
-                Id = 7,
-                PasswordHash = _passwordService.Hash("Password123!"),
-                Role = UserRole.Member,
-                IsActive = true
-            });
+            .ReturnsAsync(CreateUser(passwordHash: _passwordService.Hash("Password123!")));
         _userRepository.Setup(repo => repo.UpdatePasswordAsync(7, It.IsAny<string>()))
             .ReturnsAsync(1)
             .Callback<long, string>((_, hash) => persistedHash = hash);
@@ -335,5 +288,43 @@ public class AuthUseCaseTests
         var act = async () => await _useCase.LogoutAsync("refresh-token");
 
         await act.Should().NotThrowAsync();
+    }
+
+    private static CreateUserRequest CreateUserRequest()
+    {
+        return new CreateUserRequest
+        {
+            DisplayName = "Test User",
+            Email = "user@test.local",
+            Password = "Password123!"
+        };
+    }
+
+    private static User CreateUser(string? passwordHash = null, DateTimeOffset? createdAt = null, DateTimeOffset? updatedAt = null)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new User
+        {
+            Id = 7,
+            DisplayName = "Test User",
+            Email = "user@test.local",
+            PasswordHash = passwordHash ?? string.Empty,
+            Role = UserRole.Member,
+            IsActive = true,
+            CreatedAt = createdAt ?? now,
+            UpdatedAt = updatedAt ?? now
+        };
+    }
+
+    private static RefreshToken CreateRefreshToken(string tokenHash, DateTimeOffset createdAt, DateTimeOffset expiresAt)
+    {
+        return new RefreshToken
+        {
+            Id = 5,
+            UserId = 7,
+            TokenHash = tokenHash,
+            CreatedAt = createdAt,
+            ExpiresAt = expiresAt
+        };
     }
 }

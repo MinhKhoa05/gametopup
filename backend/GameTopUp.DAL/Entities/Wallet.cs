@@ -17,16 +17,4 @@ public class Wallet
 
     public DateTimeOffset UpdatedAt { get; set; }
 
-    public static Wallet CreateForUser(long userId, decimal initialBalance = 0)
-    {
-        var now = DateTimeOffset.UtcNow;
-
-        return new Wallet
-        {
-            UserId = userId,
-            Balance = initialBalance,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
-    }
 }

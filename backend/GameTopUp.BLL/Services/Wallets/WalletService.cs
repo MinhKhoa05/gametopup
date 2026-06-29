@@ -101,12 +101,15 @@ public sealed class WalletService
         var balanceAfter = balanceBefore + signedAmount;
         wallet.Balance = balanceAfter;
 
-        return WalletTransaction.Create(
-            wallet.UserId,
-            signedAmount,
-            balanceBefore,
-            balanceAfter,
-            type,
-            referenceId);
+        return new WalletTransaction
+        {
+            UserId = wallet.UserId,
+            Amount = signedAmount,
+            BalanceBefore = balanceBefore,
+            BalanceAfter = balanceAfter,
+            Type = type,
+            ReferenceId = referenceId,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
     }
 }

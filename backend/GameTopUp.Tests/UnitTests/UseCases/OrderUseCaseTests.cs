@@ -68,7 +68,7 @@ public class OrderUseCaseTests
         _orderHistoryRepository.Setup(repo => repo.CreateAsync(It.IsAny<OrderHistory>()))
             .ReturnsAsync(12)
             .Callback<OrderHistory>(history => createdHistory = history);
-        var fundedWallet = Wallet.CreateForUser(7, 500m);
+        var fundedWallet = CreateWallet(500m);
         fundedWallet.Id = 11;
         _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
             .ReturnsAsync(fundedWallet);
@@ -171,7 +171,7 @@ public class OrderUseCaseTests
                 Id = 9,
                 Name = "Mobile Legends"
             });
-        var lowBalanceWallet = Wallet.CreateForUser(7, 100m);
+        var lowBalanceWallet = CreateWallet(100m);
         lowBalanceWallet.Id = 11;
         _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
             .ReturnsAsync(lowBalanceWallet);
@@ -208,7 +208,7 @@ public class OrderUseCaseTests
                 Id = 9,
                 Name = "Mobile Legends"
             });
-        var fundedWallet = Wallet.CreateForUser(7, 500m);
+        var fundedWallet = CreateWallet(500m);
         fundedWallet.Id = 11;
         _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
             .ReturnsAsync(fundedWallet);
@@ -232,7 +232,7 @@ public class OrderUseCaseTests
     [Fact]
     public async Task PickOrderAsync_ShouldReturnUnchanged_WhenSameAdminAlreadyPickedOrder()
     {
-        var order = Order.Create(7, 44, 199m, "Diamond 86", "hero-123", OrderStatus.Processing);
+        var order = CreateOrder(OrderStatus.Processing);
         order.Id = 88;
         order.AssignedTo = 3;
         order.AssignedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
@@ -269,7 +269,7 @@ public class OrderUseCaseTests
     [Fact]
     public async Task CompleteOrderAsync_ShouldReturnUnchanged_WhenOrderIsAlreadyCompleted()
     {
-        var order = Order.Create(7, 44, 199m, "Diamond 86", "hero-123", OrderStatus.Completed);
+        var order = CreateOrder(OrderStatus.Completed);
         order.Id = 88;
         order.AssignedTo = 3;
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
@@ -304,7 +304,7 @@ public class OrderUseCaseTests
     [Fact]
     public async Task CancelOrderAsync_ShouldRestoreStockAndRefundWallet_WhenCancellationChangesState()
     {
-        var order = Order.Create(7, 44, 199m, "Diamond 86", "hero-123", OrderStatus.Pending);
+        var order = CreateOrder(OrderStatus.Pending);
         order.Id = 88;
         OrderHistory? createdHistory = null;
         WalletTransaction? refundTransaction = null;
@@ -332,7 +332,7 @@ public class OrderUseCaseTests
             .Callback<OrderHistory>(history => createdHistory = history);
         _packageRepository.Setup(repo => repo.IncreaseStockAsync(44, 1))
             .ReturnsAsync(1);
-        var walletAfterPurchase = Wallet.CreateForUser(7, 301m);
+        var walletAfterPurchase = CreateWallet(301m);
         walletAfterPurchase.Id = 11;
         _walletRepository.Setup(repo => repo.GetWithLockByUserIdAsync(7))
             .ReturnsAsync(walletAfterPurchase);
@@ -361,7 +361,7 @@ public class OrderUseCaseTests
     [Fact]
     public async Task CancelOrderAsync_ShouldNotRefundWallet_WhenStockRestoreFails()
     {
-        var order = Order.Create(7, 44, 199m, "Diamond 86", "hero-123", OrderStatus.Pending);
+        var order = CreateOrder(OrderStatus.Pending);
         order.Id = 88;
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
             .ReturnsAsync(new GamePackage
@@ -398,7 +398,7 @@ public class OrderUseCaseTests
     [Fact]
     public async Task CancelOrderAsync_ShouldNotRestoreStockOrRefund_WhenOrderWasAlreadyCancelled()
     {
-        var order = Order.Create(7, 44, 199m, "Diamond 86", "hero-123", OrderStatus.Cancelled);
+        var order = CreateOrder(OrderStatus.Cancelled);
         order.Id = 88;
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
             .ReturnsAsync(new GamePackage
@@ -425,5 +425,34 @@ public class OrderUseCaseTests
         _packageRepository.Verify(repo => repo.IncreaseStockAsync(It.IsAny<long>(), It.IsAny<int>()), Times.Never);
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
+    }
+
+    private static Wallet CreateWallet(decimal balance)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new Wallet
+        {
+            UserId = 7,
+            Balance = balance,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+    }
+
+    private static Order CreateOrder(OrderStatus status)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new Order
+        {
+            UserId = 7,
+            GamePackageId = 44,
+            PackagePrice = 199m,
+            PackageName = "Diamond 86",
+            PackageCost = 0m,
+            GameAccountInfo = "hero-123",
+            Status = status,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
     }
 }

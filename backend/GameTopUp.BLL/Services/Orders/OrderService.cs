@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using GameTopUp.BLL.Utilities;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Exceptions;
@@ -31,7 +30,14 @@ public sealed class OrderService
         var orderId = await _orderRepository.CreateAsync(order);
         order.Id = orderId;
 
-        var history = OrderHistory.Create(orderId, OrderStatus.Pending, OrderStatus.Pending, actor.UserId);
+        var history = new OrderHistory
+        {
+            OrderId = orderId,
+            FromStatus = OrderStatus.Pending,
+            ToStatus = OrderStatus.Pending,
+            ActionBy = actor.UserId,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
         await _orderHistoryRepository.CreateAsync(history);
     }
 
@@ -57,7 +63,8 @@ public sealed class OrderService
         }
 
         var fromStatus = order.Status;
-        order.MarkProcessing(actor.UserId, packageCost);
+        order.UpdateStatus(OrderStatus.Processing, actor.UserId);
+        order.PackageCost = packageCost;
 
         return CreateHistory(order, fromStatus, actor);
     }
@@ -75,7 +82,7 @@ public sealed class OrderService
         }
 
         var fromStatus = order.Status;
-        order.MarkCompleted();
+        order.UpdateStatus(OrderStatus.Completed);
 
         return CreateHistory(order, fromStatus, actor);
     }
@@ -85,21 +92,23 @@ public sealed class OrderService
         EnsureCanCancelOrder(order, actor);
 
         var fromStatus = order.Status;
-
-        order.MarkCancelled();
+        order.UpdateStatus(OrderStatus.Cancelled);
 
         return CreateHistory(order, fromStatus, actor, reason);
     }
 
     private static OrderHistory CreateHistory(Order order, OrderStatus fromStatus, UserContext actor, string? note = null)
     {
-        return OrderHistory.Create(
-            order.Id,
-            fromStatus,
-            order.Status,
-            actor.UserId,
-            InputTextNormalizer.NullIfWhiteSpace(note),
-            actor.IsAdmin);
+        return new OrderHistory
+        {
+            OrderId = order.Id,
+            FromStatus = fromStatus,
+            ToStatus = order.Status,
+            Note = InputTextNormalizer.NullIfWhiteSpace(note),
+            ActionBy = actor.UserId,
+            IsAdmin = actor.IsAdmin,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
     }
 
     private static void EnsureCanCancelOrder(Order order, UserContext actor)

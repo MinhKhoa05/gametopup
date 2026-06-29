@@ -22,26 +22,6 @@ public class WalletTransaction
     public string? ReferenceId { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
-
-    public static WalletTransaction Create(
-        long userId,
-        decimal amount,
-        decimal balanceBefore,
-        decimal balanceAfter,
-        WalletTransactionType type,
-        string? referenceId = null)
-    {
-        return new WalletTransaction
-        {
-            UserId = userId,
-            Amount = amount,
-            BalanceBefore = balanceBefore,
-            BalanceAfter = balanceAfter,
-            Type = type,
-            ReferenceId = referenceId,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
-    }
 }
 
 public enum WalletTransactionType

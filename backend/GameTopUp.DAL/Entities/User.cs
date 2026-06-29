@@ -23,21 +23,6 @@ public class User
 
     public DateTimeOffset UpdatedAt { get; set; }
 
-    public static User Create(string displayName, string email, string passwordHash, UserRole role = UserRole.Member)
-    {
-        var now = DateTimeOffset.UtcNow;
-
-        return new User
-        {
-            DisplayName = displayName,
-            Email = email,
-            PasswordHash = passwordHash,
-            Role = role,
-            IsActive = true,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
-    }
 }
 
 public enum UserRole

@@ -1,8 +1,8 @@
-using GameTopUp.BLL.Utilities;
 using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.BLL.Services.Images;
 using GameTopUp.BLL.Mappers;
+using GameTopUp.BLL.Services.Images;
+using GameTopUp.BLL.Utilities;
 using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Interfaces;
 namespace GameTopUp.BLL.Services.Games;
@@ -30,14 +30,19 @@ public sealed class GameService
 
         try
         {
-            var game = Game.Create(request.Name);
+            var game = request.MapTo<Game>();
+            var now = DateTimeOffset.UtcNow;
+            game.CreatedAt = now;
+            game.UpdatedAt = now;
+            game.ImageUrl = string.Empty;
+            game.ImageRelativePath = null;
 
             if (uploadedImage is not null)
             {
-                game.ApplyImage(uploadedImage.Url, uploadedImage.RelativePath);
+                game.ImageUrl = uploadedImage.Url;
+                game.ImageRelativePath = uploadedImage.RelativePath;
             }
 
-            game.IsActive = request.IsActive;
             game.Id = await _repository.CreateAsync(game);
             return game.MapTo<AdminGameResponse>();
         }
@@ -60,7 +65,8 @@ public sealed class GameService
 
             if (uploadedImage is not null)
             {
-                game.ApplyImage(uploadedImage.Url, uploadedImage.RelativePath);
+                game.ImageUrl = uploadedImage.Url;
+                game.ImageRelativePath = uploadedImage.RelativePath;
             }
 
             game.UpdatedAt = DateTimeOffset.UtcNow;

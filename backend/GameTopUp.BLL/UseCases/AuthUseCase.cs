@@ -48,9 +48,22 @@ public sealed class AuthUseCase
                 throw new BusinessException(ErrorCode.EmailExists);
             }
 
-            var user = User.Create(request.DisplayName, request.Email, passwordHash);
+            var now = DateTimeOffset.UtcNow;
+            var user = request.MapTo<User>();
+            user.PasswordHash = passwordHash;
+            user.Role = UserRole.Member;
+            user.IsActive = true;
+            user.CreatedAt = now;
+            user.UpdatedAt = now;
             var userId = await _userRepository.CreateAsync(user);
-            await _walletRepository.UpsertWalletAsync(Wallet.CreateForUser(userId));
+            var walletNow = DateTimeOffset.UtcNow;
+            await _walletRepository.UpsertWalletAsync(new Wallet
+            {
+                UserId = userId,
+                Balance = 0m,
+                CreatedAt = walletNow,
+                UpdatedAt = walletNow
+            });
         });
     }
 

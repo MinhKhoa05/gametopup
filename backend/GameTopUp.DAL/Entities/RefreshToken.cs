@@ -19,16 +19,4 @@ public class RefreshToken
 
     public DateTimeOffset? RevokedAt { get; set; }
 
-    public static RefreshToken Create(long userId, string tokenHash, TimeSpan lifetime)
-    {
-        var now = DateTimeOffset.UtcNow;
-
-        return new RefreshToken
-        {
-            UserId = userId,
-            TokenHash = tokenHash,
-            CreatedAt = now,
-            ExpiresAt = now.Add(lifetime)
-        };
-    }
 }

@@ -21,7 +21,7 @@ public class WalletServiceTests
     [Fact]
     public void Credit_ShouldCreateCreditTransactionAndUpdateBalance()
     {
-        var wallet = Wallet.CreateForUser(7, 200m);
+        var wallet = CreateWallet(200m);
 
         var transaction = _service.Credit(wallet, 150m, WalletTransactionType.Deposit, "GTU-1406-40734");
 
@@ -38,7 +38,7 @@ public class WalletServiceTests
     [InlineData(-1)]
     public void Credit_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
     {
-        var wallet = Wallet.CreateForUser(7, 200m);
+        var wallet = CreateWallet(200m);
 
         Action act = () => _service.Credit(wallet, amount, WalletTransactionType.Deposit, "GTU-1406-40734");
 
@@ -61,7 +61,7 @@ public class WalletServiceTests
     [Fact]
     public void EnsureSufficientBalance_ShouldThrow_WhenWalletHasNotEnoughBalance()
     {
-        var wallet = Wallet.CreateForUser(7, 50m);
+        var wallet = CreateWallet(50m);
 
         var act = () => _service.EnsureSufficientBalance(wallet, 120m);
 
@@ -72,7 +72,7 @@ public class WalletServiceTests
     [Fact]
     public void Debit_ShouldCreateDebitTransactionAndUpdateBalance()
     {
-        var wallet = Wallet.CreateForUser(7, 500m);
+        var wallet = CreateWallet(500m);
 
         var transaction = _service.Debit(wallet, 120m, WalletTransactionType.PurchaseOrder, "123");
 
@@ -89,7 +89,7 @@ public class WalletServiceTests
     [InlineData(-10)]
     public void Debit_ShouldThrow_WhenAmountIsNotPositive(decimal amount)
     {
-        var wallet = Wallet.CreateForUser(7, 500m);
+        var wallet = CreateWallet(500m);
 
         Action act = () => _service.Debit(wallet, amount, WalletTransactionType.PurchaseOrder, "123");
 
@@ -100,11 +100,23 @@ public class WalletServiceTests
     [Fact]
     public void Debit_ShouldThrow_WhenBalanceWouldBeNegative()
     {
-        var wallet = Wallet.CreateForUser(7, 50m);
+        var wallet = CreateWallet(50m);
 
         Action act = () => _service.Debit(wallet, 120m, WalletTransactionType.PurchaseOrder, "123");
 
         act.Should().Throw<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.InsufficientWalletBalance);
+    }
+
+    private static Wallet CreateWallet(decimal balance)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new Wallet
+        {
+            UserId = 7,
+            Balance = balance,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
     }
 }

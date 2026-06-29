@@ -21,29 +21,4 @@ public class GamePackage
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 
-    public static GamePackage Create(
-        string name,
-        long gameId,
-        decimal salePrice,
-        decimal originalPrice,
-        decimal importPrice,
-        int availableSlots = 0)
-    {
-        var now = DateTimeOffset.UtcNow;
-
-        return new GamePackage
-        {
-            Name = name.Trim(),
-            GameId = gameId,
-            SalePrice = salePrice,
-            OriginalPrice = originalPrice,
-            ImportPrice = importPrice,
-            AvailableSlots = availableSlots,
-            ImageUrl = string.Empty,
-            ImageRelativePath = null,
-            IsActive = true,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
-    }
 }

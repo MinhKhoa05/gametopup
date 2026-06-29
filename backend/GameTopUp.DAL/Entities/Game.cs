@@ -15,25 +15,4 @@ public class Game
     public bool IsActive { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
-
-    public static Game Create(string name, string imageUrl = "", string? imageRelativePath = null)
-    {
-        var now = DateTimeOffset.UtcNow;
-
-        return new Game
-        {
-            Name = name.Trim(),
-            ImageUrl = imageUrl,
-            ImageRelativePath = imageRelativePath,
-            IsActive = true,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
-    }
-
-    public void ApplyImage(string? imageUrl, string? imageRelativePath)
-    {
-        ImageUrl = imageUrl;
-        ImageRelativePath = imageRelativePath;
-    }
 }

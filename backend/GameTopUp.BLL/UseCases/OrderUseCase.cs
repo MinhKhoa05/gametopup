@@ -46,12 +46,19 @@ public sealed class OrderUseCase
             _walletService.EnsureSufficientBalance(wallet, packagePrice);
             await _packageService.ReservePackageAsync(package.Id);
 
-            var order = Order.Create(
-                actor.UserId,
-                package.Id,
-                packagePrice,
-                package.Name,
-                gameAccountInfo);
+            var now = DateTimeOffset.UtcNow;
+            var order = new Order
+            {
+                UserId = actor.UserId,
+                GamePackageId = package.Id,
+                PackagePrice = packagePrice,
+                PackageName = package.Name.Trim(),
+                PackageCost = 0m,
+                GameAccountInfo = gameAccountInfo,
+                Status = OrderStatus.Pending,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
             await _orderService.CreateAsync(order, actor);
 
             var walletTransaction = _walletService.Debit(

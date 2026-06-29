@@ -235,7 +235,17 @@ public class WalletDepositServiceTests
 
     private static WalletDeposit CreateDeposit(long userId, decimal amount = 100_000m)
     {
-        return WalletDeposit.Create(userId, amount, "CODE", "CODE");
+        var now = DateTimeOffset.UtcNow;
+        return new WalletDeposit
+        {
+            UserId = userId,
+            Amount = amount,
+            Code = "CODE",
+            TransferContent = "CODE",
+            Status = WalletDepositStatus.Pending,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
     }
 
     private static UserContext MemberContext(long userId)

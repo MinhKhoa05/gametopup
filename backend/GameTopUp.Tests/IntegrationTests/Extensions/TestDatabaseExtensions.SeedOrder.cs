@@ -14,12 +14,19 @@ public static partial class TestDatabaseExtensions
         Action<Order>? customize = null)
     {
         var unique = UniqueCode();
-        var order = Order.Create(
-            userId,
-            packageId,
-            100m,
-            $"Test Package {unique}",
-            $"account-{unique}");
+        var now = DateTimeOffset.UtcNow;
+        var order = new Order
+        {
+            UserId = userId,
+            GamePackageId = packageId,
+            PackagePrice = 100m,
+            PackageName = $"Test Package {unique}",
+            PackageCost = 0m,
+            GameAccountInfo = $"account-{unique}",
+            Status = OrderStatus.Pending,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
 
         customize?.Invoke(order);
 
@@ -32,7 +39,14 @@ public static partial class TestDatabaseExtensions
         long actionBy,
         Action<OrderHistory>? customize = null)
     {
-        var history = OrderHistory.Create(orderId, OrderStatus.Pending, OrderStatus.Pending, actionBy);
+        var history = new OrderHistory
+        {
+            OrderId = orderId,
+            FromStatus = OrderStatus.Pending,
+            ToStatus = OrderStatus.Pending,
+            ActionBy = actionBy,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
 
         customize?.Invoke(history);
 

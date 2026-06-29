@@ -15,6 +15,10 @@ internal static class BackendMapsterConfig
     {
         var config = new TypeAdapterConfig();
 
+        config.NewConfig<CreateUserRequest, User>();
+        config.NewConfig<CreateGameRequest, Game>();
+        config.NewConfig<CreateGamePackageRequest, GamePackage>();
+
         config.NewConfig<GameQueryRow, GameResponse>();
         config.NewConfig<Game, AdminGameResponse>();
         config.NewConfig<GameQueryRow, AdminGameResponse>();

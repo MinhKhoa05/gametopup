@@ -22,11 +22,17 @@ public static partial class TestDatabaseExtensions
         Action<User>? customize = null)
     {
         var unique = UniqueCode(10);
-        var user = User.Create(
-            $"Test User {unique}",
-            $"user-{unique}@test.local",
-            BCrypt.Net.BCrypt.HashPassword(DefaultUserPassword),
-            role);
+        var now = DateTimeOffset.UtcNow;
+        var user = new User
+        {
+            DisplayName = $"Test User {unique}",
+            Email = $"user-{unique}@test.local",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(DefaultUserPassword),
+            Role = role,
+            IsActive = true,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
 
         customize?.Invoke(user);
 
@@ -43,7 +49,14 @@ public static partial class TestDatabaseExtensions
         long userId,
         Action<WalletEntity>? customize = null)
     {
-        var wallet = WalletEntity.CreateForUser(userId, 0m);
+        var now = DateTimeOffset.UtcNow;
+        var wallet = new WalletEntity
+        {
+            UserId = userId,
+            Balance = 0m,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
         customize?.Invoke(wallet);
 
         return factory.InsertSeedAsync(wallet, (x, id) => x.Id = id);
@@ -54,7 +67,16 @@ public static partial class TestDatabaseExtensions
         Action<Game>? customize = null)
     {
         var unique = UniqueCode();
-        var game = Game.Create($"Test Game {unique}");
+        var now = DateTimeOffset.UtcNow;
+        var game = new Game
+        {
+            Name = $"Test Game {unique}",
+            ImageUrl = string.Empty,
+            ImageRelativePath = null,
+            IsActive = true,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
 
         customize?.Invoke(game);
 
@@ -66,13 +88,21 @@ public static partial class TestDatabaseExtensions
         long gameId,
         Action<GamePackage>? customize = null)
     {
-        var package = GamePackage.Create(
-            $"Test Package {UniqueCode()}",
-            gameId,
-            100m,
-            100m,
-            100m,
-            0);
+        var now = DateTimeOffset.UtcNow;
+        var package = new GamePackage
+        {
+            Name = $"Test Package {UniqueCode()}",
+            GameId = gameId,
+            SalePrice = 100m,
+            OriginalPrice = 100m,
+            ImportPrice = 100m,
+            AvailableSlots = 0,
+            ImageUrl = string.Empty,
+            ImageRelativePath = null,
+            IsActive = true,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
 
         customize?.Invoke(package);
 
@@ -85,11 +115,17 @@ public static partial class TestDatabaseExtensions
         Action<WalletDepositEntity>? customize = null)
     {
         var requestCode = $"DEP-{UniqueCode(12)}".ToUpperInvariant();
-        var request = WalletDepositEntity.Create(
-            userId,
-            100m,
-            requestCode,
-            $"Deposit content {requestCode}");
+        var now = DateTimeOffset.UtcNow;
+        var request = new WalletDepositEntity
+        {
+            UserId = userId,
+            Amount = 100m,
+            Code = requestCode,
+            TransferContent = $"Deposit content {requestCode}",
+            Status = WalletDepositStatus.Pending,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
 
         customize?.Invoke(request);
 
@@ -101,7 +137,14 @@ public static partial class TestDatabaseExtensions
         long userId,
         Action<RefreshToken>? customize = null)
     {
-        var refreshToken = RefreshToken.Create(userId, UniqueCode(32), TimeSpan.FromDays(7));
+        var now = DateTimeOffset.UtcNow;
+        var refreshToken = new RefreshToken
+        {
+            UserId = userId,
+            TokenHash = UniqueCode(32),
+            CreatedAt = now,
+            ExpiresAt = now.AddDays(7)
+        };
         customize?.Invoke(refreshToken);
 
         return factory.InsertSeedAsync(refreshToken, (x, id) => x.Id = id);
@@ -112,13 +155,16 @@ public static partial class TestDatabaseExtensions
         long userId,
         Action<WalletTransactionEntity>? customize = null)
     {
-        var transaction = WalletTransactionEntity.Create(
-            userId,
-            100m,
-            0m,
-            100m,
-            WalletTransactionType.Deposit,
-            null);
+        var transaction = new WalletTransactionEntity
+        {
+            UserId = userId,
+            Amount = 100m,
+            BalanceBefore = 0m,
+            BalanceAfter = 100m,
+            Type = WalletTransactionType.Deposit,
+            ReferenceId = null,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
 
         customize?.Invoke(transaction);
 

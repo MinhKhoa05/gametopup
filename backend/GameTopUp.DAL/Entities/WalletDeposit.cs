@@ -31,26 +31,6 @@ public class WalletDeposit
 
     public DateTimeOffset UpdatedAt { get; set; }
 
-    public static WalletDeposit Create(
-        long userId,
-        decimal amount,
-        string code,
-        string transferContent)
-    {
-        var now = DateTimeOffset.UtcNow;
-
-        return new WalletDeposit
-        {
-            UserId = userId,
-            Amount = amount,
-            Code = code,
-            TransferContent = transferContent,
-            Status = WalletDepositStatus.Pending,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
-    }
-
     public void MarkUserConfirmed(DateTimeOffset now)
     {
         Status = WalletDepositStatus.UserConfirmed;

@@ -77,7 +77,17 @@ public sealed class WalletDepositService
 
         var code = CreateDepositCode();
         var transferContent = code;
-        var request = WalletDeposit.Create(context.UserId, amount, code, transferContent);
+        var now = DateTimeOffset.UtcNow;
+        var request = new WalletDeposit
+        {
+            UserId = context.UserId,
+            Amount = amount,
+            Code = code,
+            TransferContent = transferContent,
+            Status = WalletDepositStatus.Pending,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
 
         request.Id = await _repository.CreateAsync(request);
         return BuildPublicResponse(request);

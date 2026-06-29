@@ -15,7 +15,14 @@ public sealed class RefreshTokenService
 
     public async Task CreateAsync(long userId, string tokenHash, TimeSpan lifetime)
     {
-        await _repository.CreateAsync(RefreshToken.Create(userId, tokenHash, lifetime));
+        var now = DateTimeOffset.UtcNow;
+        await _repository.CreateAsync(new RefreshToken
+        {
+            UserId = userId,
+            TokenHash = tokenHash,
+            CreatedAt = now,
+            ExpiresAt = now.Add(lifetime)
+        });
     }
 
     public async Task<RefreshToken> RevokeValidTokenAsync(string tokenHash)

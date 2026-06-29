@@ -1,8 +1,8 @@
-using GameTopUp.BLL.Utilities;
 using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.BLL.Services.Images;
 using GameTopUp.BLL.Mappers;
+using GameTopUp.BLL.Services.Images;
+using GameTopUp.BLL.Utilities;
 using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Interfaces;
 namespace GameTopUp.BLL.Services.Games;
@@ -91,16 +91,20 @@ public sealed class GamePackageService
 
         try
         {
-            var package = GamePackage.Create(
-                packageName,
-                gameId,
-                request.SalePrice,
-                request.OriginalPrice,
-                request.ImportPrice,
-                request.AvailableSlots);
+            var now = DateTimeOffset.UtcNow;
+            var package = request.MapTo<GamePackage>();
+            package.Name = packageName;
+            package.GameId = gameId;
+            package.CreatedAt = now;
+            package.UpdatedAt = now;
+            package.ImageUrl = string.Empty;
+            package.ImageRelativePath = null;
 
-            package.IsActive = request.IsActive;
-            ApplyImage(package, uploadedImage);
+            if (uploadedImage is not null)
+            {
+                package.ImageUrl = uploadedImage.Url;
+                package.ImageRelativePath = uploadedImage.RelativePath;
+            }
 
             package.Id = await _packageRepository.CreateAsync(package);
             return package;
@@ -122,7 +126,11 @@ public sealed class GamePackageService
         try
         {
             request.ApplyTo(package);
-            ApplyImage(package, uploadedImage);
+            if (uploadedImage is not null)
+            {
+                package.ImageUrl = uploadedImage.Url;
+                package.ImageRelativePath = uploadedImage.RelativePath;
+            }
 
             package.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -148,17 +156,6 @@ public sealed class GamePackageService
 
         await _packageRepository.DeleteAsync(id);
         await _imageStorageService.DeleteAsync(package.ImageRelativePath);
-    }
-
-    private static void ApplyImage(GamePackage package, ImageStorageResult? image)
-    {
-        if (image is null)
-        {
-            return;
-        }
-
-        package.ImageUrl = image.Url;
-        package.ImageRelativePath = image.RelativePath;
     }
 
     private async Task EnsureGameExistsAsync(long gameId)

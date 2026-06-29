@@ -27,7 +27,7 @@ public class OrderReadServiceTests : IDisposable
     [Fact]
     public async Task GetOrderAsync_ShouldReturnOwnOrder()
     {
-        var expected = Order.Create(7, 44, 199m, "package", "account");
+        var expected = CreateOrder(7);
         expected.Id = 88;
 
         _orderRepository
@@ -44,16 +44,12 @@ public class OrderReadServiceTests : IDisposable
     [Fact]
     public async Task GetOrderHistoryAsync_ShouldReturnOrderHistory()
     {
-        var order = Order.Create(7, 44, 199m, "package", "account");
+        var order = CreateOrder(7);
         order.Id = 88;
 
         var histories = new List<OrderHistory>
         {
-            OrderHistory.Create(
-                88,
-                OrderStatus.Pending,
-                OrderStatus.Pending,
-                7)
+            CreateHistory(88, 7)
         };
 
         _orderRepository
@@ -74,7 +70,7 @@ public class OrderReadServiceTests : IDisposable
     [Fact]
     public async Task GetOrderDetailAsync_ShouldThrowForbidden_WhenOrderBelongsToAnotherUser()
     {
-        var existing = Order.Create(8, 44, 199m, "package", "account");
+        var existing = CreateOrder(8);
         existing.Id = 88;
         _orderRepository.Setup(repo => repo.GetByIdAsync(88))
             .ReturnsAsync(existing);
@@ -88,11 +84,11 @@ public class OrderReadServiceTests : IDisposable
     [Fact]
     public async Task GetOrderAsync_ShouldAllowAdminToAccessAnyOrder()
     {
-        var expected = Order.Create(8, 44, 199m, "package", "account");
+        var expected = CreateOrder(8);
         expected.Id = 88;
         var histories = new List<OrderHistory>
         {
-            OrderHistory.Create(88, OrderStatus.Pending, OrderStatus.Pending, 8)
+            CreateHistory(88, 8)
         };
         _orderRepository.Setup(repo => repo.GetByIdAsync(88))
             .ReturnsAsync(expected);
@@ -118,5 +114,34 @@ public class OrderReadServiceTests : IDisposable
     public void Dispose()
     {
         _database.Dispose();
+    }
+
+    private static Order CreateOrder(long userId)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new Order
+        {
+            UserId = userId,
+            GamePackageId = 44,
+            PackagePrice = 199m,
+            PackageName = "package",
+            PackageCost = 0m,
+            GameAccountInfo = "account",
+            Status = OrderStatus.Pending,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+    }
+
+    private static OrderHistory CreateHistory(long orderId, long actionBy)
+    {
+        return new OrderHistory
+        {
+            OrderId = orderId,
+            FromStatus = OrderStatus.Pending,
+            ToStatus = OrderStatus.Pending,
+            ActionBy = actionBy,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
     }
 }
