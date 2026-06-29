@@ -80,7 +80,7 @@ dotnet test backend/GameTopUp.slnx
 
 * Docker Desktop
 
-### Setup
+### Production Docker Setup
 
 Copy the example environment file:
 
@@ -88,21 +88,24 @@ Copy the example environment file:
 cp .env.example .env
 ```
 
-Fill in the required secrets:
+Fill in the required values before running Docker Compose:
 
 ```env
-DB_PASSWORD=YOUR_PASSWORD
-JWT_KEY=YOUR_SECURE_JWT_KEY
+DB_ROOT_PASSWORD=CHANGE_ME_ROOT_PASSWORD
+DB_PASSWORD=YOUR_APP_PASSWORD
+JWT_KEY=YOUR_SECURE_JWT_KEY_MIN_32_CHARS
+CORS_ALLOWED_ORIGINS=https://example.com
+VITE_API_BASE_URL=https://example.com/api
 VIETQR_BANK_ID=YOUR_BANK_ID
-VIETQR_ACCOUNT_NO=YOUR_ACCOUNT_NO
-VIETQR_ACCOUNT_NAME=YOUR_ACCOUNT_NAME
+VIETQR_ACCOUNT_NO=YOUR_BANK_ACCOUNT_NO
+VIETQR_ACCOUNT_NAME=YOUR_BANK_ACCOUNT_NAME
 ```
 
-Everything else already has development defaults in the project configuration.
+Use your real domain for `CORS_ALLOWED_ORIGINS` and `VITE_API_BASE_URL`. In production, the API issues secure cookies, so the public site should be served over HTTPS by a reverse proxy such as Nginx or Caddy.
 
-### Seed Accounts
+### Demo Seed Accounts
 
-The following accounts are automatically seeded for local development.
+The compose file mounts `database/seed.sql`, so a fresh database is initialized with demo data and these accounts. This keeps public preview deployments simple: open the site, sign in, and change the admin password after first login if the app is exposed publicly.
 
 | Role | Email | Password |
 | --- | --- | --- |
@@ -122,7 +125,7 @@ Available services:
 
 * Frontend: http://localhost:3000
 * Backend API: http://localhost:5000
-* Swagger UI: http://localhost:5000/swagger
+* Swagger UI is enabled only when the backend runs with `ASPNETCORE_ENVIRONMENT=Development`.
 
 ## Documentation
 

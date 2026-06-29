@@ -6,6 +6,7 @@ public static class ConfigurationExtensions
     {
         ApplyDatabase(configuration);
         ApplySecrets(configuration);
+        ApplyCors(configuration);
     }
 
     public static string[] GetAllowedOrigins(this IConfiguration configuration)
@@ -37,6 +38,23 @@ public static class ConfigurationExtensions
         SetFromEnv(configuration, "VietQr:AccountNo", "VIETQR_ACCOUNT_NO");
         SetFromEnv(configuration, "VietQr:AccountName", "VIETQR_ACCOUNT_NAME");
         SetFromEnv(configuration, "VietQr:Template", "VIETQR_TEMPLATE");
+    }
+
+    private static void ApplyCors(IConfiguration configuration)
+    {
+        var allowedOrigins = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
+        if (string.IsNullOrWhiteSpace(allowedOrigins))
+        {
+            return;
+        }
+
+        var origins = allowedOrigins
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        for (var index = 0; index < origins.Length; index++)
+        {
+            configuration[$"Cors:AllowedOrigins:{index}"] = origins[index];
+        }
     }
 
     private static void SetFromEnv(IConfiguration configuration, string key, string envName)
