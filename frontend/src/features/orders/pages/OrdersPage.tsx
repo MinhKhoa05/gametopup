@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Activity, BadgeCheck, ClipboardList, Coins, Package } from "lucide-react";
 import { STATUS_OPTIONS, useOrders } from "@/features/orders/hooks/useOrders";
 import { OrderListItem } from "@/features/orders/components/OrderListItem";
@@ -10,36 +10,50 @@ import {
   IconBox,
   LoadingState,
   PageHero,
-  Pagination,
   PanelShell,
   SearchBar,
   StatCard,
+  Button,
 } from "@/shared/components";
-import { formatCurrency } from "@/shared/lib/format";
+import { formatCurrency, formatGroupedDate } from "@/shared/lib/format";
 import type { Order } from "@/features/orders/types";
 import { useOrderHistoryQuery } from "../server";
+
+function groupOrdersByDay(orders: Order[]) {
+  const groups = new Map<string, Order[]>();
+
+  orders.forEach((order) => {
+    const label = formatGroupedDate(order.createdAt);
+    const current = groups.get(label) ?? [];
+    current.push(order);
+    groups.set(label, current);
+  });
+
+  return Array.from(groups.entries());
+}
 
 export function OrdersPage() {
   const {
     orders,
     filters,
-    currentPage,
-    totalPages,
+    hasMoreOrders,
     isLoading,
     isError,
     setFilters,
-    setPage,
+    loadMoreOrders,
+    resetVisibleOrders,
     stats,
   } = useOrders();
 
   function updateFilters(updater: (current: typeof filters) => typeof filters) {
     setFilters(updater);
-    setPage(1);
+    resetVisibleOrders();
   }
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const { data: history = [], isFetching: historyLoading } =
     useOrderHistoryQuery(selectedOrder?.id ?? null);
+  const orderGroups = useMemo(() => groupOrdersByDay(orders), [orders]);
 
   const emptyDescription = filters.search
     ? "Không tìm thấy đơn hàng phù hợp."
@@ -139,21 +153,41 @@ export function OrdersPage() {
                 />
               ) : (
                 <>
-                  <div className="space-y-4">
-                    {orders.map((order) => (
-                      <OrderListItem
-                        key={order.id}
-                        order={order}
-                        onClick={() => setSelectedOrder(order)}
-                      />
+                  <div className="space-y-5">
+                    {orderGroups.map(([label, group]) => (
+                      <section key={label} className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-sm font-semibold gt-text-soft">
+                            {label}
+                          </h3>
+
+                          <div className="h-px flex-1 bg-[var(--gt-border)]" />
+
+                          <span className="text-xs gt-text-muted">
+                            {group.length} đơn
+                          </span>
+                        </div>
+
+                        <div className="space-y-4">
+                          {group.map((order) => (
+                            <OrderListItem
+                              key={order.id}
+                              order={order}
+                              onClick={() => setSelectedOrder(order)}
+                            />
+                          ))}
+                        </div>
+                      </section>
                     ))}
                   </div>
 
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setPage}
-                  />
+                  {hasMoreOrders ? (
+                    <div className="flex justify-center pt-2">
+                      <Button variant="outline" onClick={loadMoreOrders}>
+                        Xem thêm
+                      </Button>
+                    </div>
+                  ) : null}
                 </>
               )}
             </div>

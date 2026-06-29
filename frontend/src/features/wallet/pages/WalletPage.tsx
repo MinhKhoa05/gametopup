@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ArrowDownToLine, ArrowLeftRight, Coins, Wallet } from "lucide-react";
 
 import {
+  Button,
   Container,
   EmptyState,
   FilterChipGroup,
@@ -57,6 +58,8 @@ const DEPOSIT_FILTERS = [
 
 type DepositFilter = (typeof DEPOSIT_FILTERS)[number]["value"];
 
+const LOAD_MORE_SIZE = 10;
+
 const DEPOSIT_STATUS_BY_FILTER: Record<
   Exclude<DepositFilter, "all">,
   WalletDepositStatus
@@ -106,6 +109,10 @@ export function WalletPage() {
   const [transactionFilter, setTransactionFilter] =
     useState<TransactionFilter>("all");
   const [depositFilter, setDepositFilter] = useState<DepositFilter>("all");
+  const [visibleTransactionCount, setVisibleTransactionCount] =
+    useState(LOAD_MORE_SIZE);
+  const [visibleDepositCount, setVisibleDepositCount] =
+    useState(LOAD_MORE_SIZE);
   const [isDepositOpen, setDepositOpen] = useState(false);
 
   const filteredTransactions = useMemo(() => {
@@ -118,18 +125,25 @@ export function WalletPage() {
   }, [transactionFilter, transactions]);
 
   const transactionGroups = useMemo(
-    () => groupByDay(filteredTransactions),
-    [filteredTransactions],
+    () => groupByDay(filteredTransactions.slice(0, visibleTransactionCount)),
+    [filteredTransactions, visibleTransactionCount],
   );
 
-  const depositGroups = useMemo(() => {
-    const filteredDeposits = deposits.filter((deposit) => {
+  const filteredDeposits = useMemo(() => {
+    return deposits.filter((deposit) => {
       if (depositFilter === "all") return true;
       return deposit.status === DEPOSIT_STATUS_BY_FILTER[depositFilter];
     });
-
-    return groupByDay(filteredDeposits);
   }, [depositFilter, deposits]);
+
+  const depositGroups = useMemo(
+    () => groupByDay(filteredDeposits.slice(0, visibleDepositCount)),
+    [filteredDeposits, visibleDepositCount],
+  );
+
+  const hasMoreTransactions =
+    visibleTransactionCount < filteredTransactions.length;
+  const hasMoreDeposits = visibleDepositCount < filteredDeposits.length;
 
   const transactionFilterLabel =
     TRANSACTION_FILTERS.find((item) => item.value === transactionFilter)?.label ??
@@ -214,9 +228,10 @@ export function WalletPage() {
                   <FilterChipGroup
                     items={TRANSACTION_FILTERS}
                     value={transactionFilter}
-                    onChange={(value) =>
-                      setTransactionFilter(value as TransactionFilter)
-                    }
+                    onChange={(value) => {
+                      setTransactionFilter(value as TransactionFilter);
+                      setVisibleTransactionCount(LOAD_MORE_SIZE);
+                    }}
                   />
 
                   {transactionGroups.length === 0 ? (
@@ -254,6 +269,24 @@ export function WalletPage() {
                           </div>
                         </section>
                       ))}
+
+                      {hasMoreTransactions ? (
+                        <div className="flex justify-center pt-1">
+                          <Button
+                            variant="outline"
+                            onClick={() =>
+                              setVisibleTransactionCount((current) =>
+                                Math.min(
+                                  current + LOAD_MORE_SIZE,
+                                  filteredTransactions.length,
+                                ),
+                              )
+                            }
+                          >
+                            Xem thêm
+                          </Button>
+                        </div>
+                      ) : null}
                     </div>
                   )}
                 </div>
@@ -267,7 +300,10 @@ export function WalletPage() {
                   <FilterChipGroup
                     items={DEPOSIT_FILTERS}
                     value={depositFilter}
-                    onChange={(value) => setDepositFilter(value as DepositFilter)}
+                    onChange={(value) => {
+                      setDepositFilter(value as DepositFilter);
+                      setVisibleDepositCount(LOAD_MORE_SIZE);
+                    }}
                   />
 
                   {depositGroups.length === 0 ? (
@@ -301,6 +337,24 @@ export function WalletPage() {
                           </div>
                         </section>
                       ))}
+
+                      {hasMoreDeposits ? (
+                        <div className="flex justify-center pt-1">
+                          <Button
+                            variant="outline"
+                            onClick={() =>
+                              setVisibleDepositCount((current) =>
+                                Math.min(
+                                  current + LOAD_MORE_SIZE,
+                                  filteredDeposits.length,
+                                ),
+                              )
+                            }
+                          >
+                            Xem thêm
+                          </Button>
+                        </div>
+                      ) : null}
                     </div>
                   )}
                 </div>

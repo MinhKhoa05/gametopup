@@ -5,7 +5,7 @@ import type { Order } from "@/features/orders/types";
 import type { FilterChipGroupItem } from "@/shared/components";
 import { filterByQuery } from "@/shared/lib/search";
 
-const PAGE_SIZE = 6;
+const LOAD_MORE_SIZE = 10;
 
 export type OrderStatusFilter = "active" | "all" | OrderStatus;
 
@@ -47,7 +47,7 @@ export function useOrders() {
     status: "active",
   });
 
-  const [page, setPage] = useState(1);
+  const [visibleCount, setVisibleCount] = useState(LOAD_MORE_SIZE);
 
   const orders = useMemo(() => {
     const statusFilteredOrders = data.filter((order) => {
@@ -73,9 +73,6 @@ export function useOrders() {
     ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [data, filters]);
 
-  const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
-
   const stats = {
     active: orders.filter((order) => isActiveOrderStatus(order.status)).length,
     completed: orders.filter((x) => x.status === OrderStatus.Completed).length,
@@ -83,16 +80,17 @@ export function useOrders() {
     amount: orders.reduce((sum, x) => sum + x.packagePrice, 0),
   };
 
+  const displayedOrders = orders.slice(0, visibleCount);
+  const hasMoreOrders = displayedOrders.length < orders.length;
+
   return {
-    orders: orders.slice(
-      (currentPage - 1) * PAGE_SIZE,
-      currentPage * PAGE_SIZE,
-    ),
+    orders: displayedOrders,
     filters,
     setFilters,
-    currentPage,
-    totalPages,
-    setPage,
+    hasMoreOrders,
+    loadMoreOrders: () =>
+      setVisibleCount((current) => Math.min(current + LOAD_MORE_SIZE, orders.length)),
+    resetVisibleOrders: () => setVisibleCount(LOAD_MORE_SIZE),
     isLoading: ordersQuery.isPending && ordersQuery.data === undefined,
     isError: ordersQuery.isError,
     stats,
