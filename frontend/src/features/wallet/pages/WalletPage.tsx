@@ -6,12 +6,14 @@ import {
   Container,
   EmptyState,
   FilterChipGroup,
+  GroupedList,
   IconBox,
   PageHero,
   PanelShell,
   SectionHeading,
   StatCard,
 } from "@/shared/components";
+import { useLoadMore } from "@/shared/hooks/useLoadMore";
 import { formatCurrency, formatGroupedDate } from "@/shared/lib/format";
 
 import { WalletBalanceCard } from "@/features/wallet/components/WalletBalanceCard";
@@ -83,7 +85,11 @@ function groupByDay<T extends DatedItem>(items: T[]) {
     groups.set(label, current);
   });
 
-  return Array.from(groups.entries());
+  return Array.from(groups, ([title, groupedItems]) => ({
+    title,
+    items: groupedItems,
+    countLabel: `${groupedItems.length} giao dịch`,
+  }));
 }
 
 export function WalletPage() {
@@ -109,10 +115,6 @@ export function WalletPage() {
   const [transactionFilter, setTransactionFilter] =
     useState<TransactionFilter>("all");
   const [depositFilter, setDepositFilter] = useState<DepositFilter>("all");
-  const [visibleTransactionCount, setVisibleTransactionCount] =
-    useState(LOAD_MORE_SIZE);
-  const [visibleDepositCount, setVisibleDepositCount] =
-    useState(LOAD_MORE_SIZE);
   const [isDepositOpen, setDepositOpen] = useState(false);
 
   const filteredTransactions = useMemo(() => {
@@ -124,9 +126,24 @@ export function WalletPage() {
     );
   }, [transactionFilter, transactions]);
 
-  const transactionGroups = useMemo(
-    () => groupByDay(filteredTransactions.slice(0, visibleTransactionCount)),
+  const {
+    visibleCount: visibleTransactionCount,
+    hasMore: hasMoreTransactions,
+    loadMore: loadMoreTransactions,
+    reset: resetVisibleTransactions,
+  } = useLoadMore({
+    totalCount: filteredTransactions.length,
+    pageSize: LOAD_MORE_SIZE,
+  });
+
+  const visibleTransactions = useMemo(
+    () => filteredTransactions.slice(0, visibleTransactionCount),
     [filteredTransactions, visibleTransactionCount],
+  );
+
+  const transactionGroups = useMemo(
+    () => groupByDay(visibleTransactions),
+    [visibleTransactions],
   );
 
   const filteredDeposits = useMemo(() => {
@@ -136,14 +153,25 @@ export function WalletPage() {
     });
   }, [depositFilter, deposits]);
 
-  const depositGroups = useMemo(
-    () => groupByDay(filteredDeposits.slice(0, visibleDepositCount)),
+  const {
+    visibleCount: visibleDepositCount,
+    hasMore: hasMoreDeposits,
+    loadMore: loadMoreDeposits,
+    reset: resetVisibleDeposits,
+  } = useLoadMore({
+    totalCount: filteredDeposits.length,
+    pageSize: LOAD_MORE_SIZE,
+  });
+
+  const visibleDeposits = useMemo(
+    () => filteredDeposits.slice(0, visibleDepositCount),
     [filteredDeposits, visibleDepositCount],
   );
 
-  const hasMoreTransactions =
-    visibleTransactionCount < filteredTransactions.length;
-  const hasMoreDeposits = visibleDepositCount < filteredDeposits.length;
+  const depositGroups = useMemo(
+    () => groupByDay(visibleDeposits),
+    [visibleDeposits],
+  );
 
   const transactionFilterLabel =
     TRANSACTION_FILTERS.find((item) => item.value === transactionFilter)?.label ??
@@ -214,151 +242,102 @@ export function WalletPage() {
               />
 
               <div className="min-h-[260px]">
-              {historyLoading ? (
-                <p className="py-10 text-center gt-text-muted">
-                  Đang tải dữ liệu...
-                </p>
-              ) : historyError ? (
-                <EmptyState
-                  title="Không tải được dữ liệu"
-                  description="Đã xảy ra lỗi khi tải lịch sử ví."
-                />
-              ) : tab === "ledger" ? (
-                <div className="space-y-5">
-                  <FilterChipGroup
-                    items={TRANSACTION_FILTERS}
-                    value={transactionFilter}
-                    onChange={(value) => {
-                      setTransactionFilter(value as TransactionFilter);
-                      setVisibleTransactionCount(LOAD_MORE_SIZE);
-                    }}
+                {historyLoading ? (
+                  <p className="py-10 text-center gt-text-muted">
+                    Đang tải dữ liệu...
+                  </p>
+                ) : historyError ? (
+                  <EmptyState
+                    title="Không tải được dữ liệu"
+                    description="Đã xảy ra lỗi khi tải lịch sử ví."
                   />
-
-                  {transactionGroups.length === 0 ? (
-                    <EmptyState
-                      title="Không có giao dịch phù hợp"
-                      description={
-                        transactionFilter === "all"
-                          ? "Các biến động số dư sẽ xuất hiện tại đây."
-                          : `Chưa có giao dịch ${transactionFilterLabel.toLowerCase()} trong ví.`
-                      }
+                ) : tab === "ledger" ? (
+                  <div className="space-y-5">
+                    <FilterChipGroup
+                      items={TRANSACTION_FILTERS}
+                      value={transactionFilter}
+                      onChange={(value) => {
+                        setTransactionFilter(value as TransactionFilter);
+                        resetVisibleTransactions();
+                      }}
                     />
-                  ) : (
-                    <div className="space-y-5">
-                      {transactionGroups.map(([label, group]) => (
-                        <section key={label} className="space-y-2">
-                          <div className="flex items-center gap-3">
-                            <h3 className="text-sm font-semibold gt-text-soft">
-                              {label}
-                            </h3>
 
-                            <div className="h-px flex-1 bg-[var(--gt-border)]" />
+                    {transactionGroups.length === 0 ? (
+                      <EmptyState
+                        title="Không có giao dịch phù hợp"
+                        description={
+                          transactionFilter === "all"
+                            ? "Các biến động số dư sẽ xuất hiện tại đây."
+                            : `Chưa có giao dịch ${transactionFilterLabel.toLowerCase()} trong ví.`
+                        }
+                      />
+                    ) : (
+                      <div className="space-y-5">
+                        <GroupedList
+                          groups={transactionGroups}
+                          getItemKey={(transaction) => transaction.id}
+                          itemListClassName="space-y-3"
+                          renderItem={(transaction) => (
+                            <WalletTransactionItem transaction={transaction} />
+                          )}
+                        />
 
-                            <span className="text-xs gt-text-muted">
-                              {group.length} giao dịch
-                            </span>
+                        {hasMoreTransactions ? (
+                          <div className="flex justify-center pt-1">
+                            <Button
+                              variant="outline"
+                              onClick={loadMoreTransactions}
+                            >
+                              Xem thêm
+                            </Button>
                           </div>
-
-                          <div className="space-y-3">
-                            {group.map((transaction) => (
-                              <WalletTransactionItem
-                                key={transaction.id}
-                                transaction={transaction}
-                              />
-                            ))}
-                          </div>
-                        </section>
-                      ))}
-
-                      {hasMoreTransactions ? (
-                        <div className="flex justify-center pt-1">
-                          <Button
-                            variant="outline"
-                            onClick={() =>
-                              setVisibleTransactionCount((current) =>
-                                Math.min(
-                                  current + LOAD_MORE_SIZE,
-                                  filteredTransactions.length,
-                                ),
-                              )
-                            }
-                          >
-                            Xem thêm
-                          </Button>
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-              ) : deposits.length === 0 ? (
-                <EmptyState
-                  title="Chưa có yêu cầu nạp"
-                  description="Các yêu cầu nạp tiền sẽ xuất hiện tại đây."
-                />
-              ) : (
-                <div className="space-y-5">
-                  <FilterChipGroup
-                    items={DEPOSIT_FILTERS}
-                    value={depositFilter}
-                    onChange={(value) => {
-                      setDepositFilter(value as DepositFilter);
-                      setVisibleDepositCount(LOAD_MORE_SIZE);
-                    }}
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                ) : deposits.length === 0 ? (
+                  <EmptyState
+                    title="Chưa có yêu cầu nạp"
+                    description="Các yêu cầu nạp tiền sẽ xuất hiện tại đây."
                   />
-
-                  {depositGroups.length === 0 ? (
-                    <EmptyState
-                      title="Không có yêu cầu phù hợp"
-                      description="Thử đổi bộ lọc để xem các yêu cầu khác."
+                ) : (
+                  <div className="space-y-5">
+                    <FilterChipGroup
+                      items={DEPOSIT_FILTERS}
+                      value={depositFilter}
+                      onChange={(value) => {
+                        setDepositFilter(value as DepositFilter);
+                        resetVisibleDeposits();
+                      }}
                     />
-                  ) : (
-                    <div className="space-y-5">
-                      {depositGroups.map(([label, group]) => (
-                        <section key={label} className="space-y-2">
-                          <div className="flex items-center gap-3">
-                            <h3 className="text-sm font-semibold gt-text-soft">
-                              {label}
-                            </h3>
 
-                            <div className="h-px flex-1 bg-[var(--gt-border)]" />
+                    {depositGroups.length === 0 ? (
+                      <EmptyState
+                        title="Không có yêu cầu phù hợp"
+                        description="Thử đổi bộ lọc để xem các yêu cầu khác."
+                      />
+                    ) : (
+                      <div className="space-y-5">
+                        <GroupedList
+                          groups={depositGroups}
+                          getItemKey={(request) => request.id}
+                          itemListClassName="space-y-2"
+                          renderItem={(request) => (
+                            <WalletDepositItem deposit={request} />
+                          )}
+                        />
 
-                            <span className="text-xs gt-text-muted">
-                              {group.length} giao dịch
-                            </span>
+                        {hasMoreDeposits ? (
+                          <div className="flex justify-center pt-1">
+                            <Button variant="outline" onClick={loadMoreDeposits}>
+                              Xem thêm
+                            </Button>
                           </div>
-
-                          <div className="space-y-2">
-                            {group.map((request) => (
-                              <WalletDepositItem
-                                key={request.id}
-                                deposit={request}
-                              />
-                            ))}
-                          </div>
-                        </section>
-                      ))}
-
-                      {hasMoreDeposits ? (
-                        <div className="flex justify-center pt-1">
-                          <Button
-                            variant="outline"
-                            onClick={() =>
-                              setVisibleDepositCount((current) =>
-                                Math.min(
-                                  current + LOAD_MORE_SIZE,
-                                  filteredDeposits.length,
-                                ),
-                              )
-                            }
-                          >
-                            Xem thêm
-                          </Button>
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-              )}
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </PanelShell>

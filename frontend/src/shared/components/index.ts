@@ -12,6 +12,7 @@ export { Field } from './Field';
 export type { FieldProps } from './Field';
 export { PasswordField } from './PasswordField';
 export { FormActions } from './FormActions';
+export { GroupedList } from './GroupedList';
 export { ImageBox, ImagePicker } from './image';
 export { IconBox } from './IconBox';
 export { HeaderAccountMenu } from './HeaderAccountMenu';

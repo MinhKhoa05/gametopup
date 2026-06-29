@@ -3,6 +3,7 @@ import { useMyOrdersQuery } from "@/features/orders/server";
 import { OrderStatus } from "@/features/orders/types";
 import type { Order } from "@/features/orders/types";
 import type { FilterChipGroupItem } from "@/shared/components";
+import { useLoadMore } from "@/shared/hooks/useLoadMore";
 import { filterByQuery } from "@/shared/lib/search";
 
 const LOAD_MORE_SIZE = 10;
@@ -47,8 +48,6 @@ export function useOrders() {
     status: "active",
   });
 
-  const [visibleCount, setVisibleCount] = useState(LOAD_MORE_SIZE);
-
   const orders = useMemo(() => {
     const statusFilteredOrders = data.filter((order) => {
       if (filters.status === "active" && !isActiveOrderStatus(order.status)) {
@@ -80,17 +79,20 @@ export function useOrders() {
     amount: orders.reduce((sum, x) => sum + x.packagePrice, 0),
   };
 
-  const displayedOrders = orders.slice(0, visibleCount);
-  const hasMoreOrders = displayedOrders.length < orders.length;
+  const {
+    visibleCount,
+    hasMore: hasMoreOrders,
+    loadMore: loadMoreOrders,
+    reset: resetVisibleOrders,
+  } = useLoadMore({ totalCount: orders.length, pageSize: LOAD_MORE_SIZE });
 
   return {
-    orders: displayedOrders,
+    orders: orders.slice(0, visibleCount),
     filters,
     setFilters,
     hasMoreOrders,
-    loadMoreOrders: () =>
-      setVisibleCount((current) => Math.min(current + LOAD_MORE_SIZE, orders.length)),
-    resetVisibleOrders: () => setVisibleCount(LOAD_MORE_SIZE),
+    loadMoreOrders,
+    resetVisibleOrders,
     isLoading: ordersQuery.isPending && ordersQuery.data === undefined,
     isError: ordersQuery.isError,
     stats,

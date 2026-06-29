@@ -4,16 +4,17 @@ import { STATUS_OPTIONS, useOrders } from "@/features/orders/hooks/useOrders";
 import { OrderListItem } from "@/features/orders/components/OrderListItem";
 import { OrderDetailDialog } from "../components/OrderDetailDialog";
 import {
+  Button,
   Container,
   EmptyState,
   FilterChipGroup,
+  GroupedList,
   IconBox,
   LoadingState,
   PageHero,
   PanelShell,
   SearchBar,
   StatCard,
-  Button,
 } from "@/shared/components";
 import { formatCurrency, formatGroupedDate } from "@/shared/lib/format";
 import type { Order } from "@/features/orders/types";
@@ -29,7 +30,11 @@ function groupOrdersByDay(orders: Order[]) {
     groups.set(label, current);
   });
 
-  return Array.from(groups.entries());
+  return Array.from(groups, ([title, items]) => ({
+    title,
+    items,
+    countLabel: `${items.length} đơn`,
+  }));
 }
 
 export function OrdersPage() {
@@ -140,7 +145,7 @@ export function OrdersPage() {
               />
 
               {isLoading ? (
-                <LoadingState title="Dang tai don hang..." />
+                <LoadingState title="Đang tải đơn hàng..." />
               ) : isError ? (
                 <EmptyState
                   title="Không tải được đơn hàng"
@@ -153,33 +158,16 @@ export function OrdersPage() {
                 />
               ) : (
                 <>
-                  <div className="space-y-5">
-                    {orderGroups.map(([label, group]) => (
-                      <section key={label} className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-sm font-semibold gt-text-soft">
-                            {label}
-                          </h3>
-
-                          <div className="h-px flex-1 bg-[var(--gt-border)]" />
-
-                          <span className="text-xs gt-text-muted">
-                            {group.length} đơn
-                          </span>
-                        </div>
-
-                        <div className="space-y-4">
-                          {group.map((order) => (
-                            <OrderListItem
-                              key={order.id}
-                              order={order}
-                              onClick={() => setSelectedOrder(order)}
-                            />
-                          ))}
-                        </div>
-                      </section>
-                    ))}
-                  </div>
+                  <GroupedList
+                    groups={orderGroups}
+                    getItemKey={(order) => order.id}
+                    renderItem={(order) => (
+                      <OrderListItem
+                        order={order}
+                        onClick={() => setSelectedOrder(order)}
+                      />
+                    )}
+                  />
 
                   {hasMoreOrders ? (
                     <div className="flex justify-center pt-2">
