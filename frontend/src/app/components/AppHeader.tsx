@@ -22,7 +22,7 @@ export function AppHeader() {
   const user = userQuery.data ?? null;
   const userDisplayName = user?.displayName ?? "Khách";
   const isAuthenticated = user !== null;
-  const isChecking = userQuery.isPending && userQuery.data === undefined;
+  const isChecking = userQuery.isFetching && userQuery.data === undefined;
 
   const navigate = useNavigate();
   const location = useLocation();

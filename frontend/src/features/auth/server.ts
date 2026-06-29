@@ -7,6 +7,7 @@ import {
 import axios from "axios";
 import { toast } from "sonner";
 import { getMe, login, logout, register, changePassword } from "@/features/auth/api";
+import type { LoginRequest } from "@/features/auth/api";
 import type { User } from "@/features/users/types";
 
 export const AUTH_USER_QUERY_KEY = ["auth", "me"] as const;
@@ -106,7 +107,10 @@ export function useLoginMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: login,
+    async mutationFn(payload: LoginRequest) {
+      await login(payload);
+      return getMe();
+    },
     onSuccess(user, variables) {
       rememberAuthEmail(variables.email);
       queryClient.setQueryData<User>(AUTH_USER_QUERY_KEY, user);
