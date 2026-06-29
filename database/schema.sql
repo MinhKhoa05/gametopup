@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS games (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- 3. Table: game_packages
-CREATE TABLE IF NOT EXISTS game_packages (
+-- 3. Table: packages
+CREATE TABLE IF NOT EXISTS packages (
     id BIGINT SIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     image_url TEXT,
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS orders (
     id BIGINT SIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT SIGNED NOT NULL,
     game_account_info TEXT NOT NULL,
-    game_package_id BIGINT SIGNED NOT NULL,
+    package_id BIGINT SIGNED NOT NULL,
     package_name VARCHAR(150) NOT NULL,
     package_price DECIMAL(18, 2) NOT NULL,
     package_cost DECIMAL(18, 2) NOT NULL DEFAULT 0.00,
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_order_package FOREIGN KEY (game_package_id) REFERENCES game_packages(id) ON DELETE CASCADE,
+    CONSTRAINT fk_order_package FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE,
     INDEX idx_orders_user_sort (user_id, created_at),
     INDEX idx_orders_status (status)
 ) ENGINE=InnoDB;

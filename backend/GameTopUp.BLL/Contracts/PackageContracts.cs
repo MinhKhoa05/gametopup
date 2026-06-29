@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace GameTopUp.BLL.Contracts;
 
-public sealed class CreateGamePackageRequest
+public sealed class CreatePackageRequest
 {
     [Required]
     public string Name { get; set; } = string.Empty;
@@ -25,7 +25,7 @@ public sealed class CreateGamePackageRequest
     public bool IsActive { get; set; } = true;
 }
 
-public sealed class GamePackageResponse
+public sealed class PackageResponse
 {
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -38,7 +38,7 @@ public sealed class GamePackageResponse
     public bool IsAvailable { get; set; }
 }
 
-public sealed class UpdateGamePackageRequest
+public sealed class UpdatePackageRequest
 {
     public string? Name { get; set; }
     public IFormFile? ImageFile { get; set; }

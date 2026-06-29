@@ -20,7 +20,7 @@ public sealed class OrderQuery
                     o.id,
                     o.user_id,
                     o.game_account_info,
-                    o.game_package_id,
+                    o.package_id AS package_id,
                     gp.game_id AS game_id,
                     g.name AS game_name,
                     o.package_name,
@@ -30,7 +30,7 @@ public sealed class OrderQuery
                     o.created_at,
                     o.updated_at
                 FROM orders o
-                LEFT JOIN game_packages gp ON gp.id = o.game_package_id
+                LEFT JOIN packages gp ON gp.id = o.package_id
                 LEFT JOIN games g ON g.id = gp.game_id
                 WHERE o.user_id = @UserId
                     AND (@Status IS NULL OR o.status = @Status)
@@ -48,7 +48,7 @@ public sealed class OrderQuery
                     o.id,
                     o.user_id,
                     o.game_account_info,
-                    o.game_package_id,
+                    o.package_id AS package_id,
                     g.name AS game_name,
                     gp.image_url AS package_image_url,
                     o.package_name,
@@ -60,7 +60,7 @@ public sealed class OrderQuery
                     o.created_at,
                     o.updated_at
                 FROM orders o
-                LEFT JOIN game_packages gp ON gp.id = o.game_package_id
+                LEFT JOIN packages gp ON gp.id = o.package_id
                 LEFT JOIN games g ON g.id = gp.game_id
                 WHERE (@Status IS NULL OR o.status = @Status)
                 ORDER BY o.created_at DESC
@@ -75,7 +75,7 @@ public sealed class OrderQueryRow
     public long Id { get; set; }
     public long UserId { get; set; }
     public string GameAccountInfo { get; set; } = string.Empty;
-    public long GamePackageId { get; set; }
+    public long PackageId { get; set; }
     public long? GameId { get; set; }
     public string? GameName { get; set; }
     public string? PackageName { get; set; }

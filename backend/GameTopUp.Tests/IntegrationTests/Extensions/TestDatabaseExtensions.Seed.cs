@@ -83,13 +83,13 @@ public static partial class TestDatabaseExtensions
         return factory.InsertSeedAsync(game, (x, id) => x.Id = id);
     }
 
-    public static Task<GamePackage> SeedGamePackageAsync(
+    public static Task<Package> SeedPackageAsync(
         this CustomWebApplicationFactory factory,
         long gameId,
-        Action<GamePackage>? customize = null)
+        Action<Package>? customize = null)
     {
         var now = DateTimeOffset.UtcNow;
-        var package = new GamePackage
+        var package = new Package
         {
             Name = $"Test Package {UniqueCode()}",
             GameId = gameId,

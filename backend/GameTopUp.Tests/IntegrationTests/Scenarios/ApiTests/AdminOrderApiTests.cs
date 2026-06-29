@@ -34,7 +34,7 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
         var order = orders.Should().ContainSingle().Subject;
 
         order.UserId.Should().Be(userId);
-        order.GamePackageId.Should().Be(packageId);
+        order.PackageId.Should().Be(packageId);
         order.Status.Should().Be(OrderStatus.Pending);
     }
 

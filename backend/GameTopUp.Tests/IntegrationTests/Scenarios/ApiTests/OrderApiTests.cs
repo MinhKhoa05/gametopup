@@ -27,7 +27,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
 
         var game = await Factory.SeedGameAsync();
 
-        var package = await Factory.SeedGamePackageAsync(game.Id, package =>
+        var package = await Factory.SeedPackageAsync(game.Id, package =>
         {
             package.SalePrice = 199_000m;
             package.AvailableSlots = 3;
@@ -37,7 +37,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
 
         var response = await client.PostJsonAsync("/api/orders", new PurchaseOrderRequest
         {
-            GamePackageId = package.Id,
+            PackageId = package.Id,
             GameAccountInfo = "PLAYER-001"
         });
 
@@ -47,7 +47,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
 
         order.Should().NotBeNull();
         order!.UserId.Should().Be(user.Id);
-        order.GamePackageId.Should().Be(package.Id);
+        order.PackageId.Should().Be(package.Id);
         order.Status.Should().Be(OrderStatus.Pending);
     }
 
@@ -57,7 +57,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
         var user = await Factory.SeedUserAsync();
 
         var game = await Factory.SeedGameAsync();
-        var package = await Factory.SeedGamePackageAsync(game.Id);
+        var package = await Factory.SeedPackageAsync(game.Id);
 
         var order = await Factory.SeedOrderAsync(user.Id, package.Id);
 
@@ -77,7 +77,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
         var otherUser = await Factory.SeedUserAsync();
 
         var game = await Factory.SeedGameAsync();
-        var package = await Factory.SeedGamePackageAsync(game.Id);
+        var package = await Factory.SeedPackageAsync(game.Id);
 
         var order = await Factory.SeedOrderAsync(owner.Id, package.Id);
 
@@ -94,7 +94,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
         var user = await Factory.SeedUserAsync();
 
         var game = await Factory.SeedGameAsync();
-        var package = await Factory.SeedGamePackageAsync(game.Id);
+        var package = await Factory.SeedPackageAsync(game.Id);
 
         var order = await Factory.SeedOrderAsync(user.Id, package.Id);
 
@@ -118,7 +118,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
         var otherUser = await Factory.SeedUserAsync();
 
         var game = await Factory.SeedGameAsync();
-        var package = await Factory.SeedGamePackageAsync(game.Id);
+        var package = await Factory.SeedPackageAsync(game.Id);
 
         var order = await Factory.SeedOrderAsync(owner.Id, package.Id);
 
@@ -136,7 +136,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
         await Factory.SeedWalletAsync(user.Id);
 
         var game = await Factory.SeedGameAsync();
-        var package = await Factory.SeedGamePackageAsync(game.Id);
+        var package = await Factory.SeedPackageAsync(game.Id);
         
         var order = await Factory.SeedOrderAsync(user.Id, package.Id);
 
@@ -164,7 +164,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
 
         var game = await Factory.SeedGameAsync();
 
-        var package = await Factory.SeedGamePackageAsync(game.Id, package =>
+        var package = await Factory.SeedPackageAsync(game.Id, package =>
         {
             package.SalePrice = 199_000m;
             package.AvailableSlots = 3;
@@ -174,7 +174,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
 
         var response = await client.PostJsonAsync("/api/orders", new PurchaseOrderRequest
         {
-            GamePackageId = package.Id,
+            PackageId = package.Id,
             GameAccountInfo = "PLAYER-001"
         });
 
@@ -186,7 +186,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
     {
         var createResponse = await Client.PostJsonAsync("/api/orders", new PurchaseOrderRequest
         {
-            GamePackageId = 1,
+            PackageId = 1,
             GameAccountInfo = "PLAYER-001"
         });
 

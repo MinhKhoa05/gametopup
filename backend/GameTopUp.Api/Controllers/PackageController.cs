@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace GameTopUp.Api.Controllers;
 
 [Route("api/packages")]
-public sealed class GamePackageController : ApiControllerBase
+public sealed class PackageController : ApiControllerBase
 {
-    private readonly GamePackageService _packageService;
+    private readonly PackageService _packageService;
 
-    public GamePackageController(GamePackageService packageService)
+    public PackageController(PackageService packageService)
     {
         _packageService = packageService;
     }

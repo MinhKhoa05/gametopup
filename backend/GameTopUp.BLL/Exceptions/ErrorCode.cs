@@ -44,8 +44,8 @@ public enum ErrorCode
     [Display(Name = "Game not found.")]
     GameNotFound,
 
-    [Display(Name = "Game package not found.")]
-    GamePackageNotFound,
+    [Display(Name = "Package not found.")]
+    PackageNotFound,
 
     [Display(Name = "Order not found.")]
     OrderNotFound,
@@ -90,8 +90,8 @@ public enum ErrorCode
     [Display(Name = "Package is out of stock.")]
     PackageOutOfStock,
 
-    [Display(Name = "Game package is inactive.")]
-    GamePackageInactive,
+    [Display(Name = "Package is inactive.")]
+    PackageInactive,
 
     [Display(Name = "Cannot add package to an inactive game.")]
     InactiveGameCannotAddPackage,

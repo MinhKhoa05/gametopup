@@ -21,7 +21,7 @@ public sealed class GameQuery
                     g.image_url,
                     SUM(CASE WHEN p.is_active = 1 THEN 1 ELSE 0 END) AS active_packages
                 FROM games g
-                JOIN game_packages p ON p.game_id = g.id
+                JOIN packages p ON p.game_id = g.id
                 WHERE g.is_active = 1
                 GROUP BY
                     g.id,
@@ -47,7 +47,7 @@ public sealed class GameQuery
                     g.created_at,
                     g.updated_at
                 FROM games g
-                LEFT JOIN game_packages p ON p.game_id = g.id
+                LEFT JOIN packages p ON p.game_id = g.id
                 GROUP BY
                     g.id,
                     g.name,

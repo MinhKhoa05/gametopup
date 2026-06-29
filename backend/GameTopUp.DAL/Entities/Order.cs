@@ -11,7 +11,7 @@ public class Order
 
     public long UserId { get; set; }
     public string GameAccountInfo { get; set; } = string.Empty;
-    public long GamePackageId { get; set; }
+    public long PackageId { get; set; }
     public string PackageName { get; set; } = string.Empty;
     public decimal PackagePrice { get; set; }
     public decimal PackageCost { get; set; }

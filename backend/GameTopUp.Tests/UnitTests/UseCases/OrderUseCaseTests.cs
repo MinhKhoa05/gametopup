@@ -16,7 +16,7 @@ namespace GameTopUp.Tests.UnitTests.UseCases;
 
 public class OrderUseCaseTests
 {
-    private readonly Mock<IGamePackageRepository> _packageRepository = new();
+    private readonly Mock<IPackageRepository> _packageRepository = new();
     private readonly Mock<IGameRepository> _gameRepository = new();
     private readonly Mock<IImageStorageService> _imageStorageService = new();
     private readonly Mock<IWalletRepository> _walletRepository = new();
@@ -28,12 +28,11 @@ public class OrderUseCaseTests
 
     public OrderUseCaseTests()
     {
-        var packageService = new GamePackageService(_packageRepository.Object, _gameRepository.Object, _imageStorageService.Object);
+        var packageService = new PackageService(_packageRepository.Object, _gameRepository.Object, _imageStorageService.Object);
         var walletService = new WalletService(_walletRepository.Object, _walletTransactionRepository.Object);
         var orderService = new OrderService(_orderRepository.Object, _orderHistoryRepository.Object);
         _useCase = new OrderUseCase(
             packageService,
-            _gameRepository.Object,
             walletService,
             orderService,
             _transaction);
@@ -48,19 +47,13 @@ public class OrderUseCaseTests
         decimal? updatedBalance = null;
 
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 44,
                 GameId = 9,
                 Name = "Diamond 86",
                 SalePrice = 199m,
                 IsActive = true
-            });
-        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
-            .ReturnsAsync(new Game
-            {
-                Id = 9,
-                Name = "Mobile Legends"
             });
         _orderRepository.Setup(repo => repo.CreateAsync(It.IsAny<Order>()))
             .ReturnsAsync(88)
@@ -83,7 +76,7 @@ public class OrderUseCaseTests
 
         var order = await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequest
         {
-            GamePackageId = 44,
+            PackageId = 44,
             GameAccountInfo = "  HERO-123  "
         });
 
@@ -109,7 +102,7 @@ public class OrderUseCaseTests
     {
         var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequest
         {
-            GamePackageId = 44,
+            PackageId = 44,
             GameAccountInfo = "   "
         });
 
@@ -125,7 +118,7 @@ public class OrderUseCaseTests
     public async Task PurchaseOrderAsync_ShouldThrow_WhenPackageIsInactive()
     {
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 44,
                 GameId = 9,
@@ -133,21 +126,15 @@ public class OrderUseCaseTests
                 SalePrice = 199m,
                 IsActive = false
             });
-        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
-            .ReturnsAsync(new Game
-            {
-                Id = 9,
-                Name = "Mobile Legends"
-            });
 
         var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequest
         {
-            GamePackageId = 44,
+            PackageId = 44,
             GameAccountInfo = "HERO-123"
         });
 
         await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.GamePackageInactive);
+            .Where(ex => ex.ErrorCode == ErrorCode.PackageInactive);
 
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _packageRepository.Verify(repo => repo.DecreaseStockAsync(It.IsAny<long>(), It.IsAny<int>()), Times.Never);
@@ -157,19 +144,13 @@ public class OrderUseCaseTests
     public async Task PurchaseOrderAsync_ShouldNotReserveStockOrCreateOrder_WhenWalletBalanceIsInsufficient()
     {
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 44,
                 GameId = 9,
                 Name = "Diamond 86",
                 SalePrice = 199m,
                 IsActive = true
-            });
-        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
-            .ReturnsAsync(new Game
-            {
-                Id = 9,
-                Name = "Mobile Legends"
             });
         var lowBalanceWallet = CreateWallet(100m);
         lowBalanceWallet.Id = 11;
@@ -178,7 +159,7 @@ public class OrderUseCaseTests
 
         var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequest
         {
-            GamePackageId = 44,
+            PackageId = 44,
             GameAccountInfo = "HERO-123"
         });
 
@@ -194,19 +175,13 @@ public class OrderUseCaseTests
     public async Task PurchaseOrderAsync_ShouldNotCreateOrderOrChargeWallet_WhenStockReservationFails()
     {
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 44,
                 GameId = 9,
                 Name = "Diamond 86",
                 SalePrice = 199m,
                 IsActive = true
-            });
-        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
-            .ReturnsAsync(new Game
-            {
-                Id = 9,
-                Name = "Mobile Legends"
             });
         var fundedWallet = CreateWallet(500m);
         fundedWallet.Id = 11;
@@ -217,7 +192,7 @@ public class OrderUseCaseTests
 
         var act = async () => await _useCase.PurchaseOrderAsync(new UserContext { UserId = 7 }, new PurchaseOrderRequest
         {
-            GamePackageId = 44,
+            PackageId = 44,
             GameAccountInfo = "HERO-123"
         });
 
@@ -237,17 +212,11 @@ public class OrderUseCaseTests
         order.AssignedTo = 3;
         order.AssignedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 44,
                 GameId = 9,
                 Name = "Diamond 86"
-            });
-        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
-            .ReturnsAsync(new Game
-            {
-                Id = 9,
-                Name = "Mobile Legends"
             });
 
         _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
@@ -273,17 +242,11 @@ public class OrderUseCaseTests
         order.Id = 88;
         order.AssignedTo = 3;
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 44,
                 GameId = 9,
                 Name = "Diamond 86"
-            });
-        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
-            .ReturnsAsync(new Game
-            {
-                Id = 9,
-                Name = "Mobile Legends"
             });
 
         _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
@@ -310,17 +273,11 @@ public class OrderUseCaseTests
         WalletTransaction? refundTransaction = null;
         decimal? updatedBalance = null;
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 44,
                 GameId = 9,
                 Name = "Diamond 86"
-            });
-        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
-            .ReturnsAsync(new Game
-            {
-                Id = 9,
-                Name = "Mobile Legends"
             });
 
         _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
@@ -364,17 +321,11 @@ public class OrderUseCaseTests
         var order = CreateOrder(OrderStatus.Pending);
         order.Id = 88;
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 44,
                 GameId = 9,
                 Name = "Diamond 86"
-            });
-        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
-            .ReturnsAsync(new Game
-            {
-                Id = 9,
-                Name = "Mobile Legends"
             });
 
         _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
@@ -389,7 +340,7 @@ public class OrderUseCaseTests
         var act = async () => await _useCase.CancelOrderAsync(88, new UserContext { UserId = 7 });
 
         await act.Should().ThrowAsync<NotFoundException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.GamePackageNotFound);
+            .Where(ex => ex.ErrorCode == ErrorCode.PackageNotFound);
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
         _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
@@ -401,17 +352,11 @@ public class OrderUseCaseTests
         var order = CreateOrder(OrderStatus.Cancelled);
         order.Id = 88;
         _packageRepository.Setup(repo => repo.GetByIdAsync(44))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 44,
                 GameId = 9,
                 Name = "Diamond 86"
-            });
-        _gameRepository.Setup(repo => repo.GetByIdAsync(9))
-            .ReturnsAsync(new Game
-            {
-                Id = 9,
-                Name = "Mobile Legends"
             });
 
         _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
@@ -445,7 +390,7 @@ public class OrderUseCaseTests
         return new Order
         {
             UserId = 7,
-            GamePackageId = 44,
+            PackageId = 44,
             PackagePrice = 199m,
             PackageName = "Diamond 86",
             PackageCost = 0m,

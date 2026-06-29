@@ -7,28 +7,24 @@ using GameTopUp.BLL.Services.Games;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
-using GameTopUp.DAL.Interfaces;
 using System.Globalization;
 
 namespace GameTopUp.BLL.UseCases;
 
 public sealed class OrderUseCase
 {
-    private readonly GamePackageService _packageService;
-    private readonly IGameRepository _gameRepository;
+    private readonly PackageService _packageService;
     private readonly WalletService _walletService;
     private readonly OrderService _orderService;
     private readonly ITransactionManager _transaction;
 
     public OrderUseCase(
-        GamePackageService packageService,
-        IGameRepository gameRepository,
+        PackageService packageService,
         WalletService walletService,
         OrderService orderService,
         ITransactionManager transaction)
     {
         _packageService = packageService;
-        _gameRepository = gameRepository;
         _walletService = walletService;
         _orderService = orderService;
         _transaction = transaction;
@@ -39,7 +35,7 @@ public sealed class OrderUseCase
         return await _transaction.ExecuteAsync(async () =>
         {
             var gameAccountInfo = InputTextNormalizer.Required(request.GameAccountInfo, ErrorCode.BadRequest);
-            var package = await _packageService.GetActivePackageByIdOrThrowAsync(request.GamePackageId);
+            var package = await _packageService.GetActivePackageByIdOrThrowAsync(request.PackageId);
             var wallet = await _walletService.LockByUserIdOrThrowAsync(actor.UserId);
             var packagePrice = package.SalePrice;
 
@@ -50,7 +46,7 @@ public sealed class OrderUseCase
             var order = new Order
             {
                 UserId = actor.UserId,
-                GamePackageId = package.Id,
+                PackageId = package.Id,
                 PackagePrice = packagePrice,
                 PackageName = package.Name.Trim(),
                 PackageCost = 0m,
@@ -83,7 +79,7 @@ public sealed class OrderUseCase
                 return;
             }
 
-            var package = await _packageService.GetPackageByIdOrThrowAsync(order.GamePackageId);
+            var package = await _packageService.GetPackageByIdOrThrowAsync(order.PackageId);
             var history = _orderService.PickOrder(order, actor, package.ImportPrice);
 
             await _orderService.UpdateWithHistoryAsync(order, history);
@@ -103,7 +99,6 @@ public sealed class OrderUseCase
 
             var history = _orderService.CompleteOrder(order, actor);
             await _orderService.UpdateWithHistoryAsync(order, history);
-            var package = await _packageService.GetPackageByIdOrThrowAsync(order.GamePackageId);
         });
     }
 
@@ -121,8 +116,7 @@ public sealed class OrderUseCase
             var history = _orderService.CancelOrder(order, actor, reason);
             await _orderService.UpdateWithHistoryAsync(order, history);
 
-            await _packageService.RestorePackageAsync(order.GamePackageId);
-            var package = await _packageService.GetPackageByIdOrThrowAsync(order.GamePackageId);
+            await _packageService.RestorePackageAsync(order.PackageId);
 
             var wallet = await _walletService.LockByUserIdOrThrowAsync(order.UserId);
             var walletTransaction = _walletService.Credit(

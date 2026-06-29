@@ -11,16 +11,16 @@ using Moq;
 
 namespace GameTopUp.Tests.UnitTests.Services;
 
-public class GamePackageServiceTests
+public class PackageServiceTests
 {
-    private readonly Mock<IGamePackageRepository> _packageRepository = new();
+    private readonly Mock<IPackageRepository> _packageRepository = new();
     private readonly Mock<IGameRepository> _gameRepository = new();
     private readonly Mock<IImageStorageService> _imageStorageService = new();
-    private readonly GamePackageService _service;
+    private readonly PackageService _service;
 
-    public GamePackageServiceTests()
+    public PackageServiceTests()
     {
-        _service = new GamePackageService(_packageRepository.Object, _gameRepository.Object, _imageStorageService.Object);
+        _service = new PackageService(_packageRepository.Object, _gameRepository.Object, _imageStorageService.Object);
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public class GamePackageServiceTests
             .Setup(repo => repo.GetByIdAsync(10))
             .ReturnsAsync((Game?)null);
 
-        var request = new CreateGamePackageRequest
+        var request = new CreatePackageRequest
         {
             Name = "VIP",
             SalePrice = 1000,
@@ -44,8 +44,8 @@ public class GamePackageServiceTests
 
         await act.Should().ThrowAsync<NotFoundException>()
             .Where(ex => ex.ErrorCode == ErrorCode.GameNotFound);
-        _imageStorageService.Verify(service => service.UploadAsync(It.IsAny<IFormFile?>(), "game-packages"), Times.Never);
-        _packageRepository.Verify(repo => repo.CreateAsync(It.IsAny<GamePackage>()), Times.Never);
+        _imageStorageService.Verify(service => service.UploadAsync(It.IsAny<IFormFile?>(), "packages"), Times.Never);
+        _packageRepository.Verify(repo => repo.CreateAsync(It.IsAny<Package>()), Times.Never);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class GamePackageServiceTests
     {
         _packageRepository
             .Setup(repo => repo.GetByIdAsync(5))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 5,
                 IsActive = false
@@ -75,7 +75,7 @@ public class GamePackageServiceTests
         var act = async () => await _service.GetActivePackageByIdOrThrowAsync(5);
 
         await act.Should().ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.GamePackageInactive);
+            .Where(ex => ex.ErrorCode == ErrorCode.PackageInactive);
     }
 
     [Fact]
@@ -88,13 +88,13 @@ public class GamePackageServiceTests
         var act = async () => await _service.RestorePackageAsync(5);
 
         await act.Should().ThrowAsync<NotFoundException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.GamePackageNotFound);
+            .Where(ex => ex.ErrorCode == ErrorCode.PackageNotFound);
     }
 
     [Fact]
     public async Task CreatePackageAsync_ShouldTrimNameAndPersistPackage()
     {
-        GamePackage? created = null;
+        Package? created = null;
         _gameRepository
             .Setup(repo => repo.GetByIdAsync(10))
             .ReturnsAsync(new Game
@@ -102,18 +102,18 @@ public class GamePackageServiceTests
                 Id = 10,
                 IsActive = true
             });
-        _imageStorageService.Setup(service => service.UploadAsync(It.IsAny<IFormFile?>(), "game-packages"))
+        _imageStorageService.Setup(service => service.UploadAsync(It.IsAny<IFormFile?>(), "packages"))
             .ReturnsAsync(new ImageStorageResult
             {
                 Url = "https://image.test/package.png",
                 RelativePath = "/uploads/package.png"
             });
         _packageRepository
-            .Setup(repo => repo.CreateAsync(It.IsAny<GamePackage>()))
+            .Setup(repo => repo.CreateAsync(It.IsAny<Package>()))
             .ReturnsAsync(77)
-            .Callback<GamePackage>(package => created = package);
+            .Callback<Package>(package => created = package);
 
-        var package = await _service.CreatePackageAsync(10, new CreateGamePackageRequest
+        var package = await _service.CreatePackageAsync(10, new CreatePackageRequest
         {
             Name = "  VIP Pack  ",
             SalePrice = 1000,
@@ -141,16 +141,16 @@ public class GamePackageServiceTests
                 Id = 10,
                 IsActive = true
             });
-        _imageStorageService.Setup(service => service.UploadAsync(It.IsAny<IFormFile?>(), "game-packages"))
+        _imageStorageService.Setup(service => service.UploadAsync(It.IsAny<IFormFile?>(), "packages"))
             .ReturnsAsync(new ImageStorageResult
             {
                 Url = "https://cdn.test/packages/vip.png",
                 RelativePath = "/packages/vip.png"
             });
-        _packageRepository.Setup(repo => repo.CreateAsync(It.IsAny<GamePackage>()))
+        _packageRepository.Setup(repo => repo.CreateAsync(It.IsAny<Package>()))
             .ThrowsAsync(new InvalidOperationException("boom"));
 
-        var act = async () => await _service.CreatePackageAsync(10, new CreateGamePackageRequest
+        var act = async () => await _service.CreatePackageAsync(10, new CreatePackageRequest
         {
             Name = "VIP",
             SalePrice = 1000,
@@ -169,7 +169,7 @@ public class GamePackageServiceTests
     {
         _packageRepository
             .Setup(repo => repo.GetByIdAsync(5))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 5,
                 Name = "Old Name",
@@ -183,10 +183,10 @@ public class GamePackageServiceTests
                 IsActive = true
             });
         _packageRepository
-            .Setup(repo => repo.UpdateAsync(It.IsAny<GamePackage>()))
+            .Setup(repo => repo.UpdateAsync(It.IsAny<Package>()))
             .ReturnsAsync(true);
 
-        var package = await _service.UpdatePackageAsync(5, new UpdateGamePackageRequest
+        var package = await _service.UpdatePackageAsync(5, new UpdatePackageRequest
         {
             Name = "  New Name  ",
             SalePrice = 150m,
@@ -205,7 +205,7 @@ public class GamePackageServiceTests
     {
         _packageRepository
             .Setup(repo => repo.GetByIdAsync(5))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 5,
                 Name = "Old Name",
@@ -218,17 +218,17 @@ public class GamePackageServiceTests
                 AvailableSlots = 2,
                 IsActive = true
             });
-        _imageStorageService.Setup(service => service.UploadAsync(It.IsAny<IFormFile?>(), "game-packages"))
+        _imageStorageService.Setup(service => service.UploadAsync(It.IsAny<IFormFile?>(), "packages"))
             .ReturnsAsync(new ImageStorageResult
             {
                 Url = "new-url",
                 RelativePath = "/packages/new.png"
             });
         _packageRepository
-            .Setup(repo => repo.UpdateAsync(It.IsAny<GamePackage>()))
+            .Setup(repo => repo.UpdateAsync(It.IsAny<Package>()))
             .ReturnsAsync(true);
 
-        var package = await _service.UpdatePackageAsync(5, new UpdateGamePackageRequest
+        var package = await _service.UpdatePackageAsync(5, new UpdatePackageRequest
         {
             ImageFile = TestFormFiles.Image("new.png")
         });
@@ -243,7 +243,7 @@ public class GamePackageServiceTests
     {
         _packageRepository
             .Setup(repo => repo.GetByIdAsync(5))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 5,
                 IsActive = true,
@@ -264,7 +264,7 @@ public class GamePackageServiceTests
     {
         _packageRepository
             .Setup(repo => repo.GetByIdAsync(5))
-            .ReturnsAsync(new GamePackage
+            .ReturnsAsync(new Package
             {
                 Id = 5,
                 Name = "Old Name",
@@ -278,7 +278,7 @@ public class GamePackageServiceTests
                 IsActive = true
             });
 
-        _imageStorageService.Setup(service => service.UploadAsync(It.IsAny<IFormFile?>(), "game-packages"))
+        _imageStorageService.Setup(service => service.UploadAsync(It.IsAny<IFormFile?>(), "packages"))
             .ReturnsAsync(new ImageStorageResult
             {
                 Url = "new-url",
@@ -286,10 +286,10 @@ public class GamePackageServiceTests
             });
 
         _packageRepository
-            .Setup(repo => repo.UpdateAsync(It.IsAny<GamePackage>()))
+            .Setup(repo => repo.UpdateAsync(It.IsAny<Package>()))
             .ThrowsAsync(new InvalidOperationException("boom"));
 
-        var act = async () => await _service.UpdatePackageAsync(5, new UpdateGamePackageRequest
+        var act = async () => await _service.UpdatePackageAsync(5, new UpdatePackageRequest
         {
             ImageFile = TestFormFiles.Image("new.png")
         });

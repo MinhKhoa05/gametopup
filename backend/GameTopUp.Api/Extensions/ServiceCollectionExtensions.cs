@@ -69,7 +69,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IGameRepository, GameRepository>();
-        services.AddScoped<IGamePackageRepository, GamePackageRepository>();
+        services.AddScoped<IPackageRepository, PackageRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IOrderHistoryRepository, OrderHistoryRepository>();
         services.AddScoped<IWalletRepository, WalletRepository>();
@@ -86,7 +86,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<GameService>();
         services.AddScoped<GameReadService>();
         services.AddScoped<GameQuery>();
-        services.AddScoped<GamePackageService>();
+        services.AddScoped<PackageService>();
         services.AddScoped<OrderService>();
         services.AddScoped<OrderReadService>();
         services.AddScoped<PasswordService>();

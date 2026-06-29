@@ -6,7 +6,7 @@ namespace GameTopUp.BLL.Contracts;
 public sealed class PurchaseOrderRequest
 {
     [Required]
-    public long GamePackageId { get; set; }
+    public long PackageId { get; set; }
 
     [Required]
     public string GameAccountInfo { get; set; } = string.Empty;
@@ -22,7 +22,7 @@ public sealed class OrderResponse
     public long Id { get; set; }
     public string GameAccountInfo { get; set; } = string.Empty;
 
-    public long GamePackageId { get; set; }
+    public long PackageId { get; set; }
     public string GameName { get; set; } = string.Empty;
     public string PackageName { get; set; } = string.Empty;
     public decimal PackagePrice { get; set; }
@@ -40,7 +40,7 @@ public sealed class AdminOrderResponse
     public long UserId { get; set; }
     public string GameAccountInfo { get; set; } = string.Empty;
 
-    public long GamePackageId { get; set; }
+    public long PackageId { get; set; }
     public string GameName { get; set; } = string.Empty;
     public string PackageName { get; set; } = string.Empty;
     public decimal PackagePrice { get; set; }

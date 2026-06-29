@@ -268,7 +268,7 @@ public class OrderServiceTests
         return new Order
         {
             UserId = userId,
-            GamePackageId = 44,
+            PackageId = 44,
             PackagePrice = 199m,
             PackageName = "package",
             PackageCost = 0m,

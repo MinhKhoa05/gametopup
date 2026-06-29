@@ -19,7 +19,7 @@ public sealed class OrderConcurrencyTests : BaseIntegrationTest
     {
         // Arrange
         var game = await Factory.SeedGameAsync();
-        var package = await Factory.SeedGamePackageAsync(game.Id, p =>
+        var package = await Factory.SeedPackageAsync(game.Id, p =>
         {
             p.SalePrice = 100_000m;
             p.AvailableSlots = 1;
@@ -46,7 +46,7 @@ public sealed class OrderConcurrencyTests : BaseIntegrationTest
             "/api/orders",
             new PurchaseOrderRequest
             {
-                GamePackageId = package.Id,
+                PackageId = package.Id,
                 GameAccountInfo = "UID-A"
             });
 
@@ -54,7 +54,7 @@ public sealed class OrderConcurrencyTests : BaseIntegrationTest
             "/api/orders",
             new PurchaseOrderRequest
             {
-                GamePackageId = package.Id,
+                PackageId = package.Id,
                 GameAccountInfo = "UID-B"
             });
 
@@ -62,7 +62,7 @@ public sealed class OrderConcurrencyTests : BaseIntegrationTest
         responses.Count(x => x.IsSuccessStatusCode).Should().Be(1);
 
         // Assert
-        var updatedPackage = await Factory.GetGamePackageAsync(package.Id);
+        var updatedPackage = await Factory.GetPackageAsync(package.Id);
         updatedPackage.Should().NotBeNull();
         updatedPackage!.AvailableSlots.Should().Be(0);
 
@@ -133,7 +133,7 @@ public sealed class OrderConcurrencyTests : BaseIntegrationTest
         });
 
         var game = await Factory.SeedGameAsync();
-        var package = await Factory.SeedGamePackageAsync(game.Id, p =>
+        var package = await Factory.SeedPackageAsync(game.Id, p =>
         {
             p.SalePrice = packagePrice;
             p.AvailableSlots = 4;
@@ -167,7 +167,7 @@ public sealed class OrderConcurrencyTests : BaseIntegrationTest
         wallet!.Balance.Should().Be(packagePrice);
 
         // Verify Stock Restored Once
-        var updatedPackage = await Factory.GetGamePackageAsync(package.Id);
+        var updatedPackage = await Factory.GetPackageAsync(package.Id);
         updatedPackage.Should().NotBeNull();
         updatedPackage!.AvailableSlots.Should().Be(5);
 

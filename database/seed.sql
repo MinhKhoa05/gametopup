@@ -38,7 +38,7 @@ INSERT INTO `games` (`id`, `name`, `image_url`, `is_active`) VALUES
 -- ======================
 -- GAME PACKAGES
 -- ======================
-INSERT INTO `game_packages` (`id`, `name`, `game_id`, `sale_price`, `original_price`, `import_price`, `available_slots`) VALUES
+INSERT INTO `packages` (`id`, `name`, `game_id`, `sale_price`, `original_price`, `import_price`, `available_slots`) VALUES
 (1, '100 Kim Cuong', 1, 20000, 25000, 16000, 100),
 (2, '310 Kim Cuong', 1, 59000, 69000, 50000, 80),
 (3, '1060 Kim Cuong', 1, 199000, 239000, 175000, 40),

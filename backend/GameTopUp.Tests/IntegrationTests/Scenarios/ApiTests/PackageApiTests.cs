@@ -8,9 +8,9 @@ using GameTopUp.Tests.IntegrationTests.Infrastructure;
 namespace GameTopUp.Tests.IntegrationTests.Scenarios.ApiTests;
 
 [Collection("Integration")]
-public sealed class GamePackageApiTests : BaseIntegrationTest
+public sealed class PackageApiTests : BaseIntegrationTest
 {
-    public GamePackageApiTests(CustomWebApplicationFactory factory)
+    public PackageApiTests(CustomWebApplicationFactory factory)
     : base(factory)
     {
     }
@@ -21,13 +21,13 @@ public sealed class GamePackageApiTests : BaseIntegrationTest
         var game = await Factory.SeedGameAsync();
         var otherGame = await Factory.SeedGameAsync();
 
-        var package = await Factory.SeedGamePackageAsync(game.Id);
+        var package = await Factory.SeedPackageAsync(game.Id);
 
-        await Factory.SeedGamePackageAsync(otherGame.Id);
+        await Factory.SeedPackageAsync(otherGame.Id);
 
         var response = await Client.GetAsync($"/api/games/{game.Id}/packages");
 
-        var packages = await response.ShouldBeSuccess<List<GamePackageResponse>>();
+        var packages = await response.ShouldBeSuccess<List<PackageResponse>>();
 
         var result = packages.Should().ContainSingle().Subject;
 
@@ -39,11 +39,11 @@ public sealed class GamePackageApiTests : BaseIntegrationTest
     public async Task GetPackageById_ShouldReturnPackage_WhenItExists()
     {
         var game = await Factory.SeedGameAsync();
-        var package = await Factory.SeedGamePackageAsync(game.Id);
+        var package = await Factory.SeedPackageAsync(game.Id);
 
         var response = await Client.GetAsync($"/api/packages/{package.Id}");
 
-        var result = await response.ShouldBeSuccess<GamePackageResponse>();
+        var result = await response.ShouldBeSuccess<PackageResponse>();
 
         result.Id.Should().Be(package.Id);
         result.Name.Should().Be(package.Name);
@@ -54,7 +54,7 @@ public sealed class GamePackageApiTests : BaseIntegrationTest
     {
         var response = await Client.GetAsync("/api/packages/999999");
 
-        await response.ShouldHaveError(HttpStatusCode.NotFound, ErrorCode.GamePackageNotFound);
+        await response.ShouldHaveError(HttpStatusCode.NotFound, ErrorCode.PackageNotFound);
     }
 
     [Fact]
@@ -62,13 +62,13 @@ public sealed class GamePackageApiTests : BaseIntegrationTest
     {
         var game = await Factory.SeedGameAsync();
 
-        var package = await Factory.SeedGamePackageAsync(game.Id, p =>
+        var package = await Factory.SeedPackageAsync(game.Id, p =>
         {
             p.IsActive = false;
         });
 
         var response = await Client.GetAsync($"/api/packages/{package.Id}");
 
-        await response.ShouldHaveError(HttpStatusCode.BadRequest, ErrorCode.GamePackageInactive);
+        await response.ShouldHaveError(HttpStatusCode.BadRequest, ErrorCode.PackageInactive);
     }
 }

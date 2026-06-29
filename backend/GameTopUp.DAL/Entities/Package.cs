@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GameTopUp.DAL.Entities;
 
-[Table("game_packages")]
-public class GamePackage
+[Table("packages")]
+public class Package
 {
     [Key]
     public long Id { get; set; }
@@ -20,5 +20,4 @@ public class GamePackage
     public bool IsActive { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
-
 }

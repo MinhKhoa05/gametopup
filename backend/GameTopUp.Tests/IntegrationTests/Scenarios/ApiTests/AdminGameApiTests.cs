@@ -20,7 +20,7 @@ public sealed class AdminGameApiTests : BaseIntegrationTest
     {
         var game = await Factory.SeedGameAsync(g => g.IsActive = false);
 
-        await Factory.SeedGamePackageAsync(game.Id);
+        await Factory.SeedPackageAsync(game.Id);
 
         var admin = await Factory.SeedAdminAsync();
 

@@ -9,9 +9,9 @@ using GameTopUp.Tests.IntegrationTests.Infrastructure;
 namespace GameTopUp.Tests.IntegrationTests.Scenarios.ApiTests;
 
 [Collection("Integration")]
-public sealed class AdminGamePackageApiTests : BaseIntegrationTest
+public sealed class AdminPackageApiTests : BaseIntegrationTest
 {
-    public AdminGamePackageApiTests(CustomWebApplicationFactory factory)
+    public AdminPackageApiTests(CustomWebApplicationFactory factory)
     : base(factory)
     {
     }
@@ -21,7 +21,7 @@ public sealed class AdminGamePackageApiTests : BaseIntegrationTest
     {
         var game = await Factory.SeedGameAsync();
 
-        var package = await Factory.SeedGamePackageAsync(game.Id, p =>
+        var package = await Factory.SeedPackageAsync(game.Id, p =>
         {
             p.Name = "UC 60";
             p.AvailableSlots = 7;
@@ -33,7 +33,7 @@ public sealed class AdminGamePackageApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync($"/api/admin/games/{game.Id}/packages");
 
-        var packages = await response.ShouldBeSuccess<List<GamePackage>>();
+        var packages = await response.ShouldBeSuccess<List<Package>>();
 
         var result = packages.Should().ContainSingle().Subject;
 
@@ -64,11 +64,11 @@ public sealed class AdminGamePackageApiTests : BaseIntegrationTest
             CreateImageContent(),
             fileName: "diamond-86.png");
 
-        var created = await response.ShouldBeSuccess<GamePackage>(HttpStatusCode.Created);
+        var created = await response.ShouldBeSuccess<Package>(HttpStatusCode.Created);
 
         created.Name.Should().Be("Diamond 86");
 
-        var package = await Factory.GetGamePackageAsync(created.Id);
+        var package = await Factory.GetPackageAsync(created.Id);
 
         package.Should().NotBeNull();
         package!.Name.Should().Be("Diamond 86");
@@ -79,7 +79,7 @@ public sealed class AdminGamePackageApiTests : BaseIntegrationTest
     {
         var game = await Factory.SeedGameAsync();
 
-        var package = await Factory.SeedGamePackageAsync(game.Id, p =>
+        var package = await Factory.SeedPackageAsync(game.Id, p =>
         {
             p.Name = "Old Package";
             p.SalePrice = 100_000m;
@@ -103,9 +103,9 @@ public sealed class AdminGamePackageApiTests : BaseIntegrationTest
             CreateImageContent(),
             fileName: "diamond-128.png");
 
-        await response.ShouldBeSuccess<GamePackage>();
+        await response.ShouldBeSuccess<Package>();
 
-        var updated = await Factory.GetGamePackageAsync(package.Id);
+        var updated = await Factory.GetPackageAsync(package.Id);
 
         updated.Should().NotBeNull();
         updated!.Name.Should().Be("Diamond 128");
@@ -119,7 +119,7 @@ public sealed class AdminGamePackageApiTests : BaseIntegrationTest
     {
         var game = await Factory.SeedGameAsync();
 
-        var package = await Factory.SeedGamePackageAsync(game.Id);
+        var package = await Factory.SeedPackageAsync(game.Id);
 
         var admin = await Factory.SeedAdminAsync();
 
@@ -129,7 +129,7 @@ public sealed class AdminGamePackageApiTests : BaseIntegrationTest
 
         await response.ShouldBeSuccess();
 
-        var deletedPackage = await Factory.GetGamePackageAsync(package.Id);
+        var deletedPackage = await Factory.GetPackageAsync(package.Id);
 
         deletedPackage.Should().BeNull();
     }

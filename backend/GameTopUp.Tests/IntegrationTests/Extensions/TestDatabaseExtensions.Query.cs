@@ -45,12 +45,12 @@ public static partial class TestDatabaseExtensions
             db.GetByIdAsync<Game>(gameId));
     }
 
-    public static Task<GamePackage?> GetGamePackageAsync(
+    public static Task<Package?> GetPackageAsync(
         this CustomWebApplicationFactory factory,
         long packageId)
     {
         return factory.WithDbAsync(db =>
-            db.GetByIdAsync<GamePackage>(packageId));
+            db.GetByIdAsync<Package>(packageId));
     }
 
     public static Task<Order?> GetOrderAsync(

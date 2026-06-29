@@ -17,7 +17,7 @@ internal static class BackendMapsterConfig
 
         config.NewConfig<CreateUserRequest, User>();
         config.NewConfig<CreateGameRequest, Game>();
-        config.NewConfig<CreateGamePackageRequest, GamePackage>();
+        config.NewConfig<CreatePackageRequest, Package>();
 
         config.NewConfig<GameQueryRow, GameResponse>();
         config.NewConfig<Game, AdminGameResponse>();
@@ -27,11 +27,11 @@ internal static class BackendMapsterConfig
             .IgnoreNullValues(true)
             .Map(dest => dest.Name, src => InputTextNormalizer.NullIfWhiteSpace(src.Name));
 
-        config.NewConfig<UpdateGamePackageRequest, GamePackage>()
+        config.NewConfig<UpdatePackageRequest, Package>()
             .IgnoreNullValues(true)
             .Map(dest => dest.Name, src => InputTextNormalizer.NullIfWhiteSpace(src.Name));
 
-        config.NewConfig<GamePackage, GamePackageResponse>()
+        config.NewConfig<Package, PackageResponse>()
             .Map(dest => dest.IsAvailable, src => src.AvailableSlots > 0);
 
         config.NewConfig<Order, OrderResponse>();

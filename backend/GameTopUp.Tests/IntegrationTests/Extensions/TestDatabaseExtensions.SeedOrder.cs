@@ -5,7 +5,7 @@ namespace GameTopUp.Tests.IntegrationTests.Extensions;
 
 public static partial class TestDatabaseExtensions
 {
-    public sealed record OrderScenario(User User, Game Game, GamePackage Package, Order Order);
+    public sealed record OrderScenario(User User, Game Game, Package Package, Order Order);
 
     public static Task<Order> SeedOrderAsync(
         this CustomWebApplicationFactory factory,
@@ -18,7 +18,7 @@ public static partial class TestDatabaseExtensions
         var order = new Order
         {
             UserId = userId,
-            GamePackageId = packageId,
+            PackageId = packageId,
             PackagePrice = 100m,
             PackageName = $"Test Package {unique}",
             PackageCost = 0m,
@@ -61,7 +61,7 @@ public static partial class TestDatabaseExtensions
 
         var game = await factory.SeedGameAsync();
 
-        var package = await factory.SeedGamePackageAsync(game.Id);
+        var package = await factory.SeedPackageAsync(game.Id);
 
         var order = await factory.SeedOrderAsync(user.Id, package.Id, order =>
         {

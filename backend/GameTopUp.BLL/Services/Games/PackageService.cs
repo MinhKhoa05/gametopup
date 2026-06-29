@@ -7,16 +7,16 @@ using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Interfaces;
 namespace GameTopUp.BLL.Services.Games;
 
-public sealed class GamePackageService
+public sealed class PackageService
 {
-    private const string PackageImageFolder = "game-packages";
+    private const string PackageImageFolder = "packages";
 
-    private readonly IGamePackageRepository _packageRepository;
+    private readonly IPackageRepository _packageRepository;
     private readonly IGameRepository _gameRepository;
     private readonly IImageStorageService _imageStorageService;
 
-    public GamePackageService(
-        IGamePackageRepository packageRepository,
+    public PackageService(
+        IPackageRepository packageRepository,
         IGameRepository gameRepository,
         IImageStorageService imageStorageService)
     {
@@ -25,40 +25,40 @@ public sealed class GamePackageService
         _imageStorageService = imageStorageService;
     }
 
-    public Task<List<GamePackage>> GetPackageEntitiesByGameIdAsync(long gameId) =>
+    public Task<List<Package>> GetPackageEntitiesByGameIdAsync(long gameId) =>
         _packageRepository.GetByGameIdAsync(gameId);
 
-    public async Task<List<GamePackageResponse>> GetPackagesByGameIdAsync(long gameId)
+    public async Task<List<PackageResponse>> GetPackagesByGameIdAsync(long gameId)
     {
         var packages = await _packageRepository.GetByGameIdAsync(gameId);
 
         return packages
-            .Select(item => item.MapTo<GamePackageResponse>())
+            .Select(item => item.MapTo<PackageResponse>())
             .ToList();
     }
 
-    public async Task<GamePackage> GetPackageByIdOrThrowAsync(long id)
+    public async Task<Package> GetPackageByIdOrThrowAsync(long id)
     {
         return await _packageRepository.GetByIdAsync(id)
-                    ?? throw new NotFoundException(ErrorCode.GamePackageNotFound);
+                    ?? throw new NotFoundException(ErrorCode.PackageNotFound);
     }
 
-    public async Task<GamePackage> GetActivePackageByIdOrThrowAsync(long id)
+    public async Task<Package> GetActivePackageByIdOrThrowAsync(long id)
     {
         var package = await GetPackageByIdOrThrowAsync(id);
 
         if (!package.IsActive)
         {
-            throw new BusinessException(ErrorCode.GamePackageInactive);
+            throw new BusinessException(ErrorCode.PackageInactive);
         }
 
         return package;
     }
 
-    public async Task<GamePackageResponse> GetPackageByIdAsync(long id)
+    public async Task<PackageResponse> GetPackageByIdAsync(long id)
     {
         var package = await GetActivePackageByIdOrThrowAsync(id);
-        return package.MapTo<GamePackageResponse>();
+        return package.MapTo<PackageResponse>();
     }
 
     public async Task ReservePackageAsync(long packageId)
@@ -77,11 +77,11 @@ public sealed class GamePackageService
 
         if (affectedRows == 0)
         {
-            throw new NotFoundException(ErrorCode.GamePackageNotFound);
+            throw new NotFoundException(ErrorCode.PackageNotFound);
         }
     }
 
-    public async Task<GamePackage> CreatePackageAsync(long gameId, CreateGamePackageRequest request)
+    public async Task<Package> CreatePackageAsync(long gameId, CreatePackageRequest request)
     {
         await EnsureGameExistsAsync(gameId);
 
@@ -92,7 +92,7 @@ public sealed class GamePackageService
         try
         {
             var now = DateTimeOffset.UtcNow;
-            var package = request.MapTo<GamePackage>();
+            var package = request.MapTo<Package>();
             package.Name = packageName;
             package.GameId = gameId;
             package.CreatedAt = now;
@@ -116,7 +116,7 @@ public sealed class GamePackageService
         }
     }
 
-    public async Task<GamePackage> UpdatePackageAsync(long id, UpdateGamePackageRequest request)
+    public async Task<Package> UpdatePackageAsync(long id, UpdatePackageRequest request)
     {
         var package = await GetPackageByIdOrThrowAsync(id);
         var previousImagePath = package.ImageRelativePath;

@@ -24,7 +24,7 @@ public sealed class PurchaseJourneyTests : BaseIntegrationTest
 
         var admin = await Factory.SeedAdminAsync();
         var game = await Factory.SeedGameAsync();
-        var package = await Factory.SeedGamePackageAsync(game.Id, p =>
+        var package = await Factory.SeedPackageAsync(game.Id, p =>
         {
             p.SalePrice = 100_000m;
             p.AvailableSlots = 5;
@@ -60,7 +60,7 @@ public sealed class PurchaseJourneyTests : BaseIntegrationTest
         var purchaseResponse = await userClient.PostJsonAsync("/api/orders",
             new PurchaseOrderRequest
             {
-                GamePackageId = package.Id,
+                PackageId = package.Id,
                 GameAccountInfo = "UID123456"
             });
 
@@ -77,7 +77,7 @@ public sealed class PurchaseJourneyTests : BaseIntegrationTest
         wallet!.Balance.Should().Be(100_000m);
 
         // Verify Package Stock Reduced
-        var updatedPackage = await Factory.GetGamePackageAsync(package.Id);
+        var updatedPackage = await Factory.GetPackageAsync(package.Id);
         updatedPackage.Should().NotBeNull();
         updatedPackage!.AvailableSlots.Should().Be(4);
 

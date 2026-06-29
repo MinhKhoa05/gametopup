@@ -7,11 +7,11 @@ namespace GameTopUp.Api.Controllers.Admin;
 
 [Authorize(Roles = "Admin")]
 [Route("api/admin/packages")]
-public sealed class AdminGamePackageController : ApiControllerBase
+public sealed class AdminPackageController : ApiControllerBase
 {
-    private readonly GamePackageService _packageService;
+    private readonly PackageService _packageService;
 
-    public AdminGamePackageController(GamePackageService packageService)
+    public AdminPackageController(PackageService packageService)
     {
         _packageService = packageService;
     }
@@ -26,7 +26,7 @@ public sealed class AdminGamePackageController : ApiControllerBase
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(5 * 1024 * 1024)]
     [HttpPost("/api/admin/games/{gameId:long}/packages")]
-    public async Task<IActionResult> Create(long gameId, [FromForm] CreateGamePackageRequest request)
+    public async Task<IActionResult> Create(long gameId, [FromForm] CreatePackageRequest request)
     {
         var package = await _packageService.CreatePackageAsync(gameId, request);
         return ApiCreated(package);
@@ -35,7 +35,7 @@ public sealed class AdminGamePackageController : ApiControllerBase
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(5 * 1024 * 1024)]
     [HttpPut("{id:long}")]
-    public async Task<IActionResult> Update(long id, [FromForm] UpdateGamePackageRequest request)
+    public async Task<IActionResult> Update(long id, [FromForm] UpdatePackageRequest request)
     {
         var package = await _packageService.UpdatePackageAsync(id, request);
         return ApiOk(package);

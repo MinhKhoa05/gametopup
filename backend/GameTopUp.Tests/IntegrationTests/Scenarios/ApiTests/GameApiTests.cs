@@ -18,7 +18,7 @@ public sealed class GameApiTests : BaseIntegrationTest
     public async Task GetGames_ShouldExcludeInactiveGames()
     {
         var activeGame = await Factory.SeedGameAsync();
-        await Factory.SeedGamePackageAsync(activeGame.Id);
+        await Factory.SeedPackageAsync(activeGame.Id);
         await Factory.SeedGameAsync(game => game.IsActive = false);
 
         var response = await Client.GetAsync("/api/games");
@@ -36,7 +36,7 @@ public sealed class GameApiTests : BaseIntegrationTest
     public async Task GetGameById_ShouldReturnGame_WhenGameHasActivePackages()
     {
         var game = await Factory.SeedGameAsync();
-        await Factory.SeedGamePackageAsync(game.Id);
+        await Factory.SeedPackageAsync(game.Id);
 
         var response = await Client.GetAsync($"/api/games/{game.Id}");
 
