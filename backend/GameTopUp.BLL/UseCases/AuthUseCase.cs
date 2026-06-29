@@ -54,7 +54,7 @@ public sealed class AuthUseCase
         });
     }
 
-    public async Task<AuthResponse> LoginAsync(LoginRequest request)
+    public async Task<TokenResult> LoginAsync(LoginRequest request)
     {
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user is null || !_passwordService.Verify(request.Password, user.PasswordHash))
@@ -62,17 +62,10 @@ public sealed class AuthUseCase
             throw new UnauthorizedException(ErrorCode.InvalidCredentials);
         }
 
-        var tokens = await IssueTokenPairAsync(user.MapTo<UserContext>());
-
-        return new AuthResponse
-        {
-            AccessToken = tokens.AccessToken,
-            RefreshToken = tokens.RefreshToken,
-            User = user.MapTo<UserResponse>()
-        };
+        return await IssueTokenPairAsync(user.MapTo<TokenPayload>());
     }
 
-    public async Task<AuthResponse> RefreshAsync(string? refreshTokenString)
+    public async Task<TokenResult> RefreshAsync(string? refreshTokenString)
     {
         if (string.IsNullOrWhiteSpace(refreshTokenString))
         {
@@ -86,13 +79,8 @@ public sealed class AuthUseCase
             var refreshToken = await _refreshTokenService.RevokeValidTokenAsync(hash);
 
             var user = await GetUserOrThrowAsync(refreshToken.UserId);
-            var tokens = await IssueTokenPairAsync(user.MapTo<UserContext>());
 
-            return new AuthResponse
-            {
-                AccessToken = tokens.AccessToken,
-                RefreshToken = tokens.RefreshToken
-            };
+            return await IssueTokenPairAsync(user.MapTo<TokenPayload>());
         });
     }
 
@@ -124,22 +112,19 @@ public sealed class AuthUseCase
         await _userRepository.UpdatePasswordAsync(context.UserId, _passwordService.Hash(request.NewPassword));
     }
 
-    private async Task<(string AccessToken, string RefreshToken)> IssueTokenPairAsync(UserContext user)
+    private async Task<TokenResult> IssueTokenPairAsync(TokenPayload payload)
     {
-        var tokenPayload = new TokenPayload
-        {
-            UserId = user.UserId,
-            DisplayName = user.DisplayName,
-            Email = user.Email,
-            Role = user.Role
-        };
-        var accessToken = _tokenService.GenerateAccessToken(tokenPayload);
+        var accessToken = _tokenService.GenerateAccessToken(payload);
         var refreshToken = _tokenService.GenerateRefreshToken();
         var refreshTokenHash = _tokenService.HashToken(refreshToken);
 
-        await _refreshTokenService.CreateAsync(user.UserId, refreshTokenHash, RefreshTokenLifetime);
+        await _refreshTokenService.CreateAsync(payload.UserId, refreshTokenHash, RefreshTokenLifetime);
 
-        return (accessToken, refreshToken);
+        return new TokenResult
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        };
     }
 
     private async Task<User> GetUserOrThrowAsync(long userId)

@@ -41,6 +41,8 @@ internal static class BackendMapsterConfig
 
 
         config.NewConfig<User, UserResponse>();
+        config.NewConfig<User, TokenPayload>()
+            .Map(dest => dest.UserId, src => src.Id);
         config.NewConfig<User, UserContext>()
             .Map(dest => dest.UserId, src => src.Id);
         return config;

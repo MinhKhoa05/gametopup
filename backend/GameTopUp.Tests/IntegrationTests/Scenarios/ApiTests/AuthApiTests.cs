@@ -26,10 +26,7 @@ public sealed class AuthApiTests : BaseIntegrationTest
             Password = TestDatabaseExtensions.DefaultUserPassword
         });
 
-        var auth = await response.ShouldBeSuccess<AuthResponse>();
-
-        auth.User.Should().NotBeNull();
-        auth.User!.Email.Should().Be(user.Email);
+        await response.ShouldBeSuccess();
 
         var cookies = response.GetSetCookieHeaders();
 
@@ -136,7 +133,7 @@ public sealed class AuthApiTests : BaseIntegrationTest
         await oldPasswordLoginResponse.ShouldHaveError(HttpStatusCode.Unauthorized, ErrorCode.InvalidCredentials);
 
         var newPasswordLoginResponse = await LoginAsync(session.User.Email, newPassword);
-        await newPasswordLoginResponse.ShouldBeSuccess<AuthResponse>();
+        await newPasswordLoginResponse.ShouldBeSuccess();
         GetRequiredCookie(newPasswordLoginResponse.GetSetCookieHeaders(), "accessToken");
     }
 
@@ -165,7 +162,7 @@ public sealed class AuthApiTests : BaseIntegrationTest
             Password = TestDatabaseExtensions.DefaultUserPassword
         });
 
-        await response.ShouldBeSuccess<AuthResponse>();
+        await response.ShouldBeSuccess();
 
         var cookies = response.GetSetCookieHeaders();
 

@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using GameTopUp.DAL.Entities;
 
 namespace GameTopUp.BLL.Contracts;
@@ -26,16 +25,10 @@ public sealed class LoginRequest
     public string Password { get; set; } = string.Empty;
 }
 
-public sealed class AuthResponse
+public sealed class TokenResult
 {
-    [JsonIgnore]
     public string AccessToken { get; set; } = string.Empty;
-
-    [JsonIgnore]
     public string RefreshToken { get; set; } = string.Empty;
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public UserResponse? User { get; set; }
 }
 
 public sealed class TokenPayload

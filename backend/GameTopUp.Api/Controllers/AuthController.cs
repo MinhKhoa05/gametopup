@@ -30,9 +30,9 @@ public sealed class AuthController : ApiControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        var response = await _auth.LoginAsync(request);
-        SetAuthCookies(response);
-        return ApiOk(response);
+        var token = await _auth.LoginAsync(request);
+        SetAuthCookies(token);
+        return ApiOk();
     }
 
     [Authorize]
@@ -47,9 +47,9 @@ public sealed class AuthController : ApiControllerBase
     public async Task<IActionResult> Refresh()
     {
         var refreshToken = Request.GetRefreshToken();
-        var response = await _auth.RefreshAsync(refreshToken);
-        SetAuthCookies(response);
-        return ApiOk(response);
+        var token = await _auth.RefreshAsync(refreshToken);
+        SetAuthCookies(token);
+        return ApiOk();
     }
 
     [Authorize]
@@ -62,11 +62,11 @@ public sealed class AuthController : ApiControllerBase
         return ApiOk();
     }
 
-    private void SetAuthCookies(AuthResponse authResponse)
+    private void SetAuthCookies(TokenResult tokenResult)
     {
         var secure = ShouldUseSecureCookies();
-        Response.SetAccessToken(authResponse.AccessToken, GetAccessTokenExpireMinutes(), secure);
-        Response.SetRefreshToken(authResponse.RefreshToken, secure);
+        Response.SetAccessToken(tokenResult.AccessToken, GetAccessTokenExpireMinutes(), secure);
+        Response.SetRefreshToken(tokenResult.RefreshToken, secure);
     }
 
     private void DeleteAuthCookies()

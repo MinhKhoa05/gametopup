@@ -136,7 +136,7 @@ public class AuthUseCaseTests
     }
 
     [Fact]
-    public async Task LoginAsync_ShouldReturnTokensAndUserPayload_WhenCredentialsAreValid()
+    public async Task LoginAsync_ShouldReturnTokens_WhenCredentialsAreValid()
     {
         RefreshToken? savedRefreshToken = null;
         var passwordHash = _passwordService.Hash("Password123!");
@@ -165,9 +165,6 @@ public class AuthUseCaseTests
 
         response.AccessToken.Should().NotBeNullOrWhiteSpace();
         response.RefreshToken.Should().NotBeNullOrWhiteSpace();
-        response.User.Should().NotBeNull();
-        response.User!.Email.Should().Be("user@test.local");
-        response.User.Role.Should().Be(UserRole.Member);
         savedRefreshToken.Should().NotBeNull();
         savedRefreshToken!.UserId.Should().Be(7);
         savedRefreshToken.TokenHash.Should().NotBeNullOrWhiteSpace();
