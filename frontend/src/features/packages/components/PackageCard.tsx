@@ -5,8 +5,8 @@ import { classNames } from "@/shared/lib/classNames";
 import { formatCurrency } from "@/shared/lib/format";
 import type { ReactNode } from "react";
 
-type GamePackageCardProps = {
-  gamePackage: {
+type PackageCardProps = {
+  packageItem: {
     id: number;
     imageUrl: string;
     name: string;
@@ -20,18 +20,18 @@ type GamePackageCardProps = {
 };
 
 export function PackageCard({
-  gamePackage,
+  packageItem,
   selected = false,
   onClick,
   overlay,
-}: GamePackageCardProps) {
-  const hasDiscount = gamePackage.originalPrice > gamePackage.salePrice;
+}: PackageCardProps) {
+  const hasDiscount = packageItem.originalPrice > packageItem.salePrice;
 
   const discountPercent = hasDiscount
     ? Math.max(
         1,
         Math.round(
-          (1 - gamePackage.salePrice / gamePackage.originalPrice) * 100,
+          (1 - packageItem.salePrice / packageItem.originalPrice) * 100,
         ),
       )
     : 0;
@@ -74,8 +74,8 @@ export function PackageCard({
       <div className="relative flex flex-[1.18] items-center justify-center">
         <div className="relative h-[118px] w-full overflow-hidden rounded-xl bg-[var(--gt-bg-soft)]">
           <ImageBox
-            src={gamePackage.imageUrl}
-            alt={gamePackage.name}
+            src={packageItem.imageUrl}
+            alt={packageItem.name}
             className="h-full w-full object-cover transition-all duration-300 group-hover:scale-[1.03]"
           />
         </div>
@@ -83,13 +83,13 @@ export function PackageCard({
 
       <div className="relative grid flex-[0.72] content-start gap-0.5 px-0.5 pb-0.5 pt-1">
         <h3
-          title={gamePackage.name}
+          title={packageItem.name}
           className={classNames(
             "min-h-[2.55rem] overflow-hidden px-0.5 text-[15px] font-semibold leading-5 transition-colors [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]",
             selected ? "gt-text" : "gt-text-soft",
           )}
         >
-          {gamePackage.name}
+          {packageItem.name}
         </h3>
 
         <div className="grid gap-0.5">
@@ -99,12 +99,12 @@ export function PackageCard({
               selected && "text-[var(--gt-primary-hover)]",
             )}
           >
-            {formatCurrency(gamePackage.salePrice)}
+            {formatCurrency(packageItem.salePrice)}
           </div>
 
           {hasDiscount && (
             <div className="text-xs font-medium leading-none gt-text-disabled line-through">
-              {formatCurrency(gamePackage.originalPrice)}
+              {formatCurrency(packageItem.originalPrice)}
             </div>
           )}
         </div>

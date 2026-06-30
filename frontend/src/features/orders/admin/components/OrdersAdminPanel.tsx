@@ -91,7 +91,7 @@ export function OrdersAdminPanel({
                     selected={isSelected}
                     leading={<ImageBox src={DEFAULT_IMAGE_SRC} alt="" className="object-cover" />}
                     title={`Đơn #${order.id}`}
-                    subtitle={`User #${order.userId} · Gói #${order.gamePackageId}`}
+                    subtitle={`User #${order.userId} · Gói #${order.packageId}`}
                     meta={`${order.gameAccountInfo} · ${formatDate(order.createdAt)}`}
                     titleAccessory={<OrderStatusBadge status={order.status} />}
                     trailing={<strong className="text-[1.02rem] font-black tracking-[-0.04em] text-cyan-100 gt-tabular">{formatCurrency(order.packagePrice)}</strong>}
@@ -128,7 +128,7 @@ export function OrdersAdminPanel({
                       <div className="min-w-0">
                         <p className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-cyan">Đơn #{selectedOrder.id}</p>
                         <strong className="mt-1 block text-2xl font-black tracking-[-0.04em] text-white">{formatCurrency(selectedOrder.packagePrice)}</strong>
-                        <span className="mt-1 block truncate text-sm text-slate-300">User #{selectedOrder.userId} · Gói #{selectedOrder.gamePackageId}</span>
+                        <span className="mt-1 block truncate text-sm text-slate-300">User #{selectedOrder.userId} · Gói #{selectedOrder.packageId}</span>
                       </div>
                       <OrderStatusBadge status={selectedOrder.status} />
                     </div>
@@ -235,4 +235,3 @@ function getOrderActionState(order: AdminOrder, currentAdminId: number | null) {
     message: 'Không có thao tác nào cho trạng thái hiện tại.',
   };
 }
-

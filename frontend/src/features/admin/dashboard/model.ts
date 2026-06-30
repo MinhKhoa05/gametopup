@@ -64,10 +64,10 @@ export function buildQueueItems({
     .filter((order) => order.status === 1 || order.status === 2)
     .slice(0, 6)
     .map<QueueItem>((order) => {
-      const gamePackage = packageById.get(order.gamePackageId);
-      const game = gamePackage ? gameById.get(gamePackage.gameId) : undefined;
+      const packageItem = packageById.get(order.packageId);
+      const game = packageItem ? gameById.get(packageItem.gameId) : undefined;
       const amount = formatCurrency(order.packagePrice);
-      const title = gamePackage ? `${game?.name ?? 'Game'} · ${gamePackage.name}` : `Đơn #${order.id}`;
+      const title = packageItem ? `${game?.name ?? 'Game'} · ${packageItem.name}` : `Đơn #${order.id}`;
       const description = `${order.gameAccountInfo || 'Chưa có thông tin'} · #${order.id}`;
 
       return {
@@ -76,10 +76,10 @@ export function buildQueueItems({
         createdAt: order.createdAt,
         description,
         id: `order-${order.id}`,
-        imageAlt: game?.name ?? gamePackage?.name ?? `Đơn ${order.id}`,
-        imageUrl: gamePackage?.imageUrl ?? game?.imageUrl ?? null,
+        imageAlt: game?.name ?? packageItem?.name ?? `Đơn ${order.id}`,
+        imageUrl: packageItem?.imageUrl ?? game?.imageUrl ?? null,
         kind: 'order',
-        searchText: [order.id, order.gameAccountInfo, game?.name, gamePackage?.name, amount].join(' ').toLowerCase(),
+        searchText: [order.id, order.gameAccountInfo, game?.name, packageItem?.name, amount].join(' ').toLowerCase(),
         sortValue: new Date(order.createdAt).getTime(),
         status: order.status,
         title,

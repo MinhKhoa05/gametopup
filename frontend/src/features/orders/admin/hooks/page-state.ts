@@ -38,7 +38,7 @@ export function useAdminOrdersPageState(orders: AdminOrder[]) {
       if (!matchesFilter) return false;
       if (!normalizedQuery) return true;
 
-      return [String(order.id), String(order.userId), String(order.gamePackageId), order.gameAccountInfo, ORDER_STATUS_LABEL_BY_STATUS[order.status] ?? `Trạng thái ${order.status}`].some((value) =>
+      return [String(order.id), String(order.userId), String(order.packageId), order.gameAccountInfo, ORDER_STATUS_LABEL_BY_STATUS[order.status] ?? `Trạng thái ${order.status}`].some((value) =>
         value.toLowerCase().includes(normalizedQuery),
       );
     });

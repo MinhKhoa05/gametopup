@@ -25,7 +25,7 @@ export function PackageGrid({ isLoading, packages, selectedPackageId, onSelectPa
           {packages.map((pkg) => (
             <PackageCard
               key={pkg.id}
-              gamePackage={pkg}
+              packageItem={pkg}
               selected={selectedPackageId === pkg.id}
               onClick={() => onSelectPackage(pkg.id)}
             />

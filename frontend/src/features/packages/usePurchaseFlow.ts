@@ -74,7 +74,7 @@ export function usePurchaseFlow({ gameId, selectedPackage, onContinueShopping }:
 
     try {
       const orderId = await createOrderMutation.mutateAsync({
-        gamePackageId: selectedPackage.id,
+        packageId: selectedPackage.id,
         gameAccountInfo,
       });
 

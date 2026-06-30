@@ -92,13 +92,13 @@ export function PackageAdminPage() {
 
   const packages = packagesQuery.data ?? [];
 
-  const gamePackages = useMemo(
+  const packagesForGame = useMemo(
     () => packages.filter((item) => item.gameId === gameId),
     [gameId, packages],
   );
 
   const visiblePackages = useMemo(() => {
-    return gamePackages
+    return packagesForGame
       .filter((item) => {
         if (statusFilter === "active") return item.isActive;
         if (statusFilter === "inactive") return !item.isActive;
@@ -108,7 +108,7 @@ export function PackageAdminPage() {
         if (!query.trim()) return true;
         return item.name.toLowerCase().includes(query.trim().toLowerCase());
       });
-  }, [gamePackages, query, statusFilter]);
+  }, [packagesForGame, query, statusFilter]);
 
   const [selectedPackageId, setSelectedPackageId] = useAutoSelectId(
     visiblePackages,
@@ -119,8 +119,8 @@ export function PackageAdminPage() {
     if (!selectedPackageId) {
       return null;
     }
-    return gamePackages.find((item) => item.id === selectedPackageId) ?? null;
-  }, [gamePackages, selectedPackageId]);
+    return packagesForGame.find((item) => item.id === selectedPackageId) ?? null;
+  }, [packagesForGame, selectedPackageId]);
 
   useEffect(() => {
     setQuery("");
@@ -164,7 +164,7 @@ export function PackageAdminPage() {
     createPackageMutation.isPending ||
     updatePackageMutation.isPending;
   const isGameActive = game.isActive;
-  const totalPackages = gamePackages.length;
+  const totalPackages = packagesForGame.length;
 
   const openEditGameDialog = () => {
     setActiveDialog("game");
@@ -364,7 +364,7 @@ export function PackageAdminPage() {
           {visiblePackages.map((item) => (
             <PackageCard
               key={item.id}
-              gamePackage={item}
+              packageItem={item}
               overlay={
                 <span
                   title={item.isActive ? "Đang bán" : "Đang ẩn"}

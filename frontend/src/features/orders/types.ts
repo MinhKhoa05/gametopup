@@ -13,7 +13,7 @@ export type OrderTimelineState = 'complete' | 'current' | 'danger' | 'upcoming';
 export type Order = {
   id: number;
   gameAccountInfo: string;
-  gamePackageId: number;
+  packageId: number;
   gameName: string;
   packageName: string;
   packagePrice: number;
@@ -40,7 +40,7 @@ export type AdminOrder = {
   id: number;
   userId: number;
   gameAccountInfo: string;
-  gamePackageId: number;
+  packageId: number;
   gameName: string;
   packageName: string;
   packagePrice: number;
@@ -62,7 +62,7 @@ export type OrderTimelineStep = {
 };
 
 export type CreateOrderInput = {
-  gamePackageId: number;
+  packageId: number;
   gameAccountInfo: string;
 };
 

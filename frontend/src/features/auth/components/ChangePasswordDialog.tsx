@@ -1,15 +1,17 @@
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { LockKeyhole, ShieldCheck } from "lucide-react";
 
 import { useChangePasswordMutation } from "../../auth/server";
 
 import { Dialog, FormActions, PasswordField } from "@/shared/components";
+import { getApiMessage } from "@/shared/api/errors";
 
 type Props = {
   onClose: () => void;
 };
 
 export function ChangePasswordDialog({ onClose }: Props) {
+  const formId = useId();
   const changePasswordMutation = useChangePasswordMutation();
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -29,12 +31,16 @@ export function ChangePasswordDialog({ onClose }: Props) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    await changePasswordMutation.mutateAsync({
-      currentPassword,
-      newPassword,
-    });
+    try {
+      await changePasswordMutation.mutateAsync({
+        currentPassword,
+        newPassword,
+      });
 
-    onClose();
+      onClose();
+    } catch {
+      // Error toast and inline message are handled by the mutation state.
+    }
   }
 
   return (
@@ -51,6 +57,7 @@ export function ChangePasswordDialog({ onClose }: Props) {
               : "Cập nhật mật khẩu"
           }
           disabled={!canSubmit}
+          submitFormId={formId}
         />
       }
       icon={<LockKeyhole size={18} />}
@@ -60,7 +67,7 @@ export function ChangePasswordDialog({ onClose }: Props) {
       onClose={onClose}
       title="Đổi mật khẩu"
     >
-      <form className="grid gap-5" onSubmit={handleSubmit}>
+      <form id={formId} className="grid gap-5" onSubmit={handleSubmit}>
         <PasswordField
           label="Mật khẩu hiện tại"
           autoComplete="current-password"
@@ -86,7 +93,7 @@ export function ChangePasswordDialog({ onClose }: Props) {
 
         {changePasswordMutation.error instanceof Error && (
           <div className="rounded-[18px] border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-            {changePasswordMutation.error.message}
+            {getApiMessage(changePasswordMutation.error)}
           </div>
         )}
       </form>

@@ -8,6 +8,7 @@ type FormActionsProps = {
   disabled?: boolean;
   justify?: 'start' | 'end' | 'between';
   onCancel?: () => void;
+  submitFormId?: string;
   submitLabel: ReactNode;
   submitIcon?: ReactNode;
 };
@@ -18,6 +19,7 @@ export function FormActions({
   disabled,
   justify = 'end',
   onCancel,
+  submitFormId,
   submitLabel,
   submitIcon,
 }: FormActionsProps) {
@@ -30,7 +32,7 @@ export function FormActions({
       )}
     >
       {onCancel ? <Button variant="secondary" onClick={onCancel}>{cancelLabel}</Button> : null}
-      <Button type="submit" variant="primary" disabled={disabled} leadingIcon={submitIcon}>
+      <Button type="submit" form={submitFormId} variant="primary" disabled={disabled} leadingIcon={submitIcon}>
         {submitLabel}
       </Button>
     </div>
