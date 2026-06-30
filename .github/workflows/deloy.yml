@@ -30,6 +30,15 @@ jobs:
 
             git pull origin main
 
+            if ! cmp -s deploy/nginx/gametopup.conf /etc/nginx/sites-available/gametopup; then
+                echo "Updating nginx config..."
+                sudo cp deploy/nginx/gametopup.conf /etc/nginx/sites-available/gametopup
+                sudo nginx -t
+                sudo systemctl reload nginx
+            else
+                echo "Nginx config unchanged."
+            fi
+
             docker compose up -d --build
 
             docker image prune -f
