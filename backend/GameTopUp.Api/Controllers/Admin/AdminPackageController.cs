@@ -19,7 +19,7 @@ public sealed class AdminPackageController : ApiControllerBase
     [HttpGet("/api/admin/games/{gameId:long}/packages")]
     public async Task<IActionResult> GetByGameId(long gameId)
     {
-        var packages = await _packageService.GetPackageEntitiesByGameIdAsync(gameId);
+        var packages = await _packageService.GetAdminPackagesByGameIdAsync(gameId);
         return ApiOk(packages);
     }
 
@@ -28,7 +28,7 @@ public sealed class AdminPackageController : ApiControllerBase
     [HttpPost("/api/admin/games/{gameId:long}/packages")]
     public async Task<IActionResult> Create(long gameId, [FromForm] CreatePackageRequest request)
     {
-        var package = await _packageService.CreatePackageAsync(gameId, request);
+        var package = await _packageService.CreateAdminPackageAsync(gameId, request);
         return ApiCreated(package);
     }
 
@@ -37,7 +37,7 @@ public sealed class AdminPackageController : ApiControllerBase
     [HttpPut("{id:long}")]
     public async Task<IActionResult> Update(long id, [FromForm] UpdatePackageRequest request)
     {
-        var package = await _packageService.UpdatePackageAsync(id, request);
+        var package = await _packageService.UpdateAdminPackageAsync(id, request);
         return ApiOk(package);
     }
 

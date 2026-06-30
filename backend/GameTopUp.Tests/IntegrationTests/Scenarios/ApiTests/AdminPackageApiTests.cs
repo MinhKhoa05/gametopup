@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Headers;
 using FluentAssertions;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
-using GameTopUp.DAL.Entities;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 
@@ -33,7 +33,7 @@ public sealed class AdminPackageApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync($"/api/admin/games/{game.Id}/packages");
 
-        var packages = await response.ShouldBeSuccess<List<Package>>();
+        var packages = await response.ShouldBeSuccess<List<AdminPackageResponse>>();
 
         var result = packages.Should().ContainSingle().Subject;
 
@@ -64,7 +64,7 @@ public sealed class AdminPackageApiTests : BaseIntegrationTest
             CreateImageContent(),
             fileName: "diamond-86.png");
 
-        var created = await response.ShouldBeSuccess<Package>(HttpStatusCode.Created);
+        var created = await response.ShouldBeSuccess<AdminPackageResponse>(HttpStatusCode.Created);
 
         created.Name.Should().Be("Diamond 86");
 
@@ -103,7 +103,7 @@ public sealed class AdminPackageApiTests : BaseIntegrationTest
             CreateImageContent(),
             fileName: "diamond-128.png");
 
-        await response.ShouldBeSuccess<Package>();
+        await response.ShouldBeSuccess<AdminPackageResponse>();
 
         var updated = await Factory.GetPackageAsync(package.Id);
 

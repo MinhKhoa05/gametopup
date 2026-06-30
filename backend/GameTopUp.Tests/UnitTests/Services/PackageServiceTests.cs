@@ -20,7 +20,11 @@ public class PackageServiceTests
 
     public PackageServiceTests()
     {
-        _service = new PackageService(_packageRepository.Object, _gameRepository.Object, _imageStorageService.Object);
+        _service = new PackageService(
+            _packageRepository.Object,
+            _gameRepository.Object,
+            _imageStorageService.Object,
+            new PublicImageUrlBuilder("https://api.test"));
     }
 
     [Fact]

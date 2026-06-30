@@ -94,6 +94,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["Jwt:Issuer"] = "GameTopUp.Tests",
                 ["Jwt:Audience"] = "GameTopUp.Tests",
                 ["Jwt:ExpireMinutes"] = "60",
+                ["ConfigUrl:AppBaseUrl"] = "https://api.test.local",
                 ["VietQr:BankId"] = "TESTBANK",
                 ["VietQr:AccountNo"] = "0123456789",
                 ["VietQr:AccountName"] = "GameTopUp Tests"

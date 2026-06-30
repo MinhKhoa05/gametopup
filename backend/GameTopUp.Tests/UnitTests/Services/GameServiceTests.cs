@@ -18,7 +18,7 @@ public class GameServiceTests
 
     public GameServiceTests()
     {
-        _service = new GameService(_repository.Object, _imageStorageService.Object);
+        _service = new GameService(_repository.Object, _imageStorageService.Object, new PublicImageUrlBuilder("https://api.test"));
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class GameServiceTests
 
         game.Name.Should().Be("New Game");
         game.IsActive.Should().BeFalse();
-        game.ImageUrl.Should().Be("old-url");
+        game.ImageUrl.Should().Be("https://api.test/old-path");
         game.TotalPackages.Should().Be(0);
     }
 
@@ -97,7 +97,7 @@ public class GameServiceTests
             ImageFile = TestFormFiles.Image("new.png")
         });
 
-        game.ImageUrl.Should().Be("new-url");
+        game.ImageUrl.Should().Be("https://api.test/games/new.png");
         game.TotalPackages.Should().Be(0);
         _imageStorageService.Verify(service => service.DeleteAsync("/games/old.png"), Times.Once);
     }

@@ -28,7 +28,11 @@ public class OrderUseCaseTests
 
     public OrderUseCaseTests()
     {
-        var packageService = new PackageService(_packageRepository.Object, _gameRepository.Object, _imageStorageService.Object);
+        var packageService = new PackageService(
+            _packageRepository.Object,
+            _gameRepository.Object,
+            _imageStorageService.Object,
+            new PublicImageUrlBuilder("https://api.test"));
         var walletService = new WalletService(_walletRepository.Object, _walletTransactionRepository.Object);
         var orderService = new OrderService(_orderRepository.Object, _orderHistoryRepository.Object);
         _useCase = new OrderUseCase(

@@ -97,6 +97,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<OrderQuery>();
 
         services.AddScoped<IImageStorageService, LocalImageStorageService>();
+        services.AddSingleton(sp =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            return new PublicImageUrlBuilder(GetRequiredAppBaseUrl(configuration));
+        });
 
         return services;
     }
@@ -107,6 +112,17 @@ public static class ServiceCollectionExtensions
         services.AddScoped<OrderUseCase>();
         services.AddScoped<WalletDepositUseCase>();
         return services;
+    }
+
+    private static string GetRequiredAppBaseUrl(IConfiguration configuration)
+    {
+        var baseUrl = configuration["ConfigUrl:AppBaseUrl"];
+        if (string.IsNullOrWhiteSpace(baseUrl))
+        {
+            throw new InvalidOperationException("ConfigUrl:AppBaseUrl is required. Set ConfigUrl:AppBaseUrl in configuration or APP_BASE_URL in the environment.");
+        }
+
+        return baseUrl;
     }
 
 }

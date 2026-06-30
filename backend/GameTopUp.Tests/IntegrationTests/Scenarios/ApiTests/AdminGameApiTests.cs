@@ -80,12 +80,14 @@ public sealed class AdminGameApiTests : BaseIntegrationTest
         var created = await response.ShouldBeSuccess<AdminGameResponse>(HttpStatusCode.Created);
 
         created.ImageUrl.Should().NotBeNullOrWhiteSpace();
+        created.ImageUrl.Should().StartWith("https://api.test.local/uploads/");
 
         var game = await Factory.GetGameAsync(created.Id);
 
         game.Should().NotBeNull();
-        game!.ImageUrl.Should().NotBeNullOrWhiteSpace();
+        game!.ImageUrl.Should().StartWith("/uploads/");
         game.ImageRelativePath.Should().NotBeNullOrWhiteSpace();
+        game.ImageRelativePath.Should().NotStartWith("http");
     }
 
     [Fact]

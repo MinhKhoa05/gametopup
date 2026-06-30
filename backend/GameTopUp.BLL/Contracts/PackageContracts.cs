@@ -38,6 +38,24 @@ public sealed class PackageResponse
     public bool IsAvailable { get; set; }
 }
 
+public sealed class AdminPackageResponse
+{
+    public long Id { get; set; }
+    public long GameId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string ImageUrl { get; set; } = string.Empty;
+
+    public decimal SalePrice { get; set; }
+    public decimal OriginalPrice { get; set; }
+    public decimal ImportPrice { get; set; }
+
+    public int AvailableSlots { get; set; }
+    public bool IsActive { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
 public sealed class UpdatePackageRequest
 {
     public string? Name { get; set; }

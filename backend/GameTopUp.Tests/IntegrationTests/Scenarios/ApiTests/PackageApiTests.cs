@@ -21,7 +21,11 @@ public sealed class PackageApiTests : BaseIntegrationTest
         var game = await Factory.SeedGameAsync();
         var otherGame = await Factory.SeedGameAsync();
 
-        var package = await Factory.SeedPackageAsync(game.Id);
+        var package = await Factory.SeedPackageAsync(game.Id, item =>
+        {
+            item.ImageUrl = "/legacy/package.png";
+            item.ImageRelativePath = "/uploads/packages/2026/06/package.png";
+        });
 
         await Factory.SeedPackageAsync(otherGame.Id);
 
@@ -33,6 +37,7 @@ public sealed class PackageApiTests : BaseIntegrationTest
 
         result.Id.Should().Be(package.Id);
         result.Name.Should().Be(package.Name);
+        result.ImageUrl.Should().Be("https://api.test.local/uploads/packages/2026/06/package.png");
     }
 
     [Fact]

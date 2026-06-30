@@ -14,26 +14,35 @@ public sealed class PackageService
     private readonly IPackageRepository _packageRepository;
     private readonly IGameRepository _gameRepository;
     private readonly IImageStorageService _imageStorageService;
+    private readonly PublicImageUrlBuilder _imageUrlBuilder;
 
     public PackageService(
         IPackageRepository packageRepository,
         IGameRepository gameRepository,
-        IImageStorageService imageStorageService)
+        IImageStorageService imageStorageService,
+        PublicImageUrlBuilder imageUrlBuilder)
     {
         _packageRepository = packageRepository;
         _gameRepository = gameRepository;
         _imageStorageService = imageStorageService;
+        _imageUrlBuilder = imageUrlBuilder;
     }
 
-    public Task<List<Package>> GetPackageEntitiesByGameIdAsync(long gameId) =>
-        _packageRepository.GetByGameIdAsync(gameId);
+    public async Task<List<AdminPackageResponse>> GetAdminPackagesByGameIdAsync(long gameId)
+    {
+        var packages = await _packageRepository.GetByGameIdAsync(gameId);
+
+        return packages
+            .Select(item => WithPublicImageUrl(item.MapTo<AdminPackageResponse>()))
+            .ToList();
+    }
 
     public async Task<List<PackageResponse>> GetPackagesByGameIdAsync(long gameId)
     {
         var packages = await _packageRepository.GetByGameIdAsync(gameId);
 
         return packages
-            .Select(item => item.MapTo<PackageResponse>())
+            .Select(item => WithPublicImageUrl(item.MapTo<PackageResponse>()))
             .ToList();
     }
 
@@ -58,7 +67,7 @@ public sealed class PackageService
     public async Task<PackageResponse> GetPackageByIdAsync(long id)
     {
         var package = await GetActivePackageByIdOrThrowAsync(id);
-        return package.MapTo<PackageResponse>();
+        return WithPublicImageUrl(package.MapTo<PackageResponse>());
     }
 
     public async Task ReservePackageAsync(long packageId)
@@ -116,6 +125,12 @@ public sealed class PackageService
         }
     }
 
+    public async Task<AdminPackageResponse> CreateAdminPackageAsync(long gameId, CreatePackageRequest request)
+    {
+        var package = await CreatePackageAsync(gameId, request);
+        return WithPublicImageUrl(package.MapTo<AdminPackageResponse>());
+    }
+
     public async Task<Package> UpdatePackageAsync(long id, UpdatePackageRequest request)
     {
         var package = await GetPackageByIdOrThrowAsync(id);
@@ -150,6 +165,12 @@ public sealed class PackageService
         }
     }
 
+    public async Task<AdminPackageResponse> UpdateAdminPackageAsync(long id, UpdatePackageRequest request)
+    {
+        var package = await UpdatePackageAsync(id, request);
+        return WithPublicImageUrl(package.MapTo<AdminPackageResponse>());
+    }
+
     public async Task DeletePackageAsync(long id)
     {
         var package = await GetPackageByIdOrThrowAsync(id);
@@ -164,5 +185,17 @@ public sealed class PackageService
         {
             throw new NotFoundException(ErrorCode.GameNotFound);
         }
+    }
+
+    private PackageResponse WithPublicImageUrl(PackageResponse package)
+    {
+        package.ImageUrl = _imageUrlBuilder.Build(package.ImageUrl);
+        return package;
+    }
+
+    private AdminPackageResponse WithPublicImageUrl(AdminPackageResponse package)
+    {
+        package.ImageUrl = _imageUrlBuilder.Build(package.ImageUrl);
+        return package;
     }
 }

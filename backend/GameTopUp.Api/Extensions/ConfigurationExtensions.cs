@@ -4,6 +4,7 @@ public static class ConfigurationExtensions
 {
     public static void ApplyEnvironmentOverrides(this IConfiguration configuration)
     {
+        ApplyApp(configuration);
         ApplyDatabase(configuration);
         ApplySecrets(configuration);
         ApplyCors(configuration);
@@ -11,7 +12,13 @@ public static class ConfigurationExtensions
 
     public static string[] GetAllowedOrigins(this IConfiguration configuration)
     {
-        return configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        return configuration.GetSection("ConfigUrl:CorsAllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+    }
+
+    private static void ApplyApp(IConfiguration configuration)
+    {
+        SetFromEnv(configuration, "ConfigUrl:AppBaseUrl", "APP_BASE_URL");
+        SetFromEnv(configuration, "ConfigUrl:ViteApiBaseUrl", "VITE_API_BASE_URL");
     }
 
     private static void ApplyDatabase(IConfiguration configuration)
@@ -53,7 +60,7 @@ public static class ConfigurationExtensions
 
         for (var index = 0; index < origins.Length; index++)
         {
-            configuration[$"Cors:AllowedOrigins:{index}"] = origins[index];
+            configuration[$"ConfigUrl:CorsAllowedOrigins:{index}"] = origins[index];
         }
     }
 

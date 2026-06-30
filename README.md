@@ -94,14 +94,15 @@ Fill in the required values before running Docker Compose:
 DB_ROOT_PASSWORD=CHANGE_ME_ROOT_PASSWORD
 DB_PASSWORD=YOUR_APP_PASSWORD
 JWT_KEY=YOUR_SECURE_JWT_KEY_MIN_32_CHARS
-CORS_ALLOWED_ORIGINS=https://example.com
-VITE_API_BASE_URL=https://example.com/api
+APP_BASE_URL=http://localhost:5000
+CORS_ALLOWED_ORIGINS=http://localhost:3000
+VITE_API_BASE_URL=http://localhost:5000/api
 VIETQR_BANK_ID=YOUR_BANK_ID
 VIETQR_ACCOUNT_NO=YOUR_BANK_ACCOUNT_NO
 VIETQR_ACCOUNT_NAME=YOUR_BANK_ACCOUNT_NAME
 ```
 
-Use your real domain for `CORS_ALLOWED_ORIGINS` and `VITE_API_BASE_URL`. In production, the API issues secure cookies, so the public site should be served over HTTPS by a reverse proxy such as Nginx or Caddy.
+Use your real domain for `APP_BASE_URL`, `CORS_ALLOWED_ORIGINS`, and `VITE_API_BASE_URL`. In production, the API issues secure cookies, so the public site should be served over HTTPS by a reverse proxy such as Nginx or Caddy.
 
 ### Demo Seed Accounts
 

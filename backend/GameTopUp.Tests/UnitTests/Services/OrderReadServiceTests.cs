@@ -1,6 +1,7 @@
 using FluentAssertions;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Exceptions;
+using GameTopUp.BLL.Services.Images;
 using GameTopUp.BLL.Services.Orders;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
@@ -21,7 +22,11 @@ public class OrderReadServiceTests : IDisposable
     public OrderReadServiceTests()
     {
         _database = CreateDatabaseContext();
-        _service = new OrderReadService(_orderRepository.Object, _historyRepository.Object, new OrderQuery(_database));
+        _service = new OrderReadService(
+            _orderRepository.Object,
+            _historyRepository.Object,
+            new OrderQuery(_database),
+            new PublicImageUrlBuilder("https://api.test"));
     }
 
     [Fact]

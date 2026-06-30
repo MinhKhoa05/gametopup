@@ -18,7 +18,7 @@ public sealed class GameQuery
                 SELECT
                     g.id,
                     g.name,
-                    g.image_url,
+                    COALESCE(g.image_relative_path, g.image_url) AS image_url,
                     SUM(CASE WHEN p.is_active = 1 THEN 1 ELSE 0 END) AS active_packages
                 FROM games g
                 JOIN packages p ON p.game_id = g.id
@@ -26,7 +26,8 @@ public sealed class GameQuery
                 GROUP BY
                     g.id,
                     g.name,
-                    g.image_url
+                    g.image_url,
+                    g.image_relative_path
                 ORDER BY active_packages DESC;
             """;
         
@@ -40,7 +41,7 @@ public sealed class GameQuery
                 SELECT
                     g.id,
                     g.name,
-                    g.image_url,
+                    COALESCE(g.image_relative_path, g.image_url) AS image_url,
                     g.is_active,
                     SUM(CASE WHEN p.is_active = 1 THEN 1 ELSE 0 END) AS active_packages,
                     SUM(CASE WHEN p.is_active = 0 THEN 1 ELSE 0 END) AS inactive_packages,
@@ -52,6 +53,7 @@ public sealed class GameQuery
                     g.id,
                     g.name,
                     g.image_url,
+                    g.image_relative_path,
                     g.is_active,
                     g.created_at,
                     g.updated_at

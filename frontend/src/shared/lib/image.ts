@@ -1,5 +1,3 @@
-import { apiBaseUrl } from '@/shared/api/client';
-
 const defaultImageSvg = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none">
   <rect width="320" height="180" rx="20" fill="#0f172a"/>
@@ -11,17 +9,3 @@ const defaultImageSvg = `
 `;
 
 export const DEFAULT_IMAGE_SRC = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(defaultImageSvg)}`;
-
-export function resolveImageUrl(url?: string | null) {
-  if (!url) return '';
-
-  if (!url.startsWith('/uploads/')) {
-    return url;
-  }
-
-  return `${apiBaseUrl}${url}`;
-}
-
-export function resolveImageSrc(url?: string | null, fallbackSrc = DEFAULT_IMAGE_SRC) {
-  return resolveImageUrl(url) || fallbackSrc;
-}

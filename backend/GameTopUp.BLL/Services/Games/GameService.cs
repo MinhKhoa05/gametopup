@@ -11,11 +11,16 @@ public sealed class GameService
 {
     private readonly IGameRepository _repository;
     private readonly IImageStorageService _imageStorageService;
+    private readonly PublicImageUrlBuilder _imageUrlBuilder;
 
-    public GameService(IGameRepository repository, IImageStorageService imageStorageService)
+    public GameService(
+        IGameRepository repository,
+        IImageStorageService imageStorageService,
+        PublicImageUrlBuilder imageUrlBuilder)
     {
         _repository = repository;
         _imageStorageService = imageStorageService;
+        _imageUrlBuilder = imageUrlBuilder;
     }
 
     public async Task<Game> GetGameByIdOrThrowAsync(long id)
@@ -44,7 +49,7 @@ public sealed class GameService
             }
 
             game.Id = await _repository.CreateAsync(game);
-            return game.MapTo<AdminGameResponse>();
+            return WithPublicImageUrl(game.MapTo<AdminGameResponse>());
         }
         catch
         {
@@ -77,7 +82,7 @@ public sealed class GameService
                 await _imageStorageService.DeleteAsync(previousImageRelativePath);
             }
 
-            return game.MapTo<AdminGameResponse>();
+            return WithPublicImageUrl(game.MapTo<AdminGameResponse>());
         }
         catch
         {
@@ -91,5 +96,11 @@ public sealed class GameService
         var existingGame = await GetGameByIdOrThrowAsync(id);
         await _repository.DeleteAsync(id);
         await _imageStorageService.DeleteAsync(existingGame.ImageRelativePath);
+    }
+
+    private AdminGameResponse WithPublicImageUrl(AdminGameResponse game)
+    {
+        game.ImageUrl = _imageUrlBuilder.Build(game.ImageUrl);
+        return game;
     }
 }

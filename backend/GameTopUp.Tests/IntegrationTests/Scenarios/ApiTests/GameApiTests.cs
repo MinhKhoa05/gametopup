@@ -17,7 +17,11 @@ public sealed class GameApiTests : BaseIntegrationTest
     [Fact]
     public async Task GetGames_ShouldExcludeInactiveGames()
     {
-        var activeGame = await Factory.SeedGameAsync();
+        var activeGame = await Factory.SeedGameAsync(game =>
+        {
+            game.ImageUrl = "/legacy/game.png";
+            game.ImageRelativePath = "/uploads/games/2026/06/game.png";
+        });
         await Factory.SeedPackageAsync(activeGame.Id);
         await Factory.SeedGameAsync(game => game.IsActive = false);
 
@@ -29,6 +33,7 @@ public sealed class GameApiTests : BaseIntegrationTest
 
         game.Id.Should().Be(activeGame.Id);
         game.Name.Should().Be(activeGame.Name);
+        game.ImageUrl.Should().Be("https://api.test.local/uploads/games/2026/06/game.png");
         game.ActivePackages.Should().Be(1);
     }
 
