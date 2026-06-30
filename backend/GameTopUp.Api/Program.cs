@@ -30,7 +30,6 @@ builder.Services.AddGameTopUpDatabase();
 builder.Services.AddRepositories();
 builder.Services.AddBusinessServices();
 builder.Services.AddUseCases();
-builder.Services.AddCommonServices();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();

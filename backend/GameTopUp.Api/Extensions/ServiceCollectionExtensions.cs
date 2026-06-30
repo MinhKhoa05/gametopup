@@ -96,6 +96,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WalletDepositService>();
         services.AddScoped<OrderQuery>();
 
+        services.AddScoped<IImageStorageService, LocalImageStorageService>();
+
         return services;
     }
 
@@ -107,9 +109,4 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddCommonServices(this IServiceCollection services)
-    {
-        services.AddScoped<IImageStorageService, LocalImageStorageService>();
-        return services;
-    }
 }

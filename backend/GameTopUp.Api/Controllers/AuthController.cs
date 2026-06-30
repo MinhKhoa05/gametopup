@@ -11,13 +11,11 @@ public sealed class AuthController : ApiControllerBase
 {
     private readonly AuthUseCase _auth;
     private readonly IConfiguration _configuration;
-    private readonly IWebHostEnvironment _environment;
 
-    public AuthController(AuthUseCase auth, IConfiguration configuration, IWebHostEnvironment environment)
+    public AuthController(AuthUseCase auth, IConfiguration configuration)
     {
         _auth = auth;
         _configuration = configuration;
-        _environment = environment;
     }
 
     [HttpPost("register")]
@@ -83,6 +81,6 @@ public sealed class AuthController : ApiControllerBase
 
     private bool ShouldUseSecureCookies()
     {
-        return Request.IsHttps || !_environment.IsDevelopment();
+        return Request.IsHttps;
     }
 }
