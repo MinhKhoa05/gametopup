@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
-import { HEADER_ADMIN_MENU_ITEMS } from '@/app/config';
 import { ADMIN_SECTIONS, routes, type AdminSection } from '@/app/router/routes';
 import { UserRole } from '@/features/users/types';
 import { useAuthUserQuery } from '@/features/auth/server';
@@ -48,13 +47,11 @@ export function AdminLayoutPage() {
         }}
         onRefresh={refresh}
         onToggleSidebar={() => setMobileSidebarOpen((value) => !value)}
-        userName={user.displayName}
       >
         {shell}
       </AdminMobileLayout>
 
       <AdminDesktopLayout
-        accountMenuItems={HEADER_ADMIN_MENU_ITEMS}
         activeSection={activeSection}
         brandCollapsed={sidebarCollapsed}
         loading={userQuery.isPending}
@@ -62,7 +59,6 @@ export function AdminLayoutPage() {
         onNavigate={(nextSection) => navigate(routes.admin(nextSection))}
         onRefresh={refresh}
         onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
-        userName={user.displayName}
       >
         {shell}
       </AdminDesktopLayout>

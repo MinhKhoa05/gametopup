@@ -1,28 +1,19 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { walletKeys } from '@/features/wallet/server';
 import type { AdminDepositRequest } from '@/features/deposits/types';
 import { useCursorPageQuery } from '@/shared/hooks/useCursorPageQuery';
-import { adminDepositsKeys, approveAdminDepositRequest, getAdminDepositRequests, getAdminDepositRequestsCursor, rejectAdminDepositRequest } from '../api';
+import { adminDepositsKeys, approveAdminDepositRequest, getAdminDepositRequests, rejectAdminDepositRequest } from '../api';
 import type { AdminDepositFilter } from '../api';
 
 const STALE_TIME = 1000 * 60 * 5;
 const ADMIN_DEPOSITS_PAGE_SIZE = 20;
 
-export function useAdminDepositRequestsQuery(limit?: number) {
-  return useQuery({
-    queryKey: adminDepositsKeys.all,
-    queryFn: () => getAdminDepositRequests(limit),
-    placeholderData: keepPreviousData,
-    staleTime: STALE_TIME,
-  });
-}
-
-export function useAdminDepositRequestsCursorQuery(filter: AdminDepositFilter) {
+function useAdminDepositRequestsQuery(filter: AdminDepositFilter) {
   return useCursorPageQuery<AdminDepositRequest>({
-    queryKey: adminDepositsKeys.cursor(filter),
+    queryKey: adminDepositsKeys.list(filter),
     queryFn: (cursor) =>
-      getAdminDepositRequestsCursor({
+      getAdminDepositRequests({
         cursor,
         filter,
         limit: ADMIN_DEPOSITS_PAGE_SIZE,
@@ -59,7 +50,7 @@ export function useRejectAdminDepositRequestMutation() {
 }
 
 export function useAdminDepositRequestsSection(filter: AdminDepositFilter = null) {
-  const requestsQuery = useAdminDepositRequestsCursorQuery(filter);
+  const requestsQuery = useAdminDepositRequestsQuery(filter);
   const requestMutations = {
     approve: useApproveAdminDepositRequestMutation(),
     reject: useRejectAdminDepositRequestMutation(),

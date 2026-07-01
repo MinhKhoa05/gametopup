@@ -13,9 +13,6 @@ export type OrderFilter =
   | "completed"
   | "cancelled";
 
-// UI-only type for timeline rendering
-export type OrderTimelineState = 'complete' | 'current' | 'danger' | 'upcoming';
-
 // Mirrors OrderResponse.cs
 export type Order = {
   id: number;
@@ -60,23 +57,11 @@ export type AdminOrder = {
   updatedAt: string;
 };
 
-// UI-only type for timeline steps
-export type OrderTimelineStep = {
-  description: string;
-  label: string;
-  state: OrderTimelineState;
-  time?: string | null;
-};
-
 export type CreateOrderInput = {
   packageId: number;
   gameAccountInfo: string;
 };
 
 export type CreateOrderResponse = {
-  orderId: number;
-};
-
-export type CancelOrderInput = {
   orderId: number;
 };

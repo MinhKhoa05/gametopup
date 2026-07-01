@@ -25,7 +25,7 @@ public sealed class AdminOrderController : ApiControllerBase
         [FromQuery] long? cursor = null,
         [FromQuery] int? limit = null)
     {
-        var orders = await _orderReadService.GetAdminOrderCursorPageAsync(filter, cursor, limit);
+        var orders = await _orderReadService.GetOrdersAsync(filter, cursor, limit);
         return ApiOk(orders);
     }
 

@@ -14,16 +14,11 @@ export async function confirmDepositTransfer({ requestId }: ConfirmDepositTransf
   return response.data.data;
 }
 
-export type DepositCursorParams = CursorParams<WalletDepositFilter>;
+type DepositRequestParams = CursorParams<WalletDepositFilter>;
 
-export async function getMyDepositRequestCursor(params: DepositCursorParams = {}) {
+export async function getMyDepositRequests(params: DepositRequestParams = {}) {
   return getCursorPage<WalletDeposit, WalletDepositFilter>(
     '/api/deposits',
     params,
   );
-}
-
-export async function getMyDepositRequest(limit?: number) {
-  const page = await getMyDepositRequestCursor({ limit });
-  return page.items;
 }

@@ -1,6 +1,6 @@
 import type { Key, ReactNode } from "react";
 
-export type GroupedListGroup<T> = {
+type GroupedListGroup<T> = {
   title: string;
   items: readonly T[];
   countLabel?: ReactNode;

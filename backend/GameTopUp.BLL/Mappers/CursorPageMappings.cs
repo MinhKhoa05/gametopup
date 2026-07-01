@@ -4,12 +4,17 @@ namespace GameTopUp.BLL.Mappers;
 
 public static class CursorPageMappings
 {
-    public static CursorPageResponse<TResult> ToCursorPage<TSource, TResult>(
-        IReadOnlyList<TSource> rows,
-        int take,
+    private const int DefaultPageSize = 20;
+    private const int MaxPageSize = 100;
+
+    public static async Task<CursorPageResponse<TResult>> ToCursorPageAsync<TSource, TResult>(
+        int? limit,
+        Func<int, Task<List<TSource>>> query,
         Func<TSource, TResult> mapper,
         Func<TSource, long?> cursorSelector)
     {
+        var take = NormalizeLimit(limit);
+        var rows = await query(take + 1);
         var hasMore = rows.Count > take;
         var page = rows.Take(take).ToList();
 
@@ -19,5 +24,15 @@ public static class CursorPageMappings
             HasMore = hasMore,
             NextCursor = hasMore ? cursorSelector(page[^1]) : null
         };
+    }
+
+    private static int NormalizeLimit(int? limit)
+    {
+        if (limit is null or <= 0)
+        {
+            return DefaultPageSize;
+        }
+
+        return Math.Min(limit.Value, MaxPageSize);
     }
 }

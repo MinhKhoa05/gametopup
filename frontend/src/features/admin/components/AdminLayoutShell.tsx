@@ -1,9 +1,8 @@
 import { Boxes, CalendarDays, ChevronRight, LayoutDashboard, Menu, Users, WalletCards, X } from 'lucide-react';
 import { type CSSProperties, type ReactNode } from 'react';
-import { Badge, EmptyState, IconBox, BrandLogo, HeaderAccountMenu} from '@/shared/components';
+import { Badge, EmptyState, IconBox, BrandLogo } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import type { AdminSection } from '@/app/router/routes';
-import type { HeaderMenuItem } from '@/app/config';
 
 const ADMIN_NAV_ITEMS: Array<{ icon: ReactNode; label: string; section: AdminSection }> = [
   { section: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Tổng quan' },
@@ -104,11 +103,8 @@ export function AdminDesktopLayout({
   onNavigate,
   onRefresh,
   onToggleSidebar,
-  userName,
-  accountMenuItems,
 }: {
   activeSection: AdminSection;
-  accountMenuItems: HeaderMenuItem[];
   brandCollapsed: boolean;
   children: ReactNode;
   loading: boolean;
@@ -116,7 +112,6 @@ export function AdminDesktopLayout({
   onNavigate: (section: AdminSection) => void;
   onRefresh: () => void;
   onToggleSidebar: () => void;
-  userName: string;
 }) {
   const sidebarWidth = brandCollapsed ? '92px' : '300px';
 
@@ -162,7 +157,6 @@ export function AdminDesktopLayout({
             >
               <CalendarDays size={17} className={loading ? 'animate-spin' : ''} />
             </button>
-            {/* <HeaderAccountMenu items={accountMenuItems} displayName={userName} /> */}
           </div>
         </div>
       </header>
@@ -184,10 +178,8 @@ export function AdminMobileLayout({
   onNavigate,
   onRefresh,
   onToggleSidebar,
-  userName,
 }: {
   activeSection: AdminSection;
-//   accountMenuItems: HeaderAccountMenuItem[];
   children: ReactNode;
   isOpen: boolean;
   loading: boolean;
@@ -196,7 +188,6 @@ export function AdminMobileLayout({
   onNavigate: (section: AdminSection) => void;
   onRefresh: () => void;
   onToggleSidebar: () => void;
-  userName: string;
 }) {
   return (
     <div className="lg:hidden">
@@ -228,7 +219,6 @@ export function AdminMobileLayout({
             >
               <CalendarDays size={17} className={loading ? 'animate-spin' : ''} />
             </button>
-            {/* <HeaderAccountMenu items={accountMenuItems} triggerLabel={userName} /> */}
           </div>
         </div>
       </header>

@@ -1,6 +1,5 @@
 import {
   useMutation,
-  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -8,8 +7,7 @@ import { toast } from "sonner";
 import {
   confirmDepositTransfer,
   createDepositRequest,
-  getMyDepositRequestCursor,
-  getMyDepositRequest,
+  getMyDepositRequests,
 } from "./api";
 import type { WalletDeposit, WalletDepositFilter } from "./types";
 import { useCursorPageQuery } from "@/shared/hooks/useCursorPageQuery";
@@ -20,30 +18,17 @@ const DEPOSIT_REQUESTS_PAGE_SIZE = 10;
 
 export const depositKeys = {
   all: ["deposits"] as const,
-  list: ["deposits", "list"] as const,
-  cursor: (filter: WalletDepositFilter | null) => ["deposits", "cursor", filter] as const,
+  list: (filter: WalletDepositFilter | null) => ["deposits", "list", filter] as const,
 };
 
-export function useDepositRequestsQuery(enabled = true) {
-  return useQuery({
-    queryKey: depositKeys.list,
-    queryFn: () => getMyDepositRequest(),
-    enabled,
-    staleTime: DEPOSIT_REQUESTS_STALE_TIME,
-    gcTime: DEPOSIT_REQUESTS_GC_TIME,
-    refetchOnWindowFocus: false,
-    meta: { persist: true },
-  });
-}
-
-export function useDepositRequestsCursorQuery(
+export function useDepositRequestsQuery(
   filter: WalletDepositFilter | null,
   enabled = true,
 ) {
   return useCursorPageQuery<WalletDeposit>({
-    queryKey: depositKeys.cursor(filter),
+    queryKey: depositKeys.list(filter),
     queryFn: (cursor) =>
-      getMyDepositRequestCursor({
+      getMyDepositRequests({
         cursor,
         filter,
         limit: DEPOSIT_REQUESTS_PAGE_SIZE,

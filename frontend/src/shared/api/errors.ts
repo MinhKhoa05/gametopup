@@ -4,18 +4,10 @@ import type { ApiResponse } from '@/shared/types/api';
 const DEFAULT_ERROR_MESSAGE =
   'Không thể kết nối đến hệ thống. Vui lòng thử lại sau.';
 
-export function isApiError(
+function isApiError(
   error: unknown,
 ): error is AxiosError<ApiResponse<unknown>> {
   return axios.isAxiosError<ApiResponse<unknown>>(error);
-}
-
-export function getApiErrorCode(error: unknown) {
-  if (!isApiError(error)) {
-    return undefined;
-  }
-
-  return error.response?.data?.errorCode;
 }
 
 export function getApiMessage(error: unknown) {

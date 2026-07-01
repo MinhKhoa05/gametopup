@@ -7,7 +7,7 @@ export async function getAdminUsers() {
   return response.data.data;
 }
 
-export type UpdateProfileInput = {
+type UpdateProfileInput = {
   displayName: string;
 };
 

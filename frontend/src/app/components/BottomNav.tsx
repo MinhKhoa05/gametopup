@@ -5,7 +5,7 @@ import {
   UserRound,
   WalletCards,
 } from "lucide-react";
-import { NavItem, BOTTOM_NAV_ITEMS } from "@/app/config";
+import { BOTTOM_NAV_ITEMS } from "@/app/config";
 import { useAuthUserQuery } from "@/features/auth/server";
 import { classNames } from "@/shared/lib/classNames";
 import { useLocation, useNavigate } from "react-router-dom";

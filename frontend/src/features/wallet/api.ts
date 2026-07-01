@@ -9,18 +9,13 @@ export async function getWalletBalance() {
   return response.data.data;
 }
 
-export type WalletTransactionCursorParams = CursorParams<WalletTransactionFilter>;
+type WalletTransactionParams = CursorParams<WalletTransactionFilter>;
 
-export async function getWalletTransactionsCursor(
-  params: WalletTransactionCursorParams = {},
+export async function getWalletTransactions(
+  params: WalletTransactionParams = {},
 ) {
   return getCursorPage<WalletTransaction, WalletTransactionFilter>(
     '/api/wallet/transactions',
     params,
   );
-}
-
-export async function getWalletTransactions(limit?: number) {
-  const page = await getWalletTransactionsCursor({ limit });
-  return page.items;
 }

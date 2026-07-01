@@ -71,23 +71,6 @@ export function formatDateTimeCompact(value?: Date | string | null) {
   return compactFormatter.format(date).replace(", ", " ");
 }
 
-export function formatRelativeTime(value: string) {
-  const date = toValidDate(value);
-  if (!date) return "--";
-
-  const diffMinutes = Math.max(
-    1,
-    Math.round((Date.now() - date.getTime()) / 60000),
-  );
-
-  if (diffMinutes < 60) return `${diffMinutes} phút trước`;
-
-  const diffHours = Math.round(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours} giờ trước`;
-
-  return `${Math.round(diffHours / 24)} ngày trước`;
-}
-
 function getVietnamDateKey(date: Date) {
   return vietnamDateKeyFormatter.format(date);
 }

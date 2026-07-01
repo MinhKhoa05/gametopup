@@ -1,42 +1,10 @@
 import { routes } from '@/app/router/routes';
 import type { User } from '@/features/users/types';
 import type { AdminGame } from '@/features/games/types';
-import type { AdminDepositRequest } from '@/features/deposits/types';
 import type { AdminGamePackage } from '@/features/packages/types';
 import type { AdminOrder } from '@/features/orders/types';
-import { formatCurrency } from '@/shared/lib/format';
 
-export type QueueItem =
-  | {
-      actionHref: string;
-      amountLabel: string;
-      createdAt: string;
-      description: string;
-      id: string;
-      imageAlt: string;
-      imageUrl: string | null;
-      kind: 'order';
-      searchText: string;
-      sortValue: number;
-      status: number;
-      title: string;
-    }
-  | {
-      actionHref: string;
-      amountLabel: string;
-      createdAt: string;
-      description: string;
-      id: string;
-      imageAlt: string;
-      imageUrl: null;
-      kind: 'deposit';
-      searchText: string;
-      sortValue: number;
-      status: number;
-      title: string;
-    };
-
-export type WatchItem = {
+type WatchItem = {
   actionHref: string;
   description: string;
   id: string;
@@ -46,48 +14,6 @@ export type WatchItem = {
   stockLabel: string;
   tone: 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
 };
-
-export function buildQueueItems({
-  games,
-  orders,
-  packages,
-}: {
-  depositRequests: AdminDepositRequest[];
-  games: AdminGame[];
-  orders: AdminOrder[];
-  packages: AdminGamePackage[];
-}) {
-  const gameById = new Map(games.map((game) => [game.id, game]));
-  const packageById = new Map(packages.map((item) => [item.id, item]));
-
-  const orderItems = orders
-    .filter((order) => order.status === 1 || order.status === 2)
-    .slice(0, 6)
-    .map<QueueItem>((order) => {
-      const packageItem = packageById.get(order.packageId);
-      const game = packageItem ? gameById.get(packageItem.gameId) : undefined;
-      const amount = formatCurrency(order.packagePrice);
-      const title = packageItem ? `${game?.name ?? 'Game'} · ${packageItem.name}` : `Đơn #${order.id}`;
-      const description = `${order.gameAccountInfo || 'Chưa có thông tin'} · #${order.id}`;
-
-      return {
-        actionHref: routes.admin('orders'),
-        amountLabel: amount,
-        createdAt: order.createdAt,
-        description,
-        id: `order-${order.id}`,
-        imageAlt: game?.name ?? packageItem?.name ?? `Đơn ${order.id}`,
-        imageUrl: packageItem?.imageUrl ?? game?.imageUrl ?? null,
-        kind: 'order',
-        searchText: [order.id, order.gameAccountInfo, game?.name, packageItem?.name, amount].join(' ').toLowerCase(),
-        sortValue: new Date(order.createdAt).getTime(),
-        status: order.status,
-        title,
-      };
-    });
-
-  return orderItems;
-}
 
 export function buildWatchItems(packages: AdminGamePackage[], games: AdminGame[]) {
   const gameById = new Map(games.map((game) => [game.id, game]));

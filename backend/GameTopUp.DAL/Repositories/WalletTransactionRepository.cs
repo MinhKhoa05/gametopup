@@ -1,8 +1,6 @@
-using Dapper;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Interfaces;
-using System.Text;
 
 namespace GameTopUp.DAL.Repositories;
 
@@ -15,45 +13,32 @@ public sealed class WalletTransactionRepository : IWalletTransactionRepository
         _database = database;
     }
 
-    public Task<List<WalletTransaction>> GetByUserIdAsync(long userId) =>
-        _database.QueryAsync<WalletTransaction>(
-            "SELECT * FROM wallet_transactions WHERE user_id = @UserId ORDER BY created_at DESC",
-            new { UserId = userId });
-
-    public Task<List<WalletTransaction>> GetCursorPageByUserIdAsync(
+    public Task<List<WalletTransaction>> GetByUserIdAsync(
         long userId,
         WalletTransactionType? type,
         long? cursor,
         int take)
     {
-        var sql = new StringBuilder(
+        var sql =
             """
             SELECT *
             FROM wallet_transactions
             WHERE user_id = @UserId
-            """);
-        sql.AppendLine();
+            AND (@Type IS NULL OR type = @Type)
+            AND (@Cursor IS NULL OR id < @Cursor)
+            ORDER BY id DESC
+            LIMIT @Take
+            """;
 
-        var parameters = new DynamicParameters();
-        parameters.Add("UserId", userId);
-        parameters.Add("Take", take);
-
-        if (type is not null)
-        {
-            sql.AppendLine("AND type = @Type");
-            parameters.Add("Type", type);
-        }
-
-        if (cursor is not null)
-        {
-            sql.AppendLine("AND id < @Cursor");
-            parameters.Add("Cursor", cursor);
-        }
-
-        sql.AppendLine("ORDER BY id DESC");
-        sql.AppendLine("LIMIT @Take");
-
-        return _database.QueryAsync<WalletTransaction>(sql.ToString(), parameters);
+        return _database.QueryAsync<WalletTransaction>(
+            sql,
+            new
+            {
+                UserId = userId,
+                Type = type,
+                Cursor = cursor,
+                Take = take
+            });
     }
 
     public Task<long> CreateAsync(WalletTransaction walletTransaction) =>

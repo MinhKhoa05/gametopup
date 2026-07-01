@@ -11,9 +11,6 @@ namespace GameTopUp.BLL.Services.Orders;
 
 public sealed class OrderReadService
 {
-    private const int DefaultPageSize = 20;
-    private const int MaxPageSize = 100;
-
     private readonly IOrderRepository _orderRepository;
     private readonly IOrderHistoryRepository _orderHistoryRepository;
     private readonly OrderQuery _orderQuery;
@@ -31,60 +28,42 @@ public sealed class OrderReadService
         _imageUrlBuilder = imageUrlBuilder;
     }
 
-    public async Task<List<OrderResponse>> GetOrdersAsync(UserContext actor, OrderStatus? status = null)
-    {
-        var orders = await _orderQuery.GetOrderQueryAsync(actor.UserId, status);
-        return orders.Select(order => WithPublicImageUrl(order.MapTo<OrderResponse>())).ToList();
-    }
-
-    public async Task<CursorPageResponse<OrderResponse>> GetOrderCursorPageAsync(
+    public async Task<CursorPageResponse<OrderResponse>> GetOrdersByUserAsync(
         UserContext actor,
         OrderFilter? filter,
         long? cursor,
         int? limit)
     {
-        var take = NormalizeLimit(limit);
-        var rows = await _orderQuery.GetOrderCursorPageAsync(
-            actor.UserId,
-            ToOrderStatuses(filter),
-            cursor,
-            take + 1);
-
-        return CursorPageMappings.ToCursorPage(
-            rows,
-            take,
-            row => WithPublicImageUrl(row.MapTo<OrderResponse>()),
+        return await CursorPageMappings.ToCursorPageAsync(
+            limit,
+            take => _orderQuery.GetOrdersByUserAsync(
+                actor.UserId,
+                ToOrderStatuses(filter),
+                cursor,
+                take),
+            BuildOrderResponse,
             row => row.Id);
     }
 
-    public async Task<List<AdminOrderResponse>> GetAdminOrdersAsync(OrderStatus? status = null)
-    {
-        var orders = await _orderQuery.GetAdminOrdersAsync(status);
-        return orders.Select(order => WithPublicImageUrl(order.MapTo<AdminOrderResponse>())).ToList();
-    }
-
-    public async Task<CursorPageResponse<AdminOrderResponse>> GetAdminOrderCursorPageAsync(
+    public async Task<CursorPageResponse<AdminOrderResponse>> GetOrdersAsync(
         OrderFilter? filter,
         long? cursor,
         int? limit)
     {
-        var take = NormalizeLimit(limit);
-        var rows = await _orderQuery.GetAdminOrderCursorPageAsync(
-            ToOrderStatuses(filter),
-            cursor,
-            take + 1);
-
-        return CursorPageMappings.ToCursorPage(
-            rows,
-            take,
-            row => WithPublicImageUrl(row.MapTo<AdminOrderResponse>()),
+        return await CursorPageMappings.ToCursorPageAsync(
+            limit,
+            take => _orderQuery.GetOrdersAsync(
+                ToOrderStatuses(filter),
+                cursor,
+                take),
+            BuildAdminOrderResponse,
             row => row.Id);
     }
 
     public async Task<OrderResponse> GetOrderAsync(UserContext actor, long orderId)
     {
         var order = await EnsureOrderAccessUser(actor, orderId);
-        return WithPublicImageUrl(order.MapTo<OrderResponse>());
+        return BuildOrderResponse(order);
     }
 
     public async Task<List<OrderHistoryResponse>> GetOrderHistoryAsync(UserContext actor, long orderId)
@@ -108,19 +87,28 @@ public sealed class OrderReadService
         return order;
     }
 
-    private OrderResponse WithPublicImageUrl(OrderResponse order)
+    private OrderResponse BuildOrderResponse(OrderQueryRow row)
     {
-        order.PackageImageUrl = _imageUrlBuilder.Build(order.PackageImageUrl);
-        return order;
+        var response = row.MapTo<OrderResponse>();
+        response.PackageImageUrl = _imageUrlBuilder.Build(response.PackageImageUrl);
+        return response;
     }
 
-    private AdminOrderResponse WithPublicImageUrl(AdminOrderResponse order)
+    private AdminOrderResponse BuildAdminOrderResponse(OrderQueryRow row)
     {
-        order.PackageImageUrl = _imageUrlBuilder.Build(order.PackageImageUrl);
-        return order;
+        var response = row.MapTo<AdminOrderResponse>();
+        response.PackageImageUrl = _imageUrlBuilder.Build(response.PackageImageUrl);
+        return response;
     }
 
-    private static IReadOnlyCollection<OrderStatus>? ToOrderStatuses(OrderFilter? filter)
+    private OrderResponse BuildOrderResponse(Order order)
+    {
+        var response = order.MapTo<OrderResponse>();
+        response.PackageImageUrl = _imageUrlBuilder.Build(response.PackageImageUrl);
+        return response;
+    }
+
+    private static OrderStatus[]? ToOrderStatuses(OrderFilter? filter)
     {
         return filter switch
         {
@@ -131,16 +119,6 @@ public sealed class OrderReadService
             OrderFilter.Cancelled => [OrderStatus.Cancelled],
             _ => null
         };
-    }
-
-    private static int NormalizeLimit(int? limit)
-    {
-        if (limit is null or <= 0)
-        {
-            return DefaultPageSize;
-        }
-
-        return Math.Min(limit.Value, MaxPageSize);
     }
 
 }

@@ -6,7 +6,7 @@ import type { AdminDepositRequest, WalletDepositFilter } from '@/features/deposi
 
 export const adminDepositsKeys = {
   all: ['admin', 'deposits'] as const,
-  cursor: (filter: AdminDepositFilter) => ['admin', 'deposits', 'cursor', filter] as const,
+  list: (filter: AdminDepositFilter) => ['admin', 'deposits', 'list', filter] as const,
 };
 
 export type AdminDepositFilter = WalletDepositFilter | null;
@@ -21,18 +21,13 @@ function buildDepositReviewBody(note?: string) {
   return trimmedNote ? { note: trimmedNote } : {};
 }
 
-export type AdminDepositCursorParams = CursorParams<WalletDepositFilter>;
+type AdminDepositParams = CursorParams<WalletDepositFilter>;
 
-export async function getAdminDepositRequestsCursor(params: AdminDepositCursorParams = {}) {
+export async function getAdminDepositRequests(params: AdminDepositParams = {}) {
   return getCursorPage<AdminDepositRequest, WalletDepositFilter>(
     '/api/admin/deposits',
     params,
   );
-}
-
-export async function getAdminDepositRequests(limit?: number) {
-  const page = await getAdminDepositRequestsCursor({ limit });
-  return page.items;
 }
 
 export async function approveAdminDepositRequest(payload: AdminDepositReviewInput) {

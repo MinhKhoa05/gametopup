@@ -113,7 +113,7 @@ public sealed class DepositApiTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetMyDepositRequestCursorPage_ShouldPaginateByCursorAndApplyFilter()
+    public async Task GetMyDepositRequests_ShouldPaginateByCursorAndApplyFilter()
     {
         var user = await Factory.SeedUserAsync();
 

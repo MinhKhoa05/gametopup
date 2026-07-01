@@ -8,7 +8,6 @@ import { toast } from "sonner";
 
 import {
   createGame,
-  deleteGame,
   getAdminGames,
   getGames,
   updateGame,
@@ -81,17 +80,3 @@ export function useUpdateGameMutation() {
   });
 }
 
-export function useDeleteGameMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: deleteGame,
-
-    onSuccess() {
-      queryClient.invalidateQueries({ queryKey: gameKeys.all });
-      queryClient.invalidateQueries({ queryKey: gameKeys.admin });
-
-      toast.success("Đã xóa game.");
-    },
-  });
-}

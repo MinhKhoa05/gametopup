@@ -4,8 +4,7 @@ namespace GameTopUp.DAL.Interfaces;
 
 public interface IWalletTransactionRepository
 {
-    Task<List<WalletTransaction>> GetByUserIdAsync(long userId);
-    Task<List<WalletTransaction>> GetCursorPageByUserIdAsync(
+    Task<List<WalletTransaction>> GetByUserIdAsync(
         long userId,
         WalletTransactionType? type,
         long? cursor,

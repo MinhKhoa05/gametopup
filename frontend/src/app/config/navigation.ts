@@ -5,11 +5,11 @@ export type NavItem = {
   href: string;
 };
 
-export type HeaderNavItem = NavItem & {
+type HeaderNavItem = NavItem & {
   requiresAuth?: boolean;
 };
 
-export type BottomNavItem = NavItem & {
+type BottomNavItem = NavItem & {
   iconKey: "home" | "games" | "wallet" | "orders" | "profile";
   requiresAuth?: boolean;
 };

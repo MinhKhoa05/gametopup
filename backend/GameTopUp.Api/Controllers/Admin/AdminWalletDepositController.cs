@@ -26,7 +26,7 @@ public sealed class AdminWalletDepositController : ApiControllerBase
         [FromQuery] long? cursor = null,
         [FromQuery] int? limit = null)
     {
-        var requests = await _depositService.GetAllCursorPageAsync(filter, cursor, limit);
+        var requests = await _depositService.GetAllAsync(filter, cursor, limit);
         return ApiOk(requests);
     }
 

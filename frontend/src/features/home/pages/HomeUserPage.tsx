@@ -32,12 +32,15 @@ export function HomeUserPage() {
 
   const gamesQuery = useGamesQuery();
   const walletQuery = useWalletBalanceQuery();
-  const walletTransactionsQuery = useWalletTransactionsQuery(isAuthenticated);
+  const walletTransactionsQuery = useWalletTransactionsQuery(
+    null,
+    isAuthenticated,
+  );
   const recentOrdersQuery = useRecentOrders();
 
   const games = gamesQuery.data ?? [];
   const walletBalance = walletQuery.data ?? 0;
-  const walletTransactions = walletTransactionsQuery.data ?? [];
+  const walletTransactions = walletTransactionsQuery.items;
   const recentOrders = recentOrdersQuery.data ?? [];
 
   const gamesLoading = gamesQuery.isPending && gamesQuery.data === undefined;

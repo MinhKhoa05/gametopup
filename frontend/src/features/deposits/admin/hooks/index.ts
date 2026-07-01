@@ -1,5 +1,4 @@
 export {
-  useAdminDepositRequestsQuery,
   useApproveAdminDepositRequestMutation,
   useRejectAdminDepositRequestMutation,
   useAdminDepositRequestsSection,

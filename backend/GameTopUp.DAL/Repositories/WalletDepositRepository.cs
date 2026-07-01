@@ -1,8 +1,6 @@
-using Dapper;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Interfaces;
-using System.Text;
 
 namespace GameTopUp.DAL.Repositories;
 
@@ -26,120 +24,59 @@ public sealed class WalletDepositRepository : IWalletDepositRepository
             "SELECT * FROM wallet_deposits WHERE id = @Id FOR UPDATE",
             new { Id = requestId });
 
-    public Task<List<WalletDeposit>> GetByUserIdAsync(long userId, WalletDepositStatus? status = null)
-    {
-        var sql = new StringBuilder(
-            """
-            SELECT *
-            FROM wallet_deposits
-            WHERE user_id = @UserId
-            """);
-        sql.AppendLine();
-
-        var parameters = new DynamicParameters();
-        parameters.Add("UserId", userId);
-
-        if (status is not null)
-        {
-            sql.AppendLine("AND status = @Status");
-            parameters.Add("Status", status);
-        }
-
-        sql.AppendLine("ORDER BY created_at DESC");
-
-        return _database.QueryAsync<WalletDeposit>(sql.ToString(), parameters);
-    }
-
-    public Task<List<WalletDeposit>> GetCursorPageByUserIdAsync(
+    public Task<List<WalletDeposit>> GetByUserIdAsync(
         long userId,
-        IReadOnlyCollection<WalletDepositStatus>? statuses,
+        WalletDepositStatus[]? statuses,
         long? cursor,
         int take)
     {
-        var sql = new StringBuilder(
+        var sql =
             """
             SELECT *
             FROM wallet_deposits
             WHERE user_id = @UserId
-            """);
-        sql.AppendLine();
+            AND (@HasStatuses = FALSE OR status IN @Statuses)
+            AND (@Cursor IS NULL OR id < @Cursor)
+            ORDER BY id DESC
+            LIMIT @Take
+            """;
 
-        var parameters = new DynamicParameters();
-        parameters.Add("UserId", userId);
-        parameters.Add("Take", take);
-
-        if (cursor is not null)
-        {
-            sql.AppendLine("AND id < @Cursor");
-            parameters.Add("Cursor", cursor);
-        }
-
-        if (statuses is { Count: > 0 })
-        {
-            sql.AppendLine("AND status IN @Statuses");
-            parameters.Add("Statuses", statuses);
-        }
-
-        sql.AppendLine("ORDER BY id DESC");
-        sql.AppendLine("LIMIT @Take");
-
-        return _database.QueryAsync<WalletDeposit>(sql.ToString(), parameters);
+        return _database.QueryAsync<WalletDeposit>(
+            sql,
+            new
+            {
+                UserId = userId,
+                HasStatuses = statuses?.Length > 0,
+                Statuses = statuses ?? [],
+                Cursor = cursor,
+                Take = take
+            });
     }
 
-    public Task<List<WalletDeposit>> GetAllAsync(WalletDepositStatus? status = null)
-    {
-        var sql = new StringBuilder(
-            """
-            SELECT *
-            FROM wallet_deposits
-            """);
-        sql.AppendLine();
-
-        var parameters = new DynamicParameters();
-
-        if (status is not null)
-        {
-            sql.AppendLine("WHERE status = @Status");
-            parameters.Add("Status", status);
-        }
-
-        sql.AppendLine("ORDER BY created_at DESC");
-
-        return _database.QueryAsync<WalletDeposit>(sql.ToString(), parameters);
-    }
-
-    public Task<List<WalletDeposit>> GetAllCursorPageAsync(
-        IReadOnlyCollection<WalletDepositStatus>? statuses,
+    public Task<List<WalletDeposit>> GetAllAsync(
+        WalletDepositStatus[]? statuses,
         long? cursor,
         int take)
     {
-        var sql = new StringBuilder(
+        var sql =
             """
             SELECT *
             FROM wallet_deposits
-            WHERE 1 = 1
-            """);
-        sql.AppendLine();
+            WHERE (@HasStatuses = FALSE OR status IN @Statuses)
+            AND (@Cursor IS NULL OR id < @Cursor)
+            ORDER BY id DESC
+            LIMIT @Take
+            """;
 
-        var parameters = new DynamicParameters();
-        parameters.Add("Take", take);
-
-        if (cursor is not null)
-        {
-            sql.AppendLine("AND id < @Cursor");
-            parameters.Add("Cursor", cursor);
-        }
-
-        if (statuses is { Count: > 0 })
-        {
-            sql.AppendLine("AND status IN @Statuses");
-            parameters.Add("Statuses", statuses);
-        }
-
-        sql.AppendLine("ORDER BY id DESC");
-        sql.AppendLine("LIMIT @Take");
-
-        return _database.QueryAsync<WalletDeposit>(sql.ToString(), parameters);
+        return _database.QueryAsync<WalletDeposit>(
+            sql,
+            new
+            {
+                HasStatuses = statuses?.Length > 0,
+                Statuses = statuses ?? [],
+                Cursor = cursor,
+                Take = take
+            });
     }
 
     public Task<bool> UpdateAsync(WalletDeposit request) => _database.UpdateAsync(request);

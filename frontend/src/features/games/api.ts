@@ -28,10 +28,6 @@ export async function updateGame(id: number, payload: GameInput) {
   return response.data.data;
 }
 
-export async function deleteGame(id: number) {
-  await api.delete<ApiResponse<void>>(`/api/admin/games/${id}`);
-}
-
 export async function getAdminGames() {
   const response = await api.get<ApiResponse<AdminGame[]>>('/api/admin/games');
   return response.data.data;

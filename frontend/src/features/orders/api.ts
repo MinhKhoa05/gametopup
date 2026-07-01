@@ -3,7 +3,6 @@ import { getCursorPage } from '@/shared/api/pagination';
 import type { ApiResponse } from '@/shared/types/api';
 import type { CursorParams } from '@/shared/types/pagination';
 import type {
-  CancelOrderInput,
   CreateOrderInput,
   CreateOrderResponse,
   OrderFilter,
@@ -11,20 +10,10 @@ import type {
   Order,
 } from './types';
 
-export type OrderCursorParams = CursorParams<OrderFilter>;
+type OrderListParams = CursorParams<OrderFilter>;
 
-export async function getMyOrdersCursor(params: OrderCursorParams = {}) {
+export async function getMyOrders(params: OrderListParams = {}) {
   return getCursorPage<Order, OrderFilter>('/api/orders', params);
-}
-
-export async function getMyOrders(limit?: number) {
-  const page = await getMyOrdersCursor({ limit });
-  return page.items;
-}
-
-export async function getOrder(orderId: number) {
-  const response = await api.get<ApiResponse<Order>>(`/api/orders/${orderId}`);
-  return response.data.data;
 }
 
 export async function createOrder(payload: CreateOrderInput) {
@@ -36,11 +25,6 @@ export async function createOrder(payload: CreateOrderInput) {
   }
 
   return data.orderId;
-}
-
-export async function cancelOrder({ orderId }: CancelOrderInput) {
-  const response = await api.post<ApiResponse<unknown>>(`/api/orders/${orderId}/cancel`);
-  return response.data.data;
 }
 
 export async function getOrderHistory(orderId: number) {

@@ -6,7 +6,6 @@ export { Dialog } from './Dialog';
 export { FilterChip } from './FilterChip';
 export { FilterChipGroup } from './FilterChipGroup';
 export type { FilterChipGroupItem } from "./FilterChipGroup";
-export { FilterSelectField } from './FilterSelectField';
 export { EmptyState } from './EmptyState';
 export { Field } from './Field';
 export type { FieldProps } from './Field';

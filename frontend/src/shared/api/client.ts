@@ -2,7 +2,7 @@ import axios, { type AxiosRequestConfig } from 'axios';
 import { triggerSessionExpired } from '@/app/session';
 import type { ApiResponse } from '@/shared/types/api';
 
-export const apiBaseUrl = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL);
+const apiBaseUrl = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL);
 
 export const api = axios.create({
   baseURL: apiBaseUrl,

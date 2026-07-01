@@ -21,7 +21,6 @@ import { useAdminOrdersSection } from "@/features/orders/admin/hooks";
 import { useAdminDepositRequestsSection } from "@/features/deposits/admin/hooks";
 import { useAdminUsersQuery } from "@/features/users/server";
 import {
-  buildQueueItems,
   buildRecentUsers,
   buildWatchItems,
   countOrdersToday,
@@ -96,7 +95,7 @@ type AdminCatalogMetrics = {
 
 type DashboardScope = "all" | "orders" | "deposits";
 
-export function DashboardPanel({
+function DashboardPanel({
   depositRequests,
   games,
   loading,

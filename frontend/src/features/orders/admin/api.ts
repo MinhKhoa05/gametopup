@@ -6,7 +6,7 @@ import type { AdminOrder, OrderFilter } from '@/features/orders/types';
 
 export const adminOrdersKeys = {
   all: ['admin', 'orders'] as const,
-  cursor: (filter: AdminOrderFilter) => ['admin', 'orders', 'cursor', filter] as const,
+  list: (filter: AdminOrderFilter) => ['admin', 'orders', 'list', filter] as const,
 };
 
 export type AdminOrderFilter = OrderFilter | null;
@@ -15,15 +15,10 @@ export type AdminOrderActionInput = {
   orderId: number;
 };
 
-export type AdminOrderCursorParams = CursorParams<OrderFilter>;
+type AdminOrderParams = CursorParams<OrderFilter>;
 
-export async function getAdminOrdersCursor(params: AdminOrderCursorParams = {}) {
+export async function getAdminOrders(params: AdminOrderParams = {}) {
   return getCursorPage<AdminOrder, OrderFilter>('/api/admin/orders', params);
-}
-
-export async function getAdminOrders(limit?: number) {
-  const page = await getAdminOrdersCursor({ limit });
-  return page.items;
 }
 
 export async function pickAdminOrder({ orderId }: AdminOrderActionInput) {

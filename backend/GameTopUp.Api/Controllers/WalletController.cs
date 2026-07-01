@@ -30,7 +30,7 @@ public sealed class WalletController : ApiControllerBase
         [FromQuery] long? cursor = null,
         [FromQuery] int? limit = null)
     {
-        var transactions = await _walletService.GetTransactionCursorPageAsync(CurrentUser, filter, cursor, limit);
+        var transactions = await _walletService.GetTransactionsAsync(CurrentUser, filter, cursor, limit);
         return ApiOk(transactions);
     }
 }

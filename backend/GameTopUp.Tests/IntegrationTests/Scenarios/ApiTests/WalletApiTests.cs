@@ -50,7 +50,7 @@ public sealed class WalletApiTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetWalletTransactionCursorPage_ShouldPaginateByCursorAndApplyFilter()
+    public async Task GetWalletTransactions_ShouldPaginateByCursorAndApplyFilter()
     {
         var user = await Factory.SeedUserAsync();
 

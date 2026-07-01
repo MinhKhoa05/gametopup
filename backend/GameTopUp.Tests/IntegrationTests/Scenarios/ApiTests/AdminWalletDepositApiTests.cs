@@ -39,7 +39,7 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetDepositRequestCursorPage_ShouldApplyFilter()
+    public async Task GetDepositRequests_ShouldApplyFilter()
     {
         var user = await Factory.SeedUserAsync();
 

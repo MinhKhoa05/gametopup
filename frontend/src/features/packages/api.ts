@@ -36,7 +36,3 @@ export async function updatePackage(id: number, payload: GamePackageInput) {
   const response = await api.put<ApiResponse<AdminGamePackage>>(`/api/admin/packages/${id}`, buildPackageFormData(payload));
   return response.data.data;
 }
-
-export async function deletePackage(id: number) {
-  await api.delete<ApiResponse<void>>(`/api/admin/packages/${id}`);
-}

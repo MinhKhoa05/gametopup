@@ -1,4 +1,4 @@
-export type FormDataValue = string | number | boolean | File | null | undefined;
+type FormDataValue = string | number | boolean | File | null | undefined;
 
 export function appendFormValue(formData: FormData, key: string, value: FormDataValue) {
   if (value === undefined || value === null) {

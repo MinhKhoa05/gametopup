@@ -14,9 +14,6 @@ namespace GameTopUp.BLL.Services.Wallets;
 
 public sealed class WalletDepositService
 {
-    private const int DefaultPageSize = 20;
-    private const int MaxPageSize = 100;
-
     private readonly IWalletDepositRepository _repository;
 
     private readonly VietQrSettings _vietQrSettings;
@@ -48,56 +45,34 @@ public sealed class WalletDepositService
             ?? throw new NotFoundException(ErrorCode.DepositRequestNotFound);
     }
 
-    public async Task<List<WalletDepositResponse>> GetByUserAsync(UserContext context, WalletDepositStatus? status = null)
-    {
-        var deposits = await _repository.GetByUserIdAsync(context.UserId, status);
-        return deposits
-            .Select(BuildPublicResponse)
-            .ToList();
-    }
-
-    public async Task<CursorPageResponse<WalletDepositResponse>> GetByUserCursorPageAsync(
+    public async Task<CursorPageResponse<WalletDepositResponse>> GetByUserAsync(
         UserContext context,
         WalletDepositFilter? filter,
         long? cursor,
         int? limit)
     {
-        var take = NormalizeLimit(limit);
-        var deposits = await _repository.GetCursorPageByUserIdAsync(
-            context.UserId,
-            ToDepositStatuses(filter),
-            cursor,
-            take + 1);
-
-        return CursorPageMappings.ToCursorPage(
-            deposits,
-            take,
+        return await CursorPageMappings.ToCursorPageAsync(
+            limit,
+            take => _repository.GetByUserIdAsync(
+                context.UserId,
+                ToDepositStatuses(filter),
+                cursor,
+                take),
             BuildPublicResponse,
             deposit => deposit.Id);
     }
 
-    public async Task<List<WalletDepositResponse>> GetAllAsync(WalletDepositStatus? status = null)
-    {
-        var deposits = await _repository.GetAllAsync(status);
-        return deposits
-            .Select(request => request.MapTo<WalletDepositResponse>())
-            .ToList();
-    }
-
-    public async Task<CursorPageResponse<WalletDepositResponse>> GetAllCursorPageAsync(
+    public async Task<CursorPageResponse<WalletDepositResponse>> GetAllAsync(
         WalletDepositFilter? filter,
         long? cursor,
         int? limit)
     {
-        var take = NormalizeLimit(limit);
-        var deposits = await _repository.GetAllCursorPageAsync(
-            ToDepositStatuses(filter),
-            cursor,
-            take + 1);
-
-        return CursorPageMappings.ToCursorPage(
-            deposits,
-            take,
+        return await CursorPageMappings.ToCursorPageAsync(
+            limit,
+            take => _repository.GetAllAsync(
+                ToDepositStatuses(filter),
+                cursor,
+                take),
             request => request.MapTo<WalletDepositResponse>(),
             request => request.Id);
     }
@@ -226,7 +201,7 @@ public sealed class WalletDepositService
         return $"GTU-{datePart}-{randomPart}";
     }
 
-    private static IReadOnlyCollection<WalletDepositStatus>? ToDepositStatuses(WalletDepositFilter? filter)
+    private static WalletDepositStatus[]? ToDepositStatuses(WalletDepositFilter? filter)
     {
         return filter switch
         {
@@ -238,16 +213,6 @@ public sealed class WalletDepositService
             WalletDepositFilter.Rejected => [WalletDepositStatus.Rejected],
             _ => null
         };
-    }
-
-    private static int NormalizeLimit(int? limit)
-    {
-        if (limit is null or <= 0)
-        {
-            return DefaultPageSize;
-        }
-
-        return Math.Min(limit.Value, MaxPageSize);
     }
 
 }

@@ -22,8 +22,8 @@ import { WalletDepositDialog } from "@/features/deposits/components/WalletDeposi
 import { WalletDepositItem } from "@/features/deposits/components/WalletDepositItem";
 import type { WalletDepositFilter } from "@/features/deposits/types";
 import { useAuthUserQuery } from "@/features/auth/server";
-import { useDepositRequestsCursorQuery } from "../../deposits/server";
-import { useWalletBalanceQuery, useWalletTransactionsCursorQuery } from "../server";
+import { useDepositRequestsQuery } from "../../deposits/server";
+import { useWalletBalanceQuery, useWalletTransactionsQuery } from "../server";
 import type { WalletTransactionFilter } from "../types";
 
 const HISTORY_TABS = [
@@ -62,11 +62,11 @@ export function WalletPage() {
   const [isDepositOpen, setDepositOpen] = useState(false);
 
   const balanceQuery = useWalletBalanceQuery(isAuthenticated);
-  const transactionsQuery = useWalletTransactionsCursorQuery(
+  const transactionsQuery = useWalletTransactionsQuery(
     transactionFilter,
     isAuthenticated,
   );
-  const depositsQuery = useDepositRequestsCursorQuery(
+  const depositsQuery = useDepositRequestsQuery(
     depositFilter,
     isAuthenticated,
   );

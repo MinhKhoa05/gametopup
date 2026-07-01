@@ -35,7 +35,7 @@ public sealed class WalletDepositController : ApiControllerBase
         [FromQuery] long? cursor = null,
         [FromQuery] int? limit = null)
     {
-        var requests = await _depositService.GetByUserCursorPageAsync(CurrentUser, filter, cursor, limit);
+        var requests = await _depositService.GetByUserAsync(CurrentUser, filter, cursor, limit);
         return ApiOk(requests);
     }
 

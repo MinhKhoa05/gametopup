@@ -4,7 +4,7 @@ import { AUTH_USER_QUERY_KEY } from "@/features/auth/server";
 import type { User } from "@/features/users/types";
 import { getAdminUsers, updateMyProfile } from "./api";
 
-export const adminUsersKeys = {
+const adminUsersKeys = {
   all: ["admin", "users"] as const,
 };
 

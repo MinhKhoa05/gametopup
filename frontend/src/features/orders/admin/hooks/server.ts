@@ -1,28 +1,19 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { orderKeys } from '@/features/orders/server';
 import type { AdminOrder } from '@/features/orders/types';
 import { useCursorPageQuery } from '@/shared/hooks/useCursorPageQuery';
-import { adminOrdersKeys, cancelAdminOrder, completeAdminOrder, getAdminOrders, getAdminOrdersCursor, pickAdminOrder } from '../api';
+import { adminOrdersKeys, cancelAdminOrder, completeAdminOrder, getAdminOrders, pickAdminOrder } from '../api';
 import type { AdminOrderFilter } from '../api';
 
 const STALE_TIME = 1000 * 30;
 const ADMIN_ORDERS_PAGE_SIZE = 20;
 
-export function useAdminOrdersQuery(limit?: number) {
-  return useQuery({
-    queryKey: adminOrdersKeys.all,
-    queryFn: () => getAdminOrders(limit),
-    placeholderData: keepPreviousData,
-    staleTime: STALE_TIME,
-  });
-}
-
-export function useAdminOrdersCursorQuery(filter: AdminOrderFilter) {
+function useAdminOrdersQuery(filter: AdminOrderFilter) {
   return useCursorPageQuery<AdminOrder>({
-    queryKey: adminOrdersKeys.cursor(filter),
+    queryKey: adminOrdersKeys.list(filter),
     queryFn: (cursor) =>
-      getAdminOrdersCursor({ cursor, filter, limit: ADMIN_ORDERS_PAGE_SIZE }),
+      getAdminOrders({ cursor, filter, limit: ADMIN_ORDERS_PAGE_SIZE }),
     keepPreviousData: true,
     staleTime: STALE_TIME,
   });
@@ -68,7 +59,7 @@ export function useCancelAdminOrderMutation() {
 }
 
 export function useAdminOrdersSection(filter: AdminOrderFilter = null) {
-  const ordersQuery = useAdminOrdersCursorQuery(filter);
+  const ordersQuery = useAdminOrdersQuery(filter);
   const orderMutations = {
     pick: usePickAdminOrderMutation(),
     complete: useCompleteAdminOrderMutation(),

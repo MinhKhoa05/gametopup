@@ -8,7 +8,7 @@ import { Button, Field, PasswordField } from "@/shared/components";
 import { getRememberedAuthEmail } from "../server";
 import type { AuthFormData } from "../types";
 
-export type AuthMode = "login" | "register";
+type AuthMode = "login" | "register";
 
 type AuthFormProps = {
   mode: AuthMode;

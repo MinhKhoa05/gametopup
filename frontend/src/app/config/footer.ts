@@ -1,21 +1,12 @@
 import { routes } from "@/app/router/routes";
 
-
-export type FooterContactLink = {
-  label: string;
-  href: string;
-  ariaLabel: string;
-  iconKey: "mail" | "facebook" | "zalo";
-  external: boolean;
-};
-
 export const DEVELOPER = {
   name: "Hồ Nguyễn Minh Khoa",
   github: "https://github.com/MinhKhoa05",
   linkedin: "https://www.linkedin.com/in/minh-khoa-h%E1%BB%93-nguy%E1%BB%85n-0365353b7/",
 } as const;
 
-export const CONTACT = {
+const CONTACT = {
   email: "mkhoa639@gmail.com",
   facebook: "#",
   zalo: "#",

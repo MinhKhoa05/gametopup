@@ -71,7 +71,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetOrderCursorPage_ShouldPaginateByCursor()
+    public async Task GetOrders_ShouldPaginateByCursor()
     {
         var user = await Factory.SeedUserAsync();
 
@@ -113,7 +113,7 @@ public sealed class OrderApiTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetOrderCursorPage_ShouldApplyFilter()
+    public async Task GetOrders_ShouldApplyFilter()
     {
         var user = await Factory.SeedUserAsync();
 

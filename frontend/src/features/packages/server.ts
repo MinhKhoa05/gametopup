@@ -11,7 +11,6 @@ import type { GamePackage, GamePackageInput } from "@/features/packages/types";
 
 import {
   createPackage,
-  deletePackage,
   getAdminPackages,
   getGamePackagesByGame,
   updatePackage,
@@ -101,22 +100,3 @@ export function useUpdatePackageMutation() {
   });
 }
 
-export function useDeletePackageMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: deletePackage,
-
-    onSuccess() {
-      queryClient.invalidateQueries({
-        queryKey: gameKeys.all,
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: gameKeys.admin,
-      });
-
-      toast.success("Đã xóa gói nạp.");
-    },
-  });
-}

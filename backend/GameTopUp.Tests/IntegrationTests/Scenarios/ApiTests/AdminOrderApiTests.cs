@@ -39,7 +39,7 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetOrderCursorPage_ShouldApplyFilter()
+    public async Task GetOrders_ShouldApplyFilter()
     {
         var pendingScenario = await Factory.SeedOrderScenarioAsync(order =>
         {

@@ -33,7 +33,7 @@ public sealed class OrderController : ApiControllerBase
         [FromQuery] long? cursor = null,
         [FromQuery] int? limit = null)
     {
-        var orders = await _orderReadService.GetOrderCursorPageAsync(CurrentUser, filter, cursor, limit);
+        var orders = await _orderReadService.GetOrdersByUserAsync(CurrentUser, filter, cursor, limit);
         return ApiOk(orders);
     }
 

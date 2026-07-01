@@ -1,7 +1,5 @@
-using Dapper;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
-using System.Text;
 
 namespace GameTopUp.DAL.Queries;
 
@@ -14,51 +12,13 @@ public sealed class OrderQuery
         _database = database;
     }
 
-    public async Task<List<OrderQueryRow>> GetOrderQueryAsync(long userId, OrderStatus? status = null)
-    {
-        var sql = new StringBuilder(
-            """
-            SELECT
-                o.id,
-                o.user_id,
-                o.game_account_info,
-                o.package_id AS package_id,
-                gp.game_id AS game_id,
-                g.name AS game_name,
-                o.package_name,
-                COALESCE(gp.image_relative_path, gp.image_url) AS package_image_url,
-                o.package_price,
-                o.status,
-                o.created_at,
-                o.updated_at
-            FROM orders o
-            LEFT JOIN packages gp ON gp.id = o.package_id
-            LEFT JOIN games g ON g.id = gp.game_id
-            WHERE o.user_id = @UserId
-            """);
-        sql.AppendLine();
-
-        var parameters = new DynamicParameters();
-        parameters.Add("UserId", userId);
-
-        if (status is not null)
-        {
-            sql.AppendLine("AND o.status = @Status");
-            parameters.Add("Status", status);
-        }
-
-        sql.AppendLine("ORDER BY o.created_at DESC");
-
-        return await _database.QueryAsync<OrderQueryRow>(sql.ToString(), parameters);
-    }
-
-    public async Task<List<OrderQueryRow>> GetOrderCursorPageAsync(
+    public async Task<List<OrderQueryRow>> GetOrdersByUserAsync(
         long userId,
-        IReadOnlyCollection<OrderStatus>? statuses,
+        OrderStatus[]? statuses,
         long? cursor,
         int take)
     {
-        var sql = new StringBuilder(
+        var sql =
             """
             SELECT
                 o.id,
@@ -77,75 +37,30 @@ public sealed class OrderQuery
             LEFT JOIN packages gp ON gp.id = o.package_id
             LEFT JOIN games g ON g.id = gp.game_id
             WHERE o.user_id = @UserId
-            """);
-        sql.AppendLine();
+            AND (@HasStatuses = FALSE OR o.status IN @Statuses)
+            AND (@Cursor IS NULL OR o.id < @Cursor)
+            ORDER BY o.id DESC
+            LIMIT @Take
+            """;
 
-        var parameters = new DynamicParameters();
-        parameters.Add("UserId", userId);
-        parameters.Add("Take", take);
-
-        if (cursor is not null)
-        {
-            sql.AppendLine("AND o.id < @Cursor");
-            parameters.Add("Cursor", cursor);
-        }
-
-        if (statuses is { Count: > 0 })
-        {
-            sql.AppendLine("AND o.status IN @Statuses");
-            parameters.Add("Statuses", statuses);
-        }
-
-        sql.AppendLine("ORDER BY o.id DESC");
-        sql.AppendLine("LIMIT @Take");
-
-        return await _database.QueryAsync<OrderQueryRow>(sql.ToString(), parameters);
+        return await _database.QueryAsync<OrderQueryRow>(
+            sql,
+            new
+            {
+                UserId = userId,
+                HasStatuses = statuses?.Length > 0,
+                Statuses = statuses ?? [],
+                Cursor = cursor,
+                Take = take
+            });
     }
 
-    public async Task<List<OrderQueryRow>> GetAdminOrdersAsync(OrderStatus? status = null)
-    {
-        var sql = new StringBuilder(
-            """
-            SELECT
-                o.id,
-                o.user_id,
-                o.game_account_info,
-                o.package_id AS package_id,
-                g.name AS game_name,
-                COALESCE(gp.image_relative_path, gp.image_url) AS package_image_url,
-                o.package_name,
-                o.package_price,
-                o.package_cost,
-                o.assigned_to,
-                o.assigned_at,
-                o.status,
-                o.created_at,
-                o.updated_at
-            FROM orders o
-            LEFT JOIN packages gp ON gp.id = o.package_id
-            LEFT JOIN games g ON g.id = gp.game_id
-            """);
-        sql.AppendLine();
-
-        var parameters = new DynamicParameters();
-
-        if (status is not null)
-        {
-            sql.AppendLine("WHERE o.status = @Status");
-            parameters.Add("Status", status);
-        }
-
-        sql.AppendLine("ORDER BY o.created_at DESC");
-
-        return await _database.QueryAsync<OrderQueryRow>(sql.ToString(), parameters);
-    }
-
-    public async Task<List<OrderQueryRow>> GetAdminOrderCursorPageAsync(
-        IReadOnlyCollection<OrderStatus>? statuses,
+    public async Task<List<OrderQueryRow>> GetOrdersAsync(
+        OrderStatus[]? statuses,
         long? cursor,
         int take)
     {
-        var sql = new StringBuilder(
+        var sql =
             """
             SELECT
                 o.id,
@@ -165,29 +80,21 @@ public sealed class OrderQuery
             FROM orders o
             LEFT JOIN packages gp ON gp.id = o.package_id
             LEFT JOIN games g ON g.id = gp.game_id
-            WHERE 1 = 1
-            """);
-        sql.AppendLine();
+            WHERE (@HasStatuses = FALSE OR o.status IN @Statuses)
+            AND (@Cursor IS NULL OR o.id < @Cursor)
+            ORDER BY o.id DESC
+            LIMIT @Take
+            """;
 
-        var parameters = new DynamicParameters();
-        parameters.Add("Take", take);
-
-        if (cursor is not null)
-        {
-            sql.AppendLine("AND o.id < @Cursor");
-            parameters.Add("Cursor", cursor);
-        }
-
-        if (statuses is { Count: > 0 })
-        {
-            sql.AppendLine("AND o.status IN @Statuses");
-            parameters.Add("Statuses", statuses);
-        }
-
-        sql.AppendLine("ORDER BY o.id DESC");
-        sql.AppendLine("LIMIT @Take");
-
-        return await _database.QueryAsync<OrderQueryRow>(sql.ToString(), parameters);
+        return await _database.QueryAsync<OrderQueryRow>(
+            sql,
+            new
+            {
+                HasStatuses = statuses?.Length > 0,
+                Statuses = statuses ?? [],
+                Cursor = cursor,
+                Take = take
+            });
     }
 }
 

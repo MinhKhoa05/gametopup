@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
-import { useMyOrdersCursorQuery } from "@/features/orders/server";
+import { useMyOrdersQuery } from "@/features/orders/server";
 import type { Order, OrderFilter } from "@/features/orders/types";
 import type { FilterChipGroupItem } from "@/shared/components";
 import { filterByQuery } from "@/shared/lib/search";
 
 export type OrderStatusFilter = OrderFilter | null;
 
-export type OrderFilters = {
+type OrderFilters = {
   search: string;
   status: OrderStatusFilter;
 };
@@ -37,7 +37,7 @@ export function useOrders() {
     status: "watching",
   });
 
-  const ordersQuery = useMyOrdersCursorQuery(filters.status);
+  const ordersQuery = useMyOrdersQuery(filters.status);
 
   const orders = useMemo(() => {
     return filterByQuery(
@@ -66,5 +66,3 @@ export function useOrders() {
     stats,
   };
 }
-
-export type OrdersPageState = ReturnType<typeof useOrders>;
