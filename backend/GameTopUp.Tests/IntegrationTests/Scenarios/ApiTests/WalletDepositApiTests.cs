@@ -103,9 +103,9 @@ public sealed class DepositApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync("/api/deposits");
 
-        var deposits = await response.ShouldBeSuccess<List<WalletDepositResponse>>();
+        var deposits = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
 
-        var deposit = deposits.Should().ContainSingle().Subject;
+        var deposit = deposits.Items.Should().ContainSingle().Subject;
 
         deposit.Id.Should().Be(userDeposit.Id);
         deposit.UserId.Should().Be(user.Id);
@@ -113,30 +113,68 @@ public sealed class DepositApiTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetMyDepositRequests_ShouldFilterByStatus()
+    public async Task GetMyDepositRequestCursorPage_ShouldPaginateByCursorAndApplyFilter()
     {
         var user = await Factory.SeedUserAsync();
 
         var pendingDeposit = await Factory.SeedWalletDepositAsync(user.Id, deposit =>
         {
-            deposit.Amount = 100_000m;
             deposit.Status = WalletDepositStatus.Pending;
         });
 
-        await Factory.SeedWalletDepositAsync(user.Id, deposit =>
+        var confirmedDeposit = await Factory.SeedWalletDepositAsync(user.Id, deposit =>
         {
-            deposit.Amount = 200_000m;
             deposit.Status = WalletDepositStatus.UserConfirmed;
+        });
+
+        var approvedDeposit = await Factory.SeedWalletDepositAsync(user.Id, deposit =>
+        {
+            deposit.Status = WalletDepositStatus.Approved;
         });
 
         using var client = CreateHeaderAuthenticatedClient(user);
 
-        var response = await client.GetAsync($"/api/deposits?status={WalletDepositStatus.Pending}");
-        var deposits = await response.ShouldBeSuccess<List<WalletDepositResponse>>();
+        var response = await client.GetAsync("/api/deposits?limit=2");
 
-        var deposit = deposits.Should().ContainSingle().Subject;
-        deposit.Id.Should().Be(pendingDeposit.Id);
-        deposit.Status.Should().Be(WalletDepositStatus.Pending);
+        var firstPage = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
+
+        firstPage.Items.Select(deposit => deposit.Id).Should().Equal(approvedDeposit.Id, confirmedDeposit.Id);
+        firstPage.NextCursor.Should().Be(confirmedDeposit.Id);
+        firstPage.HasMore.Should().BeTrue();
+
+        response = await client.GetAsync($"/api/deposits?cursor={firstPage.NextCursor}&limit=2");
+
+        var secondPage = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
+
+        secondPage.Items.Should().ContainSingle(deposit => deposit.Id == pendingDeposit.Id);
+        secondPage.NextCursor.Should().BeNull();
+        secondPage.HasMore.Should().BeFalse();
+
+        response = await client.GetAsync("/api/deposits?filter=active&limit=10");
+
+        var filteredPage = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
+
+        filteredPage.Items.Select(deposit => deposit.Id).Should().Equal(confirmedDeposit.Id, pendingDeposit.Id);
+        filteredPage.NextCursor.Should().BeNull();
+        filteredPage.HasMore.Should().BeFalse();
+
+        response = await client.GetAsync("/api/deposits?filter=watching&limit=10");
+
+        filteredPage = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
+
+        filteredPage.Items.Select(deposit => deposit.Id).Should().Equal(confirmedDeposit.Id, pendingDeposit.Id);
+
+        response = await client.GetAsync("/api/deposits?filter=pending&limit=10");
+
+        filteredPage = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
+
+        filteredPage.Items.Should().ContainSingle(deposit => deposit.Id == pendingDeposit.Id);
+
+        response = await client.GetAsync("/api/deposits?filter=userConfirmed&limit=10");
+
+        filteredPage = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
+
+        filteredPage.Items.Should().ContainSingle(deposit => deposit.Id == confirmedDeposit.Id);
     }
 
     [Fact]

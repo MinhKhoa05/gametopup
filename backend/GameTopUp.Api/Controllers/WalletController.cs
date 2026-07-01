@@ -1,4 +1,5 @@
 using GameTopUp.BLL.Context;
+using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Services.Wallets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,9 +25,12 @@ public sealed class WalletController : ApiControllerBase
     }
 
     [HttpGet("transactions")]
-    public async Task<IActionResult> GetWalletTransactions()
+    public async Task<IActionResult> GetWalletTransactions(
+        [FromQuery] WalletTransactionFilter? filter = null,
+        [FromQuery] long? cursor = null,
+        [FromQuery] int? limit = null)
     {
-        var transactions = await _walletService.GetTransactionsAsync(CurrentUser);
+        var transactions = await _walletService.GetTransactionCursorPageAsync(CurrentUser, filter, cursor, limit);
         return ApiOk(transactions);
     }
 }

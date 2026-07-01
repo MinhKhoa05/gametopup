@@ -17,6 +17,15 @@ public sealed class CreateOrderResponse
     public long OrderId { get; set; }
 }
 
+public enum OrderFilter
+{
+    Watching,
+    Pending,
+    Processing,
+    Completed,
+    Cancelled
+}
+
 public sealed class OrderResponse
 {
     public long Id { get; set; }

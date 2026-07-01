@@ -2,7 +2,6 @@ using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.UseCases;
-using GameTopUp.DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,9 +28,12 @@ public sealed class OrderController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetOrders([FromQuery] OrderStatus? status = null)
+    public async Task<IActionResult> GetOrders(
+        [FromQuery] OrderFilter? filter = null,
+        [FromQuery] long? cursor = null,
+        [FromQuery] int? limit = null)
     {
-        var orders = await _orderReadService.GetOrdersAsync(CurrentUser, status);
+        var orders = await _orderReadService.GetOrderCursorPageAsync(CurrentUser, filter, cursor, limit);
         return ApiOk(orders);
     }
 

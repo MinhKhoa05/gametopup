@@ -14,6 +14,9 @@ namespace GameTopUp.BLL.Services.Wallets;
 
 public sealed class WalletDepositService
 {
+    private const int DefaultPageSize = 20;
+    private const int MaxPageSize = 100;
+
     private readonly IWalletDepositRepository _repository;
 
     private readonly VietQrSettings _vietQrSettings;
@@ -53,12 +56,50 @@ public sealed class WalletDepositService
             .ToList();
     }
 
+    public async Task<CursorPageResponse<WalletDepositResponse>> GetByUserCursorPageAsync(
+        UserContext context,
+        WalletDepositFilter? filter,
+        long? cursor,
+        int? limit)
+    {
+        var take = NormalizeLimit(limit);
+        var deposits = await _repository.GetCursorPageByUserIdAsync(
+            context.UserId,
+            ToDepositStatuses(filter),
+            cursor,
+            take + 1);
+
+        return CursorPageMappings.ToCursorPage(
+            deposits,
+            take,
+            BuildPublicResponse,
+            deposit => deposit.Id);
+    }
+
     public async Task<List<WalletDepositResponse>> GetAllAsync(WalletDepositStatus? status = null)
     {
         var deposits = await _repository.GetAllAsync(status);
         return deposits
             .Select(request => request.MapTo<WalletDepositResponse>())
             .ToList();
+    }
+
+    public async Task<CursorPageResponse<WalletDepositResponse>> GetAllCursorPageAsync(
+        WalletDepositFilter? filter,
+        long? cursor,
+        int? limit)
+    {
+        var take = NormalizeLimit(limit);
+        var deposits = await _repository.GetAllCursorPageAsync(
+            ToDepositStatuses(filter),
+            cursor,
+            take + 1);
+
+        return CursorPageMappings.ToCursorPage(
+            deposits,
+            take,
+            request => request.MapTo<WalletDepositResponse>(),
+            request => request.Id);
     }
 
     public async Task<WalletDepositResponse> CreateAsync(UserContext context, decimal amount)
@@ -184,4 +225,29 @@ public sealed class WalletDepositService
 
         return $"GTU-{datePart}-{randomPart}";
     }
+
+    private static IReadOnlyCollection<WalletDepositStatus>? ToDepositStatuses(WalletDepositFilter? filter)
+    {
+        return filter switch
+        {
+            WalletDepositFilter.Active => [WalletDepositStatus.Pending, WalletDepositStatus.UserConfirmed],
+            WalletDepositFilter.Watching => [WalletDepositStatus.Pending, WalletDepositStatus.UserConfirmed],
+            WalletDepositFilter.Pending => [WalletDepositStatus.Pending],
+            WalletDepositFilter.UserConfirmed => [WalletDepositStatus.UserConfirmed],
+            WalletDepositFilter.Approved => [WalletDepositStatus.Approved],
+            WalletDepositFilter.Rejected => [WalletDepositStatus.Rejected],
+            _ => null
+        };
+    }
+
+    private static int NormalizeLimit(int? limit)
+    {
+        if (limit is null or <= 0)
+        {
+            return DefaultPageSize;
+        }
+
+        return Math.Min(limit.Value, MaxPageSize);
+    }
+
 }

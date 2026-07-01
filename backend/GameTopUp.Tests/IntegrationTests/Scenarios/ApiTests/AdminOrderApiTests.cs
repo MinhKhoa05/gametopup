@@ -29,13 +29,58 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync("/api/admin/orders");
 
-        var orders = await response.ShouldBeSuccess<List<AdminOrderResponse>>();
+        var orders = await response.ShouldBeSuccess<CursorPageResponse<AdminOrderResponse>>();
 
-        var order = orders.Should().ContainSingle().Subject;
+        var order = orders.Items.Should().ContainSingle().Subject;
 
         order.UserId.Should().Be(userId);
         order.PackageId.Should().Be(packageId);
         order.Status.Should().Be(OrderStatus.Pending);
+    }
+
+    [Fact]
+    public async Task GetOrderCursorPage_ShouldApplyFilter()
+    {
+        var pendingScenario = await Factory.SeedOrderScenarioAsync(order =>
+        {
+            order.Status = OrderStatus.Pending;
+        });
+
+        var processingScenario = await Factory.SeedOrderScenarioAsync(order =>
+        {
+            order.Status = OrderStatus.Processing;
+        });
+
+        await Factory.SeedOrderScenarioAsync(order =>
+        {
+            order.Status = OrderStatus.Completed;
+        });
+
+        var admin = await Factory.SeedAdminAsync();
+
+        using var client = CreateHeaderAuthenticatedClient(admin);
+
+        var response = await client.GetAsync("/api/admin/orders?filter=watching&limit=10");
+
+        var page = await response.ShouldBeSuccess<CursorPageResponse<AdminOrderResponse>>();
+
+        page.Items.Select(order => order.Id)
+            .Should()
+            .Equal(processingScenario.Order.Id, pendingScenario.Order.Id);
+        page.NextCursor.Should().BeNull();
+        page.HasMore.Should().BeFalse();
+
+        response = await client.GetAsync("/api/admin/orders?filter=pending&limit=10");
+
+        page = await response.ShouldBeSuccess<CursorPageResponse<AdminOrderResponse>>();
+
+        page.Items.Should().ContainSingle(order => order.Id == pendingScenario.Order.Id);
+
+        response = await client.GetAsync("/api/admin/orders?filter=processing&limit=10");
+
+        page = await response.ShouldBeSuccess<CursorPageResponse<AdminOrderResponse>>();
+
+        page.Items.Should().ContainSingle(order => order.Id == processingScenario.Order.Id);
     }
 
     [Fact]

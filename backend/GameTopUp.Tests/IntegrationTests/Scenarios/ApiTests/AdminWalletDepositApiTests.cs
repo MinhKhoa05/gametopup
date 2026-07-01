@@ -16,7 +16,7 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetDepositRequests_ShouldReturnRequestsAndFilterByStatus()
+    public async Task GetDepositRequests_ShouldReturnRequests()
     {
         var user = await Factory.SeedUserAsync();
         var pendingDeposit = await Factory.SeedWalletDepositAsync(user.Id);
@@ -32,16 +32,61 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
 
         var response = await client.GetAsync("/api/admin/deposits");
 
-        var depositRequests = await response.ShouldBeSuccess<List<WalletDepositResponse>>();
+        var depositRequests = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
 
-        depositRequests.Should().Contain(item => item.Id == pendingDeposit.Id);
-        depositRequests.Should().Contain(item => item.Id == confirmedDeposit.Id);
+        depositRequests.Items.Should().Contain(item => item.Id == pendingDeposit.Id);
+        depositRequests.Items.Should().Contain(item => item.Id == confirmedDeposit.Id);
+    }
 
-        response = await client.GetAsync($"/api/admin/deposits?status={WalletDepositStatus.Pending}");
+    [Fact]
+    public async Task GetDepositRequestCursorPage_ShouldApplyFilter()
+    {
+        var user = await Factory.SeedUserAsync();
 
-        var filteredDepositRequests = await response.ShouldBeSuccess<List<WalletDepositResponse>>();
+        var pendingDeposit = await Factory.SeedWalletDepositAsync(user.Id, deposit =>
+        {
+            deposit.Status = WalletDepositStatus.Pending;
+        });
 
-        filteredDepositRequests.Should().ContainSingle(item => item.Id == pendingDeposit.Id);
+        var confirmedDeposit = await Factory.SeedWalletDepositAsync(user.Id, deposit =>
+        {
+            deposit.Status = WalletDepositStatus.UserConfirmed;
+        });
+
+        await Factory.SeedWalletDepositAsync(user.Id, deposit =>
+        {
+            deposit.Status = WalletDepositStatus.Approved;
+        });
+
+        var admin = await Factory.SeedAdminAsync();
+
+        using var client = CreateHeaderAuthenticatedClient(admin);
+
+        var response = await client.GetAsync("/api/admin/deposits?filter=active&limit=10");
+
+        var page = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
+
+        page.Items.Select(deposit => deposit.Id).Should().Equal(confirmedDeposit.Id, pendingDeposit.Id);
+        page.NextCursor.Should().BeNull();
+        page.HasMore.Should().BeFalse();
+
+        response = await client.GetAsync("/api/admin/deposits?filter=watching&limit=10");
+
+        page = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
+
+        page.Items.Select(deposit => deposit.Id).Should().Equal(confirmedDeposit.Id, pendingDeposit.Id);
+
+        response = await client.GetAsync("/api/admin/deposits?filter=pending&limit=10");
+
+        page = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
+
+        page.Items.Should().ContainSingle(deposit => deposit.Id == pendingDeposit.Id);
+
+        response = await client.GetAsync("/api/admin/deposits?filter=userConfirmed&limit=10");
+
+        page = await response.ShouldBeSuccess<CursorPageResponse<WalletDepositResponse>>();
+
+        page.Items.Should().ContainSingle(deposit => deposit.Id == confirmedDeposit.Id);
     }
 
     [Fact]

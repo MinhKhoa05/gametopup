@@ -14,6 +14,14 @@ public sealed class ReviewDepositRequest
     public string? Note { get; set; }
 }
 
+public enum WalletTransactionFilter
+{
+    Deposit = 1,
+    Withdraw = 2,
+    PurchaseOrder = 3,
+    Refund = 4
+}
+
 public sealed class WalletTransactionResponse
 {
     public long Id { get; set; }
@@ -26,6 +34,16 @@ public sealed class WalletTransactionResponse
     public string? ReferenceId { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
+}
+
+public enum WalletDepositFilter
+{
+    Active = 0,
+    Pending = 1,
+    UserConfirmed = 2,
+    Approved = 3,
+    Rejected = 4,
+    Watching = 5
 }
 
 public sealed class WalletDepositResponse

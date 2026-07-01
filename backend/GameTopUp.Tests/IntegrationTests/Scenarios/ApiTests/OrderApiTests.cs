@@ -71,6 +71,94 @@ public sealed class OrderApiTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task GetOrderCursorPage_ShouldPaginateByCursor()
+    {
+        var user = await Factory.SeedUserAsync();
+
+        var game = await Factory.SeedGameAsync();
+        var package = await Factory.SeedPackageAsync(game.Id);
+
+        var firstOrder = await Factory.SeedOrderAsync(user.Id, package.Id, order =>
+        {
+            order.Status = OrderStatus.Pending;
+        });
+
+        var secondOrder = await Factory.SeedOrderAsync(user.Id, package.Id, order =>
+        {
+            order.Status = OrderStatus.Processing;
+        });
+
+        var thirdOrder = await Factory.SeedOrderAsync(user.Id, package.Id, order =>
+        {
+            order.Status = OrderStatus.Completed;
+        });
+
+        using var client = CreateHeaderAuthenticatedClient(user);
+
+        var response = await client.GetAsync("/api/orders?limit=2");
+
+        var firstPage = await response.ShouldBeSuccess<CursorPageResponse<OrderResponse>>();
+
+        firstPage.Items.Select(order => order.Id).Should().Equal(thirdOrder.Id, secondOrder.Id);
+        firstPage.NextCursor.Should().Be(secondOrder.Id);
+        firstPage.HasMore.Should().BeTrue();
+
+        response = await client.GetAsync($"/api/orders?cursor={firstPage.NextCursor}&limit=2");
+
+        var secondPage = await response.ShouldBeSuccess<CursorPageResponse<OrderResponse>>();
+
+        secondPage.Items.Should().ContainSingle(order => order.Id == firstOrder.Id);
+        secondPage.NextCursor.Should().BeNull();
+        secondPage.HasMore.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetOrderCursorPage_ShouldApplyFilter()
+    {
+        var user = await Factory.SeedUserAsync();
+
+        var game = await Factory.SeedGameAsync();
+        var package = await Factory.SeedPackageAsync(game.Id);
+
+        var pendingOrder = await Factory.SeedOrderAsync(user.Id, package.Id, order =>
+        {
+            order.Status = OrderStatus.Pending;
+        });
+
+        var processingOrder = await Factory.SeedOrderAsync(user.Id, package.Id, order =>
+        {
+            order.Status = OrderStatus.Processing;
+        });
+
+        await Factory.SeedOrderAsync(user.Id, package.Id, order =>
+        {
+            order.Status = OrderStatus.Completed;
+        });
+
+        using var client = CreateHeaderAuthenticatedClient(user);
+
+        var response = await client.GetAsync("/api/orders?filter=watching&limit=10");
+
+        var page = await response.ShouldBeSuccess<CursorPageResponse<OrderResponse>>();
+
+        page.Items.Select(order => order.Id).Should().Equal(processingOrder.Id, pendingOrder.Id);
+        page.NextCursor.Should().BeNull();
+        page.HasMore.Should().BeFalse();
+
+        response = await client.GetAsync("/api/orders?filter=pending&limit=10");
+
+        page = await response.ShouldBeSuccess<CursorPageResponse<OrderResponse>>();
+
+        page.Items.Should().ContainSingle(order => order.Id == pendingOrder.Id);
+
+        response = await client.GetAsync("/api/orders?filter=processing&limit=10");
+
+        page = await response.ShouldBeSuccess<CursorPageResponse<OrderResponse>>();
+
+        page.Items.Should().ContainSingle(order => order.Id == processingOrder.Id);
+    }
+
+    [Fact]
     public async Task GetOrderById_ShouldReturnForbidden_WhenOrderBelongsToAnotherUser()
     {
         var owner = await Factory.SeedUserAsync();

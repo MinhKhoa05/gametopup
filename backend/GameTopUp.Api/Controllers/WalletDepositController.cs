@@ -30,9 +30,12 @@ public sealed class WalletDepositController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetMyDepositRequests([FromQuery] WalletDepositStatus? status = null)
+    public async Task<IActionResult> GetMyDepositRequests(
+        [FromQuery] WalletDepositFilter? filter = null,
+        [FromQuery] long? cursor = null,
+        [FromQuery] int? limit = null)
     {
-        var requests = await _depositService.GetByUserAsync(CurrentUser, status);
+        var requests = await _depositService.GetByUserCursorPageAsync(CurrentUser, filter, cursor, limit);
         return ApiOk(requests);
     }
 

@@ -9,6 +9,9 @@ namespace GameTopUp.BLL.Services.Wallets;
 
 public sealed class WalletService
 {
+    private const int DefaultPageSize = 20;
+    private const int MaxPageSize = 100;
+
     private readonly IWalletRepository _walletRepository;
     private readonly IWalletTransactionRepository _transactionRepository;
 
@@ -45,6 +48,26 @@ public sealed class WalletService
     {
         var transactions = await _transactionRepository.GetByUserIdAsync(context.UserId);
         return transactions.Select(transaction => transaction.MapTo<WalletTransactionResponse>()).ToList();
+    }
+
+    public async Task<CursorPageResponse<WalletTransactionResponse>> GetTransactionCursorPageAsync(
+        UserContext context,
+        WalletTransactionFilter? filter,
+        long? cursor,
+        int? limit)
+    {
+        var take = NormalizeLimit(limit);
+        var transactions = await _transactionRepository.GetCursorPageByUserIdAsync(
+            context.UserId,
+            ToTransactionType(filter),
+            cursor,
+            take + 1);
+
+        return CursorPageMappings.ToCursorPage(
+            transactions,
+            take,
+            transaction => transaction.MapTo<WalletTransactionResponse>(),
+            transaction => transaction.Id);
     }
 
     public void EnsureSufficientBalance(Wallet wallet, decimal amount)
@@ -111,5 +134,27 @@ public sealed class WalletService
             ReferenceId = referenceId,
             CreatedAt = DateTimeOffset.UtcNow
         };
+    }
+
+    private static WalletTransactionType? ToTransactionType(WalletTransactionFilter? filter)
+    {
+        return filter switch
+        {
+            WalletTransactionFilter.Deposit => WalletTransactionType.Deposit,
+            WalletTransactionFilter.Withdraw => WalletTransactionType.Withdraw,
+            WalletTransactionFilter.PurchaseOrder => WalletTransactionType.PurchaseOrder,
+            WalletTransactionFilter.Refund => WalletTransactionType.Refund,
+            _ => null
+        };
+    }
+
+    private static int NormalizeLimit(int? limit)
+    {
+        if (limit is null or <= 0)
+        {
+            return DefaultPageSize;
+        }
+
+        return Math.Min(limit.Value, MaxPageSize);
     }
 }
