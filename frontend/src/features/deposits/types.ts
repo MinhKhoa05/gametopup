@@ -5,6 +5,14 @@ export enum WalletDepositStatus {
   Rejected = 4,
 }
 
+export type WalletDepositFilter =
+  | "active"
+  | "watching"
+  | "pending"
+  | "userConfirmed"
+  | "approved"
+  | "rejected";
+
 export type WalletDeposit = {
   id: number;
   amount: number;

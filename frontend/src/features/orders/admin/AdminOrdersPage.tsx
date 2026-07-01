@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useAuthUserQuery } from '@/features/auth/server';
+import type { AdminOrderFilter } from './api';
 import { useAdminOrdersPageState, useAdminOrdersSection } from './hooks';
 import { OrdersAdminPanel } from './components/OrdersAdminPanel';
 
 export function AdminOrdersPage() {
   const authQuery = useAuthUserQuery();
-  const section = useAdminOrdersSection();
-  const state = useAdminOrdersPageState(section.orders);
+  const [filter, setFilter] = useState<AdminOrderFilter>('watching');
+  const section = useAdminOrdersSection(filter);
+  const state = useAdminOrdersPageState(section.orders, filter, setFilter);
 
   return (
     <OrdersAdminPanel
@@ -16,6 +19,9 @@ export function AdminOrdersPage() {
       onCompleteOrder={section.completeOrder}
       onPickOrder={section.pickOrder}
       orders={section.orders}
+      hasMore={section.hasMore}
+      isLoadingMore={section.isLoadingMore}
+      onLoadMore={section.loadMore}
       state={state}
     />
   );

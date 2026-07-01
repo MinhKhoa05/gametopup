@@ -2,29 +2,29 @@ import { useMemo, useState } from "react";
 import { ArrowDownToLine, ArrowLeftRight, Coins, Wallet } from "lucide-react";
 
 import {
-  Button,
   Container,
   EmptyState,
   FilterChipGroup,
   GroupedList,
   IconBox,
+  LoadMoreButton,
   PageHero,
   PanelShell,
   SectionHeading,
   StatCard,
 } from "@/shared/components";
-import { useLoadMore } from "@/shared/hooks/useLoadMore";
-import { formatCurrency, formatGroupedDate } from "@/shared/lib/format";
+import { formatCurrency } from "@/shared/lib/format";
+import { groupItemsByDate } from "@/shared/lib/groupByDate";
 
 import { WalletBalanceCard } from "@/features/wallet/components/WalletBalanceCard";
 import { WalletTransactionItem } from "@/features/wallet/components/WalletTransactionItem";
-import { WalletTransactionType } from "@/features/wallet/types";
 import { WalletDepositDialog } from "@/features/deposits/components/WalletDepositDialog";
 import { WalletDepositItem } from "@/features/deposits/components/WalletDepositItem";
-import { WalletDepositStatus } from "@/features/deposits/types";
+import type { WalletDepositFilter } from "@/features/deposits/types";
 import { useAuthUserQuery } from "@/features/auth/server";
-import { useDepositRequestsQuery } from "../../deposits/server";
-import { useWalletBalanceQuery, useWalletTransactionsQuery } from "../server";
+import { useDepositRequestsCursorQuery } from "../../deposits/server";
+import { useWalletBalanceQuery, useWalletTransactionsCursorQuery } from "../server";
+import type { WalletTransactionFilter } from "../types";
 
 const HISTORY_TABS = [
   { label: "Biến động số dư", value: "ledger" },
@@ -34,75 +34,46 @@ const HISTORY_TABS = [
 type HistoryTab = (typeof HISTORY_TABS)[number]["value"];
 
 const TRANSACTION_FILTERS = [
-  { label: "Tất cả", value: "all" },
+  { label: "Tất cả", value: null },
   { label: "Nạp tiền", value: "deposit" },
   { label: "Hoàn tiền", value: "refund" },
   { label: "Thanh toán đơn", value: "purchaseOrder" },
 ] as const;
 
-type TransactionFilter = (typeof TRANSACTION_FILTERS)[number]["value"];
-
-const TRANSACTION_TYPE_BY_FILTER: Record<
-  Exclude<TransactionFilter, "all">,
-  WalletTransactionType
-> = {
-  deposit: WalletTransactionType.Deposit,
-  refund: WalletTransactionType.Refund,
-  purchaseOrder: WalletTransactionType.PurchaseOrder,
-};
+type TransactionFilter = WalletTransactionFilter | null;
 
 const DEPOSIT_FILTERS = [
-  { label: "Tất cả", value: "all" },
+  { label: "Tất cả", value: null },
   { label: "Đang chờ", value: "pending" },
-  { label: "Đã chuyển", value: "confirmed" },
+  { label: "Đã chuyển", value: "userConfirmed" },
   { label: "Đã duyệt", value: "approved" },
 ] as const;
 
-type DepositFilter = (typeof DEPOSIT_FILTERS)[number]["value"];
-
-const LOAD_MORE_SIZE = 10;
-
-const DEPOSIT_STATUS_BY_FILTER: Record<
-  Exclude<DepositFilter, "all">,
-  WalletDepositStatus
-> = {
-  pending: WalletDepositStatus.Pending,
-  confirmed: WalletDepositStatus.UserConfirmed,
-  approved: WalletDepositStatus.Approved,
-};
-
-type DatedItem = {
-  createdAt: string;
-};
-
-function groupByDay<T extends DatedItem>(items: T[]) {
-  const groups = new Map<string, T[]>();
-
-  items.forEach((item) => {
-    const label = formatGroupedDate(item.createdAt);
-    const current = groups.get(label) ?? [];
-    current.push(item);
-    groups.set(label, current);
-  });
-
-  return Array.from(groups, ([title, groupedItems]) => ({
-    title,
-    items: groupedItems,
-    countLabel: `${groupedItems.length} giao dịch`,
-  }));
-}
+type DepositFilter = WalletDepositFilter | null;
 
 export function WalletPage() {
   const userQuery = useAuthUserQuery();
   const isAuthenticated = userQuery.data !== null && userQuery.data !== undefined;
 
+  const [tab, setTab] = useState<HistoryTab>("ledger");
+  const [transactionFilter, setTransactionFilter] =
+    useState<TransactionFilter>(null);
+  const [depositFilter, setDepositFilter] = useState<DepositFilter>(null);
+  const [isDepositOpen, setDepositOpen] = useState(false);
+
   const balanceQuery = useWalletBalanceQuery(isAuthenticated);
-  const transactionsQuery = useWalletTransactionsQuery(isAuthenticated);
-  const depositsQuery = useDepositRequestsQuery(isAuthenticated);
+  const transactionsQuery = useWalletTransactionsCursorQuery(
+    transactionFilter,
+    isAuthenticated,
+  );
+  const depositsQuery = useDepositRequestsCursorQuery(
+    depositFilter,
+    isAuthenticated,
+  );
 
   const balance = balanceQuery.data ?? 0;
-  const transactions = transactionsQuery.data ?? [];
-  const deposits = depositsQuery.data ?? [];
+  const transactions = transactionsQuery.items;
+  const deposits = depositsQuery.items;
 
   const balanceLoading =
     balanceQuery.isPending && balanceQuery.data === undefined;
@@ -111,66 +82,14 @@ export function WalletPage() {
   const depositsLoading =
     depositsQuery.isPending && depositsQuery.data === undefined;
 
-  const [tab, setTab] = useState<HistoryTab>("ledger");
-  const [transactionFilter, setTransactionFilter] =
-    useState<TransactionFilter>("all");
-  const [depositFilter, setDepositFilter] = useState<DepositFilter>("all");
-  const [isDepositOpen, setDepositOpen] = useState(false);
-
-  const filteredTransactions = useMemo(() => {
-    if (transactionFilter === "all") return transactions;
-
-    return transactions.filter(
-      (transaction) =>
-        transaction.type === TRANSACTION_TYPE_BY_FILTER[transactionFilter],
-    );
-  }, [transactionFilter, transactions]);
-
-  const {
-    visibleCount: visibleTransactionCount,
-    hasMore: hasMoreTransactions,
-    loadMore: loadMoreTransactions,
-    reset: resetVisibleTransactions,
-  } = useLoadMore({
-    totalCount: filteredTransactions.length,
-    pageSize: LOAD_MORE_SIZE,
-  });
-
-  const visibleTransactions = useMemo(
-    () => filteredTransactions.slice(0, visibleTransactionCount),
-    [filteredTransactions, visibleTransactionCount],
-  );
-
   const transactionGroups = useMemo(
-    () => groupByDay(visibleTransactions),
-    [visibleTransactions],
-  );
-
-  const filteredDeposits = useMemo(() => {
-    return deposits.filter((deposit) => {
-      if (depositFilter === "all") return true;
-      return deposit.status === DEPOSIT_STATUS_BY_FILTER[depositFilter];
-    });
-  }, [depositFilter, deposits]);
-
-  const {
-    visibleCount: visibleDepositCount,
-    hasMore: hasMoreDeposits,
-    loadMore: loadMoreDeposits,
-    reset: resetVisibleDeposits,
-  } = useLoadMore({
-    totalCount: filteredDeposits.length,
-    pageSize: LOAD_MORE_SIZE,
-  });
-
-  const visibleDeposits = useMemo(
-    () => filteredDeposits.slice(0, visibleDepositCount),
-    [filteredDeposits, visibleDepositCount],
+    () => groupItemsByDate(transactions, (count) => `${count} giao dịch`),
+    [transactions],
   );
 
   const depositGroups = useMemo(
-    () => groupByDay(visibleDeposits),
-    [visibleDeposits],
+    () => groupItemsByDate(deposits, (count) => `${count} giao dịch`),
+    [deposits],
   );
 
   const transactionFilterLabel =
@@ -256,17 +175,15 @@ export function WalletPage() {
                     <FilterChipGroup
                       items={TRANSACTION_FILTERS}
                       value={transactionFilter}
-                      onChange={(value) => {
-                        setTransactionFilter(value as TransactionFilter);
-                        resetVisibleTransactions();
-                      }}
+                      tone="muted"
+                      onChange={(value) => setTransactionFilter(value as TransactionFilter)}
                     />
 
                     {transactionGroups.length === 0 ? (
                       <EmptyState
                         title="Không có giao dịch phù hợp"
                         description={
-                          transactionFilter === "all"
+                          transactionFilter === null
                             ? "Các biến động số dư sẽ xuất hiện tại đây."
                             : `Chưa có giao dịch ${transactionFilterLabel.toLowerCase()} trong ví.`
                         }
@@ -282,39 +199,31 @@ export function WalletPage() {
                           )}
                         />
 
-                        {hasMoreTransactions ? (
-                          <div className="flex justify-center pt-1">
-                            <Button
-                              variant="outline"
-                              onClick={loadMoreTransactions}
-                            >
-                              Xem thêm
-                            </Button>
-                          </div>
-                        ) : null}
+                        <LoadMoreButton
+                          hasMore={transactionsQuery.hasMore}
+                          isLoading={transactionsQuery.isLoadingMore}
+                          onLoadMore={transactionsQuery.loadMore}
+                        />
                       </div>
                     )}
                   </div>
-                ) : deposits.length === 0 ? (
-                  <EmptyState
-                    title="Chưa có yêu cầu nạp"
-                    description="Các yêu cầu nạp tiền sẽ xuất hiện tại đây."
-                  />
                 ) : (
                   <div className="space-y-5">
                     <FilterChipGroup
                       items={DEPOSIT_FILTERS}
                       value={depositFilter}
-                      onChange={(value) => {
-                        setDepositFilter(value as DepositFilter);
-                        resetVisibleDeposits();
-                      }}
+                      tone="muted"
+                      onChange={(value) => setDepositFilter(value as DepositFilter)}
                     />
 
                     {depositGroups.length === 0 ? (
                       <EmptyState
-                        title="Không có yêu cầu phù hợp"
-                        description="Thử đổi bộ lọc để xem các yêu cầu khác."
+                        title={depositFilter === null ? "Chưa có yêu cầu nạp" : "Không có yêu cầu phù hợp"}
+                        description={
+                          depositFilter === null
+                            ? "Các yêu cầu nạp tiền sẽ xuất hiện tại đây."
+                            : "Thử đổi bộ lọc để xem các yêu cầu khác."
+                        }
                       />
                     ) : (
                       <div className="space-y-5">
@@ -327,13 +236,11 @@ export function WalletPage() {
                           )}
                         />
 
-                        {hasMoreDeposits ? (
-                          <div className="flex justify-center pt-1">
-                            <Button variant="outline" onClick={loadMoreDeposits}>
-                              Xem thêm
-                            </Button>
-                          </div>
-                        ) : null}
+                        <LoadMoreButton
+                          hasMore={depositsQuery.hasMore}
+                          isLoading={depositsQuery.isLoadingMore}
+                          onLoadMore={depositsQuery.loadMore}
+                        />
                       </div>
                     )}
                   </div>

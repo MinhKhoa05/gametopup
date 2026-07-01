@@ -4,19 +4,24 @@ import { toast } from "sonner";
 import {
   cancelOrder,
   createOrder,
+  getMyOrdersCursor,
   getMyOrders,
   getOrder,
   getOrderHistory,
 } from "./api";
+import type { Order, OrderFilter } from "./types";
 import { walletKeys } from "@/features/wallet/server";
+import { useCursorPageQuery } from "@/shared/hooks/useCursorPageQuery";
 
 const ORDERS_STALE_TIME = 1000 * 30;
 const ORDER_DETAIL_STALE_TIME = 1000 * 15;
 const ORDERS_GC_TIME = 1000 * 60 * 5;
+const ORDERS_PAGE_SIZE = 10;
 
 export const orderKeys = {
   all: ["orders"] as const,
   myOrders: ["orders", "my"] as const,
+  cursor: (filter: OrderFilter | null) => ["orders", "cursor", filter] as const,
   detail: (orderId: number | null) => ["orders", "detail", orderId] as const,
   history: (orderId: number | null) => ["orders", "history", orderId] as const,
 };
@@ -24,7 +29,7 @@ export const orderKeys = {
 export function useMyOrdersQuery() {
   return useQuery({
     queryKey: orderKeys.myOrders,
-    queryFn: getMyOrders,
+    queryFn: () => getMyOrders(),
     staleTime: ORDERS_STALE_TIME,
     gcTime: ORDERS_GC_TIME,
     refetchOnWindowFocus: false,
@@ -33,12 +38,27 @@ export function useMyOrdersQuery() {
 }
 
 export function useRecentOrders(limit = 5) {
-  const query = useMyOrdersQuery();
+  return useQuery({
+    queryKey: [...orderKeys.myOrders, "recent", limit] as const,
+    queryFn: () => getMyOrders(limit),
+    staleTime: ORDERS_STALE_TIME,
+    gcTime: ORDERS_GC_TIME,
+    refetchOnWindowFocus: false,
+    meta: { persist: true },
+  });
+}
 
-  return {
-    ...query,
-    data: query.data?.slice(0, limit),
-  };
+export function useMyOrdersCursorQuery(filter: OrderFilter | null, enabled = true) {
+  return useCursorPageQuery<Order>({
+    queryKey: orderKeys.cursor(filter),
+    queryFn: (cursor) =>
+      getMyOrdersCursor({ cursor, filter, limit: ORDERS_PAGE_SIZE }),
+    enabled,
+    staleTime: ORDERS_STALE_TIME,
+    gcTime: ORDERS_GC_TIME,
+    refetchOnWindowFocus: false,
+    persist: true,
+  });
 }
 
 export function useOrderQuery(orderId: number | null) {

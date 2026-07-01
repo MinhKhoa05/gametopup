@@ -1,10 +1,15 @@
 import { api } from '@/shared/api/client';
+import { getCursorPage } from '@/shared/api/pagination';
 import type { ApiResponse } from '@/shared/types/api';
-import type { AdminDepositRequest } from '@/features/deposits/types';
+import type { CursorParams } from '@/shared/types/pagination';
+import type { AdminDepositRequest, WalletDepositFilter } from '@/features/deposits/types';
 
 export const adminDepositsKeys = {
   all: ['admin', 'deposits'] as const,
+  cursor: (filter: AdminDepositFilter) => ['admin', 'deposits', 'cursor', filter] as const,
 };
+
+export type AdminDepositFilter = WalletDepositFilter | null;
 
 export type AdminDepositReviewInput = {
   note?: string;
@@ -16,9 +21,18 @@ function buildDepositReviewBody(note?: string) {
   return trimmedNote ? { note: trimmedNote } : {};
 }
 
-export async function getAdminDepositRequests() {
-  const response = await api.get<ApiResponse<AdminDepositRequest[]>>('/api/admin/deposits');
-  return response.data.data;
+export type AdminDepositCursorParams = CursorParams<WalletDepositFilter>;
+
+export async function getAdminDepositRequestsCursor(params: AdminDepositCursorParams = {}) {
+  return getCursorPage<AdminDepositRequest, WalletDepositFilter>(
+    '/api/admin/deposits',
+    params,
+  );
+}
+
+export async function getAdminDepositRequests(limit?: number) {
+  const page = await getAdminDepositRequestsCursor({ limit });
+  return page.items;
 }
 
 export async function approveAdminDepositRequest(payload: AdminDepositReviewInput) {

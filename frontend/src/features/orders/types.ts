@@ -6,6 +6,13 @@ export enum OrderStatus {
   Cancelled = 4,
 }
 
+export type OrderFilter =
+  | "watching"
+  | "pending"
+  | "processing"
+  | "completed"
+  | "cancelled";
+
 // UI-only type for timeline rendering
 export type OrderTimelineState = 'complete' | 'current' | 'danger' | 'upcoming';
 

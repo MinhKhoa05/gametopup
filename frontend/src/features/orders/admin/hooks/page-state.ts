@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
 import type { AdminOrder } from '@/features/orders/types';
+import type { AdminOrderFilter } from '../api';
 
-type OrderFilter = 'active' | 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
-
-const ORDER_FILTER_OPTIONS: Array<{ key: OrderFilter; label: string }> = [
-  { key: 'active', label: 'Cần xử lý' },
-  { key: 'all', label: 'Tất cả' },
+const ORDER_FILTER_OPTIONS: Array<{ key: AdminOrderFilter; label: string }> = [
+  { key: 'watching', label: 'Cần xử lý' },
+  { key: null, label: 'Tất cả' },
   { key: 'pending', label: 'Chờ xử lý' },
   { key: 'processing', label: 'Đang xử lý' },
   { key: 'completed', label: 'Thành công' },
@@ -19,30 +18,30 @@ const ORDER_STATUS_LABEL_BY_STATUS: Record<number, string> = {
   4: 'Đã hủy',
 };
 
-export function useAdminOrdersPageState(orders: AdminOrder[]) {
+export function useAdminOrdersPageState(
+  orders: AdminOrder[],
+  filter: AdminOrderFilter,
+  setFilter: (filter: AdminOrderFilter) => void,
+) {
   const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<OrderFilter>('active');
 
   const filteredOrders = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return orders.filter((order) => {
-      const matchesFilter =
-        (filter === 'active' && (order.status === 1 || order.status === 2)) ||
-        filter === 'all' ||
-        (filter === 'pending' && order.status === 1) ||
-        (filter === 'processing' && order.status === 2) ||
-        (filter === 'completed' && order.status === 3) ||
-        (filter === 'cancelled' && order.status === 4);
+    if (!normalizedQuery) {
+      return orders;
+    }
 
-      if (!matchesFilter) return false;
-      if (!normalizedQuery) return true;
-
-      return [String(order.id), String(order.userId), String(order.packageId), order.gameAccountInfo, ORDER_STATUS_LABEL_BY_STATUS[order.status] ?? `Trạng thái ${order.status}`].some((value) =>
-        value.toLowerCase().includes(normalizedQuery),
-      );
-    });
-  }, [filter, orders, query]);
+    return orders.filter((order) =>
+      [
+        String(order.id),
+        String(order.userId),
+        String(order.packageId),
+        order.gameAccountInfo,
+        ORDER_STATUS_LABEL_BY_STATUS[order.status] ?? `Trạng thái ${order.status}`,
+      ].some((value) => value.toLowerCase().includes(normalizedQuery)),
+    );
+  }, [orders, query]);
 
   return {
     filters: ORDER_FILTER_OPTIONS,

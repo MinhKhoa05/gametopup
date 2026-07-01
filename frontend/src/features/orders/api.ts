@@ -1,16 +1,25 @@
 import { api } from '@/shared/api/client';
+import { getCursorPage } from '@/shared/api/pagination';
 import type { ApiResponse } from '@/shared/types/api';
+import type { CursorParams } from '@/shared/types/pagination';
 import type {
   CancelOrderInput,
   CreateOrderInput,
   CreateOrderResponse,
+  OrderFilter,
   OrderHistory,
   Order,
 } from './types';
 
-export async function getMyOrders() {
-  const response = await api.get<ApiResponse<Order[]>>('/api/orders');
-  return response.data.data;
+export type OrderCursorParams = CursorParams<OrderFilter>;
+
+export async function getMyOrdersCursor(params: OrderCursorParams = {}) {
+  return getCursorPage<Order, OrderFilter>('/api/orders', params);
+}
+
+export async function getMyOrders(limit?: number) {
+  const page = await getMyOrdersCursor({ limit });
+  return page.items;
 }
 
 export async function getOrder(orderId: number) {

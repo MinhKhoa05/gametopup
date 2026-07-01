@@ -2,37 +2,42 @@ import { CheckCircle2, CircleSlash, Send } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { AdminOrder } from '@/features/orders/types';
 import type { User } from '@/features/users/types';
-import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, ImageBox, LoadingState, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
+import { Badge, Button, DetailRow, EmptyState, FilterChipGroup, ImageBox, LoadMoreButton, LoadingState, MediaListItem, PanelShell, SearchBar, SectionHeading } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { OrderStatusBadge } from '@/features/orders/components/OrderStatusBadge';
 import { DEFAULT_IMAGE_SRC } from '@/shared/lib/image';
-
-type OrderFilter = 'active' | 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
+import type { AdminOrderFilter } from '../api';
 
 type OrdersAdminPanelState = {
-  filters: Array<{ key: OrderFilter; label: string }>;
-  filter: OrderFilter;
+  filters: Array<{ key: AdminOrderFilter; label: string }>;
+  filter: AdminOrderFilter;
   filteredOrders: AdminOrder[];
   query: string;
-  setFilter: (value: OrderFilter) => void;
+  setFilter: (value: AdminOrderFilter) => void;
   setQuery: (value: string) => void;
 };
 
 export function OrdersAdminPanel({
   busy,
   currentUser,
+  hasMore,
+  isLoadingMore,
   loading,
   onCancelOrder,
   onCompleteOrder,
+  onLoadMore,
   onPickOrder,
   orders,
   state,
 }: {
   busy: boolean;
   currentUser: User | null;
+  hasMore: boolean;
+  isLoadingMore: boolean;
   loading: boolean;
   onCancelOrder: (orderId: number) => Promise<void>;
   onCompleteOrder: (orderId: number) => Promise<void>;
+  onLoadMore: () => void;
   onPickOrder: (orderId: number) => Promise<void>;
   orders: AdminOrder[];
   state: OrdersAdminPanelState;
@@ -74,7 +79,7 @@ export function OrdersAdminPanel({
           <FilterChipGroup
             items={state.filters.map((option) => ({ value: option.key, label: option.label }))}
             value={state.filter}
-            onChange={(value) => state.setFilter(value as OrderFilter)}
+            onChange={(value) => state.setFilter(value as AdminOrderFilter)}
           />
 
           {loading ? (
@@ -98,6 +103,11 @@ export function OrdersAdminPanel({
                   />
                 );
               })}
+              <LoadMoreButton
+                hasMore={hasMore}
+                isLoading={isLoadingMore}
+                onLoadMore={onLoadMore}
+              />
             </div>
           ) : (
             <EmptyState title="Không tìm thấy đơn hàng phù hợp." description="Thử đổi từ khóa hoặc bộ lọc hiện tại." />

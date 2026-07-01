@@ -5,6 +5,12 @@ export enum WalletTransactionType {
   Refund = 4,
 }
 
+export type WalletTransactionFilter =
+  | "deposit"
+  | "withdraw"
+  | "purchaseOrder"
+  | "refund";
+
 export type WalletTransaction = {
   id: number;
   amount: number;

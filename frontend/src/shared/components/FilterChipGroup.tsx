@@ -3,7 +3,7 @@ import { classNames } from "@/shared/lib/classNames";
 import { FilterChip } from "./FilterChip";
 
 
-type FilterValue = string | number;
+type FilterValue = string | number | null;
 
 export type FilterChipGroupItem<T extends FilterValue> = {
   label: ReactNode;
@@ -17,6 +17,7 @@ type FilterChipGroupProps<T extends FilterValue> = {
 
   className?: string;
   ariaLabel?: string;
+  tone?: "primary" | "muted";
 };
 
 export function FilterChipGroup<T extends FilterValue>({
@@ -25,6 +26,7 @@ export function FilterChipGroup<T extends FilterValue>({
   onChange,
   className,
   ariaLabel,
+  tone = "primary",
 }: FilterChipGroupProps<T>) {
   return (
     <div
@@ -34,8 +36,9 @@ export function FilterChipGroup<T extends FilterValue>({
     >
       {items.map(({ value: itemValue, label }) => (
         <FilterChip
-          key={itemValue}
+          key={String(itemValue)}
           active={value === itemValue}
+          tone={tone}
           onClick={() => onChange(itemValue)}
         >
           {label}

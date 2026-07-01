@@ -4,61 +4,47 @@ import { STATUS_OPTIONS, useOrders } from "@/features/orders/hooks/useOrders";
 import { OrderListItem } from "@/features/orders/components/OrderListItem";
 import { OrderDetailDialog } from "../components/OrderDetailDialog";
 import {
-  Button,
   Container,
   EmptyState,
   FilterChipGroup,
   GroupedList,
   IconBox,
+  LoadMoreButton,
   LoadingState,
   PageHero,
   PanelShell,
   SearchBar,
   StatCard,
 } from "@/shared/components";
-import { formatCurrency, formatGroupedDate } from "@/shared/lib/format";
+import { formatCurrency } from "@/shared/lib/format";
+import { groupItemsByDate } from "@/shared/lib/groupByDate";
 import type { Order } from "@/features/orders/types";
 import { useOrderHistoryQuery } from "../server";
-
-function groupOrdersByDay(orders: Order[]) {
-  const groups = new Map<string, Order[]>();
-
-  orders.forEach((order) => {
-    const label = formatGroupedDate(order.createdAt);
-    const current = groups.get(label) ?? [];
-    current.push(order);
-    groups.set(label, current);
-  });
-
-  return Array.from(groups, ([title, items]) => ({
-    title,
-    items,
-    countLabel: `${items.length} đơn`,
-  }));
-}
 
 export function OrdersPage() {
   const {
     orders,
     filters,
     hasMoreOrders,
+    isLoadingMoreOrders,
     isLoading,
     isError,
     setFilters,
     loadMoreOrders,
-    resetVisibleOrders,
     stats,
   } = useOrders();
 
   function updateFilters(updater: (current: typeof filters) => typeof filters) {
     setFilters(updater);
-    resetVisibleOrders();
   }
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const { data: history = [], isFetching: historyLoading } =
     useOrderHistoryQuery(selectedOrder?.id ?? null);
-  const orderGroups = useMemo(() => groupOrdersByDay(orders), [orders]);
+  const orderGroups = useMemo(
+    () => groupItemsByDate(orders, (count) => `${count} đơn`),
+    [orders],
+  );
 
   const emptyDescription = filters.search
     ? "Không tìm thấy đơn hàng phù hợp."
@@ -169,13 +155,12 @@ export function OrdersPage() {
                     )}
                   />
 
-                  {hasMoreOrders ? (
-                    <div className="flex justify-center pt-2">
-                      <Button variant="outline" onClick={loadMoreOrders}>
-                        Xem thêm
-                      </Button>
-                    </div>
-                  ) : null}
+                  <LoadMoreButton
+                    className="pt-2"
+                    hasMore={hasMoreOrders}
+                    isLoading={isLoadingMoreOrders}
+                    onLoadMore={loadMoreOrders}
+                  />
                 </>
               )}
             </div>

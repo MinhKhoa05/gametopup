@@ -1,27 +1,29 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { AdminDepositRequest } from '@/features/deposits/types';
+import type { AdminDepositFilter } from '../api';
 
-type DepositRequestFilter = 'active' | 'all' | 'pending' | 'user-confirmed' | 'approved' | 'rejected';
-
-const DEPOSIT_REQUEST_FILTERS: Array<{ key: DepositRequestFilter; label: string }> = [
+const DEPOSIT_REQUEST_FILTERS: Array<{ key: AdminDepositFilter; label: string }> = [
   { key: 'active', label: 'Cần xử lý' },
-  { key: 'all', label: 'Tất cả' },
+  { key: null, label: 'Tất cả' },
   { key: 'pending', label: 'Chờ chuyển khoản' },
-  { key: 'user-confirmed', label: 'Đã xác nhận' },
+  { key: 'userConfirmed', label: 'Đã xác nhận' },
   { key: 'approved', label: 'Đã duyệt' },
   { key: 'rejected', label: 'Đã từ chối' },
 ];
 
 export function useAdminDepositRequestsPageState({
+  filter,
   onApproveRequest,
   onRejectRequest,
   requests,
+  setFilter,
 }: {
+  filter: AdminDepositFilter;
   onApproveRequest: (payload: { note?: string; requestId: number }) => Promise<void>;
   onRejectRequest: (payload: { note?: string; requestId: number }) => Promise<void>;
   requests: AdminDepositRequest[];
+  setFilter: (filter: AdminDepositFilter) => void;
 }) {
-  const [filter, setFilter] = useState<DepositRequestFilter>('active');
   const [query, setQuery] = useState('');
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
   const [reviewNote, setReviewNote] = useState('');
@@ -29,19 +31,12 @@ export function useAdminDepositRequestsPageState({
   const filteredRequests = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return requests.filter((request) => {
-      const matchesFilter =
-        (filter === 'active' && (request.status === 1 || request.status === 2)) ||
-        filter === 'all' ||
-        (filter === 'pending' && request.status === 1) ||
-        (filter === 'user-confirmed' && request.status === 2) ||
-        (filter === 'approved' && request.status === 3) ||
-        (filter === 'rejected' && request.status === 4);
+    if (!normalizedQuery) {
+      return requests;
+    }
 
-      if (!matchesFilter) return false;
-      if (!normalizedQuery) return true;
-
-      return [
+    return requests.filter((request) =>
+      [
         String(request.id),
         String(request.userId),
         String(request.amount),
@@ -49,9 +44,9 @@ export function useAdminDepositRequestsPageState({
       ]
         .join(' ')
         .toLowerCase()
-        .includes(normalizedQuery);
-    });
-  }, [filter, query, requests]);
+        .includes(normalizedQuery),
+    );
+  }, [query, requests]);
 
   const selectedRequest = requests.find((request) => request.id === selectedRequestId) ?? null;
 

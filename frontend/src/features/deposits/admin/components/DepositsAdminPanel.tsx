@@ -5,6 +5,7 @@ import {
   DetailRow,
   EmptyState,
   FilterChipGroup,
+  LoadMoreButton,
   LoadingState,
   MediaListItem,
   PanelShell,
@@ -14,20 +15,13 @@ import {
 import { formatCurrency, formatDate } from "@/shared/lib/format";
 import { classNames } from "@/shared/lib/classNames";
 import type { AdminDepositRequest } from "@/features/deposits/types";
-
-type DepositRequestFilter =
-  | "active"
-  | "all"
-  | "pending"
-  | "user-confirmed"
-  | "approved"
-  | "rejected";
+import type { AdminDepositFilter } from "../api";
 
 type DepositRequestsAdminPanelState = {
   clearSelection: () => void;
-  filter: DepositRequestFilter;
+  filter: AdminDepositFilter;
   filteredRequests: AdminDepositRequest[];
-  filters: Array<{ key: DepositRequestFilter; label: string }>;
+  filters: Array<{ key: AdminDepositFilter; label: string }>;
   query: string;
   resetFilters: () => void;
   reviewNote: string;
@@ -38,19 +32,25 @@ type DepositRequestsAdminPanelState = {
   ) => Promise<void>;
   selectedRequest: AdminDepositRequest | null;
   selectRequest: (request: AdminDepositRequest) => void;
-  setFilter: (value: DepositRequestFilter) => void;
+  setFilter: (value: AdminDepositFilter) => void;
   setQuery: (value: string) => void;
   setReviewNote: (value: string) => void;
 };
 
 export function DepositsAdminPanel({
   busy,
+  hasMore,
+  isLoadingMore,
   loading,
+  onLoadMore,
   requests,
   state,
 }: {
   busy: boolean;
+  hasMore: boolean;
+  isLoadingMore: boolean;
   loading: boolean;
+  onLoadMore: () => void;
   requests: AdminDepositRequest[];
   state: DepositRequestsAdminPanelState;
 }) {
@@ -96,7 +96,7 @@ export function DepositsAdminPanel({
               label: item.label,
             }))}
             value={state.filter}
-            onChange={(value) => state.setFilter(value as DepositRequestFilter)}
+            onChange={(value) => state.setFilter(value as AdminDepositFilter)}
           />
 
           {loading && state.filteredRequests.length === 0 ? (
@@ -106,7 +106,7 @@ export function DepositsAdminPanel({
               description="Không có yêu cầu nào khớp với bộ lọc hiện tại."
               title="Chưa có yêu cầu nạp tiền phù hợp."
             >
-              {(state.query.trim() || state.filter !== "all") && (
+              {(state.query.trim() || state.filter !== null) && (
                 <div className="mt-4 flex justify-center">
                   <button
                     className="gt-button gt-button-primary"
@@ -155,6 +155,11 @@ export function DepositsAdminPanel({
                   />
                 );
               })}
+              <LoadMoreButton
+                hasMore={hasMore}
+                isLoading={isLoadingMore}
+                onLoadMore={onLoadMore}
+              />
             </div>
           )}
         </div>
