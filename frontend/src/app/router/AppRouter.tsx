@@ -14,7 +14,7 @@ import { ProfilePage } from '@/features/users/pages/ProfilePage';
 const PackageAdminPage = lazy(() => import('@/features/packages/pages/PackageAdminPage').then((module) => ({ default: module.PackageAdminPage })));
 
 const AdminLayoutPage = lazy(() => import('@/features/admin/pages/AdminLayoutPage').then((module) => ({ default: module.AdminLayoutPage })));
-const AdminDashboardPage = lazy(() => import('@/features/admin/dashboard/pages/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })));
+const DashboardAdminPage = lazy(() => import('@/features/dashboard/pages/DashboardAdminPage').then((module) => ({ default: module.DashboardAdminPage })));
 const UserAdminPage = lazy(() => import('@/features/users/pages/UserAdminPage').then((module) => ({ default: module.UserAdminPage })));
 const GameAdminPage = lazy(() => import('@/features/games/pages/GameAdminPage').then((module) => ({ default: module.GameAdminPage })));
 const AdminOrdersPage = lazy(() => import('@/features/orders/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })));
@@ -65,7 +65,7 @@ export function AppRouter() {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<AdminDashboardPage />} />
+        <Route path="dashboard" element={<DashboardAdminPage />} />
         <Route path="users" element={<UserAdminPage />} />
         <Route path="games" element={<GameAdminPage />} />
         <Route path="packages" element={<Navigate to="../games" replace />} />
