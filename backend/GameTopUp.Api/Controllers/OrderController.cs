@@ -37,6 +37,13 @@ public sealed class OrderController : ApiControllerBase
         return ApiOk(orders);
     }
 
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetOrderStats()
+    {
+        var stats = await _orderReadService.GetOrderStatsAsync(CurrentUser);
+        return ApiOk(stats);
+    }
+
     [HttpGet("{orderId}")]
     public async Task<IActionResult> GetOrderById(long orderId)
     {

@@ -66,6 +66,11 @@ public sealed class OrderReadService
         return BuildOrderResponse(order);
     }
 
+    public async Task<OrderStatsResponse> GetOrderStatsAsync(UserContext actor)
+    {
+        return await _orderQuery.GetOrderStatsByUserAsync(actor.UserId);
+    }
+
     public async Task<List<OrderHistoryResponse>> GetOrderHistoryAsync(UserContext actor, long orderId)
     {
         await EnsureOrderAccessUser(actor, orderId);

@@ -55,6 +55,30 @@ public sealed class OrderQuery
             });
     }
 
+    public async Task<OrderStatsResponse> GetOrderStatsByUserAsync(long userId)
+    {
+        var sql =
+            """
+            SELECT
+                COUNT(*) AS total_orders,
+                COALESCE(SUM(CASE WHEN status IN @WatchingStatuses THEN 1 ELSE 0 END), 0) AS watching_orders,
+                COALESCE(SUM(CASE WHEN status = @CompletedStatus THEN 1 ELSE 0 END), 0) AS completed_orders,
+                COALESCE(SUM(CASE WHEN status <> @CancelledStatus THEN package_price ELSE 0 END), 0) AS total_spent
+            FROM orders
+            WHERE user_id = @UserId
+            """;
+
+        return await _database.QueryFirstOrDefaultAsync<OrderStatsResponse>(
+            sql,
+            new
+            {
+                UserId = userId,
+                WatchingStatuses = new[] { OrderStatus.Pending, OrderStatus.Processing },
+                CompletedStatus = OrderStatus.Completed,
+                CancelledStatus = OrderStatus.Cancelled
+            }) ?? new OrderStatsResponse();
+    }
+
     public async Task<List<OrderQueryRow>> GetOrdersAsync(
         OrderStatus[]? statuses,
         long? cursor,
@@ -113,4 +137,12 @@ public sealed class OrderQueryRow
     public OrderStatus Status { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+}
+
+public sealed class OrderStatsResponse
+{
+    public long TotalOrders { get; set; }
+    public long WatchingOrders { get; set; }
+    public long CompletedOrders { get; set; }
+    public decimal TotalSpent { get; set; }
 }

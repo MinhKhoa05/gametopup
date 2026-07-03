@@ -3,6 +3,7 @@ using FluentAssertions;
 using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Queries;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 
@@ -159,6 +160,57 @@ public sealed class OrderApiTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task GetOrderStats_ShouldReturnCurrentUserOverview()
+    {
+        var user = await Factory.SeedUserAsync();
+        var otherUser = await Factory.SeedUserAsync();
+
+        var game = await Factory.SeedGameAsync();
+        var package = await Factory.SeedPackageAsync(game.Id);
+
+        await Factory.SeedOrderAsync(user.Id, package.Id, order =>
+        {
+            order.Status = OrderStatus.Pending;
+            order.PackagePrice = 100_000m;
+        });
+
+        await Factory.SeedOrderAsync(user.Id, package.Id, order =>
+        {
+            order.Status = OrderStatus.Processing;
+            order.PackagePrice = 200_000m;
+        });
+
+        await Factory.SeedOrderAsync(user.Id, package.Id, order =>
+        {
+            order.Status = OrderStatus.Completed;
+            order.PackagePrice = 300_000m;
+        });
+
+        await Factory.SeedOrderAsync(user.Id, package.Id, order =>
+        {
+            order.Status = OrderStatus.Cancelled;
+            order.PackagePrice = 400_000m;
+        });
+
+        await Factory.SeedOrderAsync(otherUser.Id, package.Id, order =>
+        {
+            order.Status = OrderStatus.Completed;
+            order.PackagePrice = 999_000m;
+        });
+
+        using var client = CreateHeaderAuthenticatedClient(user);
+
+        var response = await client.GetAsync("/api/orders/stats");
+
+        var stats = await response.ShouldBeSuccess<OrderStatsResponse>();
+
+        stats.TotalOrders.Should().Be(4);
+        stats.WatchingOrders.Should().Be(2);
+        stats.CompletedOrders.Should().Be(1);
+        stats.TotalSpent.Should().Be(600_000m);
+    }
+
+    [Fact]
     public async Task GetOrderById_ShouldReturnForbidden_WhenOrderBelongsToAnotherUser()
     {
         var owner = await Factory.SeedUserAsync();
@@ -283,6 +335,10 @@ public sealed class OrderApiTests : BaseIntegrationTest
         var getResponse = await Client.GetAsync("/api/orders/1");
 
         getResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        var statsResponse = await Client.GetAsync("/api/orders/stats");
+
+        statsResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
         var cancelResponse = await Client.PostAsync("/api/orders/1/cancel", null);
 
