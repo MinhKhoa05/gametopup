@@ -1,5 +1,6 @@
 import { classNames } from "@/shared/lib/classNames";
-import brandLogoSrc from "@/assets/brand/logo.svg";
+
+const brandLogoSrc = "/logo.svg";
 
 type BrandLogoProps = {
   className?: string;
