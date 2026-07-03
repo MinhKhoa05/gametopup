@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getWalletBalance, getWalletTransactions } from './api';
+import { getWalletBalance, getWalletStats, getWalletTransactions } from './api';
 import type { WalletTransaction, WalletTransactionFilter } from './types';
 import { useCursorPageQuery } from '@/shared/hooks/useCursorPageQuery';
 
@@ -12,6 +12,7 @@ const WALLET_GC_TIME = 1000 * 60 * 5;
 export const walletKeys = {
   all: ['wallet'] as const,
   balance: ['wallet', 'balance'] as const,
+  stats: ['wallet', 'stats'] as const,
   transactions: (filter: WalletTransactionFilter | null) =>
     ['wallet', 'transactions', 'list', filter] as const,
 };
@@ -20,6 +21,18 @@ export function useWalletBalanceQuery(enabled = true) {
   return useQuery({
     queryKey: walletKeys.balance,
     queryFn: getWalletBalance,
+    enabled,
+    staleTime: WALLET_BALANCE_STALE_TIME,
+    gcTime: WALLET_GC_TIME,
+    refetchOnWindowFocus: false,
+    meta: { persist: true },
+  });
+}
+
+export function useWalletStatsQuery(enabled = true) {
+  return useQuery({
+    queryKey: walletKeys.stats,
+    queryFn: getWalletStats,
     enabled,
     staleTime: WALLET_BALANCE_STALE_TIME,
     gcTime: WALLET_GC_TIME,

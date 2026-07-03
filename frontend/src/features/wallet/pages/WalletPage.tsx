@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowDownToLine, ArrowLeftRight, Coins, Wallet } from "lucide-react";
+import { ArrowLeftRight, BadgeCheck, Coins, ShoppingCart, Wallet } from "lucide-react";
 
 import {
   Container,
@@ -23,7 +23,7 @@ import { WalletDepositItem } from "@/features/deposits/components/WalletDepositI
 import type { WalletDepositFilter } from "@/features/deposits/types";
 import { useAuthUserQuery } from "@/features/auth/server";
 import { useDepositRequestsQuery } from "../../deposits/server";
-import { useWalletBalanceQuery, useWalletTransactionsQuery } from "../server";
+import { useWalletBalanceQuery, useWalletStatsQuery, useWalletTransactionsQuery } from "../server";
 import type { WalletTransactionFilter } from "../types";
 
 const HISTORY_TABS = [
@@ -61,6 +61,7 @@ export function WalletPage() {
   const [depositFilter, setDepositFilter] = useState<DepositFilter>(null);
   const [isDepositOpen, setDepositOpen] = useState(false);
 
+  const statsQuery = useWalletStatsQuery(isAuthenticated);
   const balanceQuery = useWalletBalanceQuery(isAuthenticated);
   const transactionsQuery = useWalletTransactionsQuery(
     transactionFilter,
@@ -71,10 +72,13 @@ export function WalletPage() {
     isAuthenticated,
   );
 
+  const stats = statsQuery.data;
   const balance = balanceQuery.data ?? 0;
   const transactions = transactionsQuery.items;
   const deposits = depositsQuery.items;
 
+  const statsLoading =
+    statsQuery.isPending && statsQuery.data === undefined;
   const balanceLoading =
     balanceQuery.isPending && balanceQuery.data === undefined;
   const transactionsLoading =
@@ -124,13 +128,21 @@ export function WalletPage() {
             onDeposit={() => setDepositOpen(true)}
           />
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               compact
               tone="success"
               icon={<Coins size={20} />}
-              label="Số dư"
-              value={balanceLoading ? "..." : formatCurrency(balance)}
+              label="Tổng đã nạp"
+              value={statsLoading ? "..." : formatCurrency(stats?.totalDeposited ?? 0)}
+            />
+
+            <StatCard
+              compact
+              tone="warning"
+              icon={<ShoppingCart size={20} />}
+              label="Tổng đã chi"
+              value={statsLoading ? "..." : formatCurrency(stats?.totalSpent ?? 0)}
             />
 
             <StatCard
@@ -138,15 +150,15 @@ export function WalletPage() {
               tone="primary"
               icon={<ArrowLeftRight size={20} />}
               label="Giao dịch"
-              value={transactionsLoading ? "..." : transactions.length}
+              value={statsLoading ? "..." : (stats?.walletTransactions ?? 0)}
             />
 
             <StatCard
               compact
-              tone="warning"
-              icon={<ArrowDownToLine size={20} />}
-              label="Yêu cầu nạp"
-              value={depositsLoading ? "..." : deposits.length}
+              tone="success"
+              icon={<BadgeCheck size={20} />}
+              label="Nạp thành công"
+              value={statsLoading ? "..." : (stats?.successfulDeposits ?? 0)}
             />
           </div>
 

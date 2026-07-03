@@ -20,3 +20,10 @@ export type WalletTransaction = {
   referenceId: string | null;
   createdAt: string;
 };
+
+export type WalletStats = {
+  totalDeposited: number;
+  totalSpent: number;
+  walletTransactions: number;
+  successfulDeposits: number;
+};

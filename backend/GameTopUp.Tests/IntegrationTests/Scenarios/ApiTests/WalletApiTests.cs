@@ -1,6 +1,8 @@
 using System.Net;
 using FluentAssertions;
 using GameTopUp.BLL.Contracts;
+using GameTopUp.DAL.Entities;
+using GameTopUp.DAL.Queries;
 using GameTopUp.Tests.IntegrationTests.Extensions;
 using GameTopUp.Tests.IntegrationTests.Infrastructure;
 
@@ -111,6 +113,62 @@ public sealed class WalletApiTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task GetWalletStats_ShouldReturnCurrentUserOverview()
+    {
+        var user = await Factory.SeedUserAsync();
+        var otherUser = await Factory.SeedUserAsync();
+
+        await Factory.SeedWalletAsync(user.Id);
+        await Factory.SeedWalletAsync(otherUser.Id);
+
+        await Factory.SeedWalletTransactionAsync(user.Id, transaction =>
+        {
+            transaction.Type = WalletTransactionType.Deposit;
+            transaction.Amount = 500_000m;
+        });
+
+        await Factory.SeedWalletTransactionAsync(user.Id, transaction =>
+        {
+            transaction.Type = WalletTransactionType.PurchaseOrder;
+            transaction.Amount = -125_000m;
+        });
+
+        await Factory.SeedWalletTransactionAsync(user.Id, transaction =>
+        {
+            transaction.Type = WalletTransactionType.Refund;
+            transaction.Amount = 25_000m;
+        });
+
+        await Factory.SeedWalletTransactionAsync(otherUser.Id, transaction =>
+        {
+            transaction.Type = WalletTransactionType.Deposit;
+            transaction.Amount = 999_000m;
+        });
+
+        await Factory.SeedWalletDepositAsync(user.Id);
+        await Factory.SeedWalletDepositAsync(user.Id, deposit =>
+        {
+            deposit.Status = WalletDepositStatus.Approved;
+        });
+        await Factory.SeedWalletDepositAsync(user.Id, deposit =>
+        {
+            deposit.Status = WalletDepositStatus.Rejected;
+        });
+        await Factory.SeedWalletDepositAsync(otherUser.Id);
+
+        using var client = CreateHeaderAuthenticatedClient(user);
+
+        var response = await client.GetAsync("/api/wallet/stats");
+
+        var stats = await response.ShouldBeSuccess<WalletStatsResponse>();
+
+        stats.TotalDeposited.Should().Be(500_000m);
+        stats.TotalSpent.Should().Be(125_000m);
+        stats.WalletTransactions.Should().Be(3);
+        stats.SuccessfulDeposits.Should().Be(1);
+    }
+
+    [Fact]
     public async Task ProtectedEndpoints_ShouldReturnUnauthorized_WhenAnonymous()
     {
         var balanceResponse = await Client.GetAsync("/api/wallet");
@@ -120,5 +178,9 @@ public sealed class WalletApiTests : BaseIntegrationTest
         var transactionResponse = await Client.GetAsync("/api/wallet/transactions");
 
         transactionResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        var statsResponse = await Client.GetAsync("/api/wallet/stats");
+
+        statsResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }

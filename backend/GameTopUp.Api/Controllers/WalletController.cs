@@ -11,10 +11,12 @@ namespace GameTopUp.Api.Controllers;
 public sealed class WalletController : ApiControllerBase
 {
     private readonly WalletService _walletService;
+    private readonly WalletReadService _walletReadService;
 
-    public WalletController(WalletService walletService)
+    public WalletController(WalletService walletService, WalletReadService walletReadService)
     {
         _walletService = walletService;
+        _walletReadService = walletReadService;
     }
 
     [HttpGet]
@@ -22,6 +24,13 @@ public sealed class WalletController : ApiControllerBase
     {
         var balance = await _walletService.GetBalanceAsync(CurrentUser);
         return ApiOk(balance);
+    }
+
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats()
+    {
+        var stats = await _walletReadService.GetStatsAsync(CurrentUser);
+        return ApiOk(stats);
     }
 
     [HttpGet("transactions")]

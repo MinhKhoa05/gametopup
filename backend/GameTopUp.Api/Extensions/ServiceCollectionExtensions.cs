@@ -93,8 +93,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<TokenService>();
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<WalletService>();
+        services.AddScoped<WalletReadService>();
         services.AddScoped<WalletDepositService>();
         services.AddScoped<OrderQuery>();
+        services.AddScoped<WalletQuery>();
 
         services.AddScoped<IImageStorageService, LocalImageStorageService>();
         services.AddSingleton(sp =>
