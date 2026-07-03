@@ -39,6 +39,14 @@ export type OrderHistory = {
   createdAt: string;
 };
 
+// Mirrors OrderStatsResponse.cs
+export type OrderStats = {
+  totalOrders: number;
+  watchingOrders: number;
+  completedOrders: number;
+  totalSpent: number;
+};
+
 // Mirrors AdminOrderResponse.cs
 export type AdminOrder = {
   id: number;

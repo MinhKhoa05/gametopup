@@ -74,7 +74,7 @@ export function OrdersPage() {
               tone="warning"
               icon={<Activity size={20} />}
               label="Đang theo dõi"
-              value={stats.active}
+              value={stats?.watchingOrders ?? 0}
               supporting="Cần xử lý"
             />
 
@@ -83,8 +83,8 @@ export function OrdersPage() {
               tone="success"
               icon={<BadgeCheck size={20} />}
               label="Hoàn thành"
-              value={stats.completed}
-              supporting="Đã giao"
+              value={stats?.completedOrders ?? 0}
+              supporting="Nạp thành công"
             />
 
             <StatCard
@@ -92,7 +92,7 @@ export function OrdersPage() {
               tone="primary"
               icon={<Package size={20} />}
               label="Tổng đơn"
-              value={stats.total}
+              value={stats?.totalOrders ?? 0}
               supporting="Đơn hàng"
             />
 
@@ -101,7 +101,7 @@ export function OrdersPage() {
               tone="primary"
               icon={<Coins size={20} />}
               label="Tổng chi"
-              value={formatCurrency(stats.amount)}
+              value={formatCurrency(stats?.totalSpent ?? 0)}
               supporting="Đã thanh toán"
             />
           </div>

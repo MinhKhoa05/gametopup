@@ -7,6 +7,7 @@ import type {
   CreateOrderResponse,
   OrderFilter,
   OrderHistory,
+  OrderStats,
   Order,
 } from './types';
 
@@ -14,6 +15,11 @@ type OrderListParams = CursorParams<OrderFilter>;
 
 export async function getMyOrders(params: OrderListParams = {}) {
   return getCursorPage<Order, OrderFilter>('/api/orders', params);
+}
+
+export async function getMyOrderStats() {
+  const response = await api.get<ApiResponse<OrderStats>>('/api/orders/stats');
+  return response.data.data;
 }
 
 export async function createOrder(payload: CreateOrderInput) {

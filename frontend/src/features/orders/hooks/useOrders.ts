@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useMyOrdersQuery } from "@/features/orders/server";
+import { useMyOrderStatsQuery, useMyOrdersQuery } from "@/features/orders/server";
 import type { Order, OrderFilter } from "@/features/orders/types";
 import type { FilterChipGroupItem } from "@/shared/components";
 import { filterByQuery } from "@/shared/lib/search";
@@ -38,6 +38,7 @@ export function useOrders() {
   });
 
   const ordersQuery = useMyOrdersQuery(filters.status);
+  const statsQuery = useMyOrderStatsQuery();
 
   const orders = useMemo(() => {
     return filterByQuery(
@@ -46,13 +47,6 @@ export function useOrders() {
       getOrderSearchText,
     ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [ordersQuery.items, filters.search]);
-
-  const stats = {
-    active: orders.filter((order) => order.status === 1 || order.status === 2).length,
-    completed: orders.filter((order) => order.status === 3).length,
-    total: orders.length,
-    amount: orders.reduce((sum, order) => sum + order.packagePrice, 0),
-  };
 
   return {
     orders,
@@ -63,6 +57,6 @@ export function useOrders() {
     loadMoreOrders: ordersQuery.loadMore,
     isLoading: ordersQuery.isPending && ordersQuery.data === undefined,
     isError: ordersQuery.isError,
-    stats,
+    stats: statsQuery.data,
   };
 }

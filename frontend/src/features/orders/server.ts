@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import {
   createOrder,
+  getMyOrderStats,
   getMyOrders,
   getOrderHistory,
 } from "./api";
@@ -19,6 +20,7 @@ export const orderKeys = {
   all: ["orders"] as const,
   list: (filter: OrderFilter | null) => ["orders", "list", filter] as const,
   recent: (limit: number) => ["orders", "recent", limit] as const,
+  stats: () => ["orders", "stats"] as const,
   history: (orderId: number | null) => ["orders", "history", orderId] as const,
 };
 
@@ -46,6 +48,17 @@ export function useMyOrdersQuery(filter: OrderFilter | null, enabled = true) {
     gcTime: ORDERS_GC_TIME,
     refetchOnWindowFocus: false,
     persist: true,
+  });
+}
+
+export function useMyOrderStatsQuery() {
+  return useQuery({
+    queryKey: orderKeys.stats(),
+    queryFn: getMyOrderStats,
+    staleTime: ORDERS_STALE_TIME,
+    gcTime: ORDERS_GC_TIME,
+    refetchOnWindowFocus: false,
+    meta: { persist: true },
   });
 }
 
