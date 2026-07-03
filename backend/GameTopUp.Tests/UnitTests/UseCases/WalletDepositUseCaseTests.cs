@@ -60,7 +60,7 @@ public class WalletDepositUseCaseTests
     public async Task ConfirmDepositTransferAsync_ShouldBeIdempotent_WhenRequestWasAlreadyConfirmed()
     {
         var request = CreateDeposit(7, 100000m);
-        request.MarkUserConfirmed(DateTimeOffset.UtcNow);
+        request.MarkUserConfirmed();
 
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
@@ -106,7 +106,7 @@ public class WalletDepositUseCaseTests
     {
         WalletTransaction? createdTransaction = null;
         var request = CreateDeposit(7, 100000m);
-        request.MarkUserConfirmed(DateTimeOffset.UtcNow);
+        request.MarkUserConfirmed();
 
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
@@ -191,7 +191,7 @@ public class WalletDepositUseCaseTests
     public async Task ApproveDepositRequestAsync_ShouldNotPersistApprovalOrTransaction_WhenWalletDoesNotExist()
     {
         var request = CreateDeposit(7, 100000m);
-        request.MarkUserConfirmed(DateTimeOffset.UtcNow);
+        request.MarkUserConfirmed();
 
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
@@ -216,7 +216,7 @@ public class WalletDepositUseCaseTests
     public async Task ApproveDepositRequestAsync_ShouldNotPersistApproval_WhenWalletTransactionFails()
     {
         var request = CreateDeposit(7, 100000m);
-        request.MarkUserConfirmed(DateTimeOffset.UtcNow);
+        request.MarkUserConfirmed();
 
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
@@ -247,7 +247,7 @@ public class WalletDepositUseCaseTests
     public async Task RejectDepositRequestAsync_ShouldMarkRequestRejected()
     {
         var request = CreateDeposit(7, 100000m);
-        request.MarkUserConfirmed(DateTimeOffset.UtcNow);
+        request.MarkUserConfirmed();
 
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);

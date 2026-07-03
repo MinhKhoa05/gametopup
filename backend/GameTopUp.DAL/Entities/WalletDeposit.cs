@@ -31,15 +31,19 @@ public class WalletDeposit
 
     public DateTimeOffset UpdatedAt { get; set; }
 
-    public void MarkUserConfirmed(DateTimeOffset now)
+    public void MarkUserConfirmed()
     {
+        var now = DateTimeOffset.UtcNow;
+
         Status = WalletDepositStatus.UserConfirmed;
         UserConfirmedAt = now;
         UpdatedAt = now;
     }
 
-    public void MarkApproved(long reviewedBy, string? note, DateTimeOffset now)
+    public void MarkApproved(long reviewedBy, string? note)
     {
+        var now = DateTimeOffset.UtcNow;
+
         Status = WalletDepositStatus.Approved;
         ReviewedBy = reviewedBy;
         ReviewedAt = now;
@@ -47,8 +51,10 @@ public class WalletDeposit
         UpdatedAt = now;
     }
 
-    public void MarkRejected(long reviewedBy, string? note, DateTimeOffset now)
+    public void MarkRejected(long reviewedBy, string? note)
     {
+        var now = DateTimeOffset.UtcNow;
+
         Status = WalletDepositStatus.Rejected;
         ReviewedBy = reviewedBy;
         ReviewedAt = now;

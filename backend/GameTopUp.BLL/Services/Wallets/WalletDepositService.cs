@@ -109,7 +109,7 @@ public sealed class WalletDepositService
         return BuildPublicResponse(request);
     }
 
-    public WalletDeposit Confirm(WalletDeposit deposit, UserContext actor, DateTimeOffset now)
+    public WalletDeposit Confirm(WalletDeposit deposit, UserContext actor)
     {
         ArgumentNullException.ThrowIfNull(deposit);
         ArgumentNullException.ThrowIfNull(actor);
@@ -124,11 +124,11 @@ public sealed class WalletDepositService
             throw new BusinessException(ErrorCode.InvalidDepositStatus);
         }
 
-        deposit.MarkUserConfirmed(now);
+        deposit.MarkUserConfirmed();
         return deposit;
     }
 
-    public WalletDeposit Approve(WalletDeposit deposit, UserContext admin, DateTimeOffset now, string? note = null)
+    public WalletDeposit Approve(WalletDeposit deposit, UserContext admin, string? note = null)
     {
         ArgumentNullException.ThrowIfNull(deposit);
         ArgumentNullException.ThrowIfNull(admin);
@@ -138,11 +138,11 @@ public sealed class WalletDepositService
             throw new BusinessException(ErrorCode.InvalidDepositStatus);
         }
 
-        deposit.MarkApproved(admin.UserId, note, now);
+        deposit.MarkApproved(admin.UserId, note);
         return deposit;
     }
 
-    public WalletDeposit Reject(WalletDeposit deposit, UserContext admin, DateTimeOffset now, string? note = null)
+    public WalletDeposit Reject(WalletDeposit deposit, UserContext admin, string? note = null)
     {
         ArgumentNullException.ThrowIfNull(deposit);
         ArgumentNullException.ThrowIfNull(admin);
@@ -152,7 +152,7 @@ public sealed class WalletDepositService
             throw new BusinessException(ErrorCode.InvalidDepositStatus);
         }
 
-        deposit.MarkRejected(admin.UserId, note, now);
+        deposit.MarkRejected(admin.UserId, note);
 
         return deposit;
     }

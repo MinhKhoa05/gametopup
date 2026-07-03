@@ -25,7 +25,6 @@ public sealed class WalletDepositUseCase
     {
         await _transaction.ExecuteAsync(async () =>
         {
-            var now = DateTimeOffset.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);
 
             if (request.Status == WalletDepositStatus.UserConfirmed)
@@ -33,7 +32,7 @@ public sealed class WalletDepositUseCase
                 return;
             }
 
-            _depositService.Confirm(request, user, now);
+            _depositService.Confirm(request, user);
             await _depositService.UpdateAsync(request);
         });
     }
@@ -42,7 +41,6 @@ public sealed class WalletDepositUseCase
     {
         await _transaction.ExecuteAsync(async () =>
         {
-            var now = DateTimeOffset.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);
 
             if (request.Status == WalletDepositStatus.Approved)
@@ -50,7 +48,7 @@ public sealed class WalletDepositUseCase
                 return;
             }
 
-            _depositService.Approve(request, admin, now, note);
+            _depositService.Approve(request, admin, note);
             var wallet = await _walletService.LockByUserIdOrThrowAsync(request.UserId);
             var walletTransaction = _walletService.Credit(
                 wallet,
@@ -66,7 +64,6 @@ public sealed class WalletDepositUseCase
     {
         await _transaction.ExecuteAsync(async () =>
         {
-            var now = DateTimeOffset.UtcNow;
             var request = await _depositService.LockByIdOrThrowAsync(requestId);
 
             if (request.Status == WalletDepositStatus.Rejected)
@@ -74,7 +71,7 @@ public sealed class WalletDepositUseCase
                 return;
             }
 
-            _depositService.Reject(request, admin, now, note);
+            _depositService.Reject(request, admin, note);
             await _depositService.UpdateAsync(request);
         });
     }

@@ -144,7 +144,7 @@ public class WalletDepositServiceTests
     {
         var deposit = CreateDeposit(userId: 7);
 
-        _service.Confirm(deposit, MemberContext(7), DateTimeOffset.UtcNow);
+        _service.Confirm(deposit, MemberContext(7));
 
         deposit.Status.Should().Be(WalletDepositStatus.UserConfirmed);
         deposit.UserConfirmedAt.Should().NotBeNull();
@@ -155,7 +155,7 @@ public class WalletDepositServiceTests
     {
         var deposit = CreateDeposit(userId: 9);
 
-        var act = () => _service.Confirm(deposit, MemberContext(7), DateTimeOffset.UtcNow);
+        var act = () => _service.Confirm(deposit, MemberContext(7));
 
         act.Should()
             .Throw<ForbiddenException>()
@@ -168,7 +168,7 @@ public class WalletDepositServiceTests
         var deposit = CreateDeposit(userId: 7);
         deposit.Status = WalletDepositStatus.Approved;
 
-        var act = () => _service.Confirm(deposit, MemberContext(7), DateTimeOffset.UtcNow);
+        var act = () => _service.Confirm(deposit, MemberContext(7));
 
         act.Should()
             .Throw<BusinessException>()
@@ -179,9 +179,9 @@ public class WalletDepositServiceTests
     public void Approve_ShouldMarkDepositApproved_WhenConfirmed()
     {
         var deposit = CreateDeposit(userId: 7);
-        deposit.MarkUserConfirmed(DateTimeOffset.UtcNow);
+        deposit.MarkUserConfirmed();
 
-        _service.Approve(deposit, AdminContext(1), DateTimeOffset.UtcNow, "verified");
+        _service.Approve(deposit, AdminContext(1), "verified");
 
         deposit.Status.Should().Be(WalletDepositStatus.Approved);
         deposit.ReviewedBy.Should().Be(1);
@@ -194,7 +194,7 @@ public class WalletDepositServiceTests
     {
         var deposit = CreateDeposit(userId: 7);
 
-        var act = () => _service.Approve(deposit, AdminContext(1), DateTimeOffset.UtcNow, "verified");
+        var act = () => _service.Approve(deposit, AdminContext(1), "verified");
 
         act.Should()
             .Throw<BusinessException>()
@@ -205,9 +205,9 @@ public class WalletDepositServiceTests
     public void Reject_ShouldMarkDepositRejected_WhenDepositIsNotApproved()
     {
         var deposit = CreateDeposit(userId: 7);
-        deposit.MarkUserConfirmed(DateTimeOffset.UtcNow);
+        deposit.MarkUserConfirmed();
 
-        _service.Reject(deposit, AdminContext(1), DateTimeOffset.UtcNow, "not enough proof");
+        _service.Reject(deposit, AdminContext(1), "not enough proof");
 
         deposit.Status.Should().Be(WalletDepositStatus.Rejected);
         deposit.ReviewedBy.Should().Be(1);
@@ -221,7 +221,7 @@ public class WalletDepositServiceTests
         var deposit = CreateDeposit(userId: 7);
         deposit.Status = WalletDepositStatus.Approved;
 
-        var act = () => _service.Reject(deposit, AdminContext(1), DateTimeOffset.UtcNow, "too late");
+        var act = () => _service.Reject(deposit, AdminContext(1), "too late");
 
         act.Should()
             .Throw<BusinessException>()
