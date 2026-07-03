@@ -1,3 +1,4 @@
+using System.Net;
 using FluentAssertions;
 using GameTopUp.BLL.Contracts;
 using GameTopUp.DAL.Entities;
@@ -178,5 +179,83 @@ public sealed class OrderConcurrencyTests : BaseIntegrationTest
         // Verify Cancel History Created Once
         var histories = await Factory.GetOrderHistoriesAsync(order.Id);
         histories.Count(x => x.ToStatus == OrderStatus.Cancelled).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ConcurrentPickAndUserCancelOrder_ShouldAllowOnlyOneFinalTransition()
+    {
+        // Arrange
+        const decimal packagePrice = 100_000m;
+        var user = await Factory.SeedUserAsync();
+
+        await Factory.SeedWalletAsync(user.Id, wallet =>
+        {
+            wallet.Balance = 0m;
+        });
+
+        var game = await Factory.SeedGameAsync();
+        var package = await Factory.SeedPackageAsync(game.Id, p =>
+        {
+            p.ImportPrice = 80_000m;
+            p.SalePrice = packagePrice;
+            p.AvailableSlots = 2;
+        });
+
+        var order = await Factory.SeedOrderAsync(user.Id, package.Id, o =>
+        {
+            o.PackagePrice = packagePrice;
+            o.Status = OrderStatus.Pending;
+        });
+
+        var admin = await Factory.SeedAdminAsync();
+
+        using var userClient = CreateHeaderAuthenticatedClient(user);
+        using var adminClient = CreateHeaderAuthenticatedClient(admin);
+
+        // Act
+        var pickTask = adminClient.PostAsync($"/api/admin/orders/{order.Id}/pick", null);
+        var cancelTask = userClient.PostAsync($"/api/orders/{order.Id}/cancel", null);
+
+        var pickResponse = await pickTask;
+        var cancelResponse = await cancelTask;
+
+        // Assert
+        new[] { pickResponse, cancelResponse }
+            .Count(response => response.IsSuccessStatusCode)
+            .Should()
+            .Be(1);
+
+        new[] { pickResponse, cancelResponse }
+            .Count(response => response.StatusCode == HttpStatusCode.BadRequest)
+            .Should()
+            .Be(1);
+
+        var updatedOrder = await Factory.GetOrderAsync(order.Id);
+        updatedOrder!.Status.Should().BeOneOf(OrderStatus.Processing, OrderStatus.Cancelled);
+
+        var wallet = await Factory.GetWalletAsync(user.Id);
+        var updatedPackage = await Factory.GetPackageAsync(package.Id);
+        var transactions = await Factory.GetWalletTransactionsAsync(user.Id);
+        var histories = await Factory.GetOrderHistoriesAsync(order.Id);
+
+        if (updatedOrder.Status == OrderStatus.Cancelled)
+        {
+            cancelResponse.IsSuccessStatusCode.Should().BeTrue();
+            pickResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            wallet!.Balance.Should().Be(packagePrice);
+            updatedPackage!.AvailableSlots.Should().Be(3);
+            transactions.Count(x => x.Type == WalletTransactionType.Refund && x.Amount == packagePrice).Should().Be(1);
+            histories.Count(x => x.ToStatus == OrderStatus.Cancelled).Should().Be(1);
+        }
+        else
+        {
+            pickResponse.IsSuccessStatusCode.Should().BeTrue();
+            cancelResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            updatedOrder.AssignedTo.Should().Be(admin.Id);
+            wallet!.Balance.Should().Be(0m);
+            updatedPackage!.AvailableSlots.Should().Be(2);
+            transactions.Should().BeEmpty();
+            histories.Count(x => x.ToStatus == OrderStatus.Processing).Should().Be(1);
+        }
     }
 }
