@@ -2,6 +2,7 @@ using GameTopUp.BLL.Options;
 using GameTopUp.BLL.Services;
 using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.Services.Auth;
+using GameTopUp.BLL.Services.Dashboard;
 using GameTopUp.BLL.Services.Games;
 using GameTopUp.BLL.Services.Users;
 using GameTopUp.BLL.Services.Wallets;
@@ -89,6 +90,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PackageService>();
         services.AddScoped<OrderService>();
         services.AddScoped<OrderReadService>();
+        services.AddScoped<AdminDashboardService>();
         services.AddScoped<PasswordService>();
         services.AddScoped<TokenService>();
         services.AddScoped<RefreshTokenService>();
@@ -96,6 +98,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WalletReadService>();
         services.AddScoped<WalletDepositService>();
         services.AddScoped<OrderQuery>();
+        services.AddScoped<AdminDashboardQuery>();
         services.AddScoped<WalletQuery>();
 
         services.AddScoped<IImageStorageService, LocalImageStorageService>();
