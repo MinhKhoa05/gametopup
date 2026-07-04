@@ -1,10 +1,12 @@
 # Testing
 
-Testing became more important as GameTopUp moved beyond simple screens.
+🇻🇳 Tiếng Việt: [docs/vi/testing.md](vi/testing.md)
+
+Testing became more important as GameTopUp's workflows became more connected.
 
 Once wallet balance, deposit review, package availability and order processing started affecting each other, a bug was no longer just a wrong response. It could mean a double wallet credit, an oversold package slot or an order ending in the wrong state.
 
-The test suite is focused around that risk. The goal is not to chase a nice-looking coverage number. The goal is to protect the workflows where correctness matters most.
+The test suite is focused around that risk. Coverage is useful, but the main value is protecting the workflows where operational mistakes would hurt the most.
 
 ## Testing Strategy
 
@@ -47,7 +49,7 @@ API scenario tests cover both customer and admin workflows.
 
 On the customer side, they check flows such as authentication, public game and package browsing, wallet reads, deposit requests and orders. On the admin side, they cover dashboard data, game and package management, deposit review, order processing and user management.
 
-These tests are not only checking that endpoints return `200`. They seed data, call the API and verify the resulting database state.
+They go past status-code checks. The tests seed data, call the API and verify the resulting database state.
 
 ## Full Purchase Journey
 
@@ -82,9 +84,9 @@ They cover the failures that usually only appear when multiple requests happen a
 - an admin picking an order while the customer cancels it
 - two admins trying to pick the same order
 
-The expected behavior is not always "one request succeeds and one fails." Some operations are intentionally idempotent. Repeated cancellation, for example, should not create a double refund.
+The expected behavior is not always "one request succeeds and one fails." Some operations are idempotent. Repeated cancellation, for example, should not create a double refund.
 
-These tests make the project more honest. They check the kinds of mistakes that a happy-path demo would probably hide.
+These tests keep the suite honest. They check the kinds of mistakes that a happy-path demo would probably hide.
 
 ## CI And Coverage
 
@@ -122,7 +124,7 @@ Integration tests require Docker because each test run starts a disposable Maria
 
 The tests show what GameTopUp protects first.
 
-They are not trying to cover every button click or every possible UI path. The current effort is focused on the places where a bug would hurt the most: wallet balance changes, deposit approval, refunds, package capacity and order state transitions.
+They focus less on every button click or possible UI path, and more on the places where a bug would hurt the most: wallet balance changes, deposit approval, refunds, package capacity and order state transitions.
 
 That focus matches the project. GameTopUp is built around workflows where several pieces of state move together, so the tests spend most of their energy there.
 
@@ -132,7 +134,7 @@ Looking back, the most useful tests were not the ones that increased coverage. T
 
 Today, the suite has grown to more than 200 automated tests covering the project's core workflows.
 
-The number itself is not the goal. What matters is that the workflows with the highest operational risk, such as wallet credits, package reservations, refunds and order state transitions, can now be changed with much greater confidence.
+The number itself matters less than what it represents: workflows with higher operational risk, such as wallet credits, package reservations, refunds and order state transitions, can now be changed with more confidence.
 
 ## Next
 

@@ -33,7 +33,7 @@ The demo is seeded with accounts so you can try the main customer and admin flow
 
 > The demo database may be reset periodically.
 
-Vietnamese version: [README.vi.md](README.vi.md)
+🇻🇳 Tiếng Việt: [README.vi.md](README.vi.md)
 
 ## Overview
 
@@ -45,7 +45,7 @@ GameTopUp turns that workflow into a web app.
 
 Customers can browse games, choose packages, create wallet deposit requests, confirm transfers and place orders with wallet balance. Administrators can review deposits, manage games and packages, pick orders for processing and monitor the current state of the service from a dashboard.
 
-The most important part is not the CRUD screens. It is how the main flow is handled: wallet balance changes, package slot reservation, order history and admin actions happen together instead of as isolated updates.
+The main flow ties together wallet balance changes, package slot reservation, order history and admin actions instead of treating them as isolated updates.
 
 ## Highlights
 

@@ -1,6 +1,8 @@
 # Overview
 
-This page is the story behind GameTopUp.
+🇻🇳 Tiếng Việt: [docs/vi/overview.md](vi/overview.md)
+
+This is the story behind GameTopUp.
 
 The README explains what the project does and how to run it. This document is more about why the project exists, why this domain was interesting to build, and what I learned while turning a small business workflow into a full-stack application.
 
@@ -14,15 +16,17 @@ That can work for a few orders.
 
 It becomes harder when multiple deposits, wallet balances, package slots and orders are moving at the same time.
 
-GameTopUp grew from that problem. The goal was not to invent a new business model. The goal was to take a workflow that already exists and model it carefully enough that the important state changes are visible and traceable.
+GameTopUp grew from that problem. It takes a workflow that already exists and models it carefully enough that the important state changes are visible and traceable.
 
 ## Why This Domain
 
-I wanted a portfolio project where backend decisions mattered to the workflow, not only to the folder structure.
+I wanted a portfolio project where backend decisions shaped the actual workflow.
 
-A lot of student projects can be built as CRUD screens: create a user, create a product, create an order, show a table. Those projects are useful for learning, but they do not always create pressure around workflow design.
+The criteria were simple: the domain needed multiple states, business rules and steps that had to happen in the right order.
 
-The game top-up domain had more interesting constraints.
+The game top-up domain fit that direction well.
+
+That also kept the scope focused. GameTopUp spends more attention on the workflows, business rules, tests and documentation that are already there, so each small part contributes to a consistent repository.
 
 The service owner buys or sources packages at an internal cost and sells them to customers at a listed sale price. The margin comes from the difference between the cost and the sale price. Customers get a more convenient or cheaper purchasing flow, while the service owner needs to keep deposits, order state and package availability under control.
 
@@ -41,7 +45,7 @@ Those questions shaped most of the backend decisions that followed.
 
 ## How The Project Evolved
 
-The project did not start with a perfect architecture plan.
+GameTopUp did not start with a perfect architecture plan.
 
 At first, the main task was understanding the workflow from both sides. Customers needed a clear path from choosing a package to paying for it. Admins needed a clear way to review money, manage availability and move orders forward.
 
@@ -63,7 +67,7 @@ An order in GameTopUp is not just a row in an `orders` table. It touches wallet 
 
 Another lesson was that structure is most useful when it grows from the workflow. The backend has layers, but the layers are there because the project needed places for orchestration, rules, persistence and read queries. The structure would not be useful if it only existed to make the project look more serious.
 
-The project also changed how I think about tests. A mocked unit test can verify a rule, but it cannot show how two concurrent requests behave against a real database. For this project, the most valuable tests are the ones that protect wallet credits, package slots and order transitions.
+GameTopUp also changed how I think about tests. A mocked unit test can verify a rule, but it cannot show how two concurrent requests behave against a real database. The most valuable tests ended up being the ones that protect wallet credits, package slots and order transitions.
 
 Finally, building the live demo made the project feel more complete. Deployment is not the hardest part of the codebase, but it changes how the project is presented. A working demo, seeded accounts and repeatable Docker setup make the repository easier to trust.
 

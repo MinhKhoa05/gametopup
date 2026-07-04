@@ -1,8 +1,10 @@
 # Architecture
 
+🇻🇳 Tiếng Việt: [docs/vi/architecture.md](vi/architecture.md)
+
 GameTopUp is split into a React frontend, an ASP.NET Core API and a MariaDB database.
 
-This split keeps the UI, workflow logic and database code from blending into one large application. For a project with wallet balance, deposits, package capacity and order processing, that separation helps a lot.
+This split keeps the UI, workflow logic and database code from blending into one large application. For a project with wallet balance, deposits, package capacity and order processing, keeping those concerns separate matters.
 
 The frontend handles the screens and server-state coordination. The backend owns business rules and transaction boundaries. The database stores the operational records: users, wallets, deposits, orders, package availability and history.
 
@@ -83,7 +85,7 @@ flowchart TD
     Queries --> Database
 ```
 
-The important decision is that controllers do not carry the main workflows.
+Controllers stay thin.
 
 For example, creating an order is not just an HTTP `POST`. It has to validate wallet balance, reserve package availability, create an order and record the wallet transaction. That sequence is visible in a use case.
 
@@ -97,7 +99,7 @@ The backend projects have distinct roles:
 | `GameTopUp.UnitTests` | Service and use case tests |
 | `GameTopUp.IntegrationTests` | API, workflow and concurrency tests against MariaDB |
 
-This is not strict clean architecture. The structure is intentionally practical: enough to follow the flow, not so much that the project becomes harder to read.
+This is not strict clean architecture. The structure is practical: enough to follow the flow, not so much that the project becomes harder to read.
 
 ## Request Flow
 
@@ -143,7 +145,7 @@ The central tables are:
 
 The schema is kept in [database/schema.sql](../database/schema.sql), with demo data in [database/seed.sql](../database/seed.sql).
 
-One intentional choice is that package availability is modeled as available slots. This fits the domain better than warehouse-style inventory: the service needs to know how many more orders it can accept for a package, not where a physical item is stored.
+Package availability is modeled as available slots. This fits the domain better than warehouse-style inventory: the service needs to know how many more orders it can accept for a package, not where a physical item is stored.
 
 ## Authentication
 
@@ -177,7 +179,7 @@ flowchart LR
 
 Docker Compose runs the database, API and frontend containers. The host-level Nginx configuration routes `/api/` and `/uploads/` to the API and everything else to the frontend.
 
-The deployment workflow is intentionally simple: CI validates the code, then the production workflow pulls the latest `main` branch on the VPS and rebuilds the containers.
+The deployment workflow is simple: CI validates the code, then the production workflow pulls the latest `main` branch on the VPS and rebuilds the containers.
 
 More detail lives in [Deployment](deployment.md).
 

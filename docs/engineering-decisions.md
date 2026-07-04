@@ -1,8 +1,10 @@
 # Engineering Decisions
 
-This page looks back at the technical decisions that shaped GameTopUp over the course of development.
+🇻🇳 Tiếng Việt: [docs/vi/engineering-decisions.md](vi/engineering-decisions.md)
 
-After spending several months on the project, I realized the most important decisions were not about choosing libraries. They were about making the workflows easier to understand, test and maintain.
+This document looks back at the technical decisions that shaped GameTopUp over the course of development.
+
+After spending several months on the project, the decisions that mattered most were the ones that made the workflows easier to understand, test and maintain.
 
 Some of those decisions worked well. Others are simply the ones that fit the project today and would probably change if it continued to grow.
 
@@ -22,7 +24,7 @@ Rather than replacing the architecture entirely, I borrowed a few ideas from Cle
 
 One benefit I did not fully expect was testing. Once transaction orchestration moved into use cases, many service methods no longer needed to coordinate repositories or manage transaction boundaries. They could accept domain objects, apply rules and return results. That made unit tests smaller because many business rules could be verified without mocking unrelated dependencies.
 
-The project is still a layered application. It simply evolved where the workflows demanded it, instead of following a strict architecture diagram from the beginning.
+GameTopUp is still a layered application. It simply evolved where the workflows demanded it, instead of following a strict architecture diagram from the beginning.
 
 That evolution feels more honest than trying to redesign the whole codebase around a different architecture.
 
@@ -46,7 +48,7 @@ Another thing that changed over time was how repositories were used.
 
 Some repositories stay behind services because those entities have meaningful business rules. In other places, a use case talks to a repository directly because there is very little business behavior to encapsulate. Adding another service there would only create an extra layer without making the workflow easier to understand.
 
-I never tried to hide every repository behind another abstraction. The goal was simply to keep each dependency meaningful.
+I never tried to hide every repository behind another abstraction. What mattered more was keeping each dependency meaningful.
 
 Repositories and queries are split for a similar reason. Repositories are used when the code is working with entities that may be created, updated or locked. Queries are used for read models such as dashboards, lists and filtered admin views.
 
@@ -132,7 +134,7 @@ These are not the deepest parts of the project, but they helped the UI code stay
 
 Deployment uses Docker Compose with a VPS and Nginx.
 
-That setup is not fancy, but it is easy to understand. The repo shows how the app runs locally and how the live demo is updated.
+The setup is plain and easy to understand. The repo shows how the app runs locally and how the live demo is updated.
 
 At this stage, that mattered more than building a complicated deployment pipeline.
 

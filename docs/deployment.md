@@ -1,10 +1,12 @@
 # Deployment
 
-GameTopUp is deployed as a small VPS-hosted app, not only as a local demo.
+🇻🇳 Tiếng Việt: [docs/vi/deployment.md](vi/deployment.md)
 
-The setup is intentionally simple: Docker Compose runs the containers, Nginx handles public HTTPS traffic, and GitHub Actions deploys the latest `main` branch to a VPS after CI passes.
+The GameTopUp live demo runs as a small VPS-hosted app.
 
-For this project, that keeps the deployment path easy to understand: build the app, run the containers, route traffic through Nginx, and update the server from GitHub Actions.
+Docker Compose runs the containers, Nginx handles public HTTPS traffic, and GitHub Actions deploys the latest `main` branch to a VPS after CI passes.
+
+The deployment path is direct: build the app, run the containers, route traffic through Nginx, and update the server from GitHub Actions.
 
 ## Runtime Shape
 
@@ -80,7 +82,7 @@ It also configures HTTPS through Let's Encrypt certificate paths and redirects H
 
 ## Configuration
 
-The project uses `.env` values for Compose and environment override logic in the API.
+Configuration comes from `.env` values in Compose and environment override logic in the API.
 
 Important values include:
 
@@ -122,13 +124,11 @@ The deploy workflow runs after the CI workflow completes successfully on `main`.
 
 It connects to the VPS through SSH, moves into `/opt/gametopup`, fetches the latest code, resets the working tree to `origin/main`, rebuilds containers with Docker Compose and prunes old images.
 
-This is a straightforward deployment strategy. It is not trying to be a platform. For this project, that is enough: anyone reading the repo can understand how the live demo is updated.
+The workflow stays easy to trace from the repository to the running demo.
 
 ## Current Limitations
 
-The deployment setup is intentionally lightweight.
-
-Current limitations:
+The current setup has a few clear limits:
 
 - no blue-green deployment
 - no automated database migration tool

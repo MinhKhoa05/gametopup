@@ -1,12 +1,14 @@
 # Frontend
 
+🇻🇳 Tiếng Việt: [docs/vi/frontend.md](vi/frontend.md)
+
 The frontend started as a way to make the backend workflows visible.
 
-At first, the goal was simple: give the project a complete UI so someone could browse packages, create deposits, place orders and try the admin flows without touching Swagger. As more pages were added, it became harder to treat the frontend as "just a demo." The app needed clearer organization, smoother session handling, better loading states and a more predictable way to keep server data in sync.
+At first, the frontend only needed to make the project usable without touching Swagger. Someone should be able to browse packages, create deposits, place orders and try the admin flows from the browser. As more pages were added, it became harder to treat the frontend as "just a demo." The app needed clearer organization, smoother session handling, better loading states and a more predictable way to keep server data in sync.
 
 Those improvements appeared gradually. As the application grew, TanStack Query became part of the data layer, session handling became smoother, admin pages were lazy-loaded, and several small UX improvements reduced unnecessary loading and page flashes.
 
-The frontend is still intentionally simple, but it is much more shaped around the product than the first version.
+The frontend is still simple, but it is much more shaped around the product than the first version.
 
 ## How The Frontend Grew
 
@@ -30,9 +32,9 @@ Before building the UI, returning updated entities from mutation endpoints felt 
 
 That kept each screen reading from one source of truth instead of mixing mutation responses with cached query data.
 
-The project also includes opt-in query persistence.
+Query persistence is also opt-in.
 
-Some data is worth keeping briefly to avoid unnecessary loading after a refresh, while other queries are intentionally left uncached so they always reflect the latest state.
+Some data is worth keeping briefly to avoid unnecessary loading after a refresh, while other queries are left uncached so they always reflect the latest state.
 
 Mutation errors are handled through a shared mutation cache, with support for silencing errors when a flow needs custom handling.
 
@@ -82,7 +84,7 @@ The admin area is lazy-loaded so customer-facing pages do not eagerly load every
 
 ## Purchase Flow
 
-The purchase flow is intentionally light on the frontend.
+The purchase flow stays light on the frontend.
 
 From the user's point of view, the flow is choosing a package, entering game account information and confirming the purchase. The dedicated `usePurchaseFlow` hook manages the confirmation dialog, success dialog, loading state and order creation mutation.
 
@@ -106,9 +108,9 @@ The admin area is organized around operational work.
 
 The dashboard shows pending orders and active deposit requests first, because those are the things that need attention. From there, admins can move into dedicated pages for games, packages, deposits, orders and users.
 
-Order and deposit pages are not just generic tables. They represent queues of work: deposits waiting for confirmation or review, orders waiting to be picked, and orders currently being processed.
+Order and deposit pages represent queues of work: deposits waiting for confirmation or review, orders waiting to be picked, and orders currently being processed.
 
-For that reason, the UI mirrors backend states instead of flattening everything into generic edit screens.
+For that reason, the UI follows backend states instead of flattening every workflow into the same kind of edit screen.
 
 ## Shared UI
 

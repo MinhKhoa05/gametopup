@@ -1,8 +1,10 @@
 # Core Workflows
 
+🇻🇳 Tiếng Việt: [docs/vi/core-workflows.md](vi/core-workflows.md)
+
 The core of GameTopUp is how wallet balance, package availability and order state move together.
 
-This page explains the workflows that need the most care. It is less about endpoints and more about what needs to stay true while customers and admins are using the app.
+This document follows the workflows that need the most care. It is less about endpoints and more about what needs to stay true while customers and admins are using the app.
 
 For the broader system shape, see [Architecture](architecture.md). For why these workflows exist in the first place, start with [Overview](overview.md).
 
@@ -63,7 +65,7 @@ The deposit request stores:
 
 The QR image URL is built from the configured VietQR bank information. The project does not automatically verify bank transfers. The user confirms that they transferred the money, and an admin reviews the request.
 
-That is intentional for the current scope. The app models a small service where transfer verification is still a human admin task.
+For the current scope, the app models a small service where transfer verification is still a human admin task.
 
 ## Deposit Review
 
@@ -149,7 +151,7 @@ The package reservation uses an update that only succeeds when enough slots are 
 
 GameTopUp tracks `available_slots` for packages.
 
-That wording is deliberate. In this domain, a package is not necessarily a physical stock item. It represents how many more orders the service can accept for that package.
+In this domain, a package is not necessarily a physical stock item. It represents how many more orders the service can accept for that package.
 
 When a customer purchases a package, one slot is reserved. When an order is cancelled, one slot is restored.
 
@@ -174,11 +176,11 @@ Picking an order assigns it to an admin and moves it into `Processing`. Completi
 
 Each meaningful transition writes order history. That makes the order easier to inspect later, especially when several people are involved in operating the service.
 
-The project also protects the pick flow from races. If two admins try to pick the same pending order, only one should become the assigned admin.
+The pick flow is also protected from races. If two admins try to pick the same pending order, only one should become the assigned admin.
 
 ## Cancellation And Refund
 
-Cancellation was one of the easiest places to accidentally build a bug.
+Cancellation was one of the easiest workflows to get wrong.
 
 It cannot be treated as "set order status to cancelled" because a purchased order already affected wallet balance and package availability.
 
@@ -230,7 +232,7 @@ The most sensitive workflows are:
 
 These are not abstract edge cases. They are the places where balance, availability and order state can drift if the workflow is not designed carefully.
 
-The project uses explicit transaction boundaries, row locking where needed and integration tests against MariaDB instead of relying only on mocked unit tests.
+Those flows use explicit transaction boundaries, row locking where needed and integration tests against MariaDB instead of relying only on mocked unit tests.
 
 ## Continue Reading
 
