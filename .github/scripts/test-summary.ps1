@@ -1,90 +1,100 @@
-param(
-    [Parameter(Mandatory = $true)]
-    [string]$ResultsDirectory,
-
-    [Parameter(Mandatory = $true)]
-    [string]$Title
+$testSuites = @(
+    @{
+        Name = 'Unit'
+        ResultsDirectory = 'artifacts/unit-test-results'
+    },
+    @{
+        Name = 'Integration'
+        ResultsDirectory = 'artifacts/integration-test-results'
+    }
 )
-
-$trxFile = Get-ChildItem -Path $ResultsDirectory -Recurse -Filter '*.trx' -ErrorAction SilentlyContinue |
-    Select-Object -First 1
-
-if (-not $trxFile) {
-    Write-Host "No TRX file found in $ResultsDirectory."
-    return
-}
 
 if (-not $env:GITHUB_STEP_SUMMARY) {
     Write-Host 'GITHUB_STEP_SUMMARY is not set. Skipping summary output.'
     return
 }
 
-function Get-SuiteName {
-    param([string]$TestTitle)
+function Get-TestSuiteResult {
+    param(
+        [string]$Name,
+        [string]$ResultsDirectory
+    )
 
-    switch ($TestTitle) {
-        'Unit Tests' { 'Unit' }
-        'Integration Tests' { 'Integration' }
-        default { $TestTitle }
+    $trxFile = Get-ChildItem -Path $ResultsDirectory -Recurse -Filter '*.trx' -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+
+    if (-not $trxFile) {
+        return $null
+    }
+
+    [xml]$trx = Get-Content -LiteralPath $trxFile.FullName -Raw
+    $counters = $trx.TestRun.ResultSummary.Counters
+    $failed = [int]$counters.failed
+
+    [pscustomobject]@{
+        Suite = $Name
+        Status = if ($failed -eq 0) { 'Passed' } else { 'Failed' }
+        Passed = [int]$counters.passed
+        Failed = $failed
+        Skipped = [int]$counters.skipped
+        Total = [int]$counters.total
     }
 }
 
 function Add-TestSummaryRow {
     param(
         [string]$Suite,
+        [string]$Status,
         [int]$Passed,
         [int]$Failed,
+        [int]$Skipped,
         [int]$Total,
         [switch]$Bold
     )
 
     if ($Bold) {
-        "| **$Suite** | **$Passed** | **$Failed** | **$Total** |" >> $env:GITHUB_STEP_SUMMARY
+        "| **$Suite** | **$Status** | **$Passed** | **$Failed** | **$Skipped** | **$Total** |" >> $env:GITHUB_STEP_SUMMARY
         return
     }
 
-    "| $Suite | $Passed | $Failed | $Total |" >> $env:GITHUB_STEP_SUMMARY
+    "| $Suite | $Status | $Passed | $Failed | $Skipped | $Total |" >> $env:GITHUB_STEP_SUMMARY
 }
 
-[xml]$trx = Get-Content -LiteralPath $trxFile.FullName -Raw
-$counters = $trx.TestRun.ResultSummary.Counters
-$suiteName = Get-SuiteName -TestTitle $Title
-$summaryFile = Join-Path 'artifacts' 'test-summary.json'
-$passed = [int]$counters.passed
-$failed = [int]$counters.failed
-$total = [int]$counters.total
-$result = [ordered]@{
-    suite = $suiteName
-    passed = $passed
-    failed = $failed
-    total = $total
+$results = foreach ($suite in $testSuites) {
+    Get-TestSuiteResult -Name $suite.Name -ResultsDirectory $suite.ResultsDirectory
 }
 
-if ($suiteName -eq 'Unit') {
-    $result | ConvertTo-Json | Set-Content -LiteralPath $summaryFile
-
-    '## Test Summary' >> $env:GITHUB_STEP_SUMMARY
-    '' >> $env:GITHUB_STEP_SUMMARY
-    '| Suite | Passed | Failed | Total |' >> $env:GITHUB_STEP_SUMMARY
-    '| ----- | -----: | -----: | ----: |' >> $env:GITHUB_STEP_SUMMARY
-    Add-TestSummaryRow -Suite $suiteName -Passed $passed -Failed $failed -Total $total
+if (-not $results) {
+    Write-Host 'No TRX files found. Skipping summary output.'
     return
 }
 
-if (Test-Path -LiteralPath $summaryFile) {
-    $unitResult = Get-Content -LiteralPath $summaryFile -Raw | ConvertFrom-Json
-    Add-TestSummaryRow -Suite $suiteName -Passed $passed -Failed $failed -Total $total
-    Add-TestSummaryRow `
-        -Suite 'Total' `
-        -Passed ([int]$unitResult.passed + $passed) `
-        -Failed ([int]$unitResult.failed + $failed) `
-        -Total ([int]$unitResult.total + $total) `
-        -Bold
-    return
-}
+$totalPassed = ($results | Measure-Object -Property Passed -Sum).Sum
+$totalFailed = ($results | Measure-Object -Property Failed -Sum).Sum
+$totalSkipped = ($results | Measure-Object -Property Skipped -Sum).Sum
+$totalTests = ($results | Measure-Object -Property Total -Sum).Sum
+$overallStatus = if ($totalFailed -eq 0) { 'Passed' } else { 'Failed' }
 
 '## Test Summary' >> $env:GITHUB_STEP_SUMMARY
 '' >> $env:GITHUB_STEP_SUMMARY
-'| Suite | Passed | Failed | Total |' >> $env:GITHUB_STEP_SUMMARY
-'| ----- | -----: | -----: | ----: |' >> $env:GITHUB_STEP_SUMMARY
-Add-TestSummaryRow -Suite $suiteName -Passed $passed -Failed $failed -Total $total
+'| Suite | Status | Passed | Failed | Skipped | Total |' >> $env:GITHUB_STEP_SUMMARY
+'| ----- | ------ | -----: | -----: | ------: | ----: |' >> $env:GITHUB_STEP_SUMMARY
+
+foreach ($result in $results) {
+    Add-TestSummaryRow `
+        -Suite $result.Suite `
+        -Status $result.Status `
+        -Passed $result.Passed `
+        -Failed $result.Failed `
+        -Skipped $result.Skipped `
+        -Total $result.Total
+}
+
+Add-TestSummaryRow `
+    -Suite 'Total' `
+    -Status $overallStatus `
+    -Passed $totalPassed `
+    -Failed $totalFailed `
+    -Skipped $totalSkipped `
+    -Total $totalTests `
+    -Bold
