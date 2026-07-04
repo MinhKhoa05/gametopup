@@ -11,9 +11,16 @@ permissions:
   checks: write
   actions: read
 
+env:
+  DOTNET_VERSION: 8.0.x
+  SOLUTION_PATH: backend/GameTopUp.slnx
+  UNIT_TEST_PROJECT: backend/GameTopUp.UnitTests/GameTopUp.UnitTests.csproj
+  INTEGRATION_TEST_PROJECT: backend/GameTopUp.IntegrationTests/GameTopUp.IntegrationTests.csproj
+  BUILD_CONFIGURATION: Release
+
 jobs:
-  build-and-test:
-    name: Build and Test
+  tests:
+    name: Build, Test & Coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -23,62 +30,104 @@ jobs:
       - name: Setup .NET 8 SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+
+      - name: Prepare artifacts
+        run: |
+          rm -rf artifacts
+          mkdir -p artifacts
 
       - name: Restore packages
-        run: dotnet restore backend/GameTopUp.slnx
+        run: dotnet restore ${{ env.SOLUTION_PATH }}
 
       - name: Build solution
-        run: dotnet build backend/GameTopUp.slnx --configuration Release --no-restore
+        run: dotnet build ${{ env.SOLUTION_PATH }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
 
-      - name: Run tests with coverage
+      - name: Run unit tests
         run: |
-          mkdir -p artifacts/test-results
-          dotnet test backend/GameTopUp.slnx \
-            --configuration Release \
+          mkdir -p artifacts/unit-test-results
+          dotnet test ${{ env.UNIT_TEST_PROJECT }} \
+            --configuration ${{ env.BUILD_CONFIGURATION }} \
+            --no-restore \
             --no-build \
-            --results-directory artifacts/test-results \
-            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory artifacts/unit-test-results \
+            --logger "trx;LogFileName=unit-tests.trx" \
             --collect "XPlat Code Coverage"
 
-      - name: Publish test report
-        if: always() && hashFiles('artifacts/test-results/**/*.trx') != ''
+      - name: Add unit test summary
+        if: always() && hashFiles('artifacts/unit-test-results/**/*.trx') != ''
+        shell: pwsh
+        run: ./.github/scripts/test-summary.ps1 -ResultsDirectory artifacts/unit-test-results -Title "Unit Tests"
+
+      - name: Run integration tests
+        run: |
+          mkdir -p artifacts/integration-test-results
+          dotnet test ${{ env.INTEGRATION_TEST_PROJECT }} \
+            --configuration ${{ env.BUILD_CONFIGURATION }} \
+            --no-restore \
+            --no-build \
+            --results-directory artifacts/integration-test-results \
+            --logger "trx;LogFileName=integration-tests.trx" \
+            --collect "XPlat Code Coverage"
+
+      - name: Add integration test summary
+        if: always() && hashFiles('artifacts/integration-test-results/**/*.trx') != ''
+        shell: pwsh
+        run: ./.github/scripts/test-summary.ps1 -ResultsDirectory artifacts/integration-test-results -Title "Integration Tests"
+
+      - name: Publish unit test report
+        if: always() && hashFiles('artifacts/unit-test-results/**/*.trx') != ''
         uses: dorny/test-reporter@v1
         with:
-          name: .NET test results
-          path: artifacts/test-results/**/*.trx
+          name: .NET Unit Tests
+          path: artifacts/unit-test-results/**/*.trx
           reporter: dotnet-trx
           fail-on-error: false
 
-      - name: Install coverage report generator
-        if: always()
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+      - name: Publish integration test report
+        if: always() && hashFiles('artifacts/integration-test-results/**/*.trx') != ''
+        uses: dorny/test-reporter@v1
+        with:
+          name: .NET Integration Tests
+          path: artifacts/integration-test-results/**/*.trx
+          reporter: dotnet-trx
+          fail-on-error: false
 
-      - name: Generate coverage report
-        if: always()
-        run: |
-          reportgenerator \
-            "-reports:artifacts/test-results/**/coverage.cobertura.xml" \
-            "-targetdir:artifacts/coverage-report" \
-            "-reporttypes:HtmlInline_AzurePipelines;Cobertura;MarkdownSummaryGithub"
-
-      - name: Add coverage summary
-        if: always()
-        run: |
-          if [ -f artifacts/coverage-report/SummaryGithub.md ]; then
-            cat artifacts/coverage-report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Upload test results
+      - name: Upload unit test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: artifacts/test-results
+          name: unit-test-results
+          path: artifacts/unit-test-results
           if-no-files-found: warn
 
-      - name: Upload coverage report
+      - name: Upload integration test results
         if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: artifacts/integration-test-results
+          if-no-files-found: warn
+
+      - name: Install coverage report generator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Generate coverage report
+        run: |
+          reportgenerator \
+            "-reports:artifacts/**/*coverage.cobertura.xml" \
+            "-targetdir:artifacts/coverage-report" \
+            "-reporttypes:Html;Cobertura;MarkdownSummaryGithub;Badges"
+
+      - name: Add coverage summary
+        run: |
+          if [ -f artifacts/coverage-report/SummaryGithub.md ]; then
+            cat artifacts/coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
