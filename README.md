@@ -1,86 +1,89 @@
 <p align="center">
-  <img src="frontend/src/assets/brand/readme-hero.svg" alt="GameTopUp hero" width="960" />
+  <img src="frontend/public/readme-hero.svg" alt="GameTopUp hero" width="960" />
 </p>
 
-![CI](https://github.com/MinhKhoa05/gametopup/actions/workflows/ci.yml/badge.svg?branch=main)
-![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-8.0-512BD4)
+# GameTopUp
+
+GameTopUp is a web application that models the daily workflow of a small intermediary game top-up service.
+
+This repository is maintained as a personal portfolio project, with a focus on backend workflows, testing and deployment.
+
+The app focuses on the parts that are often handled manually: customer messages, bank transfers, package tracking and order processing.
+
+[![CI](https://github.com/MinhKhoa05/gametopup/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/ci.yml)
+[![Deploy](https://github.com/MinhKhoa05/gametopup/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/deploy.yml)
+[![Coverage](https://img.shields.io/badge/Coverage-Report%20Available-2ea44f)](https://github.com/MinhKhoa05/gametopup/actions/workflows/ci.yml)
+![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6)
-![MariaDB](https://img.shields.io/badge/MariaDB-11-003545)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
+![MariaDB](https://img.shields.io/badge/MariaDB-11-003545)
 
-🇻🇳 Tiếng Việt: [README.vi.md](README.vi.md)
+## Live Demo
 
-## Introduction
+**Website:** https://gametopup.minhkhoa.dev
 
-GameTopUp is a web-based operations system for intermediary game top-up services.
+The demo is seeded with accounts so you can try the main customer and admin flows without setting up the project locally.
 
-In this business model, service owners offer game top-up packages at prices lower than the official in-game store. Players receive the same in-game value while paying less, and the service earns from the margin between sourcing and selling costs.
+| Role | Email | Password |
+| ---- | ----- | -------- |
+| Admin | `admin@gametopup.com` | `Admin123456@` |
+| Customer | `customer01@gametopup.com` | `Admin123456@` |
+| Customer | `customer02@gametopup.com` | `Admin123456@` |
 
-A typical workflow begins when a customer places a top-up request and completes payment. The service owner then verifies the payment, processes the order, and delivers the requested package in-game. Many small services still manage these workflows manually through chat platforms, making deposits, orders, package availability, service capacity, and fulfillment increasingly difficult to track as order volume grows.
+> The demo database may be reset periodically.
 
-GameTopUp centralizes these workflows into a single system, helping service owners manage deposits, orders, package availability, available slots, and fulfillment more reliably.
+Vietnamese version: [README.vi.md](README.vi.md)
 
-## Tech Stack
+## Overview
 
-**Backend:** ASP.NET Core Web API, Dapper, Dommel, MariaDB / MySQL, JWT Authentication, BCrypt Password Hashing, Swagger / OpenAPI
+Small game top-up services often start with a very manual workflow.
 
-**Frontend:** React, TypeScript, Vite, Zustand, TanStack Query, Tailwind CSS
+Customers send messages. Staff check bank transfers. Orders are written down manually. Package availability is tracked by memory or spreadsheet. It works at the beginning, but it becomes fragile once deposits, orders and customers start moving at the same time.
 
-**Testing:** xUnit, Integration Tests, Testcontainers, Respawn
+GameTopUp turns that workflow into a web app.
 
-**Development:** Docker, Docker Compose
+Customers can browse games, choose packages, create wallet deposit requests, confirm transfers and place orders with wallet balance. Administrators can review deposits, manage games and packages, pick orders for processing and monitor the current state of the service from a dashboard.
 
-## Testing & Quality
+The most important part is not the CRUD screens. It is how the main flow is handled: wallet balance changes, package slot reservation, order history and admin actions happen together instead of as isolated updates.
 
-* Automated CI validation runs in GitHub Actions on pushes and pull requests to `main`.
-* Unit tests live under `backend/GameTopUp.Tests/UnitTests`.
-* Integration tests live under `backend/GameTopUp.Tests/IntegrationTests`.
-* Integration tests use Testcontainers-based MariaDB instances, so Docker is required for local runs and CI.
-* Coverage is collected with Coverlet using XPlat Code Coverage and published as Cobertura output in CI artifacts.
-* The GitHub Actions workflow is defined in `.github/workflows/ci.yml`.
-* Run the test suite locally with:
+## Highlights
 
-```bash
-dotnet test backend/GameTopUp.slnx
-```
+### Business Features
 
-## Core Features
+- Game and package browsing for customers.
+- Wallet deposits with VietQR transfer information.
+- Wallet transaction history for deposits, purchases and refunds.
+- Order purchase flow with wallet balance validation and package slot reservation.
+- Admin review flow for deposits.
+- Admin order processing with pick, complete and cancel actions.
+- Dashboard for pending orders, pending deposits and operational totals.
 
-### Customer
+### Engineering
 
-* Create wallet deposit requests through VietQR
-* Maintain and monitor wallet balance
-* Browse games and top-up packages
-* Place orders and pay using wallet balance
-* Track order status and wallet activity
+- Layered backend with controllers, use cases, services, repositories and read queries.
+- Wallet, deposit and order workflows handled as coordinated operations.
+- Transaction-aware workflows for balance updates, package slots and order state changes.
+- Unit tests for service and use case behavior.
+- Integration tests against MariaDB through Testcontainers.
+- Concurrency tests for overselling, double approval, double refund and competing order transitions.
 
-### Administrator
+### Infrastructure
 
-* Review, approve, or reject deposit requests
-* Manage games and top-up packages
-* Control package availability and available slots
-* Process customer orders
-* Monitor operational records and transaction history
+- Docker Compose setup for the app, API and database.
+- Nginx configuration for frontend routing and production reverse proxy.
+- GitHub Actions for backend/frontend checks and VPS deployment.
 
-## Technical Highlights
+## Quick Start
 
-* **Wallet-based payment flow** - customers deposit funds into an internal wallet before paying for orders.
-* **Order lifecycle management** - orders move through defined states so the workflow stays predictable and traceable.
-* **Package availability controls** - available slots are tracked to help prevent overselling and keep fulfillment consistent.
-* **Concurrency control** - transactional workflows help maintain correct wallet balances and package availability under concurrent requests.
-* **Idempotent operations** - repeated requests do not produce duplicate business actions.
-* **Audit-friendly history** - deposits, payments, refunds, order changes, and balance changes are retained for operational review.
-* **Responsive interface** - the frontend is designed to work across mobile, tablet, laptop, and desktop layouts.
-* **Server-state caching** - TanStack Query helps reduce unnecessary requests and keeps data synchronized across screens.
-
-## Getting Started
+The easiest way to get started is with Docker Compose.
 
 ### Prerequisites
 
-* Docker Desktop
+The project requires Docker with Docker Compose support.
+No local installation of .NET, Node.js or MariaDB is needed.
 
-### Production Docker Setup
+### Configure Environment
 
 Copy the example environment file:
 
@@ -88,7 +91,7 @@ Copy the example environment file:
 cp .env.example .env
 ```
 
-Fill in the required values before running Docker Compose:
+Update the required values:
 
 ```env
 DB_ROOT_PASSWORD=CHANGE_ME_ROOT_PASSWORD
@@ -102,35 +105,49 @@ VIETQR_ACCOUNT_NO=YOUR_BANK_ACCOUNT_NO
 VIETQR_ACCOUNT_NAME=YOUR_BANK_ACCOUNT_NAME
 ```
 
-Use your real domain for `APP_BASE_URL`, `CORS_ALLOWED_ORIGINS`, and `VITE_API_BASE_URL`. In production, the API issues secure cookies, so the public site should be served over HTTPS by a reverse proxy such as Nginx or Caddy.
-
-### Demo Seed Accounts
-
-The compose file mounts `database/seed.sql`, so a fresh database is initialized with demo data and these accounts. This keeps public preview deployments simple: open the site, sign in, and change the admin password after first login if the app is exposed publicly.
-
-| Role | Email | Password |
-| --- | --- | --- |
-| Admin | `admin@gametopup.com` | `Admin123456@` |
-| Customer | `customer01@gametopup.com` | `Admin123456@` |
-| Customer | `customer02@gametopup.com` | `Admin123456@` |
-
 ### Run
-
-Start all services:
 
 ```bash
 docker compose up -d
 ```
 
-Available services:
+Services:
 
-* Frontend: http://localhost:3000
-* Backend API: http://localhost:5000
-* Swagger UI is enabled only when the backend runs with `ASPNETCORE_ENVIRONMENT=Development`.
+| Service | URL |
+| ------- | --- |
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:5000 |
+| Swagger UI | Available in development environment |
+
+The database is initialized from [database/schema.sql](database/schema.sql) and [database/seed.sql](database/seed.sql).
+
+## Tech Stack
+
+| Area | Stack |
+| ---- | ----- |
+| Backend | ASP.NET Core 8, C#, Dapper, Dommel |
+| Frontend | React, TypeScript, Vite, TanStack Query, Tailwind CSS |
+| Database | MariaDB / MySQL |
+| Auth | JWT, HttpOnly cookies, BCrypt |
+| Testing | xUnit, FluentAssertions, Moq, Testcontainers, Respawn, Coverlet |
+| Delivery | Docker, Docker Compose, Nginx, GitHub Actions |
 
 ## Documentation
 
-Additional documentation:
+Want to learn more about the project?
 
-- Backend Architecture: `backend/README.md`
-- Frontend Architecture: `frontend/README.md` (future)
+| Document | Focus |
+| -------- | ----- |
+| [Overview](docs/overview.md) | Why the project exists and how it evolved |
+| [Architecture](docs/architecture.md) | How the frontend, backend, database and deployment fit together |
+| [Core Workflows](docs/core-workflows.md) | How deposits, wallet balance, purchases and admin processing work |
+| [Frontend](docs/frontend.md) | Frontend organization, routing, state and user experience |
+| [Testing](docs/testing.md) | Unit tests, integration tests, concurrency tests and coverage |
+| [Deployment](docs/deployment.md) | Docker, Nginx, environment configuration and production deployment |
+| [Engineering Decisions](docs/engineering-decisions.md) | The choices and trade-offs behind the implementation |
+
+## Current Status
+
+GameTopUp currently implements the complete workflow from wallet deposits to order processing and administration.
+
+When a limitation or next step matters, it is mentioned in the document where that topic belongs.
