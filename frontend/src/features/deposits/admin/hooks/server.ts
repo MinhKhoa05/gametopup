@@ -69,6 +69,8 @@ export function useAdminDepositRequestsSection(filter: AdminDepositFilter = null
     isLoadingMore: requestsQuery.isLoadingMore,
     loadMore: requestsQuery.loadMore,
     loading,
+    refresh: requestsQuery.refetch,
+    refreshing: requestsQuery.isFetching && !requestsQuery.isPending,
     rejectRequest: async (payload: { note?: string; requestId: number }) => {
       await requestMutations.reject.mutateAsync(payload);
     },
