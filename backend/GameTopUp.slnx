@@ -3,6 +3,7 @@
     <Project Path="GameTopUp.Api/GameTopUp.Api.csproj" />
     <Project Path="GameTopUp.BLL/GameTopUp.BLL.csproj" />
     <Project Path="GameTopUp.DAL/GameTopUp.DAL.csproj" />
-    <Project Path="GameTopUp.Tests/GameTopUp.Tests.csproj" />
+    <Project Path="GameTopUp.UnitTests/GameTopUp.UnitTests.csproj" />
+    <Project Path="GameTopUp.IntegrationTests/GameTopUp.IntegrationTests.csproj" />
   </Folder>
 </Solution>
