@@ -134,6 +134,8 @@ public sealed class OrderQueryRow
     public string? PackageImageUrl { get; set; }
     public decimal PackagePrice { get; set; }
     public decimal PackageCost { get; set; }
+    public long? AssignedTo { get; set; }
+    public DateTimeOffset? AssignedAt { get; set; }
     public OrderStatus Status { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }

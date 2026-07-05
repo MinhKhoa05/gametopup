@@ -19,6 +19,8 @@ The app focuses on the parts that are often handled manually: customer messages,
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
 ![MariaDB](https://img.shields.io/badge/MariaDB-11-003545)
 
+🇻🇳 Tiếng Việt: [README.vi.md](README.vi.md)
+
 ## Live Demo
 
 **Website:** https://gametopup.minhkhoa.dev
@@ -32,8 +34,6 @@ The demo is seeded with accounts so you can try the main customer and admin flow
 | Customer | `customer02@gametopup.com` | `Admin123456@` |
 
 > The demo database may be reset periodically.
-
-🇻🇳 Tiếng Việt: [README.vi.md](README.vi.md)
 
 ## Overview
 

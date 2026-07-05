@@ -102,6 +102,15 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
         updated.Should().NotBeNull();
         updated!.Status.Should().Be(OrderStatus.Processing);
         updated.AssignedTo.Should().Be(admin.Id);
+
+        response = await client.GetAsync("/api/admin/orders?filter=processing");
+
+        var page = await response.ShouldBeSuccess<CursorPageResponse<AdminOrderResponse>>();
+        var order = page.Items.Should().ContainSingle(o => o.Id == orderId).Subject;
+
+        order.Status.Should().Be(OrderStatus.Processing);
+        order.AssignedTo.Should().Be(admin.Id);
+        order.AssignedAt.Should().NotBeNull();
     }
 
     [Fact]
