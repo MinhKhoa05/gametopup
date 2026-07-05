@@ -13,11 +13,11 @@ import { OrdersPage } from '@/features/orders/pages/OrdersPage';
 import { ProfilePage } from '@/features/users/pages/ProfilePage';
 const PackageAdminPage = lazy(() => import('@/features/packages/pages/PackageAdminPage').then((module) => ({ default: module.PackageAdminPage })));
 
-const AdminLayoutPage = lazy(() => import('@/features/admin/pages/AdminLayoutPage').then((module) => ({ default: module.AdminLayoutPage })));
+const AdminLayoutPage = lazy(() => import('@/app/admin/AdminLayoutPage').then((module) => ({ default: module.AdminLayoutPage })));
 const DashboardAdminPage = lazy(() => import('@/features/dashboard/pages/DashboardAdminPage').then((module) => ({ default: module.DashboardAdminPage })));
 const UserAdminPage = lazy(() => import('@/features/users/pages/UserAdminPage').then((module) => ({ default: module.UserAdminPage })));
 const GameAdminPage = lazy(() => import('@/features/games/pages/GameAdminPage').then((module) => ({ default: module.GameAdminPage })));
-const AdminOrdersPage = lazy(() => import('@/features/orders/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })));
+const AdminOrdersPage = lazy(() => import('@/features/orders/pages/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })));
 const DepositAdminPage = lazy(() => import('@/features/deposits/pages/DepositAdminPage').then((module) => ({ default: module.DepositAdminPage })));
 
 import { UserRole } from '@/features/users/types';

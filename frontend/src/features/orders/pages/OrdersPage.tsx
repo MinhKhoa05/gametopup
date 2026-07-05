@@ -19,7 +19,7 @@ import {
 import { formatCurrency } from "@/shared/lib/format";
 import { groupItemsByDate } from "@/shared/lib/groupByDate";
 import type { Order } from "@/features/orders/types";
-import { useOrderHistoryQuery } from "../server";
+import { useCancelOrderMutation } from "../server";
 
 export function OrdersPage() {
   const {
@@ -39,8 +39,7 @@ export function OrdersPage() {
   }
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const { data: history = [], isFetching: historyLoading } =
-    useOrderHistoryQuery(selectedOrder?.id ?? null);
+  const cancelOrderMutation = useCancelOrderMutation();
   const orderGroups = useMemo(
     () => groupItemsByDate(orders, (count) => `${count} đơn`),
     [orders],
@@ -49,6 +48,11 @@ export function OrdersPage() {
   const emptyDescription = filters.search
     ? "Không tìm thấy đơn hàng phù hợp."
     : "Các đơn hàng của bạn sẽ xuất hiện tại đây.";
+
+  async function cancelSelectedOrder(orderId: number) {
+    await cancelOrderMutation.mutateAsync(orderId);
+    setSelectedOrder(null);
+  }
 
   return (
     <div className="relative isolate overflow-hidden">
@@ -168,10 +172,10 @@ export function OrdersPage() {
         </div>
 
         <OrderDetailDialog
+          busy={cancelOrderMutation.isPending}
           order={selectedOrder}
           isOpen={selectedOrder !== null}
-          history={history}
-          historyLoading={historyLoading}
+          onCancelOrder={cancelSelectedOrder}
           onClose={() => setSelectedOrder(null)}
         />
       </Container>

@@ -5,6 +5,7 @@ import type { CursorParams } from '@/shared/types/pagination';
 import type {
   CreateOrderInput,
   CreateOrderResponse,
+  AdminOrder,
   OrderFilter,
   OrderHistory,
   OrderStats,
@@ -12,9 +13,16 @@ import type {
 } from './types';
 
 type OrderListParams = CursorParams<OrderFilter>;
+export type AdminOrderFilter = OrderFilter | null;
+
+type AdminOrderParams = CursorParams<OrderFilter>;
 
 export async function getMyOrders(params: OrderListParams = {}) {
   return getCursorPage<Order, OrderFilter>('/api/orders', params);
+}
+
+export async function getAdminOrders(params: AdminOrderParams = {}) {
+  return getCursorPage<AdminOrder, OrderFilter>('/api/admin/orders', params);
 }
 
 export async function getMyOrderStats() {
@@ -31,6 +39,18 @@ export async function createOrder(payload: CreateOrderInput) {
   }
 
   return data.orderId;
+}
+
+export async function cancelOrder(orderId: number) {
+  await api.post<ApiResponse<void>>(`/api/orders/${orderId}/cancel`);
+}
+
+export async function pickOrder(orderId: number) {
+  await api.post<ApiResponse<void>>(`/api/admin/orders/${orderId}/pick`);
+}
+
+export async function completeOrder(orderId: number) {
+  await api.post<ApiResponse<void>>(`/api/admin/orders/${orderId}/complete`);
 }
 
 export async function getOrderHistory(orderId: number) {

@@ -6,16 +6,16 @@ import { DashboardStats } from '@/features/dashboard/components/DashboardStats';
 import { PendingDepositsPanel } from '@/features/dashboard/components/PendingDepositsPanel';
 import { PendingOrdersPanel } from '@/features/dashboard/components/PendingOrdersPanel';
 import { useDashboardStatsQuery } from '@/features/dashboard/server';
-import { useAdminOrdersSection } from '@/features/orders/admin/hooks';
+import { useAdminOrdersQuery } from '@/features/orders/server';
 import { OrderStatus } from '@/features/orders/types';
 import { IconBox, PageHero } from '@/shared/components';
 
 export function DashboardAdminPage() {
   const statsQuery = useDashboardStatsQuery();
-  const ordersSection = useAdminOrdersSection('pending');
+  const ordersQuery = useAdminOrdersQuery('pending');
   const depositsSection = useDepositReviewSection('active');
 
-  const pendingOrders = ordersSection.orders.filter(
+  const pendingOrders = ordersQuery.items.filter(
     (order) => order.status === OrderStatus.Pending,
   );
   
@@ -50,7 +50,7 @@ export function DashboardAdminPage() {
 
       <section className="grid gap-5 xl:grid-cols-2">
         <PendingOrdersPanel
-          loading={ordersSection.loading}
+          loading={ordersQuery.isPending && ordersQuery.data === undefined}
           orders={pendingOrders}
         />
         <PendingDepositsPanel

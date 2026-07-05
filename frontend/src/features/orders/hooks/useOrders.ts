@@ -1,24 +1,15 @@
 import { useMemo, useState } from "react";
 import { useMyOrderStatsQuery, useMyOrdersQuery } from "@/features/orders/server";
-import type { Order, OrderFilter } from "@/features/orders/types";
-import type { FilterChipGroupItem } from "@/shared/components";
+import type { Order } from "@/features/orders/types";
+import { ORDER_STATUS_FILTER_OPTIONS, type OrderStatusFilter } from "@/features/orders/orderMetadata";
 import { filterByQuery } from "@/shared/lib/search";
-
-export type OrderStatusFilter = OrderFilter | null;
 
 type OrderFilters = {
   search: string;
   status: OrderStatusFilter;
 };
 
-export const STATUS_OPTIONS = [
-  { label: "Cần theo dõi", value: "watching" },
-  { label: "Tất cả", value: null },
-  { label: "Chờ xử lý", value: "pending" },
-  { label: "Đang xử lý", value: "processing" },
-  { label: "Hoàn thành", value: "completed" },
-  { label: "Đã hủy", value: "cancelled" },
-] satisfies readonly FilterChipGroupItem<OrderStatusFilter>[];
+export const STATUS_OPTIONS = ORDER_STATUS_FILTER_OPTIONS;
 
 function getOrderSearchText(
   order: Pick<Order, "gameName" | "packageName" | "gameAccountInfo" | "id">,

@@ -156,7 +156,7 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
 
         using var client = CreateHeaderAuthenticatedClient(admin);
 
-        var response = await client.PostAsync($"/api/admin/orders/{orderId}/cancel", null);
+        var response = await client.PostAsync($"/api/orders/{orderId}/cancel", null);
 
         await response.ShouldBeSuccess();
 
@@ -185,7 +185,7 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
 
         using var client = CreateHeaderAuthenticatedClient(admin);
 
-        var response = await client.PostAsync($"/api/admin/orders/{orderId}/cancel", null);
+        var response = await client.PostAsync($"/api/orders/{orderId}/cancel", null);
 
         await response.ShouldBeSuccess();
 
@@ -214,7 +214,7 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
 
         using var client = CreateHeaderAuthenticatedClient(anotherAdmin);
 
-        var response = await client.PostAsync($"/api/admin/orders/{orderId}/cancel", null);
+        var response = await client.PostAsync($"/api/orders/{orderId}/cancel", null);
 
         await response.ShouldHaveError(HttpStatusCode.Forbidden, ErrorCode.Forbidden);
 

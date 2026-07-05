@@ -42,11 +42,4 @@ public sealed class AdminOrderController : ApiControllerBase
         await _orderUseCase.CompleteOrderAsync(orderId, CurrentUser);
         return ApiOk();
     }
-
-    [HttpPost("{orderId}/cancel")]
-    public async Task<IActionResult> CancelOrder(long orderId)
-    {
-        await _orderUseCase.CancelOrderAsync(orderId, CurrentUser);
-        return ApiOk();
-    }
 }
