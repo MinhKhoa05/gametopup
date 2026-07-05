@@ -18,7 +18,7 @@ const DashboardAdminPage = lazy(() => import('@/features/dashboard/pages/Dashboa
 const UserAdminPage = lazy(() => import('@/features/users/pages/UserAdminPage').then((module) => ({ default: module.UserAdminPage })));
 const GameAdminPage = lazy(() => import('@/features/games/pages/GameAdminPage').then((module) => ({ default: module.GameAdminPage })));
 const AdminOrdersPage = lazy(() => import('@/features/orders/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })));
-const DepositAdminPage = lazy(() => import('@/features/deposits/admin/DepositAdminPage').then((module) => ({ default: module.DepositAdminPage })));
+const DepositAdminPage = lazy(() => import('@/features/deposits/pages/DepositAdminPage').then((module) => ({ default: module.DepositAdminPage })));
 
 import { UserRole } from '@/features/users/types';
 

@@ -1,25 +1,26 @@
-import { CheckCircle2, CircleSlash, Clock3, WalletCards } from 'lucide-react';
+import { CheckCircle2, CircleSlash, WalletCards } from 'lucide-react';
 
-import { WalletDepositStatus, type AdminDepositRequest } from '@/features/deposits/types';
-import { Badge, Button, DetailRow, Dialog } from '@/shared/components';
+import type { DepositReviewRequest } from '@/features/deposits/types';
+import { Button, DetailRow, Dialog } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
+import { DepositStatusBadge } from './DepositStatusBadge';
 
-type DepositAdminDialogProps = {
+type DepositReviewDialogProps = {
   actionable: boolean;
   busy: boolean;
   onClose: () => void;
   onReview: (
     action: 'approve' | 'reject',
-    request: AdminDepositRequest,
+    request: DepositReviewRequest,
     note?: string,
   ) => Promise<void>;
-  request: AdminDepositRequest | null;
+  request: DepositReviewRequest | null;
   reviewNote: string;
   setReviewNote: (value: string) => void;
 };
 
-export function DepositAdminDialog({
+export function DepositReviewDialog({
   actionable,
   busy,
   onClose,
@@ -27,7 +28,7 @@ export function DepositAdminDialog({
   request,
   reviewNote,
   setReviewNote,
-}: DepositAdminDialogProps) {
+}: DepositReviewDialogProps) {
   if (!request) {
     return null;
   }
@@ -139,25 +140,5 @@ export function DepositAdminDialog({
         </div>
       </div>
     </Dialog>
-  );
-}
-
-function DepositStatusBadge({ status }: { status: WalletDepositStatus }) {
-  if (status === WalletDepositStatus.UserConfirmed) {
-    return <Badge tone="primary">Đã xác nhận</Badge>;
-  }
-
-  if (status === WalletDepositStatus.Approved) {
-    return <Badge tone="success">Đã duyệt</Badge>;
-  }
-
-  if (status === WalletDepositStatus.Rejected) {
-    return <Badge tone="danger">Đã từ chối</Badge>;
-  }
-
-  return (
-    <Badge tone="warning" icon={<Clock3 size={14} />}>
-      Chờ chuyển khoản
-    </Badge>
   );
 }

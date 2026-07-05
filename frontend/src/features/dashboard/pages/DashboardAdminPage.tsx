@@ -1,6 +1,6 @@
 import { LayoutDashboard } from 'lucide-react';
 
-import { useAdminDepositRequestsSection } from '@/features/deposits/admin/hooks';
+import { useDepositReviewSection } from '@/features/deposits/server';
 import { WalletDepositStatus } from '@/features/deposits/types';
 import { DashboardStats } from '@/features/dashboard/components/DashboardStats';
 import { PendingDepositsPanel } from '@/features/dashboard/components/PendingDepositsPanel';
@@ -13,7 +13,7 @@ import { IconBox, PageHero } from '@/shared/components';
 export function DashboardAdminPage() {
   const statsQuery = useDashboardStatsQuery();
   const ordersSection = useAdminOrdersSection('pending');
-  const depositsSection = useAdminDepositRequestsSection('active');
+  const depositsSection = useDepositReviewSection('active');
 
   const pendingOrders = ordersSection.orders.filter(
     (order) => order.status === OrderStatus.Pending,

@@ -1,22 +1,22 @@
-import { Clock3 } from 'lucide-react';
-
-import { WalletDepositStatus, type AdminDepositRequest } from '@/features/deposits/types';
-import { Badge, MediaListItem } from '@/shared/components';
+import type { DepositReviewRequest } from '@/features/deposits/types';
+import { isDepositReviewActionable } from '@/features/deposits/depositMetadata';
+import { MediaListItem } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
+import { DepositStatusBadge } from './DepositStatusBadge';
 
-type AdminDepositItemProps = {
-  request: AdminDepositRequest;
+type DepositReviewItemProps = {
+  request: DepositReviewRequest;
   selected?: boolean;
   onClick: () => void;
 };
 
-export function AdminDepositItem({ request, selected = false, onClick }: AdminDepositItemProps) {
+export function DepositReviewItem({ request, selected = false, onClick }: DepositReviewItemProps) {
   return (
     <MediaListItem
       className={classNames(
         'p-3',
-        request.status === WalletDepositStatus.UserConfirmed &&
+        isDepositReviewActionable(request.status) &&
           'border-cyan-400/20 bg-cyan-400/[0.06]',
       )}
       leading={<DepositRequestIcon request={request} />}
@@ -42,8 +42,8 @@ export function AdminDepositItem({ request, selected = false, onClick }: AdminDe
   );
 }
 
-function DepositRequestIcon({ request }: { request: AdminDepositRequest }) {
-  const isConfirmed = request.status === WalletDepositStatus.UserConfirmed;
+function DepositRequestIcon({ request }: { request: DepositReviewRequest }) {
+  const isConfirmed = isDepositReviewActionable(request.status);
 
   return (
     <span
@@ -56,25 +56,5 @@ function DepositRequestIcon({ request }: { request: AdminDepositRequest }) {
     >
       #{request.id}
     </span>
-  );
-}
-
-function DepositStatusBadge({ status }: { status: WalletDepositStatus }) {
-  if (status === WalletDepositStatus.UserConfirmed) {
-    return <Badge tone="primary">Đã xác nhận</Badge>;
-  }
-
-  if (status === WalletDepositStatus.Approved) {
-    return <Badge tone="success">Đã duyệt</Badge>;
-  }
-
-  if (status === WalletDepositStatus.Rejected) {
-    return <Badge tone="danger">Đã từ chối</Badge>;
-  }
-
-  return (
-    <Badge tone="warning" icon={<Clock3 size={14} />}>
-      Chờ chuyển khoản
-    </Badge>
   );
 }

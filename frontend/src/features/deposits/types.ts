@@ -28,7 +28,7 @@ export type WalletDeposit = {
   updatedAt: string;
 };
 
-export type AdminDepositRequest = {
+export type DepositReviewRequest = {
   id: number;
   userId: number;
   amount: number;
