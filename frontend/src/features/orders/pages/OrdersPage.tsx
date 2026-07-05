@@ -1,6 +1,21 @@
 import { useMemo, useState } from "react";
-import { Activity, BadgeCheck, ClipboardList, Coins, Package } from "lucide-react";
-import { STATUS_OPTIONS, useOrders } from "@/features/orders/hooks/useOrders";
+import {
+  Activity,
+  BadgeCheck,
+  ClipboardList,
+  Coins,
+  Package,
+} from "lucide-react";
+import {
+  ORDER_STATUS_FILTER_OPTIONS,
+  type OrderStatusFilter,
+} from "@/features/orders/orderMetadata";
+import {
+  useMyOrderStatsQuery,
+  useMyOrdersQuery,
+  useCancelOrderMutation,
+} from "../server";
+import { filterByQuery } from "@/shared/lib/search";
 import { OrderListItem } from "@/features/orders/components/OrderListItem";
 import { OrderDetailDialog } from "../components/OrderDetailDialog";
 import {
@@ -19,20 +34,51 @@ import {
 import { formatCurrency } from "@/shared/lib/format";
 import { groupItemsByDate } from "@/shared/lib/groupByDate";
 import type { Order } from "@/features/orders/types";
-import { useCancelOrderMutation } from "../server";
+
+type OrderFilters = {
+  search: string;
+  status: OrderStatusFilter;
+};
+
+const STATUS_OPTIONS = ORDER_STATUS_FILTER_OPTIONS;
+
+function getOrderSearchText(
+  order: Pick<Order, "gameName" | "packageName" | "gameAccountInfo" | "id">,
+) {
+  return [
+    order.gameName,
+    order.packageName,
+    order.gameAccountInfo,
+    String(order.id),
+  ].join(" ");
+}
 
 export function OrdersPage() {
-  const {
-    orders,
-    filters,
-    hasMoreOrders,
-    isLoadingMoreOrders,
-    isLoading,
-    isError,
-    setFilters,
-    loadMoreOrders,
-    stats,
-  } = useOrders();
+  const [filters, setFilters] = useState<OrderFilters>({
+    search: "",
+    status: "watching",
+  });
+
+  const ordersQuery = useMyOrdersQuery(filters.status);
+  const statsQuery = useMyOrderStatsQuery();
+
+  const orders = useMemo(() => {
+    return filterByQuery(
+      ordersQuery.items,
+      filters.search,
+      getOrderSearchText,
+    ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, [ordersQuery.items, filters.search]);
+
+  const stats = statsQuery.data;
+
+  const hasMoreOrders = ordersQuery.hasMore;
+  const isLoadingMoreOrders = ordersQuery.isLoadingMore;
+  const loadMoreOrders = ordersQuery.loadMore;
+
+  const isLoading = ordersQuery.isPending && ordersQuery.data === undefined;
+
+  const isError = ordersQuery.isError;
 
   function updateFilters(updater: (current: typeof filters) => typeof filters) {
     setFilters(updater);
