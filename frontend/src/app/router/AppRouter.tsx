@@ -68,7 +68,6 @@ export function AppRouter() {
         <Route path="dashboard" element={<DashboardAdminPage />} />
         <Route path="users" element={<UserAdminPage />} />
         <Route path="games" element={<GameAdminPage />} />
-        <Route path="packages" element={<Navigate to="../games" replace />} />
         <Route path="games/:gameId/packages" element={<PackageAdminPage />} />
         <Route path="orders" element={<AdminOrdersPage />} />
         <Route path="deposits" element={<DepositAdminPage />} />

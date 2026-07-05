@@ -1,116 +1,32 @@
-import { Boxes, CalendarDays, ChevronRight, LayoutDashboard, Menu, Users, WalletCards, X } from 'lucide-react';
+import { Boxes, ChevronRight, LayoutDashboard, Menu, Users, WalletCards, X } from 'lucide-react';
 import { type CSSProperties, type ReactNode } from 'react';
-import { Badge, EmptyState, IconBox, BrandLogo } from '@/shared/components';
+import { BrandLogo } from '@/shared/components';
 import { classNames } from '@/shared/lib/classNames';
 import type { AdminSection } from '@/app/router/routes';
 
 const ADMIN_NAV_ITEMS: Array<{ icon: ReactNode; label: string; section: AdminSection }> = [
   { section: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Tổng quan' },
   { section: 'games', icon: <Boxes size={18} />, label: 'Quản lý game' },
-  { section: 'packages', icon: <Boxes size={18} />, label: 'Gói nạp' },
   { section: 'orders', icon: <WalletCards size={18} />, label: 'Đơn hàng' },
   { section: 'deposits', icon: <WalletCards size={18} />, label: 'Nạp tiền' },
   { section: 'users', icon: <Users size={18} />, label: 'Người dùng' },
 ];
 
-const ADMIN_SECTION_META: Record<AdminSection, { description: string; label: string }> = {
-  dashboard: { label: 'Tổng quan', description: 'Theo dõi hoạt động và số liệu hệ thống theo thời gian thực.' },
-  games: { label: 'Quản lý game', description: 'Cập nhật danh sách game, trạng thái hoạt động và thông tin hiển thị.' },
-  packages: { label: 'Gói nạp', description: 'Quản lý các gói nạp theo từng game và kiểm soát trạng thái hiển thị.' },
-  orders: { label: 'Đơn hàng', description: 'Kiểm tra, xử lý và theo dõi các đơn hàng gần đây.' },
-  deposits: { label: 'Nạp tiền', description: 'Duyệt hoặc từ chối các yêu cầu nạp tiền đã được khách hàng xác nhận.' },
-  users: { label: 'Người dùng', description: 'Quản lý người dùng, trạng thái hoạt động và quyền truy cập.' },
-};
-
-export function AdminAccessDenied({ onLogin }: { onLogin: () => void }) {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--gt-bg)] px-4 py-6 gt-text">
-      <EmptyState
-        className="max-w-[560px] py-10"
-        title="Cần quyền quản trị"
-        description="Bạn cần đăng nhập bằng tài khoản quản trị để truy cập khu vực này."
-      >
-        <div className="flex justify-center mb-4">
-          <IconBox size="lg">
-            <LayoutDashboard size={26} />
-          </IconBox>
-        </div>
-        <div className="mt-4">
-          <button className="gt-button gt-button-primary" onClick={onLogin}>
-            Đăng nhập
-          </button>
-        </div>
-      </EmptyState>
-    </div>
-  );
-}
-
-export function AdminSectionShell({
-  activeSection,
-  busy,
-  children,
-  loading,
-}: {
-  activeSection: AdminSection;
-  busy: boolean;
-  children: ReactNode;
-  loading: boolean;
-}) {
-  const meta = ADMIN_SECTION_META[activeSection];
-
-  if (activeSection === 'dashboard') {
-    return <div className="grid min-w-0 gap-5 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">{children}</div>;
-  }
-
-  return (
-    <div className="grid min-w-0 gap-5 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-      <section className="grid gap-4 border-b gt-border pb-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="grid min-w-0 gap-2">
-            <div className="grid gap-1">
-              <p className="text-[0.75rem] font-bold uppercase tracking-[0.18em] gt-text-soft">Admin</p>
-              <h1 className="m-0 text-[clamp(2rem,2.8vw,3rem)] font-black leading-[1.04] tracking-[-0.04em] text-white">{meta.label}</h1>
-              <p className="m-0 max-w-3xl text-sm leading-[1.55] gt-text-muted sm:text-[0.96rem]">{meta.description}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-            <span className="inline-flex min-h-9 items-center gap-2 rounded-full border gt-border bg-[var(--gt-card)] px-4 text-sm font-semibold gt-text-soft">
-              <CalendarDays size={14} />
-              7 ngày qua
-            </span>
-
-            {busy || loading ? (
-              <Badge tone="primary" icon={<LayoutDashboard size={14} />} className="rounded-full px-3.5 py-2">
-                Đang đồng bộ
-              </Badge>
-            ) : null}
-          </div>
-        </div>
-      </section>
-
-      {children}
-    </div>
-  );
-}
-
 export function AdminDesktopLayout({
+  accountMenu,
   activeSection,
   brandCollapsed,
   children,
-  loading,
   onBrandClick,
   onNavigate,
-  onRefresh,
   onToggleSidebar,
 }: {
+  accountMenu: ReactNode;
   activeSection: AdminSection;
   brandCollapsed: boolean;
   children: ReactNode;
-  loading: boolean;
   onBrandClick: () => void;
   onNavigate: (section: AdminSection) => void;
-  onRefresh: () => void;
   onToggleSidebar: () => void;
 }) {
   const sidebarWidth = brandCollapsed ? '92px' : '300px';
@@ -149,14 +65,7 @@ export function AdminDesktopLayout({
           </div>
 
           <div className="ml-auto flex flex-none items-center gap-2">
-            <button
-              type="button"
-              className="gt-button gt-button-secondary inline-flex size-10 items-center justify-center rounded-[18px] gt-text-muted"
-              onClick={onRefresh}
-              title="Làm mới"
-            >
-              <CalendarDays size={17} className={loading ? 'animate-spin' : ''} />
-            </button>
+            {accountMenu}
           </div>
         </div>
       </header>
@@ -169,24 +78,22 @@ export function AdminDesktopLayout({
 }
 
 export function AdminMobileLayout({
+  accountMenu,
   activeSection,
   children,
   isOpen,
-  loading,
   onBrandClick,
   onCloseSidebar,
   onNavigate,
-  onRefresh,
   onToggleSidebar,
 }: {
+  accountMenu: ReactNode;
   activeSection: AdminSection;
   children: ReactNode;
   isOpen: boolean;
-  loading: boolean;
   onBrandClick: () => void;
   onCloseSidebar: () => void;
   onNavigate: (section: AdminSection) => void;
-  onRefresh: () => void;
   onToggleSidebar: () => void;
 }) {
   return (
@@ -211,14 +118,7 @@ export function AdminMobileLayout({
           </div>
 
           <div className="ml-auto flex flex-none items-center gap-2">
-            <button
-              type="button"
-            className="gt-button gt-button-secondary inline-flex size-10 items-center justify-center rounded-[18px] gt-text-muted"
-              onClick={onRefresh}
-              title="Làm mới"
-            >
-              <CalendarDays size={17} className={loading ? 'animate-spin' : ''} />
-            </button>
+            {accountMenu}
           </div>
         </div>
       </header>
@@ -296,7 +196,7 @@ function AdminSidebarMobile({
           <button
             type="button"
             aria-label="Đóng sidebar"
-          className="gt-button gt-button-secondary inline-flex size-10 shrink-0 items-center justify-center rounded-[18px] gt-text-muted"
+            className="gt-button gt-button-secondary inline-flex size-10 shrink-0 items-center justify-center rounded-[18px] gt-text-muted"
             onClick={onClose}
           >
             <X size={16} />
@@ -325,32 +225,28 @@ function SidebarNavItem({
   icon,
   label,
   onClick,
-  secondary = false,
 }: {
   active?: boolean;
   collapsed?: boolean;
   icon: ReactNode;
   label: string;
-  onClick?: () => void;
-  secondary?: boolean;
+  onClick: () => void;
 }) {
   const content = (
     <>
       <span
         className={classNames(
           'inline-flex size-10 shrink-0 items-center justify-center rounded-[18px] border transition-colors',
-          secondary
-            ? 'border gt-border bg-[var(--gt-card)] gt-text-muted'
-            : active
-              ? 'border-[color:var(--gt-border-accent)] bg-[var(--gt-primary-soft)] gt-text'
-              : 'border gt-border bg-[var(--gt-card)] gt-text-soft',
+          active
+            ? 'border-[color:var(--gt-border-accent)] bg-[var(--gt-primary-soft)] gt-text'
+            : 'border gt-border bg-[var(--gt-card)] gt-text-soft',
         )}
       >
         {icon}
       </span>
       {collapsed ? null : (
         <span className="min-w-0 flex-1 text-left">
-          <span className={classNames('block truncate text-sm font-semibold', secondary ? 'gt-text-muted' : active ? 'gt-text' : 'gt-text-soft')}>
+          <span className={classNames('block truncate text-sm font-semibold', active ? 'gt-text' : 'gt-text-soft')}>
             {label}
           </span>
         </span>
@@ -360,26 +256,16 @@ function SidebarNavItem({
 
   const baseClassName = classNames(
     'flex min-h-12 items-center gap-3 rounded-[18px] border px-3 py-2 text-left transition-colors',
-    secondary
-      ? 'border-transparent bg-transparent gt-text-muted hover:bg-[var(--gt-card)] hover:text-[var(--gt-text-soft)]'
-      : active
-        ? 'border-[color:var(--gt-border-accent)] bg-[var(--gt-primary-soft)] gt-text shadow-[0_0_0_1px_rgba(34,211,238,0.08)]'
-        : 'border-transparent bg-transparent gt-text-soft hover:border-[color:var(--gt-border)] hover:bg-[var(--gt-card)] hover:text-[var(--gt-text)]',
+    active
+      ? 'border-[color:var(--gt-border-accent)] bg-[var(--gt-primary-soft)] gt-text shadow-[0_0_0_1px_rgba(34,211,238,0.08)]'
+      : 'border-transparent bg-transparent gt-text-soft hover:border-[color:var(--gt-border)] hover:bg-[var(--gt-card)] hover:text-[var(--gt-text)]',
     collapsed && 'justify-center px-2',
   );
-
-  if (!onClick) {
-    return (
-      <div className={baseClassName} aria-disabled="true">
-        {content}
-      </div>
-    );
-  }
 
   return (
     <button type="button" className={baseClassName} onClick={onClick}>
       {content}
-      {!collapsed && !secondary ? <ChevronRight size={16} className="ml-auto gt-text-disabled" /> : null}
+      {!collapsed ? <ChevronRight size={16} className="ml-auto gt-text-disabled" /> : null}
     </button>
   );
 }

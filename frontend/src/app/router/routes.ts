@@ -1,6 +1,6 @@
 import { generatePath } from 'react-router-dom';
 
-export const ADMIN_SECTIONS = ['dashboard', 'games', 'packages', 'orders', 'deposits', 'users'] as const;
+export const ADMIN_SECTIONS = ['dashboard', 'games', 'orders', 'deposits', 'users'] as const;
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
 
 export const ROUTE_PATHS = {

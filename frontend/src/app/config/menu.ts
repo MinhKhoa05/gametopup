@@ -19,6 +19,10 @@ export const HEADER_USER_MENU_ITEMS: HeaderMenuItem[] = [
   {
     label: "Lịch sử ví",
     href: routes.wallet(),
+  },
+  {
+    label: "Trang chủ",
+    href: routes.home(),
     dividerAfter: true,
   },
   {
@@ -48,10 +52,6 @@ export const HEADER_ADMIN_MENU_ITEMS: HeaderMenuItem[] = [
   {
     label: "Quản lý game",
     href: routes.admin("games"),
-  },
-  {
-    label: "Gói nạp",
-    href: routes.admin("packages"),
   },
   {
     label: "Đơn hàng",

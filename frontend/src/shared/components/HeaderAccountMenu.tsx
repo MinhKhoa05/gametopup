@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
+  Home,
   UserRound,
   Package,
   WalletCards,
@@ -140,6 +141,9 @@ export function HeaderAccountMenu({
 
 function getMenuIcon(item: HeaderMenuItem) {
   switch (item.label) {
+    case "Trang chủ":
+      return <Home size={16} />;
+
     case "Hồ sơ":
       return <UserRound size={16} />;
 
