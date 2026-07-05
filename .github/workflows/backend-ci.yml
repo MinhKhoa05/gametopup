@@ -1,23 +1,21 @@
-name: CI
+name: Backend CI
 
 on:
   push:
     branches: [ main ]
     paths:
       - backend/**
-      - frontend/**
       - deployments/**
       - docker-compose.yml
-      - .github/workflows/ci.yml
+      - .github/workflows/backend-ci.yml
       - .github/scripts/**
   pull_request:
     branches: [ main ]
     paths:
       - backend/**
-      - frontend/**
       - deployments/**
       - docker-compose.yml
-      - .github/workflows/ci.yml
+      - .github/workflows/backend-ci.yml
       - .github/scripts/**
 
 permissions:
@@ -28,45 +26,14 @@ permissions:
 
 env:
   DOTNET_VERSION: 8.0.x
-  NODE_VERSION: 22.x
   SOLUTION_PATH: backend/GameTopUp.slnx
   UNIT_TEST_PROJECT: backend/GameTopUp.UnitTests/GameTopUp.UnitTests.csproj
   INTEGRATION_TEST_PROJECT: backend/GameTopUp.IntegrationTests/GameTopUp.IntegrationTests.csproj
   BUILD_CONFIGURATION: Release
 
 jobs:
-  changes:
-    name: Detect Changes
-    runs-on: ubuntu-latest
-    outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
-
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
-
-      - name: Detect changed areas
-        id: filter
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            backend:
-              - 'backend/**'
-              - 'deployments/**'
-              - 'docker-compose.yml'
-              - '.github/workflows/ci.yml'
-              - '.github/scripts/**'
-            frontend:
-              - 'frontend/**'
-              - 'deployments/**'
-              - 'docker-compose.yml'
-              - '.github/workflows/ci.yml'
-
   backend-ci:
     name: Backend CI
-    needs: changes
-    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -172,33 +139,3 @@ jobs:
           name: coverage-report
           path: artifacts/coverage-report
           if-no-files-found: warn
-
-  frontend-ci:
-    name: Frontend CI
-    needs: changes
-    if: needs.changes.outputs.frontend == 'true'
-    runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: frontend
-
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Type check
-        run: npm run typecheck
-
-      - name: Build frontend
-        run: npm run build

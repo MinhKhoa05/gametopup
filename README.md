@@ -10,9 +10,11 @@ This repository is maintained as a personal portfolio project, with a focus on b
 
 The app focuses on the parts that are often handled manually: customer messages, bank transfers, package tracking and order processing.
 
-[![CI](https://github.com/MinhKhoa05/gametopup/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/ci.yml)
+[![Backend CI](https://github.com/MinhKhoa05/gametopup/actions/workflows/backend-ci.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/MinhKhoa05/gametopup/actions/workflows/frontend-ci.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/frontend-ci.yml)
 [![Deploy](https://github.com/MinhKhoa05/gametopup/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/deploy.yml)
-[![Coverage](https://img.shields.io/badge/Coverage-Report%20Available-2ea44f)](https://github.com/MinhKhoa05/gametopup/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/Coverage-Report%20Available-2ea44f)](https://github.com/MinhKhoa05/gametopup/actions/workflows/backend-ci.yml)
+
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6)

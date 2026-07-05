@@ -10,9 +10,11 @@ Repository này được phát triển như một portfolio project cá nhân, t
 
 Ứng dụng tập trung vào những phần thường được xử lý thủ công: tin nhắn khách hàng, chuyển khoản ngân hàng, theo dõi package và xử lý đơn hàng.
 
-[![CI](https://github.com/MinhKhoa05/gametopup/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/ci.yml)
+[![Backend CI](https://github.com/MinhKhoa05/gametopup/actions/workflows/backend-ci.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/MinhKhoa05/gametopup/actions/workflows/frontend-ci.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/frontend-ci.yml)
 [![Deploy](https://github.com/MinhKhoa05/gametopup/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/deploy.yml)
-[![Coverage](https://img.shields.io/badge/Coverage-Report%20Available-2ea44f)](https://github.com/MinhKhoa05/gametopup/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/Coverage-Report%20Available-2ea44f)](https://github.com/MinhKhoa05/gametopup/actions/workflows/backend-ci.yml)
+
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6)
