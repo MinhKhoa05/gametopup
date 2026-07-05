@@ -4,7 +4,6 @@ import { LockKeyhole, ShieldCheck } from "lucide-react";
 import { useChangePasswordMutation } from "../../auth/server";
 
 import { Dialog, FormActions, PasswordField } from "@/shared/components";
-import { getApiMessage } from "@/shared/api/errors";
 
 type Props = {
   onClose: () => void;
@@ -91,11 +90,6 @@ export function ChangePasswordDialog({ onClose }: Props) {
           error={passwordMismatch ? "Mật khẩu xác nhận không khớp." : undefined}
         />
 
-        {changePasswordMutation.error instanceof Error && (
-          <div className="rounded-[18px] border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-            {getApiMessage(changePasswordMutation.error)}
-          </div>
-        )}
       </form>
     </Dialog>
   );

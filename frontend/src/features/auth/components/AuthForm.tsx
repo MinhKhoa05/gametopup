@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 
 import { Mail, UserRound } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button, Field, PasswordField } from "@/shared/components";
 
@@ -26,7 +27,6 @@ export function AuthForm({ mode, loading, onSubmit }: AuthFormProps) {
   }));
 
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
 
   const isRegister = mode === "register";
 
@@ -44,20 +44,14 @@ export function AuthForm({ mode, loading, onSubmit }: AuthFormProps) {
     event.preventDefault();
 
     if (isRegister && confirmPassword !== form.password) {
-      setError("Mật khẩu xác nhận chưa khớp.");
+      toast.error("Mật khẩu xác nhận chưa khớp.");
       return;
     }
-
-    setError("");
 
     try {
       await onSubmit(form);
     } catch (submitError) {
-      setError(
-        submitError instanceof Error
-          ? submitError.message
-          : "Không thể thực hiện yêu cầu.",
-      );
+      // Bỏ qua lỗi ở đây vì global mutation cache đã tự động show toast
     }
   }
 
@@ -115,12 +109,6 @@ export function AuthForm({ mode, loading, onSubmit }: AuthFormProps) {
           }
           onChange={(event) => setConfirmPassword(event.target.value)}
         />
-      )}
-
-      {error && (
-        <div className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-          {error}
-        </div>
       )}
 
       <Button type="submit" variant="primary" loading={loading} className="mt-1">
