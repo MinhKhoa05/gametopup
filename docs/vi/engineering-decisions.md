@@ -1,4 +1,4 @@
-# Engineering Decisions
+# Các quyết định kỹ thuật
 
 🇺🇸 English: [../engineering-decisions.md](../engineering-decisions.md)
 
@@ -8,7 +8,7 @@ Sau vài tháng làm project, những quyết định đáng nhớ nhất là nh
 
 Một số quyết định hoạt động tốt. Một số khác đơn giản là phù hợp với project ở thời điểm hiện tại, và có thể sẽ thay đổi nếu project tiếp tục lớn lên.
 
-## How The Architecture Evolved
+## Kiến trúc đã phát triển như nào
 
 GameTopUp không bắt đầu với đúng cấu trúc như hiện tại.
 
@@ -28,7 +28,7 @@ Project vẫn là một layered application. Nó chỉ tiến hoá ở những n
 
 Sự tiến hoá đó cảm giác trung thực hơn việc cố redesign toàn bộ codebase quanh một architecture khác.
 
-## A Practical Layered Backend
+## Một layered backend thực dụng
 
 Backend dần ổn định thành một layered shape thực dụng:
 
@@ -54,7 +54,7 @@ Repositories và queries được tách ra vì lý do tương tự. Repositories
 
 Mình sẽ không gọi đây là full CQRS. Trong codebase này, nó chỉ là một tách biệt nhẹ giúp backend dễ scan hơn.
 
-## Staying Close To SQL
+## Giữ code gần với SQL
 
 Một trong những quyết định backend sớm hơn là giữ code gần với SQL bằng Dapper và Dommel.
 
@@ -71,7 +71,7 @@ Dapper cho quyền kiểm soát trực tiếp với các query rủi ro. Dommel 
 
 Cái giá là phải chịu trách nhiệm nhiều hơn với SQL và mappings. Với project này, trade-off đó hợp lý vì cách database hoạt động cũng là một phần mình muốn học rõ hơn.
 
-## Modeling Operational State
+## Mô hình hóa trạng thái vận hành
 
 Wallet và package models trở nên quan trọng hơn nhiều so với vẻ ngoài ban đầu.
 
@@ -91,7 +91,7 @@ Package availability cũng có vấn đề tương tự. Một top-up package kh
 
 GameTopUp dùng `available_slots` vì lý do đó. Khi purchase, một slot được reserve. Khi order bị cancel, một slot được restore. Repository update chỉ giảm slot count khi còn đủ slots, nhờ vậy tránh được overselling bug rõ ràng nhất.
 
-## Testing The Parts That Could Drift
+## Kiểm thử những phần dễ sai lệch
 
 Một số behavior quan trọng nhất trong GameTopUp phụ thuộc vào việc database làm đúng phần của nó.
 
@@ -106,7 +106,7 @@ Trade-off là tests chậm hơn và cần Docker. Đổi lại, GameTopUp kiểm
 
 Nhìn lại, đây là một trong những quyết định mình hài lòng nhất. Nó làm test suite gần hơn với những vấn đề mà app thật sự phải xử lý.
 
-## Keeping Auth Understandable
+## Giữ luồng xác thực dễ hiểu
 
 API gửi JWT qua HttpOnly cookies.
 
@@ -116,7 +116,7 @@ Refresh tokens cũng được lưu bằng cookies, nhưng database chỉ lưu to
 
 Có nhiều cách setup auth nâng cao hơn, nhưng cách này hợp với project. Flow vẫn dễ hiểu mà không bắt mọi screen phải chịu trách nhiệm token handling.
 
-## Frontend State As The App Grew
+## Frontend state khi project phát triển 
 
 Frontend bắt đầu cần nhiều structure hơn khi admin actions và customer pages cùng thay đổi một số data từ nhiều nơi khác nhau.
 
@@ -130,7 +130,7 @@ Cursor pagination là một quyết định nhỏ khác cùng nhóm. Orders, dep
 
 Đây không phải những phần sâu nhất của project, nhưng chúng giúp UI code dễ dự đoán hơn khi số màn hình tăng lên.
 
-## Keeping Deployment Simple
+## Giữ deployment đơn giản
 
 Deployment dùng Docker Compose với VPS và Nginx.
 
@@ -147,7 +147,7 @@ Setup hiện tại có giới hạn:
 
 Đó là các limitation thật. Chúng cũng là những cải thiện hợp lý trong tương lai, không phải yêu cầu bắt buộc cho phiên bản hiện tại.
 
-## What I Would Revisit Later
+## Những điều mình sẽ xem lại sau
 
 Nếu GameTopUp tiếp tục lớn lên, đây là những quyết định mình sẽ xem lại trước:
 
@@ -160,7 +160,7 @@ Nếu GameTopUp tiếp tục lớn lên, đây là những quyết định mình
 
 Đây không phải các feature giả vờ như đã hoàn thành. Chúng là những phần tiếp theo hợp lý sau phiên bản hiện tại.
 
-## Next
+## Đọc tiếp
 
 Để xem các workflow phía sau những quyết định này, đọc [Core Workflows](core-workflows.md).
 

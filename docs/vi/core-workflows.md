@@ -1,4 +1,4 @@
-# Core Workflows
+# Các workflow cốt lõi
 
 🇺🇸 English: [../core-workflows.md](../core-workflows.md)
 
@@ -8,7 +8,7 @@ Tài liệu này giải thích những workflow cần được chăm kỹ nhất
 
 Để xem bức tranh tổng thể của hệ thống, đọc [Architecture](architecture.md). Để hiểu vì sao các workflow này tồn tại, bắt đầu với [Overview](overview.md).
 
-## The Operating Loop
+## Luồng vận hàng tổng thể
 
 Ở mức cao, app hỗ trợ vòng vận hành sau:
 
@@ -32,7 +32,7 @@ flowchart LR
 
 Mỗi bước đều để lại record. Deposit status, wallet transactions, order status và order history giúp workflow dễ kiểm tra lại hơn về sau.
 
-## Wallet Deposit
+## Nạp tiền vào ví
 
 Customer không thanh toán trực tiếp cho một order. Họ tạo wallet deposit request trước.
 
@@ -67,7 +67,7 @@ QR image URL được tạo từ thông tin ngân hàng VietQR trong configurati
 
 Ở scope hiện tại, app mô phỏng một dịch vụ nhỏ nơi việc xác minh chuyển khoản vẫn là công việc của admin.
 
-## Deposit Review
+## Duyệt yêu cầu nạp tiền
 
 Một deposit đi qua một state machine nhỏ:
 
@@ -107,7 +107,7 @@ Wallet credit và deposit status update diễn ra trong cùng một transaction 
 
 Concurrency tests kiểm tra phiên bản rủi ro của workflow này: hai admin approve cùng một deposit gần như cùng lúc. Kết quả mong muốn là ví chỉ được cộng một lần.
 
-## Purchase Flow
+## Luồng mua hàng
 
 Purchase flow là nơi wallet balance, package availability và order state gặp nhau.
 
@@ -157,7 +157,7 @@ Khi customer mua package, một slot được giữ lại. Khi order bị huỷ,
 
 Cách mô hình hoá này khớp với cách một dịch vụ top-up nhỏ vận hành, nơi capacity bị giới hạn bởi số order còn có thể nhận, không phải bởi tồn kho vật lý.
 
-## Admin Order Processing
+## Xử lý đơn hàng
 
 Sau khi purchase, order bắt đầu ở trạng thái `Pending`.
 
@@ -178,7 +178,7 @@ Mỗi transition có ý nghĩa đều ghi order history. Điều đó giúp orde
 
 Project cũng bảo vệ pick flow khỏi race condition. Nếu hai admin cùng cố pick một pending order, chỉ một người trở thành assigned admin.
 
-## Cancellation And Refund
+## Hủy đơn và hoàn tiền
 
 Cancellation là một trong những workflow dễ làm sai nhất.
 
@@ -219,7 +219,7 @@ sequenceDiagram
 
 Phần xử lý repeated cancellation được viết khá cẩn thận. Nếu order đã cancelled, workflow trả về mà không refund lần nữa. Behavior này được kiểm tra bằng concurrency tests vì double refund là kiểu bug dễ bị bỏ sót nếu chỉ test happy path.
 
-## Where Consistency Matters Most
+## Đảm bảo tính nhất quán
 
 Những phần rủi ro nhất của GameTopUp là nơi hai user hoặc admin có thể hành động cùng lúc.
 
@@ -234,7 +234,7 @@ Các workflow nhạy cảm nhất là:
 
 Project dùng transaction boundaries rõ ràng, row locking ở những nơi cần thiết và integration tests với MariaDB thay vì chỉ dựa vào mocked unit tests.
 
-## Continue Reading
+## Đọc tiếp
 
 Các workflow trong tài liệu này được triển khai thông qua layered architecture đã giới thiệu trước đó.
 

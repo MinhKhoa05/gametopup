@@ -1,14 +1,14 @@
-# Testing
+# Kiểm thử
 
 🇺🇸 English: [../testing.md](../testing.md)
 
-Testing trở nên quan trọng hơn khi các workflow của GameTopUp bắt đầu liên kết chặt hơn.
+Testing dần trở thành một phần quan trọng hơn khi các workflow của GameTopUp bắt đầu liên kết chặt với nhau.
 
 Khi wallet balance, deposit review, package availability và order processing bắt đầu ảnh hưởng lẫn nhau, một bug không còn chỉ là response sai. Nó có thể là ví bị cộng tiền hai lần, package slot bị bán vượt khả năng, hoặc order rơi vào trạng thái không đúng.
 
 Test suite tập trung quanh rủi ro đó. Coverage vẫn hữu ích, nhưng giá trị chính nằm ở việc bảo vệ những workflow dễ gây lỗi vận hành nhất.
 
-## Testing Strategy
+## Chiến lược kiểm thử
 
 Backend dựa vào hai nhóm tests:
 
@@ -23,27 +23,27 @@ Integration tests kiểm tra những nơi API, database và workflow state cần
 
 Frontend hiện chưa có test suite riêng. Frontend checks trong CI là type checking và production build.
 
-## Unit Tests
+## Kiểm thử đơn vị
 
 Unit tests tập trung vào các business rules nhỏ hơn, nơi feedback nên nhanh và tách biệt.
 
 Chúng hữu ích khi rule có thể được kiểm tra mà không cần chạy toàn bộ API hoặc database. Điều này bao gồm validation, token behavior, wallet balance rules, deposit state transitions, package slot checks, order state transitions, image URL behavior và use case orchestration cho auth, orders và deposits.
 
-Các test này vẫn có giá trị vì service layer chứa business rules thật, không chỉ forward calls sang repositories. Khi một rule thay đổi, test thường chỉ khá gần phần code cần chú ý.
+Các test này vẫn có giá trị vì service layer chứa business rules thật, không chỉ forward calls sang repositories. Khi một business rule thay đổi, phần test liên quan thường cũng nằm rất gần phần code cần chỉnh sửa.
 
 Backend structure cũng giúp ở điểm này. Khi transaction orchestration nằm trong use cases và services tập trung vào trách nhiệm nhỏ hơn, nhiều rule có thể được test mà không cần kéo database infrastructure vào unit test.
 
-## Integration Tests
+## Kiểm thử tích hợp
 
 Integration tests chạy với MariaDB thông qua Testcontainers.
 
-Lựa chọn này đến từ chính cách project vận hành. Nhiều workflow quan trọng phụ thuộc vào SQL behavior như row locking, transactions và conditional updates. Nếu test những phần đó bằng một in-memory substitute, mình sẽ bỏ lỡ những hành vi mà app thật sự dựa vào.
+Lựa chọn này đến từ chính cách project vận hành. Nhiều workflow quan trọng phụ thuộc vào SQL behavior như row locking, transactions và conditional updates. Nếu thay chúng bằng một database in-memory, nhiều hành vi mà ứng dụng thật sự dựa vào sẽ không còn được kiểm tra nữa.
 
 Integration setup chạy API bằng `WebApplicationFactory`, khởi động một disposable MariaDB container qua Testcontainers, load schema thật từ `database/schema.sql`, reset state giữa các test bằng Respawn và dùng test auth handler để scenario tập trung vào behavior của API.
 
 Cách này cho phép tests chạy API và database cùng nhau mà không phụ thuộc vào một shared local database.
 
-## API Scenario Tests
+## Kiểm thử các kịch bản API
 
 API scenario tests đi qua cả customer và admin workflows.
 
@@ -51,7 +51,7 @@ API scenario tests đi qua cả customer và admin workflows.
 
 Các test này không chỉ kiểm tra endpoint trả về `200`. Chúng seed data, gọi API và verify database state sau đó.
 
-## Full Purchase Journey
+## Hành trình mua hàng hoàn chỉnh
 
 Integration tests có một purchase journey đi theo business path chính.
 
@@ -71,7 +71,7 @@ flowchart LR
 
 Kiểu test này hữu ích vì purchase flow đi qua nhiều phần của app: wallet, package, order và history.
 
-## Concurrency Tests
+## Kiểm thử đồng thời
 
 Concurrency tests là một trong những phần quan trọng nhất của test suite.
 
@@ -88,7 +88,7 @@ Expected behavior không phải lúc nào cũng là “một request thành côn
 
 Những test này giữ test suite thực tế hơn. Chúng kiểm tra các lỗi mà một happy-path demo có thể dễ dàng che mất.
 
-## CI And Coverage
+## CI và độ bao phủ
 
 CI pipeline đi theo cùng cách tách phần như repository.
 
@@ -100,7 +100,7 @@ Cách tách này giữ workflow thực dụng. Một frontend-only change không
 
 Coverage được thu bằng Coverlet và report qua ReportGenerator. CI publish reports tự động, nhưng coverage chỉ hữu ích khi những behavior quan trọng thật sự được bảo vệ. Một con số coverage cao sẽ không có nhiều ý nghĩa nếu wallet credits, refunds, package slots và order transitions không được test.
 
-## Local Commands
+## Chạy kiểm thử trên máy
 
 Useful backend commands:
 
@@ -120,7 +120,7 @@ npm run build
 
 Integration tests cần Docker vì mỗi test run khởi động một disposable MariaDB container thông qua Testcontainers.
 
-## What The Tests Say About The Project
+## Bộ kiểm thử phản ánh điều gì về project
 
 Tests cho thấy GameTopUp ưu tiên bảo vệ điều gì trước.
 
@@ -136,7 +136,7 @@ Hiện tại, suite đã lớn lên thành hơn 200 automated tests cho các cor
 
 Con số đó quan trọng ít hơn điều nó đại diện: các workflow có rủi ro vận hành cao, như wallet credits, package reservations, refunds và order state transitions, giờ có thể được thay đổi tự tin hơn.
 
-## Next
+## Đọc tiếp
 
 Để xem các workflow này được ship như thế nào, đọc [Deployment](deployment.md).
 

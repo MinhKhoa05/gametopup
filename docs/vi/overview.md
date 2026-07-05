@@ -1,4 +1,4 @@
-# Overview
+# Tổng quan
 
 🇺🇸 English: [../overview.md](../overview.md)
 
@@ -6,7 +6,7 @@
 
 README giải thích project là gì và chạy như thế nào. Tài liệu này đi sâu hơn vào lý do project tồn tại, vì sao domain này đáng để xây dựng, và những điều mình học được khi biến một workflow kinh doanh nhỏ thành một full-stack application.
 
-## The Idea
+## Ý tưởng
 
 GameTopUp bắt đầu từ một quan sát khá đơn giản: nhiều dịch vụ nhỏ không gặp khó vì ý tưởng quá phức tạp. Họ gặp khó vì workflow hằng ngày dần trở nên rối.
 
@@ -18,7 +18,7 @@ Nhưng khi nhiều deposit, số dư ví, package slots và orders cùng thay đ
 
 GameTopUp lớn lên từ vấn đề đó. Project lấy một workflow đã tồn tại ngoài đời và mô hình hoá nó đủ cẩn thận để những thay đổi trạng thái quan trọng có thể được nhìn thấy và truy vết.
 
-## Why This Domain
+## Vì sao chọn domain này
 
 Mình muốn một portfolio project nơi các quyết định backend thật sự định hình workflow.
 
@@ -26,7 +26,7 @@ Tiêu chí mình đặt ra khá đơn giản: domain cần có nhiều trạng t
 
 Domain nạp game khá hợp với hướng đó.
 
-Nhờ vậy, project cũng giữ được một scope gọn hơn. GameTopUp dành nhiều sự chú ý cho những workflow, business rules, bài test và tài liệu đã có, để từng phần nhỏ cùng góp vào một repository nhất quán.
+Nhờ vậy, project có thể tập trung vào một phạm vi vừa đủ để từng phần được xây dựng cẩn thận. Từ workflow, business rules đến bài test và tài liệu, mọi phần đều góp vào một repository nhất quán.
 
 Chủ dịch vụ mua hoặc lấy package với một mức giá nội bộ, rồi bán lại cho khách theo giá niêm yết. Phần lời đến từ chênh lệch giữa giá vốn và giá bán. Khách có một flow mua thuận tiện hơn hoặc rẻ hơn, còn chủ dịch vụ cần kiểm soát deposit, trạng thái order và package availability.
 
@@ -43,7 +43,7 @@ Mô hình nhỏ đó tạo ra nhiều câu hỏi rất thực tế:
 
 Những câu hỏi đó định hình phần lớn các quyết định backend về sau.
 
-## How The Project Evolved
+## Project đã phát triển như thế nào
 
 Project không bắt đầu bằng một bản thiết kế kiến trúc hoàn hảo.
 
@@ -59,7 +59,7 @@ Testing trở nên quan trọng hơn khi các workflow bắt đầu có cảm gi
 
 Deployment được thêm gần cuối. Docker Compose, Nginx và GitHub Actions giúp project có thể được xem như một application đang chạy, không chỉ là source code.
 
-## Lessons Learned
+## Bài học rút ra
 
 Bài học lớn nhất là domain nhỏ vẫn có thể có complexity thật.
 
@@ -71,7 +71,7 @@ Project cũng thay đổi cách mình nhìn về tests. Một mocked unit test c
 
 Cuối cùng, việc deploy live demo làm project có cảm giác hoàn chỉnh hơn. Deployment không phải phần khó nhất của codebase, nhưng nó thay đổi cách project được trình bày. Một demo chạy được, account seed sẵn và Docker setup lặp lại được giúp repository dễ được tin tưởng hơn.
 
-## Continue Reading
+## Đọc tiếp
 
 Các tài liệu còn lại đi sâu hơn vào từng phần của project:
 
