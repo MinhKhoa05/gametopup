@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { routes } from '@/app/router/routes';
 import { useAuthUserQuery } from '@/features/auth/server';
@@ -56,12 +57,18 @@ export function GamePackagePage() {
   }
 
   const handleRequestPurchase = () => {
-    if (
-      !isAuthenticated ||
-      !selectedPackage ||
-      walletQuery.isPending ||
-      selectedPackage.salePrice > walletBalance
-    ) {
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để tiếp tục.');
+      navigate(routes.login());
+      return;
+    }
+
+    if (!selectedPackage || walletQuery.isPending) {
+      return;
+    }
+
+    if (selectedPackage.salePrice > walletBalance) {
+      toast.error("Số dư ví không đủ. Vui lòng nạp thêm tiền.");
       return;
     }
 
