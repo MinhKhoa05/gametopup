@@ -15,11 +15,16 @@ public sealed class PackageRepository : IPackageRepository
 
     public Task<Package?> GetByIdAsync(long id) => _database.GetByIdAsync<Package>(id);
 
-    public Task<List<Package>> GetByGameIdAsync(long gameId) =>
+    public Task<List<Package>> GetActiveByGameIdAsync(long gameId) =>
         _database.QueryAsync<Package>(
-            "SELECT * FROM packages WHERE game_id = @GameId AND is_active = 1 ORDER BY created_at DESC",
+            "SELECT * FROM packages WHERE game_id = @GameId AND is_active = 1",
             new { GameId = gameId });
 
+    public Task<List<Package>> GetByGameIdAsync(long gameId) =>
+        _database.QueryAsync<Package>(
+            "SELECT * FROM packages WHERE game_id = @GameId",
+            new { GameId = gameId });
+    
     public Task<long> CreateAsync(Package package) => _database.InsertAsync(package);
 
     public Task<bool> UpdateAsync(Package package) => _database.UpdateAsync(package);

@@ -16,7 +16,7 @@ public sealed class PackageController : ApiControllerBase
     [HttpGet("/api/games/{gameId:long}/packages")]
     public async Task<IActionResult> GetPackagesByGame(long gameId)
     {
-        var packages = await _packageService.GetPackagesByGameIdAsync(gameId);
+        var packages = await _packageService.GetActicePackagesByGameIdAsync(gameId);
         return ApiOk(packages);
     }
 

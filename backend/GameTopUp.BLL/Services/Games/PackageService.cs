@@ -37,9 +37,9 @@ public sealed class PackageService
             .ToList();
     }
 
-    public async Task<List<PackageResponse>> GetPackagesByGameIdAsync(long gameId)
+    public async Task<List<PackageResponse>> GetActicePackagesByGameIdAsync(long gameId)
     {
-        var packages = await _packageRepository.GetByGameIdAsync(gameId);
+        var packages = await _packageRepository.GetActiveByGameIdAsync(gameId);
 
         return packages
             .Select(item => WithPublicImageUrl(item.MapTo<PackageResponse>()))
