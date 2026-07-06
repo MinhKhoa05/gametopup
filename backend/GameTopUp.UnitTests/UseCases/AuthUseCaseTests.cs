@@ -8,6 +8,7 @@ using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Interfaces;
+using GameTopUp.UnitTests.Fakes;
 using Microsoft.Extensions.Options;
 using Moq;
 

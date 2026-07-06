@@ -4,6 +4,7 @@ using GameTopUp.BLL.Contracts;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.Services.Games;
+using GameTopUp.BLL.Services.Notifications;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
@@ -16,17 +17,20 @@ public sealed class OrderUseCase
     private readonly PackageService _packageService;
     private readonly WalletService _walletService;
     private readonly OrderService _orderService;
+    private readonly NotificationService _notificationService;
     private readonly ITransactionManager _transaction;
 
     public OrderUseCase(
         PackageService packageService,
         WalletService walletService,
         OrderService orderService,
+        NotificationService notificationService,
         ITransactionManager transaction)
     {
         _packageService = packageService;
         _walletService = walletService;
         _orderService = orderService;
+        _notificationService = notificationService;
         _transaction = transaction;
     }
 
@@ -63,6 +67,8 @@ public sealed class OrderUseCase
                 WalletTransactionType.PurchaseOrder,
                 order.Id.ToString(CultureInfo.InvariantCulture));
             await _walletService.ApplyTransactionAsync(wallet, walletTransaction);
+            await _notificationService.CreateNotificationAsync(
+                NotificationTemplates.OrderPlaced(order.UserId, order.Id));
 
             return new CreateOrderResponse { OrderId = order.Id };
         });
@@ -83,6 +89,8 @@ public sealed class OrderUseCase
             var history = _orderService.PickOrder(order, actor, package.ImportPrice);
 
             await _orderService.UpdateWithHistoryAsync(order, history);
+            await _notificationService.CreateNotificationAsync(
+                NotificationTemplates.OrderProcessing(order.UserId, order.Id));
         });
     }
 
@@ -99,6 +107,8 @@ public sealed class OrderUseCase
 
             var history = _orderService.CompleteOrder(order, actor);
             await _orderService.UpdateWithHistoryAsync(order, history);
+            await _notificationService.CreateNotificationAsync(
+                NotificationTemplates.OrderCompleted(order.UserId, order.Id));
         });
     }
 
@@ -126,6 +136,8 @@ public sealed class OrderUseCase
                 order.Id.ToString(CultureInfo.InvariantCulture));
             
             await _walletService.ApplyTransactionAsync(wallet, walletTransaction);
+            await _notificationService.CreateNotificationAsync(
+                NotificationTemplates.OrderCancelled(order.UserId, order.Id));
         });
     }
 }

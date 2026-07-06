@@ -114,6 +114,21 @@ public static partial class TestDatabaseExtensions
                 new { UserId = userId }));
     }
 
+    public static Task<List<Notification>> GetNotificationsByUserAsync(
+        this CustomWebApplicationFactory factory,
+        long userId)
+    {
+        return factory.WithDbAsync(db =>
+            db.QueryAsync<Notification>(
+                """
+                SELECT *
+                FROM notifications
+                WHERE user_id = @UserId
+                ORDER BY created_at DESC, id DESC
+                """,
+                new { UserId = userId }));
+    }
+
     public static Task<RefreshToken?> GetRefreshTokenAsync(
         this CustomWebApplicationFactory factory,
         string tokenHash)

@@ -5,11 +5,13 @@ using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Services.Images;
 using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.Services.Games;
+using GameTopUp.BLL.Services.Notifications;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Interfaces;
+using GameTopUp.UnitTests.Fakes;
 using Moq;
 
 namespace GameTopUp.UnitTests.UseCases;
@@ -23,6 +25,7 @@ public class OrderUseCaseTests
     private readonly Mock<IWalletTransactionRepository> _walletTransactionRepository = new();
     private readonly Mock<IOrderRepository> _orderRepository = new();
     private readonly Mock<IOrderHistoryRepository> _orderHistoryRepository = new();
+    private readonly Mock<INotificationRepository> _notificationRepository = new();
     private readonly ITransactionManager _transaction = new ImmediateTransactionManager();
     private readonly OrderUseCase _useCase;
 
@@ -35,10 +38,14 @@ public class OrderUseCaseTests
             new PublicImageUrlBuilder("https://api.test"));
         var walletService = new WalletService(_walletRepository.Object, _walletTransactionRepository.Object);
         var orderService = new OrderService(_orderRepository.Object, _orderHistoryRepository.Object);
+        _notificationRepository.Setup(repo => repo.CreateAsync(It.IsAny<Notification>()))
+            .ReturnsAsync(1);
+        var notificationService = new NotificationService(_notificationRepository.Object);
         _useCase = new OrderUseCase(
             packageService,
             walletService,
             orderService,
+            notificationService,
             _transaction);
     }
 
@@ -98,6 +105,7 @@ public class OrderUseCaseTests
         createdTransaction!.Amount.Should().Be(-199m);
         createdTransaction.ReferenceId.Should().Be("88");
         createdTransaction.Type.Should().Be(WalletTransactionType.PurchaseOrder);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Once);
         _packageRepository.Verify(repo => repo.DecreaseStockAsync(44, 1), Times.Once);
     }
 
@@ -116,6 +124,7 @@ public class OrderUseCaseTests
         _packageRepository.Verify(repo => repo.GetByIdAsync(It.IsAny<long>()), Times.Never);
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _packageRepository.Verify(repo => repo.DecreaseStockAsync(It.IsAny<long>(), It.IsAny<int>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -142,6 +151,7 @@ public class OrderUseCaseTests
 
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _packageRepository.Verify(repo => repo.DecreaseStockAsync(It.IsAny<long>(), It.IsAny<int>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -173,6 +183,7 @@ public class OrderUseCaseTests
         _orderRepository.Verify(repo => repo.CreateAsync(It.IsAny<Order>()), Times.Never);
         _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
         _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -206,6 +217,7 @@ public class OrderUseCaseTests
         _orderHistoryRepository.Verify(repo => repo.CreateAsync(It.IsAny<OrderHistory>()), Times.Never);
         _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
         _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -237,6 +249,38 @@ public class OrderUseCaseTests
         order.AssignedTo.Should().Be(3);
         _orderRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Order>()), Times.Never);
         _orderHistoryRepository.Verify(repo => repo.CreateAsync(It.IsAny<OrderHistory>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task PickOrderAsync_ShouldNotifyUser_WhenOrderMovesToProcessing()
+    {
+        var order = CreateOrder(OrderStatus.Pending);
+        order.Id = 88;
+        _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
+            .ReturnsAsync(order);
+        _packageRepository.Setup(repo => repo.GetByIdAsync(44))
+            .ReturnsAsync(new Package
+            {
+                Id = 44,
+                GameId = 9,
+                Name = "Diamond 86",
+                ImportPrice = 120m
+            });
+        _orderRepository.Setup(repo => repo.UpdateAsync(It.IsAny<Order>()))
+            .ReturnsAsync(true);
+        _orderHistoryRepository.Setup(repo => repo.CreateAsync(It.IsAny<OrderHistory>()))
+            .ReturnsAsync(12);
+
+        await _useCase.PickOrderAsync(88, new UserContext
+        {
+            UserId = 3,
+            DisplayName = "Admin",
+            Role = UserRole.Admin
+        });
+
+        order.Status.Should().Be(OrderStatus.Processing);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Once);
     }
 
     [Fact]
@@ -266,6 +310,31 @@ public class OrderUseCaseTests
         order.Status.Should().Be(OrderStatus.Completed);
         _orderRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Order>()), Times.Never);
         _orderHistoryRepository.Verify(repo => repo.CreateAsync(It.IsAny<OrderHistory>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CompleteOrderAsync_ShouldNotifyUser_WhenOrderIsCompleted()
+    {
+        var order = CreateOrder(OrderStatus.Processing);
+        order.Id = 88;
+        order.AssignedTo = 3;
+        _orderRepository.Setup(repo => repo.GetWithLockByIdAsync(88))
+            .ReturnsAsync(order);
+        _orderRepository.Setup(repo => repo.UpdateAsync(It.IsAny<Order>()))
+            .ReturnsAsync(true);
+        _orderHistoryRepository.Setup(repo => repo.CreateAsync(It.IsAny<OrderHistory>()))
+            .ReturnsAsync(12);
+
+        await _useCase.CompleteOrderAsync(88, new UserContext
+        {
+            UserId = 3,
+            DisplayName = "Admin",
+            Role = UserRole.Admin
+        });
+
+        order.Status.Should().Be(OrderStatus.Completed);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Once);
     }
 
     [Fact]
@@ -316,6 +385,7 @@ public class OrderUseCaseTests
         refundTransaction!.Amount.Should().Be(199m);
         refundTransaction.Type.Should().Be(WalletTransactionType.Refund);
         refundTransaction.ReferenceId.Should().Be("88");
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Once);
         _packageRepository.Verify(repo => repo.IncreaseStockAsync(44, 1), Times.Once);
     }
 
@@ -348,6 +418,7 @@ public class OrderUseCaseTests
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
         _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -374,6 +445,7 @@ public class OrderUseCaseTests
         _packageRepository.Verify(repo => repo.IncreaseStockAsync(It.IsAny<long>(), It.IsAny<int>()), Times.Never);
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     private static Wallet CreateWallet(decimal balance)

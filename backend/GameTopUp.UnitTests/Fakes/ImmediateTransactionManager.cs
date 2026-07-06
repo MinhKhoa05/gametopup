@@ -1,5 +1,7 @@
 using GameTopUp.DAL.Database;
 
+namespace GameTopUp.UnitTests.Fakes;
+
 public sealed class ImmediateTransactionManager : ITransactionManager
 {
     public Task ExecuteAsync(Func<Task> action) => action();
