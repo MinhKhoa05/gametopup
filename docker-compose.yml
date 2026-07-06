@@ -12,6 +12,7 @@ services:
       - db_data:/var/lib/mysql
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
       - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+      - ./database/migrations:/migrations:ro
     healthcheck:
       test: ["CMD-SHELL", "mariadb-admin ping -h localhost -uroot -p\"$${MARIADB_ROOT_PASSWORD}\""]
       interval: 10s

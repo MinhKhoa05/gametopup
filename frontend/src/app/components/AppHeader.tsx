@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Search, UserRound, WalletCards } from "lucide-react";
+import { Search, UserRound, WalletCards } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, IconBox } from "@/shared/components";
 import { classNames } from "@/shared/lib/classNames";
@@ -12,6 +12,7 @@ import {
 } from "@/app/config";
 import { BrandLogo, HeaderAccountMenu } from "@/shared/components";
 import { useAuthUserQuery, useLogoutMutation } from "@/features/auth/server";
+import { NotificationDropdown } from "@/features/notifications/components/NotificationDropdown";
 import { useWalletBalanceQuery } from "@/features/wallet/server";
 import { ROUTE_PATHS, routes } from "@/app/router/routes";
 import { UserRole } from "@/features/users/types";
@@ -20,7 +21,7 @@ export function AppHeader() {
   const userQuery = useAuthUserQuery();
   const logoutMutation = useLogoutMutation();
   const user = userQuery.data ?? null;
-  const userDisplayName = user?.displayName ?? "Khách";
+  const userDisplayName = user?.displayName ?? "Khách";
   const isAuthenticated = user !== null;
   const isChecking = userQuery.isFetching && userQuery.data === undefined;
 
@@ -139,15 +140,7 @@ export function AppHeader() {
               </div>
             ) : isAuthenticated ? (
               <>
-                <button
-                  type="button"
-                  className="gt-button gt-button-secondary relative hidden h-11 w-11 items-center justify-center rounded-2xl gt-text-soft sm:inline-flex"
-                  aria-label="Thông báo"
-                  title="Thông báo"
-                >
-                  <Bell size={18} />
-                  <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-cyan" />
-                </button>
+                <NotificationDropdown enabled={isAuthenticated} />
 
                 <HeaderAccountMenu
                   displayName={userDisplayName}
