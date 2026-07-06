@@ -2,11 +2,13 @@ using FluentAssertions;
 using GameTopUp.BLL.Context;
 using GameTopUp.BLL.Exceptions;
 using GameTopUp.BLL.Options;
+using GameTopUp.BLL.Services.Notifications;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
 using GameTopUp.DAL.Interfaces;
+using GameTopUp.UnitTests.Fakes;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -17,6 +19,7 @@ public class WalletDepositUseCaseTests
     private readonly Mock<IWalletRepository> _walletRepository = new();
     private readonly Mock<IWalletTransactionRepository> _walletTransactionRepository = new();
     private readonly Mock<IWalletDepositRepository> _depositRequestRepository = new();
+    private readonly Mock<INotificationRepository> _notificationRepository = new();
     private readonly ITransactionManager _transaction = new ImmediateTransactionManager();
     private readonly WalletDepositUseCase _useCase;
     private readonly WalletDepositService _depositRequestService;
@@ -24,6 +27,8 @@ public class WalletDepositUseCaseTests
     public WalletDepositUseCaseTests()
     {
         var walletService = new WalletService(_walletRepository.Object, _walletTransactionRepository.Object);
+        _notificationRepository.Setup(repo => repo.CreateAsync(It.IsAny<Notification>()))
+            .ReturnsAsync(1);
         _depositRequestService = new WalletDepositService(
             _depositRequestRepository.Object,
             Options.Create(new VietQrSettings
@@ -36,6 +41,7 @@ public class WalletDepositUseCaseTests
         _useCase = new WalletDepositUseCase(
             walletService,
             _depositRequestService,
+            new NotificationService(_notificationRepository.Object),
             _transaction);
     }
 
@@ -53,6 +59,7 @@ public class WalletDepositUseCaseTests
 
         request.Status.Should().Be(WalletDepositStatus.UserConfirmed);
         request.UserConfirmedAt.Should().NotBeNull();
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Once);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(request), Times.Once);
     }
 
@@ -68,6 +75,7 @@ public class WalletDepositUseCaseTests
         await _useCase.ConfirmDepositTransferAsync(5, new UserContext { UserId = 7 });
 
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -83,6 +91,7 @@ public class WalletDepositUseCaseTests
         await act.Should().ThrowAsync<ForbiddenException>()
             .Where(ex => ex.ErrorCode == ErrorCode.Forbidden);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -99,6 +108,7 @@ public class WalletDepositUseCaseTests
         await act.Should().ThrowAsync<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.InvalidDepositStatus);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -143,6 +153,7 @@ public class WalletDepositUseCaseTests
         createdTransaction.ReferenceId.Should().Be("GTU7CODE");
         request.ReviewedBy.Should().Be(1);
         request.AdminNote.Should().Be("verified");
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Once);
     }
 
     [Fact]
@@ -164,6 +175,7 @@ public class WalletDepositUseCaseTests
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
         _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -185,6 +197,7 @@ public class WalletDepositUseCaseTests
             .Where(ex => ex.ErrorCode == ErrorCode.InvalidDepositStatus);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -210,6 +223,7 @@ public class WalletDepositUseCaseTests
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
         _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
         _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -241,6 +255,7 @@ public class WalletDepositUseCaseTests
 
         await act.Should().ThrowAsync<InvalidOperationException>();
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -266,6 +281,7 @@ public class WalletDepositUseCaseTests
         request.AdminNote.Should().Be("not enough proof");
         _walletRepository.Verify(repo => repo.UpdateBalanceAsync(It.IsAny<long>(), It.IsAny<decimal>()), Times.Never);
         _walletTransactionRepository.Verify(repo => repo.CreateAsync(It.IsAny<WalletTransaction>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Once);
     }
 
     [Fact]
@@ -291,6 +307,7 @@ public class WalletDepositUseCaseTests
         request.ReviewedBy.Should().Be(1);
 
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Once);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Once);
     }
 
     [Fact]
@@ -310,6 +327,7 @@ public class WalletDepositUseCaseTests
         }, "not enough proof");
 
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     [Fact]
@@ -331,6 +349,7 @@ public class WalletDepositUseCaseTests
         await act.Should().ThrowAsync<BusinessException>()
             .Where(ex => ex.ErrorCode == ErrorCode.InvalidDepositStatus);
         _depositRequestRepository.Verify(repo => repo.UpdateAsync(It.IsAny<WalletDeposit>()), Times.Never);
+        _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
     private static WalletDeposit CreateDeposit(long userId, decimal amount)

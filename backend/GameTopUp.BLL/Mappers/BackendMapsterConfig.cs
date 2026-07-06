@@ -47,6 +47,8 @@ internal static class BackendMapsterConfig
 
         config.NewConfig<WalletDeposit, WalletDepositResponse>();
 
+        config.NewConfig<Notification, NotificationResponse>();
+
         config.NewConfig<User, UserResponse>();
         config.NewConfig<User, TokenPayload>()
             .Map(dest => dest.UserId, src => src.Id);

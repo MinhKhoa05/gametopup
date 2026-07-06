@@ -1,4 +1,5 @@
 using GameTopUp.BLL.Context;
+using GameTopUp.BLL.Services.Notifications;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Entities;
@@ -9,15 +10,18 @@ public sealed class WalletDepositUseCase
 {
     private readonly WalletService _walletService;
     private readonly WalletDepositService _depositService;
+    private readonly NotificationService _notificationService;
     private readonly ITransactionManager _transaction;
 
     public WalletDepositUseCase(
         WalletService walletService,
         WalletDepositService depositService,
+        NotificationService notificationService,
         ITransactionManager transaction)
     {
         _walletService = walletService;
         _depositService = depositService;
+        _notificationService = notificationService;
         _transaction = transaction;
     }
 
@@ -34,6 +38,8 @@ public sealed class WalletDepositUseCase
 
             _depositService.Confirm(request, user);
             await _depositService.UpdateAsync(request);
+            await _notificationService.CreateNotificationAsync(
+                NotificationTemplates.DepositSubmitted(request.UserId, request.Code));
         });
     }
 
@@ -57,6 +63,8 @@ public sealed class WalletDepositUseCase
                 request.Code);
             await _walletService.ApplyTransactionAsync(wallet, walletTransaction);
             await _depositService.UpdateAsync(request);
+            await _notificationService.CreateNotificationAsync(
+                NotificationTemplates.DepositApproved(request.UserId, request.Code));
         });
     }
 
@@ -73,6 +81,8 @@ public sealed class WalletDepositUseCase
 
             _depositService.Reject(request, admin, note);
             await _depositService.UpdateAsync(request);
+            await _notificationService.CreateNotificationAsync(
+                NotificationTemplates.DepositRejected(request.UserId, request.Code));
         });
     }
 }

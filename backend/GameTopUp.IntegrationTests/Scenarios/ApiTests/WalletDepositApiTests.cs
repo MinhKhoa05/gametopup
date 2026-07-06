@@ -197,6 +197,9 @@ public sealed class DepositApiTests : BaseIntegrationTest
         updatedDeposit!.UserId.Should().Be(user.Id);
         updatedDeposit.Amount.Should().Be(100_000m);
         updatedDeposit.Status.Should().Be(WalletDepositStatus.UserConfirmed);
+
+        var notifications = await Factory.GetNotificationsByUserAsync(user.Id);
+        notifications.Should().ContainSingle(notification => notification.Type == NotificationType.DepositSubmitted);
     }
 
     [Fact]

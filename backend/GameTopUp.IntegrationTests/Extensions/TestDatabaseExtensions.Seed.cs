@@ -171,6 +171,27 @@ public static partial class TestDatabaseExtensions
         return factory.InsertSeedAsync(transaction, (x, id) => x.Id = id);
     }
 
+    public static Task<Notification> SeedNotificationAsync(
+        this CustomWebApplicationFactory factory,
+        long userId,
+        Action<Notification>? customize = null)
+    {
+        var notification = new Notification
+        {
+            UserId = userId,
+            Type = NotificationType.System,
+            Title = $"Notification {UniqueCode()}",
+            Message = "Test notification",
+            IsRead = false,
+            ReadAt = null,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        customize?.Invoke(notification);
+
+        return factory.InsertSeedAsync(notification, (x, id) => x.Id = id);
+    }
+
     private static Task<T> InsertSeedAsync<T>(
         this CustomWebApplicationFactory factory,
         T entity,

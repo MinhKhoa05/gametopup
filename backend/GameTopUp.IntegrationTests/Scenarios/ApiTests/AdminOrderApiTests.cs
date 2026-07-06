@@ -111,6 +111,9 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
         order.Status.Should().Be(OrderStatus.Processing);
         order.AssignedTo.Should().Be(admin.Id);
         order.AssignedAt.Should().NotBeNull();
+
+        var notifications = await Factory.GetNotificationsByUserAsync(orderScenario.User.Id);
+        notifications.Should().ContainSingle(notification => notification.Type == NotificationType.OrderProcessing);
     }
 
     [Fact]
@@ -137,6 +140,9 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
 
         updated.Should().NotBeNull();
         updated!.Status.Should().Be(OrderStatus.Completed);
+
+        var notifications = await Factory.GetNotificationsByUserAsync(orderScenario.User.Id);
+        notifications.Should().ContainSingle(notification => notification.Type == NotificationType.OrderCompleted);
     }
 
     [Fact]
@@ -164,6 +170,9 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
 
         updated.Should().NotBeNull();
         updated!.Status.Should().Be(OrderStatus.Cancelled);
+
+        var notifications = await Factory.GetNotificationsByUserAsync(userId);
+        notifications.Should().ContainSingle(notification => notification.Type == NotificationType.OrderCancelled);
     }
 
     [Fact]
@@ -192,6 +201,9 @@ public sealed class AdminOrderApiTests : BaseIntegrationTest
         var updated = await Factory.GetOrderAsync(orderId);
 
         updated!.Status.Should().Be(OrderStatus.Cancelled);
+
+        var notifications = await Factory.GetNotificationsByUserAsync(userId);
+        notifications.Should().ContainSingle(notification => notification.Type == NotificationType.OrderCancelled);
     }
 
     [Fact]

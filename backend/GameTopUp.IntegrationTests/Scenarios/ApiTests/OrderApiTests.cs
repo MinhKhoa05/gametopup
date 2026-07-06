@@ -50,6 +50,9 @@ public sealed class OrderApiTests : BaseIntegrationTest
         order!.UserId.Should().Be(user.Id);
         order.PackageId.Should().Be(package.Id);
         order.Status.Should().Be(OrderStatus.Pending);
+
+        var notifications = await Factory.GetNotificationsByUserAsync(user.Id);
+        notifications.Should().ContainSingle(notification => notification.Type == NotificationType.OrderPlaced);
     }
 
     [Fact]
@@ -290,6 +293,9 @@ public sealed class OrderApiTests : BaseIntegrationTest
 
         updatedOrder.Should().NotBeNull();
         updatedOrder!.Status.Should().Be(OrderStatus.Cancelled);
+
+        var notifications = await Factory.GetNotificationsByUserAsync(user.Id);
+        notifications.Should().ContainSingle(notification => notification.Type == NotificationType.OrderCancelled);
     }
 
     [Fact]

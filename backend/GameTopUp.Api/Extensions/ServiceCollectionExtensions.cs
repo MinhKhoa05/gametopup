@@ -4,6 +4,7 @@ using GameTopUp.BLL.Services.Orders;
 using GameTopUp.BLL.Services.Auth;
 using GameTopUp.BLL.Services.Dashboard;
 using GameTopUp.BLL.Services.Games;
+using GameTopUp.BLL.Services.Notifications;
 using GameTopUp.BLL.Services.Users;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.Services.Images;
@@ -77,6 +78,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
         services.AddScoped<IWalletDepositRepository, WalletDepositRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
 
         return services;
     }
@@ -97,6 +99,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WalletService>();
         services.AddScoped<WalletReadService>();
         services.AddScoped<WalletDepositService>();
+        services.AddScoped<NotificationService>();
         services.AddScoped<OrderQuery>();
         services.AddScoped<AdminDashboardQuery>();
         services.AddScoped<WalletQuery>();

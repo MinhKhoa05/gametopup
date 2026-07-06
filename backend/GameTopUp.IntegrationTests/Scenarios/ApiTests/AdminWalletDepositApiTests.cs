@@ -142,6 +142,9 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
         transactions[0].Type.Should().Be(WalletTransactionType.Deposit);
         transactions[0].Amount.Should().Be(100_000m);
         transactions[0].ReferenceId.Should().Be(deposit.Code);
+
+        var notifications = await Factory.GetNotificationsByUserAsync(user.Id);
+        notifications.Should().ContainSingle(notification => notification.Type == NotificationType.DepositApproved);
     }
 
     [Fact]
@@ -203,6 +206,9 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
         var transactions = await Factory.GetWalletTransactionsAsync(user.Id);
 
         transactions.Should().BeEmpty();
+
+        var notifications = await Factory.GetNotificationsByUserAsync(user.Id);
+        notifications.Should().ContainSingle(notification => notification.Type == NotificationType.DepositRejected);
     }
 
     [Fact]
