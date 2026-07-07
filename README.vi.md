@@ -4,11 +4,11 @@
 
 # GameTopUp
 
-GameTopUp là một web application mô phỏng workflow hằng ngày của một dịch vụ nạp game trung gian quy mô nhỏ.
+GameTopUp là một ứng dụng web mô phỏng quy trình vận hành hằng ngày của một dịch vụ nạp game trung gian quy mô nhỏ.
 
-Repository này được phát triển như một portfolio project cá nhân, tập trung vào backend workflow, testing và deployment.
+Repository này là một dự án portfolio cá nhân, tập trung vào backend, kiểm thử và triển khai.
 
-Ứng dụng tập trung vào những phần thường được xử lý thủ công: tin nhắn khách hàng, chuyển khoản ngân hàng, theo dõi package và xử lý đơn hàng.
+Ứng dụng mô phỏng các phần việc thường được xử lý thủ công: trao đổi với khách hàng, kiểm tra chuyển khoản ngân hàng, theo dõi gói nạp và xử lý đơn hàng.
 
 [![Backend CI](https://github.com/MinhKhoa05/gametopup/actions/workflows/backend-ci.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/backend-ci.yml)
 [![Frontend CI](https://github.com/MinhKhoa05/gametopup/actions/workflows/frontend-ci.yml/badge.svg?branch=main)](https://github.com/MinhKhoa05/gametopup/actions/workflows/frontend-ci.yml)
@@ -27,7 +27,7 @@ Repository này được phát triển như một portfolio project cá nhân, t
 
 **Website:** https://gametopup.minhkhoa.dev
 
-Demo có sẵn tài khoản mẫu để bạn thử các flow chính của customer và admin mà không cần chạy project ở máy local.
+Demo có sẵn tài khoản mẫu để bạn thử các luồng chính của khách hàng và quản trị viên mà không cần chạy dự án trên máy.
 
 | Vai trò | Email | Mật khẩu |
 | ------- | ----- | -------- |
@@ -39,55 +39,55 @@ Demo có sẵn tài khoản mẫu để bạn thử các flow chính của custo
 
 ## Tổng quan
 
-Các dịch vụ nạp game nhỏ thường bắt đầu bằng một workflow rất thủ công.
+Các dịch vụ nạp game nhỏ thường bắt đầu bằng một quy trình rất thủ công.
 
-Khách nhắn tin. Nhân viên kiểm tra chuyển khoản. Đơn hàng được ghi lại bằng tay. Số lượng package còn nhận được theo dõi bằng trí nhớ hoặc spreadsheet. Cách đó có thể ổn lúc ban đầu, nhưng dễ trở nên mong manh khi nhiều khoản nạp, đơn hàng và khách hàng cùng diễn ra.
+Khách nhắn tin. Nhân viên kiểm tra chuyển khoản. Đơn hàng được ghi lại bằng tay. Gói nào còn nhận được bao nhiêu đơn thì theo dõi bằng trí nhớ hoặc spreadsheet. Cách đó có thể ổn lúc ban đầu, nhưng dễ trở nên mong manh khi nhiều khoản nạp, đơn hàng và khách hàng diễn ra cùng lúc.
 
-GameTopUp đưa workflow đó vào một web app.
+GameTopUp đưa quy trình đó vào một ứng dụng web.
 
-Customer có thể xem game, chọn package, tạo yêu cầu nạp ví, xác nhận chuyển khoản và đặt đơn bằng số dư ví. Admin có thể duyệt deposit, quản lý game và package, nhận đơn để xử lý và theo dõi trạng thái vận hành qua dashboard.
+Khách hàng có thể xem game, chọn gói nạp, tạo yêu cầu nạp ví, xác nhận chuyển khoản và đặt đơn bằng số dư ví. Quản trị viên có thể duyệt yêu cầu nạp tiền, quản lý game và gói nạp, nhận đơn để xử lý và theo dõi trạng thái vận hành qua dashboard.
 
-Điểm quan trọng không nằm ở các màn hình CRUD, mà ở cách workflow chính kết nối số dư ví, package slots, lịch sử đơn hàng và các thao tác của admin thành một luồng thống nhất.
+Điểm quan trọng không nằm ở các màn hình CRUD, mà ở cách các luồng chính kết nối số dư ví, slot của gói nạp, lịch sử đơn hàng và thao tác của quản trị viên thành một quy trình thống nhất.
 
 ## Điểm nổi bật
 
 ### Nghiệp vụ
 
-- Xem game và package cho customer.
+- Xem game và gói nạp dành cho khách hàng.
 - Nạp ví với thông tin chuyển khoản VietQR.
-- Lịch sử giao dịch ví cho deposit, purchase và refund.
-- Purchase flow có kiểm tra số dư ví và giữ slot package.
-- Admin review flow cho deposit.
-- Admin xử lý order với các thao tác pick, complete và cancel.
-- Dashboard cho pending orders, pending deposits và các số liệu vận hành.
+- Lịch sử giao dịch ví cho nạp tiền, mua hàng và hoàn tiền.
+- Luồng mua hàng có kiểm tra số dư ví và giữ slot gói nạp.
+- Luồng quản trị viên duyệt yêu cầu nạp tiền.
+- Quản trị viên xử lý đơn với các thao tác pick, complete và cancel.
+- Dashboard cho đơn chờ xử lý, yêu cầu nạp tiền chờ duyệt và các số liệu vận hành.
 
 ### Kỹ thuật
 
-- Layered backend với controllers, use cases, services, repositories và read queries.
-- Wallet, deposit và order workflows được xử lý như các luồng có nhiều bước liên quan với nhau.
-- Transaction-aware workflows cho cập nhật số dư, package slots và trạng thái order.
-- Unit tests cho behavior trong services và use cases.
+- Backend phân lớp với controllers, use cases, services, repositories và read queries.
+- Các luồng ví, nạp tiền và đơn hàng được xử lý như những quy trình nhiều bước có liên quan với nhau.
+- Các luồng xử lý dùng transaction khi cập nhật số dư, slot gói nạp và trạng thái đơn hàng.
+- Unit tests cho logic trong services và use cases.
 - Integration tests chạy với MariaDB thông qua Testcontainers.
-- Concurrency tests cho overselling, double approval, double refund và các order transition cạnh tranh nhau.
+- Concurrency tests cho overselling, double approval, double refund và các lần chuyển trạng thái đơn hàng xảy ra cùng lúc.
 
 ### Hạ tầng
 
-- Docker Compose cho app, API và database.
-- Nginx configuration cho frontend routing và production reverse proxy.
-- GitHub Actions cho backend/frontend checks và VPS deployment.
+- Docker Compose cho ứng dụng, API và database.
+- Cấu hình Nginx cho frontend routing và production reverse proxy.
+- GitHub Actions cho kiểm tra backend/frontend và triển khai lên VPS.
 
 ## Bắt đầu nhanh
 
-Cách dễ nhất để chạy project là dùng Docker Compose.
+Cách dễ nhất để chạy dự án là dùng Docker Compose.
 
 ### Yêu cầu
 
-Project cần Docker có hỗ trợ Docker Compose.
-Không cần cài local .NET, Node.js hoặc MariaDB.
+Dự án cần Docker có hỗ trợ Docker Compose.
+Không cần cài .NET, Node.js hoặc MariaDB trên máy local.
 
 ### Cấu hình môi trường
 
-Copy file environment mẫu:
+Copy file môi trường mẫu:
 
 ```bash
 cp .env.example .env
@@ -136,20 +136,20 @@ Database được khởi tạo từ [database/schema.sql](database/schema.sql) v
 
 ## Tài liệu
 
-Muốn đọc sâu hơn về project?
+Muốn tìm hiểu sâu hơn về dự án?
 
 | Tài liệu | Nội dung |
 | -------- | -------- |
-| [Overview](docs/vi/overview.md) | Vì sao project tồn tại và nó đã phát triển như thế nào |
-| [Architecture](docs/vi/architecture.md) | Frontend, backend, database và deployment kết nối với nhau ra sao |
-| [Core Workflows](docs/vi/core-workflows.md) | Deposit, wallet balance, purchase và admin processing vận hành như thế nào |
+| [Overview](docs/vi/overview.md) | Vì sao dự án tồn tại và đã phát triển như thế nào |
+| [Architecture](docs/vi/architecture.md) | Frontend, backend, database và triển khai kết nối với nhau ra sao |
+| [Core Workflows](docs/vi/core-workflows.md) | Nạp tiền, số dư ví, mua hàng và xử lý phía quản trị viên vận hành như thế nào |
 | [Frontend](docs/vi/frontend.md) | Tổ chức frontend, routing, state và trải nghiệm người dùng |
 | [Testing](docs/vi/testing.md) | Unit Test, Integration Test, concurrency tests và coverage |
-| [Deployment](docs/vi/deployment.md) | Docker, Nginx, environment configuration và production deployment |
-| [Engineering Decisions](docs/vi/engineering-decisions.md) | Các lựa chọn và trade-off phía sau cách project được xây dựng |
+| [Deployment](docs/vi/deployment.md) | Docker, Nginx, cấu hình môi trường và triển khai production |
+| [Engineering Decisions](docs/vi/engineering-decisions.md) | Các lựa chọn và trade-off phía sau cách dự án được xây dựng |
 
 ## Trạng thái hiện tại
 
-GameTopUp hiện đã có đầy đủ các workflow chính, từ wallet deposit đến order processing và administration.
+GameTopUp hiện đã có đầy đủ các luồng chính, từ nạp ví đến xử lý đơn hàng và quản trị.
 
-Các tài liệu không chỉ mô tả implementation hiện tại mà còn ghi lại những trade-off, limitation và những phần có thể tiếp tục cải thiện trong tương lai.
+Các tài liệu không chỉ mô tả phần triển khai hiện tại mà còn ghi lại trade-off, giới hạn và những phần có thể tiếp tục cải thiện trong tương lai.
