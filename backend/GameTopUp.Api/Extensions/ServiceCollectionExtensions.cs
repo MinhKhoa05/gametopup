@@ -8,6 +8,7 @@ using GameTopUp.BLL.Services.Notifications;
 using GameTopUp.BLL.Services.Users;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.Services.Images;
+using GameTopUp.BLL.Services.Emails;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Interfaces;
@@ -31,6 +32,10 @@ public static class ServiceCollectionExtensions
             .Bind(configuration.GetSection("VietQr"))
             .ValidateDataAnnotations()
             .ValidateOnStart();
+
+        services.AddOptions<EmailSettings>()
+            .Bind(configuration.GetSection("Email"))
+            .ValidateDataAnnotations();
 
         return services;
     }
@@ -100,6 +105,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WalletReadService>();
         services.AddScoped<WalletDepositService>();
         services.AddScoped<NotificationService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<OrderQuery>();
         services.AddScoped<AdminDashboardQuery>();
         services.AddScoped<WalletQuery>();
