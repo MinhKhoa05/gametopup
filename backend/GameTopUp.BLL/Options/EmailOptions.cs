@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GameTopUp.BLL.Options;
 
-public sealed class EmailSettings
+public sealed class EmailOptions
 {
     [Required]
     public string Host { get; set; } = "smtp.gmail.com";

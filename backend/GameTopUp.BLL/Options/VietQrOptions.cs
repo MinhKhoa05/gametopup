@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GameTopUp.BLL.Options;
 
-public sealed class VietQrSettings
+public sealed class VietQrOptions
 {
     [Required]
     public string BankId { get; set; } = string.Empty;

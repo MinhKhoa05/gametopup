@@ -34,12 +34,15 @@ services:
       DB_HOST: db
       DB_PORT: 3306
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
-      JWT_KEY: ${JWT_KEY:?Set JWT_KEY in .env}
-      APP_BASE_URL: ${APP_BASE_URL:?Set APP_BASE_URL in .env}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?Set CORS_ALLOWED_ORIGINS in .env}
-      VIETQR_BANK_ID: ${VIETQR_BANK_ID:?Set VIETQR_BANK_ID in .env}
-      VIETQR_ACCOUNT_NO: ${VIETQR_ACCOUNT_NO:?Set VIETQR_ACCOUNT_NO in .env}
-      VIETQR_ACCOUNT_NAME: ${VIETQR_ACCOUNT_NAME:?Set VIETQR_ACCOUNT_NAME in .env}
+      Jwt__Key: ${Jwt__Key:?Set Jwt__Key in .env}
+      App__BaseUrl: ${App__BaseUrl:?Set App__BaseUrl in .env}
+      Cors__AllowedOrigins__0: ${Cors__AllowedOrigins__0:?Set Cors__AllowedOrigins__0 in .env}
+      VietQr__BankId: ${VietQr__BankId:?Set VietQr__BankId in .env}
+      VietQr__AccountNo: ${VietQr__AccountNo:?Set VietQr__AccountNo in .env}
+      VietQr__AccountName: ${VietQr__AccountName:?Set VietQr__AccountName in .env}
+      Email__FromEmail: ${Email__FromEmail:-}
+      Email__Username: ${Email__Username:-}
+      Email__Password: ${Email__Password:-}
     depends_on:
       db:
         condition: service_healthy

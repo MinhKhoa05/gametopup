@@ -98,13 +98,16 @@ Update the required values:
 ```env
 DB_ROOT_PASSWORD=CHANGE_ME_ROOT_PASSWORD
 DB_PASSWORD=YOUR_APP_PASSWORD
-JWT_KEY=YOUR_SECURE_JWT_KEY_MIN_32_CHARS
-APP_BASE_URL=http://localhost:5000
-CORS_ALLOWED_ORIGINS=http://localhost:3000
+Jwt__Key=YOUR_SECURE_JWT_KEY_MIN_32_CHARS
+App__BaseUrl=http://localhost:5000
+Cors__AllowedOrigins__0=http://localhost:3000
 VITE_API_BASE_URL=http://localhost:5000/api
-VIETQR_BANK_ID=YOUR_BANK_ID
-VIETQR_ACCOUNT_NO=YOUR_BANK_ACCOUNT_NO
-VIETQR_ACCOUNT_NAME=YOUR_BANK_ACCOUNT_NAME
+VietQr__BankId=YOUR_BANK_ID
+VietQr__AccountNo=YOUR_BANK_ACCOUNT_NO
+VietQr__AccountName=YOUR_BANK_ACCOUNT_NAME
+Email__FromEmail=noreply@gametopup.example
+Email__Username=noreply@gametopup.example
+Email__Password=YOUR_EMAIL_APP_PASSWORD
 ```
 
 ### Run

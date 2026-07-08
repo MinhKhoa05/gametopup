@@ -12,7 +12,7 @@ namespace GameTopUp.UnitTests.Services;
 
 public class TokenServiceTests
 {
-    private readonly TokenService _service = new(Options.Create(new JwtSettings
+    private readonly TokenService _service = new(Options.Create(new JwtOptions
     {
         Key = "this-is-a-test-key-that-is-long-enough-12345",
         Issuer = "GameTopUp.UnitTests",

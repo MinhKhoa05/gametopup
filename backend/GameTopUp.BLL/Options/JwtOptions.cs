@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GameTopUp.BLL.Options;
 
-public sealed class JwtSettings
+public sealed class JwtOptions
 {
     [Required]
     public string Key { get; set; } = string.Empty;

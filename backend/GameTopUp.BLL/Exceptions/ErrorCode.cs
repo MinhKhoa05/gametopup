@@ -70,8 +70,8 @@ public enum ErrorCode
     [Display(Name = "Wallet balance is insufficient.")]
     InsufficientWalletBalance,
 
-    [Display(Name = "VietQR settings are missing.")]
-    VietQrSettingsMissing,
+    [Display(Name = "VietQR options are missing.")]
+    VietQrOptionsMissing,
 
     [Display(Name = "Cannot perform this action on the current deposit request.")]
     InvalidDepositStatus,

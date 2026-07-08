@@ -16,14 +16,14 @@ public sealed class WalletDepositService
 {
     private readonly IWalletDepositRepository _repository;
 
-    private readonly VietQrSettings _vietQrSettings;
+    private readonly VietQrOptions _vietQrOptions;
 
     public WalletDepositService(
         IWalletDepositRepository repository,
-        IOptions<VietQrSettings> vietQrOptions)
+        IOptions<VietQrOptions> vietQrOptions)
     {
         _repository = repository;
-        _vietQrSettings = vietQrOptions.Value;
+        _vietQrOptions = vietQrOptions.Value;
     }
 
     public async Task<WalletDepositResponse> GetByIdOrThrowAsync(UserContext actor, long depositId)
@@ -160,10 +160,10 @@ public sealed class WalletDepositService
     public WalletDepositResponse BuildPublicResponse(WalletDeposit request)
     {
         var response = request.MapTo<WalletDepositResponse>();
-        response.QrImageUrl = BuildQrImageUrl(_vietQrSettings);
-        response.BankId = _vietQrSettings.BankId;
-        response.AccountNo = _vietQrSettings.AccountNo;
-        response.AccountName = _vietQrSettings.AccountName;
+        response.QrImageUrl = BuildQrImageUrl(_vietQrOptions);
+        response.BankId = _vietQrOptions.BankId;
+        response.AccountNo = _vietQrOptions.AccountNo;
+        response.AccountName = _vietQrOptions.AccountName;
         return response;
     }
 
@@ -175,15 +175,15 @@ public sealed class WalletDepositService
 
     private void EnsureVietQrConfigured()
     {
-        if (InputTextNormalizer.NullIfWhiteSpace(_vietQrSettings.BankId) is null
-            || InputTextNormalizer.NullIfWhiteSpace(_vietQrSettings.AccountNo) is null
-            || InputTextNormalizer.NullIfWhiteSpace(_vietQrSettings.AccountName) is null)
+        if (InputTextNormalizer.NullIfWhiteSpace(_vietQrOptions.BankId) is null
+            || InputTextNormalizer.NullIfWhiteSpace(_vietQrOptions.AccountNo) is null
+            || InputTextNormalizer.NullIfWhiteSpace(_vietQrOptions.AccountName) is null)
         {
-            throw new BusinessException(ErrorCode.VietQrSettingsMissing);
+            throw new BusinessException(ErrorCode.VietQrOptionsMissing);
         }
     }
 
-    private static string BuildQrImageUrl(VietQrSettings settings)
+    private static string BuildQrImageUrl(VietQrOptions settings)
     {
         var bankId = Uri.EscapeDataString(InputTextNormalizer.NullIfWhiteSpace(settings.BankId)!);
         var accountNo = Uri.EscapeDataString(InputTextNormalizer.NullIfWhiteSpace(settings.AccountNo)!);

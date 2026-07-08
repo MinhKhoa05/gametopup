@@ -82,7 +82,7 @@ Config này cũng cấu hình HTTPS thông qua đường dẫn certificate của
 
 ## Cấu hình
 
-Dự án dùng giá trị trong `.env` cho Compose và logic override bằng environment trong API.
+Dự án dùng giá trị trong `.env` cho Compose và ASP.NET Core configuration trong API.
 
 Các giá trị quan trọng gồm:
 
@@ -90,15 +90,18 @@ Các giá trị quan trọng gồm:
 | -------- | -------- |
 | `DB_ROOT_PASSWORD` | MariaDB root password |
 | `DB_PASSWORD` | Application database password |
-| `JWT_KEY` | JWT signing key |
-| `APP_BASE_URL` | Public base URL dùng cho backend-generated links |
-| `CORS_ALLOWED_ORIGINS` | Frontend origins được phép |
+| `Jwt__Key` | JWT signing key |
+| `App__BaseUrl` | Public base URL dùng cho backend-generated links |
+| `Cors__AllowedOrigins__0` | Frontend origin đầu tiên được phép |
 | `VITE_API_BASE_URL` | API base URL được compile vào frontend |
-| `VIETQR_BANK_ID` | VietQR bank id |
-| `VIETQR_ACCOUNT_NO` | VietQR account number |
-| `VIETQR_ACCOUNT_NAME` | VietQR account name |
+| `VietQr__BankId` | VietQR bank id |
+| `VietQr__AccountNo` | VietQR account number |
+| `VietQr__AccountName` | VietQR account name |
+| `Email__FromEmail` | Email người gửi |
+| `Email__Username` | SMTP username |
+| `Email__Password` | SMTP password hoặc app password |
 
-API map các environment variables này vào configuration khi startup. Cách đó giữ cấu hình local và production rõ ràng mà không hardcode secrets, đồng thời cho phép cùng một ứng dụng chạy ở cả hai môi trường mà không đổi code.
+API dùng hierarchical environment variables mặc định của ASP.NET Core cho cấu hình ứng dụng. Các biến Docker và frontend build vẫn giữ tên riêng khi external tools đọc trực tiếp.
 
 ## Quy trình triển khai
 

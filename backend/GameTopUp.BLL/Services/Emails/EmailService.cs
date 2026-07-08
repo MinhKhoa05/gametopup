@@ -10,11 +10,11 @@ public class EmailService : IEmailService
 {
     private const int SmtpTimeoutMilliseconds = 30_000;
 
-    private readonly EmailSettings _settings;
+    private readonly EmailOptions _emailOptions;
 
-    public EmailService(IOptions<EmailSettings> emailOptions)
+    public EmailService(IOptions<EmailOptions> emailOptions)
     {
-        _settings = emailOptions.Value;
+        _emailOptions = emailOptions.Value;
     }
 
     public async Task<bool> SendEmailAsync(EmailMessage message, CancellationToken cancellationToken = default)
@@ -48,9 +48,9 @@ public class EmailService : IEmailService
 
         var mailMessage = new MailMessage
         {
-            From = string.IsNullOrWhiteSpace(_settings.FromName)
-                ? new MailAddress(_settings.FromEmail)
-                : new MailAddress(_settings.FromEmail, _settings.FromName, Encoding.UTF8),
+            From = string.IsNullOrWhiteSpace(_emailOptions.FromName)
+                ? new MailAddress(_emailOptions.FromEmail)
+                : new MailAddress(_emailOptions.FromEmail, _emailOptions.FromName, Encoding.UTF8),
             Subject = message.Subject.Trim(),
             Body = message.HtmlBody,
             IsBodyHtml = true,
@@ -65,9 +65,9 @@ public class EmailService : IEmailService
 
     private SmtpClient CreateSmtpClient()
     {
-        return new SmtpClient(_settings.Host, _settings.Port)
+        return new SmtpClient(_emailOptions.Host, _emailOptions.Port)
         {
-            Credentials = new NetworkCredential(_settings.Username, _settings.Password),
+            Credentials = new NetworkCredential(_emailOptions.Username, _emailOptions.Password),
             EnableSsl = true,
             Timeout = SmtpTimeoutMilliseconds
         };
@@ -75,22 +75,22 @@ public class EmailService : IEmailService
 
     private void ValidateSettings()
     {
-        if (string.IsNullOrWhiteSpace(_settings.Host))
+        if (string.IsNullOrWhiteSpace(_emailOptions.Host))
         {
             throw new InvalidOperationException("Email host is not configured.");
         }
 
-        if (string.IsNullOrWhiteSpace(_settings.FromEmail))
+        if (string.IsNullOrWhiteSpace(_emailOptions.FromEmail))
         {
             throw new InvalidOperationException("Email sender address is not configured.");
         }
 
-        if (string.IsNullOrWhiteSpace(_settings.Username))
+        if (string.IsNullOrWhiteSpace(_emailOptions.Username))
         {
             throw new InvalidOperationException("Email username is not configured.");
         }
 
-        if (string.IsNullOrWhiteSpace(_settings.Password))
+        if (string.IsNullOrWhiteSpace(_emailOptions.Password))
         {
             throw new InvalidOperationException("Email password is not configured.");
         }

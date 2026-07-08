@@ -12,14 +12,14 @@ namespace GameTopUp.BLL.Services.Auth;
 public sealed class TokenService
 {
     private const int RefreshTokenByteSize = 32;
-    private readonly JwtSettings _jwtSettings;
+    private readonly JwtOptions _jwtOptions;
     private readonly SymmetricSecurityKey _securityKey;
     private readonly JwtSecurityTokenHandler _tokenHandler = new();
 
-    public TokenService(IOptions<JwtSettings> jwtOptions)
+    public TokenService(IOptions<JwtOptions> jwtOptions)
     {
-        _jwtSettings = jwtOptions.Value;
-        _securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+        _jwtOptions = jwtOptions.Value;
+        _securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
     }
 
     public string GenerateAccessToken(TokenPayload payload)
@@ -37,10 +37,10 @@ public sealed class TokenService
         };
 
         var token = new JwtSecurityToken(
-            issuer: _jwtSettings.Issuer,
-            audience: _jwtSettings.Audience,
+            issuer: _jwtOptions.Issuer,
+            audience: _jwtOptions.Audience,
             claims: claims,
-            expires: now.AddMinutes(_jwtSettings.ExpireMinutes).UtcDateTime,
+            expires: now.AddMinutes(_jwtOptions.ExpireMinutes).UtcDateTime,
             signingCredentials: new SigningCredentials(_securityKey, SecurityAlgorithms.HmacSha256));
 
         return _tokenHandler.WriteToken(token);
