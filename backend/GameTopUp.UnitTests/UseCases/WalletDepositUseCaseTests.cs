@@ -111,12 +111,14 @@ public class WalletDepositUseCaseTests
         _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
 
-    [Fact]
-    public async Task ApproveDepositRequestAsync_ShouldCreditWalletAndMarkRequestApproved()
+    [Theory]
+    [InlineData(WalletDepositStatus.Pending)]
+    [InlineData(WalletDepositStatus.UserConfirmed)]
+    public async Task ApproveDepositRequestAsync_ShouldCreditWalletAndMarkRequestApproved_WhenStatusIsValid(WalletDepositStatus status)
     {
         WalletTransaction? createdTransaction = null;
         var request = CreateDeposit(7, 100000m);
-        request.MarkUserConfirmed();
+        request.Status = status;
 
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
@@ -179,9 +181,10 @@ public class WalletDepositUseCaseTests
     }
 
     [Fact]
-    public async Task ApproveDepositRequestAsync_ShouldThrow_WhenRequestIsNotUserConfirmed()
+    public async Task ApproveDepositRequestAsync_ShouldThrow_WhenRequestIsInvalidStatus()
     {
         var request = CreateDeposit(7, 100000m);
+        request.Status = WalletDepositStatus.Rejected;
 
         _depositRequestRepository.Setup(repo => repo.GetWithLockByIdAsync(5))
             .ReturnsAsync(request);
@@ -199,7 +202,6 @@ public class WalletDepositUseCaseTests
         _walletRepository.Verify(repo => repo.GetWithLockByUserIdAsync(It.IsAny<long>()), Times.Never);
         _notificationRepository.Verify(repo => repo.CreateAsync(It.IsAny<Notification>()), Times.Never);
     }
-
     [Fact]
     public async Task ApproveDepositRequestAsync_ShouldNotPersistApprovalOrTransaction_WhenWalletDoesNotExist()
     {
