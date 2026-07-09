@@ -27,13 +27,20 @@ Repository này là một dự án portfolio cá nhân, tập trung vào backend
 
 **Website:** https://gametopup.minhkhoa.dev
 
-Demo có sẵn tài khoản mẫu để bạn thử các luồng chính của khách hàng và quản trị viên mà không cần chạy dự án trên máy.
+### Tài khoản demo
 
-| Vai trò | Email | Mật khẩu |
-| ------- | ----- | -------- |
-| Admin | `admin@gametopup.com` | `Admin123456@` |
-| Customer | `customer01@gametopup.com` | `Admin123456@` |
-| Customer | `customer02@gametopup.com` | `Admin123456@` |
+Sử dụng các tài khoản demo bên dưới để trải nghiệm những luồng chính của người dùng và quản trị viên.
+
+| Vai trò | Email |
+| ------- | ----- |
+| Admin | `admin@gametopup.com` |
+| Customer | `customer01@gametopup.com` |
+
+Mật khẩu mặc định cho tất cả tài khoản demo:
+
+`Admin123456@`
+
+> Gợi ý: Sử dụng **Đăng nhập nhanh** trên trang đăng nhập để truy cập nhanh các tài khoản demo.
 
 > Database của demo có thể được reset định kỳ.
 

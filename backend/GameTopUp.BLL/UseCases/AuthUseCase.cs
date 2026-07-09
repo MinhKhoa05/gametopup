@@ -18,6 +18,11 @@ public sealed class AuthUseCase
     private readonly RefreshTokenService _refreshTokenService;
     private readonly ITransactionManager _transaction;
 
+    private static readonly string[] DemoAccounts = [
+        "admin@gametopup.com",
+        "customer01@gametopup.com"
+    ];
+
     private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
 
     public AuthUseCase(
@@ -117,6 +122,13 @@ public sealed class AuthUseCase
         _passwordService.Validate(request.NewPassword);
 
         var user = await GetUserOrThrowAsync(context.UserId);
+
+        // Protect demo accounts to keep the public demo environment stable.
+        if (DemoAccounts.Contains(user.Email))
+        {
+            throw new BusinessException(ErrorCode.Forbidden, "Password changes are not supported for demo accounts.");
+        }
+
         if (!_passwordService.Verify(request.CurrentPassword, user.PasswordHash))
         {
             throw new BusinessException(ErrorCode.CurrentPasswordIncorrect);

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { LockKeyhole, PencilLine, ShieldCheck, UserRound } from "lucide-react";
+import { toast } from "sonner";
 
 import { ChangePasswordDialog } from "@/features/auth/components/ChangePasswordDialog";
 import { useAuthUserQuery } from "@/features/auth/server";
@@ -16,6 +17,11 @@ import {
   SectionHeading,
 } from "@/shared/components";
 import { formatDate } from "@/shared/lib/format";
+
+const DEMO_EMAILS = [
+  "admin@gametopup.com",
+  "customer01@gametopup.com",
+];
 
 export function ProfilePage() {
   const userQuery = useAuthUserQuery();
@@ -42,6 +48,7 @@ export function ProfilePage() {
     return null;
   }
 
+  const isDemoAccount = DEMO_EMAILS.includes(user.email);
   const trimmedDraftName = draftName.trim();
   const currentDisplayName = user.displayName.trim();
 
@@ -51,6 +58,15 @@ export function ProfilePage() {
     await updateProfileMutation.mutateAsync({
       displayName: trimmedDraftName,
     });
+  }
+
+  function handleChangePassword() {
+    if (isDemoAccount) {
+      toast.info("Tài khoản demo không hỗ trợ đổi mật khẩu.");
+      return;
+    }
+
+    setIsChangePasswordOpen(true);
   }
 
   return (
@@ -144,7 +160,7 @@ export function ProfilePage() {
                       }
                       title="Đổi mật khẩu"
                       subtitle="Cập nhật mật khẩu để bảo vệ tài khoản."
-                      onClick={() => setIsChangePasswordOpen(true)}
+                      onClick={handleChangePassword}
                       trailing={
                         <span className="text-sm font-semibold text-cyan-300">
                           Đổi -&gt;

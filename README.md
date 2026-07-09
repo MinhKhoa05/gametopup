@@ -27,13 +27,20 @@ The app focuses on the parts that are often handled manually: customer messages,
 
 **Website:** https://gametopup.minhkhoa.dev
 
-The demo is seeded with accounts so you can try the main customer and admin flows without setting up the project locally.
+### Demo Accounts
 
-| Role | Email | Password |
-| ---- | ----- | -------- |
-| Admin | `admin@gametopup.com` | `Admin123456@` |
-| Customer | `customer01@gametopup.com` | `Admin123456@` |
-| Customer | `customer02@gametopup.com` | `Admin123456@` |
+Use the demo accounts below to explore the main customer and admin flows.
+
+| Role | Email |
+| ---- | ----- |
+| Admin | `admin@gametopup.com` |
+| Customer | `customer01@gametopup.com` |
+
+Default password for all demo accounts:
+
+`Admin123456@`
+
+> Tip: You can also use **Quick Login** on the login page for a faster experience.
 
 > The demo database may be reset periodically.
 
