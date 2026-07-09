@@ -22,7 +22,7 @@ import {
   IconBox,
 } from "@/shared/components";
 import { formatCurrency } from "@/shared/lib/format";
-import { OrderStatusBadge } from "@/features/orders/components/OrderStatusBadge";
+import { OrderListItem } from "@/features/orders/components/OrderListItem";
 
 export function HomeUserPage() {
   const navigate = useNavigate();
@@ -174,24 +174,9 @@ export function HomeUserPage() {
               ) : (
                 <div className="grid gap-3">
                   {recentOrders.map((order) => (
-                    <MediaListItem
+                    <OrderListItem
                       key={order.id}
-                      leading={
-                        <IconBox size="md" tone="primary">
-                          <Package2 size={18} />
-                        </IconBox>
-                      }
-                      title={order.packageName}
-                      meta={
-                        <time dateTime={order.createdAt}>
-                          {new Date(order.createdAt).toLocaleDateString(
-                            "vi-VN",
-                          )}
-                        </time>
-                      }
-                      titleAccessory={
-                        <OrderStatusBadge status={order.status} />
-                      }
+                      order={order as any}
                       onClick={() => navigate(routes.orders())}
                     />
                   ))}

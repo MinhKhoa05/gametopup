@@ -26,7 +26,7 @@ export function WalletDepositItem({ deposit }: Props) {
       }
       title={`Nạp ${formatCurrency(deposit.amount)}`}
       titleAccessory={<DepositStatusBadge status={deposit.status} className="h-6 min-h-6 px-2 text-[0.72rem] leading-none" />}
-      subtitle={`${deposit.bankId} • ${formatDateTimeCompact(deposit.createdAt)}`}
+      subtitle={`${deposit.code} • ${formatDateTimeCompact(deposit.createdAt)}`}
       trailing={
         <div
           className={
