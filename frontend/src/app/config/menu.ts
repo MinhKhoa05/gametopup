@@ -9,6 +9,10 @@ export type HeaderMenuItem = {
 
 export const HEADER_USER_MENU_ITEMS: HeaderMenuItem[] = [
   {
+    label: "Trang chủ",
+    href: routes.home(),
+  },
+  {
     label: "Hồ sơ",
     href: routes.profile(),
   },
@@ -19,10 +23,6 @@ export const HEADER_USER_MENU_ITEMS: HeaderMenuItem[] = [
   {
     label: "Lịch sử ví",
     href: routes.wallet(),
-  },
-  {
-    label: "Trang chủ",
-    href: routes.home(),
     dividerAfter: true,
   },
   {
@@ -32,6 +32,10 @@ export const HEADER_USER_MENU_ITEMS: HeaderMenuItem[] = [
 ];
 
 export const HEADER_ADMIN_MENU_ITEMS: HeaderMenuItem[] = [
+  {
+    label: "Trang chủ",
+    href: routes.home(),
+  },
   {
     label: "Hồ sơ",
     href: routes.profile(),
