@@ -48,7 +48,7 @@ export function getDepositStatusMeta(status: WalletDepositStatus | number): Depo
 }
 
 export function isDepositReviewActionable(status: WalletDepositStatus) {
-  return status === WalletDepositStatus.UserConfirmed;
+  return status === WalletDepositStatus.Pending || status === WalletDepositStatus.UserConfirmed;
 }
 
 export function isDepositReviewPending(status: WalletDepositStatus) {

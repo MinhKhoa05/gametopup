@@ -1,6 +1,6 @@
 import { CheckCircle2, CircleSlash, WalletCards } from 'lucide-react';
 
-import type { DepositReviewRequest } from '@/features/deposits/types';
+import { WalletDepositStatus, type DepositReviewRequest } from '@/features/deposits/types';
 import { Button, DetailRow, Dialog } from '@/shared/components';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { classNames } from '@/shared/lib/classNames';
@@ -45,14 +45,16 @@ export function DepositReviewDialog({
 
           {actionable ? (
             <>
-              <Button
-                className="border-rose-400/25 bg-rose-500/10 text-rose-200 hover:border-rose-300/30 hover:bg-rose-500/15 hover:text-rose-100"
-                disabled={busy}
-                leadingIcon={<CircleSlash size={16} />}
-                onClick={() => void onReview('reject', request)}
-              >
-                Từ chối
-              </Button>
+              {request.status === WalletDepositStatus.UserConfirmed ? (
+                <Button
+                  className="border-rose-400/25 bg-rose-500/10 text-rose-200 hover:border-rose-300/30 hover:bg-rose-500/15 hover:text-rose-100"
+                  disabled={busy}
+                  leadingIcon={<CircleSlash size={16} />}
+                  onClick={() => void onReview('reject', request)}
+                >
+                  Từ chối
+                </Button>
+              ) : null}
 
               <Button
                 disabled={busy}
@@ -92,15 +94,15 @@ export function DepositReviewDialog({
           <DetailRow label="Nội dung chuyển khoản">{request.code}</DetailRow>
           <DetailRow label="Người gửi">User #{request.userId}</DetailRow>
           <DetailRow label="Ngày tạo">{formatDate(request.createdAt)}</DetailRow>
-          <DetailRow label="Khách xác nhận">
-            {request.userConfirmedAt ? formatDate(request.userConfirmedAt) : 'Chưa xác nhận'}
-          </DetailRow>
-          <DetailRow label="Đã xử lý">
-            {request.reviewedAt ? formatDate(request.reviewedAt) : 'Chưa xử lý'}
-          </DetailRow>
-          <DetailRow label="Người duyệt">
-            {request.reviewedBy ? `#${request.reviewedBy}` : '---'}
-          </DetailRow>
+          {request.userConfirmedAt ? (
+            <DetailRow label="Khách xác nhận">{formatDate(request.userConfirmedAt)}</DetailRow>
+          ) : null}
+          {request.reviewedAt ? (
+            <DetailRow label="Đã xử lý">{formatDate(request.reviewedAt)}</DetailRow>
+          ) : null}
+          {request.reviewedBy ? (
+            <DetailRow label="Người duyệt">#{request.reviewedBy}</DetailRow>
+          ) : null}
         </div>
 
         <div className="grid gap-3 rounded-[18px] border gt-border bg-[var(--gt-card)] px-4 py-4">

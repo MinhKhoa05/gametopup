@@ -133,7 +133,7 @@ public sealed class WalletDepositService
         ArgumentNullException.ThrowIfNull(deposit);
         ArgumentNullException.ThrowIfNull(admin);
 
-        if (deposit.Status != WalletDepositStatus.UserConfirmed)
+        if (deposit.Status != WalletDepositStatus.Pending && deposit.Status != WalletDepositStatus.UserConfirmed)
         {
             throw new BusinessException(ErrorCode.InvalidDepositStatus);
         }
