@@ -1,7 +1,9 @@
-import { ImageBox, MediaListItem } from "@/shared/components";
-import { formatCurrency, formatDate } from "@/shared/lib/format";
+import { IconBox, MediaListItem } from "@/shared/components";
+import { formatCurrency, formatDateTimeCompact } from "@/shared/lib/format";
+import { formatOrderId } from "../utils";
 import { Order } from "@/features/orders/types";
 import { OrderStatusBadge } from "./OrderStatusBadge";
+import { Package2 } from "lucide-react";
 
 type OrderListItemProps = {
   order: Order;
@@ -16,22 +18,34 @@ export function OrderListItem({
     <MediaListItem
       onClick={onClick}
       leading={
-        <ImageBox
-          src={order.packageImageUrl}
-          alt={order.packageName}
-          className="object-cover"
-        />
+        <IconBox size="md" tone="primary">
+          <Package2 size={18} />
+        </IconBox>
       }
-      title={order.gameName}
-      subtitle={order.packageName}
-      meta={`Đơn #${order.id} • ${order.gameAccountInfo}`}
-      titleAccessory={<OrderStatusBadge status={order.status} />}
+      title={
+        <span className="flex min-w-0 items-baseline gap-1.5">
+          <span className="truncate font-bold gt-text">
+            {order.packageName}
+          </span>
+          <span className="truncate text-xs font-normal gt-text-muted">
+            ({order.gameName})
+          </span>
+        </span>
+      }
+      subtitle={
+        <span className="text-xs">
+          <span className="gt-text-soft">Tài khoản: </span>
+          <span className="font-semibold gt-text">{order.gameAccountInfo}</span>
+        </span>
+      }
+      meta={
+        <span className="text-xs font-medium gt-text-muted">
+          {formatOrderId(order.id)} • {formatDateTimeCompact(order.createdAt)}
+        </span>
+      }
       trailing={
-        <div className="text-right">
-          <div className="text-xs text-slate-400">
-            {formatDate(order.createdAt)}
-          </div>
-
+        <div className="flex flex-col items-end gap-1.5">
+          <OrderStatusBadge status={order.status} />
           <strong className="gt-tabular font-black text-cyan-100">
             {formatCurrency(order.packagePrice)}
           </strong>

@@ -55,7 +55,7 @@ export function OrderProcessingHistoryDialog({
       loading={loading}
       maxWidthClassName="max-w-2xl"
       onClose={onClose}
-      title="Processing History"
+      title="Lịch sử xử lý"
     >
       {loading && events.length === 0 ? (
         <LoadingState title="Đang tải lịch sử xử lý..." />

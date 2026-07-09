@@ -6,6 +6,7 @@ import type { Order } from '../types';
 import { canUserCancelOrder } from '../orderMetadata';
 import { OrderDetailContent } from './OrderDetailContent';
 import { OrderStatusBadge } from './OrderStatusBadge';
+import { formatOrderId } from '../utils';
 
 type OrderDetailDialogProps = {
   busy?: boolean;
@@ -54,7 +55,7 @@ export function OrderDetailDialog({
       loading={busy}
       maxWidthClassName="max-w-2xl"
       onClose={onClose}
-      title={`Đơn #${order.id}`}
+      title={`Đơn ${formatOrderId(order.id)}`}
     >
       <OrderDetailContent order={order} />
     </Dialog>

@@ -36,7 +36,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         {children}
       </main>
       {showFooter && <AppFooter />}
-      <SiteCredits />
+      <SiteCredits hasBottomNav={showBottomNav} />
       {showBottomNav && <BottomNav />}
     </div>
   );
