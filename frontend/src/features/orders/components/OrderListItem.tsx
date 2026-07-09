@@ -1,9 +1,8 @@
-import { IconBox, MediaListItem } from "@/shared/components";
+import { ImageBox, MediaListItem } from "@/shared/components";
 import { formatCurrency, formatDateTimeCompact } from "@/shared/lib/format";
 import { formatOrderId } from "../utils";
 import { Order } from "@/features/orders/types";
 import { OrderStatusBadge } from "./OrderStatusBadge";
-import { Package2 } from "lucide-react";
 
 type OrderListItemProps = {
   order: Order;
@@ -17,11 +16,7 @@ export function OrderListItem({
   return (
     <MediaListItem
       onClick={onClick}
-      leading={
-        <IconBox size="md" tone="primary">
-          <Package2 size={18} />
-        </IconBox>
-      }
+      leading={<ImageBox src={order.packageImageUrl} alt={order.packageName} />}
       title={
         <span className="flex min-w-0 items-baseline gap-1.5">
           <span className="truncate font-bold gt-text">
