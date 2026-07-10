@@ -4,11 +4,11 @@
 
 GameTopUp is split into a React frontend, an ASP.NET Core API and a MariaDB database.
 
-This split keeps the UI, workflow logic and database code from blending into one large application. For a project with wallet balance, deposits, package capacity and order processing, keeping those concerns separate matters.
+The UI, workflow logic and database code live in separate application layers. Wallet balance, deposits, package capacity and order processing cross those layers through API calls and backend workflows.
 
-The frontend handles the screens and server-state coordination. The backend owns business rules and transaction boundaries. The database stores the operational records: users, wallets, deposits, orders, package availability and history.
+The frontend handles the screens and server-state coordination. The backend owns business rules and transaction boundaries. The database stores the operational records: users, wallets, deposits, orders, package availability, notifications and history.
 
-## High-Level Shape
+## Application Structure
 
 ```mermaid
 flowchart LR
@@ -48,23 +48,24 @@ The main repository folders mirror that shape:
 
 The frontend is organized around product areas rather than technical buckets.
 
-Features such as `games`, `packages`, `wallet`, `deposits`, `orders`, `users` and `dashboard` live under `frontend/src/features`. Shared API helpers, formatting utilities and UI components live under `frontend/src/shared`.
+Features such as `games`, `packages`, `wallet`, `deposits`, `orders`, `notifications`, `users` and `dashboard` live under `frontend/src/features`. Shared API helpers, formatting utilities and UI components live under `frontend/src/shared`.
 
-That structure keeps the code close to how people use the app:
+Feature folders map to the main product areas:
 
 - Customers browse games and packages.
 - Customers manage wallet deposits and orders.
+- Customers receive in-app status updates for deposits and orders.
 - Admins review deposits, manage catalog data and process orders.
 
 The frontend talks to the API through a shared Axios client. That client handles credentials, JSON/FormData behavior and session refresh when the API returns `401`.
 
-TanStack Query handles server state. The project uses query persistence selectively, so cached data is not treated as a blanket default for every request.
+TanStack Query handles server state. Query persistence is enabled selectively, so cached data is not treated as a blanket default for every request.
 
 More detail lives in [Frontend](frontend.md).
 
 ## Backend
 
-The backend uses a practical layered structure.
+The backend uses a layered structure.
 
 ```mermaid
 flowchart TD
@@ -99,7 +100,7 @@ The backend projects have distinct roles:
 | `GameTopUp.UnitTests` | Service and use case tests |
 | `GameTopUp.IntegrationTests` | API, workflow and concurrency tests against MariaDB |
 
-This is not strict clean architecture. The structure is practical: enough to follow the flow, not so much that the project becomes harder to read.
+The backend is not strict clean architecture. Controllers, use cases, services, repositories and queries are separated by responsibility.
 
 ## Request Flow
 
@@ -121,9 +122,9 @@ sequenceDiagram
     API-->>UI: ApiResponse JSON
 ```
 
-For simple reads, a controller may call a read service directly. For workflows with multiple state changes, the request goes through a use case.
+For single-step reads, a controller may call a read service directly. For workflows with multiple state changes, the request goes through a use case.
 
-That distinction keeps simple operations simple while still giving the important flows a clear place to live.
+Use cases contain workflows that coordinate more than one state change.
 
 ## Database
 
@@ -142,10 +143,11 @@ The central tables are:
 | `orders` | Customer orders and processing status |
 | `order_history` | Status transitions and audit trail |
 | `refresh_tokens` | Hashed refresh tokens for session renewal |
+| `notifications` | User-facing deposit and order status messages |
 
-The schema is kept in [database/schema.sql](../database/schema.sql), with demo data in [database/seed.sql](../database/seed.sql).
+The schema is kept in [database/schema.sql](../database/schema.sql), with demo data in [database/seed.sql](../database/seed.sql). Existing deployments use the SQL files in [database/migrations](../database/migrations) to stay aligned with the schema.
 
-Package availability is modeled as available slots. This fits the domain better than warehouse-style inventory: the service needs to know how many more orders it can accept for a package, not where a physical item is stored.
+Package availability is modeled as available slots. The service tracks how many more orders it can accept for a package rather than the location of a physical item.
 
 ## Authentication
 
@@ -155,7 +157,7 @@ The access token cookie is used by the API authentication middleware. The refres
 
 When the frontend receives a `401`, it attempts a refresh request once and retries the original request. If refresh fails, the session-expired handler is triggered.
 
-Token handling stays out of normal UI code, and session behavior stays consistent across pages.
+Token handling stays out of normal UI code, and pages share the same session behavior.
 
 ## Deployment Shape
 
@@ -179,24 +181,20 @@ flowchart LR
 
 Docker Compose runs the database, API and frontend containers. The host-level Nginx configuration routes `/api/` and `/uploads/` to the API and everything else to the frontend.
 
-The deployment workflow is simple: CI validates the code, then the production workflow pulls the latest `main` branch on the VPS and rebuilds the containers.
+The deployment workflow runs CI, pulls the latest `main` branch on the VPS and rebuilds the containers.
 
 More detail lives in [Deployment](deployment.md).
 
-## Why This Shape Works For The Project
+## Architecture Scope
 
-GameTopUp has enough workflow behavior to need structure, but not enough scope to justify heavy architecture.
-
-This shape keeps the important parts visible:
+The architecture separates the main responsibilities:
 
 - The frontend follows the product domain.
 - The backend isolates workflow orchestration from HTTP details.
 - Database operations that need locking or projection stay close to SQL.
 - Tests can target business rules, API behavior and real database workflows separately.
-- Docker keeps local and production runtime shape close enough to be useful.
+- Docker runs the local and production environments with the same main services: frontend, API and database.
 
-That balance fits the goal of the repository: easy to browse from the outside, but still honest about the engineering decisions underneath.
-
-## Next
+## Related Workflows
 
 The architecture shows where things live. The best next step is [Core Workflows](core-workflows.md), which explains how deposits, wallet balance, package slots and orders move through the app.
