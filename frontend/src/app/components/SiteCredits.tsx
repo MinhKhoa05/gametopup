@@ -1,11 +1,20 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { DEVELOPER, FOOTER_DEVELOPER_LINKS } from '@/app/config';
 
 import { routes } from '@/app/router/routes';
 
-export function SiteCredits() {
+import { classNames } from '@/shared/lib/classNames';
+
+type SiteCreditsProps = {
+  hasBottomNav?: boolean;
+};
+
+export function SiteCredits({ hasBottomNav }: SiteCreditsProps) {
   return (
-    <div className="gt-shell-surface border-t gt-border py-5 text-sm gt-text-muted">
+    <div className={classNames(
+      "gt-shell-surface border-t gt-border py-5 text-sm gt-text-muted",
+      hasBottomNav && "max-md:pb-28"
+    )}>
       <div className="mx-auto flex w-full max-w-[1480px] flex-col items-center gap-3 px-4 text-center sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <span className="flex flex-wrap items-center justify-center gap-1.5 sm:justify-start">
           <span>© 2026</span>

@@ -27,13 +27,20 @@ The app focuses on the parts that are often handled manually: customer messages,
 
 **Website:** https://gametopup.minhkhoa.dev
 
-The demo is seeded with accounts so you can try the main customer and admin flows without setting up the project locally.
+### Demo Accounts
 
-| Role | Email | Password |
-| ---- | ----- | -------- |
-| Admin | `admin@gametopup.com` | `Admin123456@` |
-| Customer | `customer01@gametopup.com` | `Admin123456@` |
-| Customer | `customer02@gametopup.com` | `Admin123456@` |
+Use the demo accounts below to explore the main customer and admin flows.
+
+| Role | Email |
+| ---- | ----- |
+| Admin | `admin@gametopup.com` |
+| Customer | `customer01@gametopup.com` |
+
+Default password for all demo accounts:
+
+`Admin123456@`
+
+> Tip: You can also use **Quick Login** on the login page for a faster experience.
 
 > The demo database may be reset periodically.
 
@@ -41,11 +48,11 @@ The demo is seeded with accounts so you can try the main customer and admin flow
 
 Small game top-up services often start with a very manual workflow.
 
-Customers send messages. Staff check bank transfers. Orders are written down manually. Package availability is tracked by memory or spreadsheet. It works at the beginning, but it becomes fragile once deposits, orders and customers start moving at the same time.
+Customers send messages. Staff check bank transfers. Orders are written down manually. Package availability is tracked by memory or spreadsheet. When deposits, orders and customers move at the same time, the manual process has no shared state model or audit trail.
 
 GameTopUp turns that workflow into a web app.
 
-Customers can browse games, choose packages, create wallet deposit requests, confirm transfers and place orders with wallet balance. Administrators can review deposits, manage games and packages, pick orders for processing and monitor the current state of the service from a dashboard.
+Customers can browse games, choose packages, create wallet deposit requests, confirm transfers, place orders with wallet balance and follow status updates through in-app notifications. Administrators can review deposit requests, manage games and packages, pick orders for processing and monitor the service from a dashboard.
 
 The main flow ties together wallet balance changes, package slot reservation, order history and admin actions instead of treating them as isolated updates.
 
@@ -56,8 +63,9 @@ The main flow ties together wallet balance changes, package slot reservation, or
 - Game and package browsing for customers.
 - Wallet deposits with VietQR transfer information.
 - Wallet transaction history for deposits, purchases and refunds.
+- In-app notifications for deposit and order status changes.
 - Order purchase flow with wallet balance validation and package slot reservation.
-- Admin review flow for deposits.
+- Admin review flow for deposit requests, with approval, rejection and review notes.
 - Admin order processing with pick, complete and cancel actions.
 - Dashboard for pending orders, pending deposits and operational totals.
 
@@ -78,11 +86,11 @@ The main flow ties together wallet balance changes, package slot reservation, or
 
 ## Quick Start
 
-The easiest way to get started is with Docker Compose.
+GameTopUp can run with Docker Compose.
 
 ### Prerequisites
 
-The project requires Docker with Docker Compose support.
+The local machine needs Docker with Docker Compose support.
 No local installation of .NET, Node.js or MariaDB is needed.
 
 ### Configure Environment
@@ -124,7 +132,7 @@ Services:
 | Backend API | http://localhost:5000 |
 | Swagger UI | Available in development environment |
 
-The database is initialized from [database/schema.sql](database/schema.sql) and [database/seed.sql](database/seed.sql).
+New databases are initialized from [database/schema.sql](database/schema.sql) and [database/seed.sql](database/seed.sql). Existing databases should apply the SQL files in [database/migrations](database/migrations) once and in order.
 
 ## Tech Stack
 
@@ -139,20 +147,20 @@ The database is initialized from [database/schema.sql](database/schema.sql) and 
 
 ## Documentation
 
-Want to learn more about the project?
+Detailed documentation:
 
 | Document | Focus |
 | -------- | ----- |
-| [Overview](docs/overview.md) | Why the project exists and how it evolved |
+| [Overview](docs/overview.md) | Why the project exists and what problem it models |
 | [Architecture](docs/architecture.md) | How the frontend, backend, database and deployment fit together |
 | [Core Workflows](docs/core-workflows.md) | How deposits, wallet balance, purchases and admin processing work |
 | [Frontend](docs/frontend.md) | Frontend organization, routing, state and user experience |
 | [Testing](docs/testing.md) | Unit tests, integration tests, concurrency tests and coverage |
 | [Deployment](docs/deployment.md) | Docker, Nginx, environment configuration and production deployment |
-| [Engineering Decisions](docs/engineering-decisions.md) | The choices and trade-offs behind the implementation |
+| [Engineering Decisions](docs/engineering-decisions.md) | Backend structure, data access, testing and deployment constraints |
 
-## Current Status
+## Project Status
 
-GameTopUp currently implements the complete workflow from wallet deposits to order processing and administration.
+GameTopUp implements the complete workflow from wallet deposits to order processing and administration.
 
 When a limitation or next step matters, it is mentioned in the document where that topic belongs.

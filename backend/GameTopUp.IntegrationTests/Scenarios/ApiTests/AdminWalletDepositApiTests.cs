@@ -109,8 +109,10 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
-    public async Task ApproveDepositRequest_ShouldCreditWalletAndMarkApproved()
+    [Theory]
+    [InlineData(WalletDepositStatus.Pending)]
+    [InlineData(WalletDepositStatus.UserConfirmed)]
+    public async Task ApproveDepositRequest_ShouldCreditWalletAndMarkApproved_WhenStatusIsValid(WalletDepositStatus status)
     {
         var user = await Factory.SeedUserAsync();
 
@@ -119,7 +121,7 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
         var deposit = await Factory.SeedWalletDepositAsync(user.Id, d =>
         {
             d.Amount = 100_000m;
-            d.Status = WalletDepositStatus.UserConfirmed;
+            d.Status = status;
         });
 
         var admin = await Factory.SeedAdminAsync();
@@ -147,13 +149,17 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
         notifications.Should().ContainSingle(notification => notification.Type == NotificationType.DepositApproved);
     }
 
+
     [Fact]
-    public async Task ApproveDepositRequest_ShouldReturnBadRequest_WhenRequestIsNotUserConfirmed()
+    public async Task ApproveDepositRequest_ShouldReturnBadRequest_WhenRequestIsInvalidStatus()
     {
         var user = await Factory.SeedUserAsync();
         await Factory.SeedWalletAsync(user.Id);
 
-        var deposit = await Factory.SeedWalletDepositAsync(user.Id);
+        var deposit = await Factory.SeedWalletDepositAsync(user.Id, d =>
+        {
+            d.Status = WalletDepositStatus.Rejected;
+        });
 
         var admin = await Factory.SeedAdminAsync();
 
@@ -163,7 +169,6 @@ public sealed class AdminWalletDepositApiTests : BaseIntegrationTest
 
         await response.ShouldHaveError(HttpStatusCode.BadRequest, ErrorCode.InvalidDepositStatus);
     }
-
     [Fact]
     public async Task ApproveDepositRequest_ShouldReturnNotFound_WhenDepositDoesNotExist()
     {

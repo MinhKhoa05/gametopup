@@ -2,37 +2,33 @@
 
 🇻🇳 Tiếng Việt: [docs/vi/engineering-decisions.md](vi/engineering-decisions.md)
 
-This document looks back at the technical decisions that shaped GameTopUp over the course of development.
+GameTopUp's backend, frontend, tests and deployment are shaped around workflow orchestration, database behavior, state transitions and deployment scope.
 
-After spending several months on the project, the decisions that mattered most were the ones that made the workflows easier to understand, test and maintain.
+Several implementation details would change if the system handled more users, more data or stricter operational requirements.
 
-Some of those decisions worked well. Others are simply the ones that fit the project today and would probably change if it continued to grow.
+## Architecture Trade-Off
 
-## How The Architecture Evolved
+The backend has more structure than a basic layered application, but less than strict Clean Architecture.
 
-GameTopUp did not start with the exact structure it has today.
+In a traditional layered shape, controllers call services, services coordinate repositories, and transaction boundaries often live inside the service layer.
 
-The first version was closer to a traditional layered application. Controllers called services, services coordinated repositories, and transaction boundaries mostly lived inside the service layer. That worked while the operations were still simple.
+Wallet deposits, order processing and refunds need workflow orchestration outside the service layer. If services own both workflow coordination and business rules, service methods have to manage multiple responsibilities at once.
 
-As wallet deposits, order processing and refunds became more involved, the service layer started doing two different jobs at once: orchestrating workflows and applying business rules.
-
-That made the code harder to reason about and harder to test.
-
-Rather than replacing the architecture entirely, I borrowed a few ideas from Clean Architecture where they solved a real problem. Multi-step workflows gradually moved into use cases. Transaction boundaries moved with them. Services became smaller and focused more on business rules.
+Multi-step workflows live in use cases. Transaction boundaries live with those use cases. Services apply business rules and state changes.
 
 `OrderUseCase` is the clearest example. It loads the package, locks the wallet, checks balance, reserves a package slot, creates the order and records the wallet deduction. `WalletDepositUseCase` follows the same idea for confirmation, approval and rejection.
 
-One benefit I did not fully expect was testing. Once transaction orchestration moved into use cases, many service methods no longer needed to coordinate repositories or manage transaction boundaries. They could accept domain objects, apply rules and return results. That made unit tests smaller because many business rules could be verified without mocking unrelated dependencies.
+Once transaction orchestration moved into use cases, many service methods no longer needed to coordinate repositories or manage transaction boundaries. They could accept domain objects, apply rules and return results. Unit tests for those business rules do not need to mock unrelated dependencies.
 
-GameTopUp is still a layered application. It simply evolved where the workflows demanded it, instead of following a strict architecture diagram from the beginning.
+The backend remains a layered application. Use cases are added where workflows need transaction orchestration.
 
-That evolution feels more honest than trying to redesign the whole codebase around a different architecture.
+Controllers, use cases, services, repositories and queries keep separate responsibilities.
 
-## A Practical Layered Backend
+## Layered Backend Architecture
 
-The backend settled into a practical layered shape:
+The backend uses these layers:
 
-| Layer | Role in the project |
+| Layer | Role |
 | ----- | ------------------- |
 | Controllers | HTTP endpoints, auth and API responses |
 | Use cases | Multi-step workflows and transaction boundaries |
@@ -40,40 +36,38 @@ The backend settled into a practical layered shape:
 | Repositories | Entity persistence |
 | Queries | Read-focused projections |
 
-I do not treat this as a perfect architecture diagram. It is just enough structure to keep the codebase readable as the workflows grew.
+The layer split is based on responsibility rather than a strict architecture template.
 
-One rule guided a lot of the backend work: business actions should not be hidden inside HTTP or SQL plumbing.
+Business actions live outside HTTP and SQL plumbing.
 
-Another thing that changed over time was how repositories were used.
+Repository usage depends on the business behavior around each entity.
 
-Some repositories stay behind services because those entities have meaningful business rules. In other places, a use case talks to a repository directly because there is very little business behavior to encapsulate. Adding another service there would only create an extra layer without making the workflow easier to understand.
-
-I never tried to hide every repository behind another abstraction. What mattered more was keeping each dependency meaningful.
+Some repositories stay behind services because those entities have business rules. In other places, a use case talks to a repository directly because there is little business behavior to encapsulate.
 
 Repositories and queries are split for a similar reason. Repositories are used when the code is working with entities that may be created, updated or locked. Queries are used for read models such as dashboards, lists and filtered admin views.
 
-I would not call this full CQRS. In this codebase, it is just a lightweight split that helped the backend stay easier to scan.
+This is not full CQRS. Repositories handle entity persistence and locking; queries handle read models such as dashboards, lists and filtered admin views.
 
-## Staying Close To SQL
+## SQL-First Data Access
 
-One of the earlier backend decisions was staying close to SQL with Dapper and Dommel.
+Dapper and Dommel keep the data access layer close to SQL.
 
-Some parts of GameTopUp depend on database behavior that I wanted to see clearly:
+Several backend workflows depend on database behavior:
 
 - `FOR UPDATE` locks for wallet and order flows
 - conditional updates for package slots
 - cursor pagination
 - dashboard and admin list queries
 
-An ORM could still work here. The trade-off is that it may hide some of the database behavior I wanted to understand while building the project.
+An ORM could still model the same tables, but locks, conditional updates and projections would be less visible in the application code.
 
-Dapper gives direct control over the risky queries. Dommel reduces some repetitive mapping for simpler persistence operations.
+Dapper handles queries with locking, conditional updates or custom projections. Dommel handles persistence operations with repetitive mapping.
 
-The cost is more responsibility around SQL and mappings. For this project, that trade-off felt fair because database behavior is part of the learning value.
+Dapper requires explicit SQL and mappings.
 
 ## Modeling Operational State
 
-The wallet and package models became more important than they looked at first.
+The wallet and package models carry more operational meaning than their table names suggest.
 
 A wallet balance by itself does not tell enough of the story. If a customer asks why their balance changed, the app should show the movement, not just the final number.
 
@@ -85,71 +79,69 @@ Wallet updates create transaction records with:
 - transaction type
 - reference id
 
-In hindsight, this turned out to be a simple change with a surprisingly large impact. The wallet became an operational record instead of just a decimal column.
+Wallet transaction records turn balance changes into operational records instead of leaving the wallet as only a decimal column.
 
-Package availability had a similar problem. A top-up package is not always a physical stock item. It is closer to capacity: how many more orders can the service accept for this package right now?
+Package availability had a similar problem. A top-up package is not always a physical stock item. It is closer to capacity: how many more orders can the service accept for this package at a given time?
 
-GameTopUp uses `available_slots` for that reason. During purchase, one slot is reserved. When an order is cancelled, one slot is restored. The repository update only decreases the slot count when enough slots are available, which prevents the obvious overselling bug.
+Packages use `available_slots` for that reason. During purchase, one slot is reserved. When an order is cancelled, one slot is restored. The repository update only decreases the slot count when enough slots are available, so overselling is blocked at the update statement.
 
-## Testing The Parts That Could Drift
+## Database-Backed Testing
 
-Some of the most important behavior in GameTopUp depends on the database doing the right thing.
+Some GameTopUp workflows depend on row locks, transactions and conditional updates.
 
-Mock tests are still useful for service rules, but they cannot prove how real locks, transactions and conditional updates behave. The integration tests needed to run against the same database family used by the app, so they use Testcontainers with MariaDB.
+Mock tests cover service rules, but they do not exercise real locks, transactions or conditional updates. Integration tests run against the same database family used by the app, so they use Testcontainers with MariaDB.
 
-The trade-off is slower tests and a Docker requirement. In return, GameTopUp gets better coverage for flows like:
+Database-backed tests are slower than mocked unit tests and require Docker. They cover flows like:
 
 - two users trying to buy the last slot
 - two admins approving the same deposit
 - repeated cancellation and refund
 - admin pick competing with customer cancellation
 
-Looking back, this is one of the decisions I am happiest with. It made the test suite closer to the problems the app actually has to handle.
+Database-backed integration testing exercises request concurrency, row locks and state transitions against MariaDB.
 
-## Keeping Auth Understandable
+## Auth Flow
 
 The API sends JWTs through HttpOnly cookies.
 
-The main reason was to avoid spreading token storage and attachment logic across frontend pages. The browser sends the cookie, and the shared API client handles refresh behavior when a request returns `401`.
+HttpOnly cookies keep token storage and attachment logic outside frontend pages. The browser sends the cookie, and the shared API client handles refresh behavior when a request returns `401`.
 
 Refresh tokens are stored as cookies too, but the database stores only the token hash. When refresh happens, the old token is revoked and a new pair is issued.
 
-There are more advanced auth setups, but this one fits the project. The flow stays understandable without making every screen responsible for token handling.
+Individual screens do not store tokens or attach authorization headers.
 
-## Frontend State As The App Grew
+## Frontend State
 
-The frontend started to need more structure once admin actions and customer pages began changing the same data from different places.
+Admin actions and customer pages can change the same data from different places.
 
-Unlike the backend, these decisions were mostly about reducing repetition rather than changing the architecture itself.
+Frontend state code handles fetching, mutations, loading states, invalidation and selected persistence.
 
 Approving a deposit changes wallet-related data. Creating an order changes order lists and package availability. Admin actions change dashboard counts.
 
-TanStack Query gave the frontend one place to organize fetching, mutations, loading states and invalidation. Persisted queries are still opt-in because saving every API response to local storage by default did not feel right for this project.
+TanStack Query organizes fetching, mutations, loading states and invalidation. Persisted queries are opt-in, so not every API response is saved to local storage.
 
-Cursor pagination is another small decision in the same category. Orders, deposits and wallet transactions behave like timelines, where new records can appear while someone is browsing older ones. Cursor pagination fits that style of data better than page numbers that can shift underneath the user.
+Orders, deposits, wallet transactions and notifications behave like timelines, where new records can appear while someone is browsing older ones. Cursor pagination uses a record position instead of page numbers that can shift underneath the user.
 
-These are not the deepest parts of the project, but they helped the UI code stay predictable as more screens were added.
+TanStack Query, query persistence and cursor pagination define how server data is fetched, invalidated, persisted and paginated across screens.
 
-## Keeping Deployment Simple
+## Deployment Scope
 
-Deployment uses Docker Compose with a VPS and Nginx.
+Docker Compose, a VPS and Nginx run the live demo.
 
-The setup is plain and easy to understand. The repo shows how the app runs locally and how the live demo is updated.
+The repo includes Docker Compose for local runtime and GitHub Actions for live demo deployment.
 
-At this stage, that mattered more than building a complicated deployment pipeline.
-
-The current setup has limits:
+The deployment setup has limits:
 
 - no blue-green deploy
 - no container registry flow
 - no managed image storage
 - no monitoring stack in the repo
 
-Those are real limitations. They are also reasonable future improvements rather than requirements for the current version.
+These items are outside the portfolio scope.
 
-## What I Would Revisit Later
+## Revisit Areas
 
-If GameTopUp continued growing, these are the decisions I would revisit first:
+If GameTopUp handled more traffic, more data or stricter production requirements, the next infrastructure changes would be:
 
 - add a real database migration tool instead of schema init scripts
 - move uploaded images to object storage
@@ -158,10 +150,10 @@ If GameTopUp continued growing, these are the decisions I would revisit first:
 - add structured logging around wallet and order workflows
 - improve deployment rollback support
 
-Those are not features pretending to be done. They are the next areas that would make sense after the current version.
+These areas would apply beyond the portfolio scope.
 
-## Next
+## Related Topics
 
-For the workflows behind these decisions, read [Core Workflows](core-workflows.md).
+For the related workflows, read [Core Workflows](core-workflows.md).
 
 For the deployment setup, read [Deployment](deployment.md).

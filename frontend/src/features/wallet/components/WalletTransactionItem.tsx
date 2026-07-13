@@ -4,6 +4,7 @@ import { Badge, IconBox, MediaListItem } from "@/shared/components";
 
 import { classNames } from "@/shared/lib/classNames";
 import { formatCurrency, formatDateTimeCompact } from "@/shared/lib/format";
+import { formatOrderId } from "@/features/orders/utils";
 
 import { WalletTransaction, WalletTransactionType } from "../types";
 
@@ -66,7 +67,10 @@ export function WalletTransactionItem({ transaction }: Props) {
 
           {transaction.referenceId ? (
             <span className="truncate text-sm font-medium gt-text-soft">
-              #{transaction.referenceId}
+              {transaction.type === WalletTransactionType.PurchaseOrder ||
+              transaction.type === WalletTransactionType.Refund
+                ? formatOrderId(transaction.referenceId)
+                : `#${transaction.referenceId}`}
             </span>
           ) : null}
         </span>

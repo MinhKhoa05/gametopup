@@ -61,7 +61,7 @@ export function AdminOrderDialog({
             onClick={() => onOpenHistory(order.id)}
             variant="secondary"
           >
-            Processing History
+            Lịch sử xử lý
           </Button>
 
           {isPending || isAssignedProcessing ? (

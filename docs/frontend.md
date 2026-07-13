@@ -2,35 +2,31 @@
 
 🇻🇳 Tiếng Việt: [docs/vi/frontend.md](vi/frontend.md)
 
-The frontend started as a way to make the backend workflows visible.
+The frontend exposes backend workflows through customer and admin screens.
 
-At first, the frontend only needed to make the project usable without touching Swagger. Someone should be able to browse packages, create deposits, place orders and try the admin flows from the browser. As more pages were added, it became harder to treat the frontend as "just a demo." The app needed clearer organization, smoother session handling, better loading states and a more predictable way to keep server data in sync.
+Reviewers can browse packages, create deposits, place orders and try the admin flows from the browser instead of interacting only through Swagger. The frontend is organized around product areas, shared API behavior, server-state handling and workflow-specific components.
 
-Those improvements appeared gradually. As the application grew, TanStack Query became part of the data layer, session handling became smoother, admin pages were lazy-loaded, and several small UX improvements reduced unnecessary loading and page flashes.
+TanStack Query coordinates fetching, mutations and invalidation. The shared API client handles session refresh. Admin pages are lazy-loaded, and the login page supports quick access to seeded demo accounts.
 
-The frontend is still simple, but it is much more shaped around the product than the first version.
+The frontend is shaped around the product workflow rather than around a generic demo UI.
 
-## How The Frontend Grew
+## Customer And Admin Screens
 
-The first screens were small enough to keep in a few broad folders. That stopped feeling comfortable once the customer and admin flows started to grow in different directions.
+The customer and admin areas solve different navigation and state problems.
 
-Wallet, deposits, orders, games and packages each had their own pages, forms, dialogs and loading states. Two problems started to show up at the same time: keeping server data synchronized after actions, and keeping workflow code easy to find.
+Wallet, deposits, orders, games and packages each have their own pages, forms, dialogs and loading states. Feature folders colocate workflow pages, API calls, query hooks, types and components.
 
-Those two pressures shaped most of the frontend decisions.
+Server-state synchronization and workflow locality shape most of the frontend decisions.
 
 ## Server State
 
-As the application grew, the harder frontend problem was not fetching data once. It was keeping pages synchronized after mutations.
+Frontend state has to keep pages synchronized after mutations, not only fetch data once.
 
-Approving a deposit changes wallet-related data. Creating an order changes order lists and package availability. Admin actions change dashboard counts.
+Approving a deposit changes wallet-related data and notification counts. Creating an order changes order lists, package availability and notifications. Admin actions change dashboard counts.
 
-TanStack Query became useful because fetching, mutations, loading states and invalidation could be handled consistently instead of being rebuilt in every page.
+TanStack Query handles fetching, mutations, loading states and invalidation across pages.
 
-One unexpected lesson was that building the frontend improved the backend API.
-
-Before building the UI, returning updated entities from mutation endpoints felt convenient. After introducing TanStack Query, some of those responses became unnecessary. Actions such as picking or completing an order only needed to confirm success, and the frontend could refresh the canonical query afterward.
-
-That kept each screen reading from one source of truth instead of mixing mutation responses with cached query data.
+Actions such as picking or completing an order only need to confirm success. The frontend refreshes the canonical query afterward instead of mixing mutation responses with cached query data.
 
 Query persistence is also opt-in.
 
@@ -38,7 +34,7 @@ Some data is worth keeping briefly to avoid unnecessary loading after a refresh,
 
 Mutation errors are handled through a shared mutation cache, with support for silencing errors when a flow needs custom handling.
 
-These decisions are fairly small on their own, but together they helped the frontend stay predictable as more workflows were added.
+Server-state behavior is handled through query keys, mutation invalidation, opt-in persistence and shared error handling.
 
 ## Feature-Based Organization
 
@@ -47,7 +43,7 @@ Most of the frontend lives under `frontend/src/features`.
 ```text
 frontend/src/
 |-- app/                    routing, layout, navigation and app-level config
-|-- features/               product areas such as games, packages, wallet and orders
+|-- features/               product areas such as games, packages, wallet, orders and notifications
 |   `-- feature-name/
 |       |-- api.ts          API calls for that feature
 |       |-- server.ts       TanStack Query hooks and mutations
@@ -58,11 +54,11 @@ frontend/src/
 `-- styles/                 global styles and theme tokens
 ```
 
-The main feature folders map to product areas: `auth`, `games`, `packages`, `wallet`, `deposits`, `orders`, `dashboard` and `users`.
+The main feature folders map to product areas: `auth`, `games`, `packages`, `wallet`, `deposits`, `orders`, `notifications`, `dashboard` and `users`.
 
-The structure is practical rather than decorative. If a change belongs to orders, most of the related UI, hooks and components are inside the orders feature. Shared code still exists, but product-specific components stay near the workflow they support.
+If a change belongs to orders, most of the related UI, hooks and components are inside the orders feature. Shared code still exists, but product-specific components stay near the workflow they support.
 
-Not every feature has every file or folder, but the convention is consistent enough that moving between features feels familiar.
+Not every feature has every file or folder. The repeated convention is `api.ts`, `server.ts`, `types.ts`, `components/` and `pages/` where the feature needs them.
 
 ## API Client And Session Handling
 
@@ -74,13 +70,15 @@ When a request fails with `401`, the client tries `/api/auth/refresh` once, then
 
 Auth recovery stays out of individual pages, so each screen can focus on its own workflow instead of carrying a slightly different version of token refresh logic.
 
+The login page also includes quick login for the seeded customer and admin demo accounts. It uses the normal login mutation, so the shortcut does not introduce a separate authentication path.
+
 ## Routing
 
 Routes are centralized in `frontend/src/app/router`.
 
-Routing mostly mirrors the product itself. Public pages help customers discover games, authenticated pages support purchases and wallet management, while the admin area stays behind role checks under `/admin`.
+Routing mostly mirrors the product itself. Public pages show games, authenticated pages support purchases and wallet management, while the admin area stays behind role checks under `/admin`.
 
-The admin area is lazy-loaded so customer-facing pages do not eagerly load every admin screen. Route helper functions keep navigation paths from spreading as string literals across the UI.
+The admin area is lazy-loaded so customer-facing pages do not eagerly load every admin screen. Route helper functions centralize navigation paths instead of repeating string literals across the UI.
 
 ## Purchase Flow
 
@@ -92,7 +90,7 @@ Keeping that logic inside a dedicated hook lets the page describe the screen ins
 
 The backend still owns the actual purchase rules. The frontend collects the intent and presents the result; wallet validation, package reservation and order creation happen server-side.
 
-## Deposit Experience
+## Deposit Flow UI
 
 The deposit screen follows the real manual bank-transfer workflow.
 
@@ -102,34 +100,36 @@ Copy buttons are there for the same reason. In practice, the customer is likely 
 
 After transferring, the customer confirms the deposit. The admin review step stays separate because the backend still treats transfer verification as a manual process.
 
-## Admin Experience
+On the admin side, pending and customer-confirmed deposits are actionable. The review dialog supports approval, rejection where allowed and optional admin notes, matching the backend status machine instead of treating every review action as valid for every status.
+
+## Admin Operations UI
 
 The admin area is organized around operational work.
 
 The dashboard shows pending orders and active deposit requests first, because those are the things that need attention. From there, admins can move into dedicated pages for games, packages, deposits, orders and users.
 
-Order and deposit pages represent queues of work: deposits waiting for confirmation or review, orders waiting to be picked, and orders currently being processed.
+Order and deposit pages represent queues of work: deposits waiting for confirmation or review, orders waiting to be picked, and orders in processing.
 
-For that reason, the UI follows backend states instead of flattening every workflow into the same kind of edit screen.
+The UI follows backend states instead of flattening every workflow into the same kind of edit screen.
+
+The header includes a notification dropdown for authenticated users. It shows unread counts, paginates older messages and lets users mark messages as read. Notifications are generated by backend workflow events such as deposit submission, deposit review and order status changes.
 
 ## Shared UI
 
-Shared components appeared gradually as more screens were added.
-
 Common building blocks such as buttons, badges, dialogs, fields, detail rows, loading states, empty states, panels, filters and image helpers live under `frontend/src/shared/components`.
 
-Instead of building a large design system, the project only extracted pieces that were reused often. Workflow-specific dialogs and forms still stay inside their own features because they usually evolve together with the business flow.
+Workflow-specific dialogs and forms stay inside their own features because they usually evolve together with the business flow.
 
-## What Is Not In The Frontend Yet
+## Frontend Tests
 
-There is no dedicated frontend test suite in the current repo.
+There is no dedicated frontend test suite in this repository.
 
-Quality checks for the frontend currently come from TypeScript and the production build in CI. Most of the heavier correctness coverage lives in the backend unit and integration tests, where the business rules are enforced.
+Frontend quality checks come from TypeScript and the production build in CI. Most of the heavier correctness coverage lives in the backend unit and integration tests, where the business rules are enforced.
 
-At this stage, that trade-off is acceptable, but frontend interaction tests would be a natural next step.
+The highest-risk business rules live in the backend. Frontend interaction tests remain outside the current test suite.
 
-## Next
+## Related Workflows
 
 The frontend presents the workflows. [Core Workflows](core-workflows.md) explains what the backend protects behind those screens.
 
-For the current quality strategy, continue with [Testing](testing.md).
+For frontend checks and backend workflow coverage, continue with [Testing](testing.md).

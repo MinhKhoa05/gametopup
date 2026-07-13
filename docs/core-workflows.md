@@ -4,11 +4,11 @@
 
 The core of GameTopUp is how wallet balance, package availability and order state move together.
 
-This document follows the workflows that need the most care. It is less about endpoints and more about what needs to stay true while customers and admins are using the app.
+The core workflows coordinate wallet balance, package availability and order state while customers and admins use the app.
 
-For the broader system shape, see [Architecture](architecture.md). For why these workflows exist in the first place, start with [Overview](overview.md).
+Architecture describes the broader system shape. Overview describes the domain context behind these workflows.
 
-## The Operating Loop
+## Operating Loop
 
 At a high level, the app supports this loop:
 
@@ -18,25 +18,29 @@ flowchart LR
     Deposit["Create wallet deposit"]
     Review["Admin reviews transfer"]
     Wallet["Wallet balance updated"]
+    NotifyDeposit["Customer notified"]
     Purchase["Customer purchases package"]
     Process["Admin processes order"]
+    NotifyOrder["Customer notified"]
     Done["Order completed or cancelled"]
 
     Browse --> Deposit
     Deposit --> Review
     Review --> Wallet
-    Wallet --> Purchase
+    Wallet --> NotifyDeposit
+    NotifyDeposit --> Purchase
     Purchase --> Process
-    Process --> Done
+    Process --> NotifyOrder
+    NotifyOrder --> Done
 ```
 
-Each step leaves a record behind. Deposit status, wallet transactions, order status and order history make the workflow easier to inspect later.
+Each step leaves a record behind. Deposit status, wallet transactions, order status, order history and notifications create an audit trail for later inspection.
 
 ## Wallet Deposit
 
 Customers do not pay an order directly. They first create a wallet deposit request.
 
-That choice separates payment review from order purchasing. A customer can prepare funds once, then use wallet balance for orders later.
+The wallet-first flow separates payment review from order purchasing. A customer can prepare funds once, then use wallet balance for orders later.
 
 ```mermaid
 sequenceDiagram
@@ -60,12 +64,12 @@ The deposit request stores:
 - amount
 - unique deposit code
 - transfer content
-- current status
+- status
 - review information once an admin handles it
 
-The QR image URL is built from the configured VietQR bank information. The project does not automatically verify bank transfers. The user confirms that they transferred the money, and an admin reviews the request.
+The QR image URL is built from the configured VietQR bank information. GameTopUp does not automatically verify bank transfers. The user confirms that they transferred the money, and an admin reviews the request.
 
-For the current scope, the app models a small service where transfer verification is still a human admin task.
+For this scope, the app models a small service where transfer verification is still a human admin task.
 
 ## Deposit Review
 
@@ -74,12 +78,15 @@ A deposit moves through a small state machine:
 ```mermaid
 stateDiagram-v2
     [*] --> Pending
+    Pending --> Approved
     Pending --> UserConfirmed
     UserConfirmed --> Approved
     UserConfirmed --> Rejected
 ```
 
-The customer can confirm only their own pending deposit. Admin approval is allowed only after the customer confirmation step.
+Customers confirm their own deposit requests while the request is in `Pending`.
+
+Admins can approve a request while it is still `Pending` or after the customer confirms it. Rejection is only available after the customer confirmation step.
 
 When an admin approves the deposit, the workflow has to do more than change a status:
 
@@ -89,6 +96,7 @@ sequenceDiagram
     participant API
     participant UseCase as WalletDepositUseCase
     participant Wallet as WalletService
+    participant Notify as NotificationService
     participant DB as MariaDB
 
     Admin->>API: Approve deposit
@@ -100,18 +108,21 @@ sequenceDiagram
     Wallet->>DB: Update wallet balance
     Wallet->>DB: Create wallet transaction
     UseCase->>DB: Mark deposit approved
+    UseCase->>Notify: Create approval notification
     API-->>Admin: Success
 ```
 
 The wallet credit and deposit status update happen inside a transaction boundary. That matters because approval should not create a half-finished state where the deposit is approved but the wallet was not credited, or the wallet was credited without the deposit review being recorded.
 
-The concurrency tests cover the risky version of this workflow: two admins approving the same deposit at nearly the same time. The expected result is one wallet credit, not two.
+Admins can optionally leave a review note. Approval creates the wallet credit; rejection records the review without changing the wallet balance. Both outcomes notify the customer.
+
+The concurrency tests cover the risky version of this workflow: two admins approving the same deposit at nearly the same time, or one admin approving while another rejects it. The expected result is one final review decision and, at most, one wallet credit.
 
 ## Purchase Flow
 
 The purchase flow is where wallet balance, package availability and order state meet.
 
-From the customer's point of view, it is simple: choose a package, enter game account information and confirm the purchase.
+From the customer's point of view, the flow is choosing a package, entering game account information and confirming the purchase.
 
 From the backend's point of view, several things must line up:
 
@@ -129,6 +140,7 @@ sequenceDiagram
     participant Package as PackageService
     participant Wallet as WalletService
     participant Order as OrderService
+    participant Notify as NotificationService
     participant DB as MariaDB
 
     Customer->>API: Purchase package
@@ -142,6 +154,7 @@ sequenceDiagram
     Order->>DB: Insert order and history
     UseCase->>Wallet: Debit wallet
     Wallet->>DB: Update balance and create transaction
+    UseCase->>Notify: Create order placed notification
     API-->>Customer: Created order id
 ```
 
@@ -155,7 +168,7 @@ In this domain, a package is not necessarily a physical stock item. It represent
 
 When a customer purchases a package, one slot is reserved. When an order is cancelled, one slot is restored.
 
-This matches how a small top-up service operates, where capacity is limited by how many orders can still be accepted rather than by physical inventory.
+The model matches how a small top-up service operates, where capacity is limited by how many orders can still be accepted rather than by physical inventory.
 
 ## Admin Order Processing
 
@@ -172,11 +185,11 @@ stateDiagram-v2
     Processing --> Cancelled: Admin cancels
 ```
 
-Picking an order assigns it to an admin and moves it into `Processing`. Completing it moves it to `Completed`.
+Picking an order assigns it to an admin and moves it into `Processing`. Completing it moves it to `Completed`. Customer-visible transitions create notifications so the customer does not have to refresh the order page to discover that work has started or finished.
 
-Each meaningful transition writes order history. That makes the order easier to inspect later, especially when several people are involved in operating the service.
+Each meaningful transition writes order history. Order history records who changed the order state and when the change happened.
 
-The pick flow is also protected from races. If two admins try to pick the same pending order, only one should become the assigned admin.
+The pick flow uses `Pending` status and assigned admin state to handle races. If two admins try to pick the same pending order, only one should become the assigned admin.
 
 ## Cancellation And Refund
 
@@ -187,7 +200,7 @@ It cannot be treated as "set order status to cancelled" because a purchased orde
 When an order is cancelled, the workflow has to:
 
 - lock the order
-- make sure the transition is allowed
+- validate that the transition is allowed
 - write order history
 - restore one package slot
 - lock the customer's wallet
@@ -202,6 +215,7 @@ sequenceDiagram
     participant Order as OrderService
     participant Package as PackageService
     participant Wallet as WalletService
+    participant Notify as NotificationService
     participant DB as MariaDB
 
     Requester->>API: Cancel order
@@ -214,12 +228,13 @@ sequenceDiagram
     UseCase->>DB: Lock customer's wallet
     UseCase->>Wallet: Credit refund
     Wallet->>DB: Update balance and create refund transaction
+    UseCase->>Notify: Create cancellation notification
     API-->>Requester: Success
 ```
 
-The implementation treats repeated cancellation carefully. If an order is already cancelled, the workflow returns without refunding again. That behavior is covered by concurrency tests because double refund is the kind of bug that can be missed when only the normal path is tested.
+The repeated-cancellation path returns when an order is already cancelled and does not issue another refund. That behavior is covered by concurrency tests because normal-path tests do not cover double refund.
 
-## Where Consistency Matters Most
+## Concurrency Risks
 
 The riskiest parts of GameTopUp are the places where two users or admins can act at the same time.
 
@@ -230,15 +245,15 @@ The most sensitive workflows are:
 - two requests trying to cancel the same order
 - an admin picking an order while the customer tries to cancel it
 
-These are not abstract edge cases. They are the places where balance, availability and order state can drift if the workflow is not designed carefully.
+These cases are not abstract edge cases. They are the places where balance, availability and order state can drift without transaction boundaries and row locking.
 
-Those flows use explicit transaction boundaries, row locking where needed and integration tests against MariaDB instead of relying only on mocked unit tests.
+Sensitive flows use explicit transaction boundaries, row locking where needed and integration tests against MariaDB instead of relying only on mocked unit tests.
 
-## Continue Reading
+## Testing Boundaries
 
-The workflows described here are implemented through the layered architecture introduced earlier.
+Layered architecture implements these workflows through controllers, use cases, services, repositories and queries.
 
-The next documents explain why these implementation choices were made and how the workflows are verified through automated tests.
+Risky workflows are verified through unit tests, API scenario tests and database-backed integration tests.
 
-- [Engineering Decisions](engineering-decisions.md) explains the trade-offs behind the structure.
+- [Engineering Decisions](engineering-decisions.md) describes the backend structure and test boundaries.
 - [Testing](testing.md) shows how these flows are protected.

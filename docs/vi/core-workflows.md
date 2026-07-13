@@ -4,11 +4,11 @@
 
 Phần lõi của GameTopUp nằm ở cách số dư ví, package availability và trạng thái đơn hàng thay đổi cùng nhau.
 
-Tài liệu này giải thích những workflow cần được thiết kế cẩn thận nhất. Nội dung không đi sâu vào từng endpoint, mà tập trung vào những điều phải luôn đúng khi khách hàng và quản trị viên dùng ứng dụng.
+Các core workflows điều phối số dư ví, package availability và trạng thái đơn hàng khi khách hàng và quản trị viên dùng ứng dụng.
 
-Để xem bức tranh tổng thể của hệ thống, đọc [Architecture](architecture.md). Để hiểu vì sao các workflow này tồn tại, bắt đầu với [Overview](overview.md).
+Architecture mô tả bức tranh tổng thể của hệ thống. Overview mô tả bối cảnh domain phía sau các workflow này.
 
-## Luồng vận hàng tổng thể
+## Vòng vận hành
 
 Ở mức cao, ứng dụng hỗ trợ vòng vận hành sau:
 
@@ -18,25 +18,29 @@ flowchart LR
     Deposit["Create wallet deposit"]
     Review["Admin reviews transfer"]
     Wallet["Wallet balance updated"]
+    NotifyDeposit["Customer notified"]
     Purchase["Customer purchases package"]
     Process["Admin processes order"]
+    NotifyOrder["Customer notified"]
     Done["Order completed or cancelled"]
 
     Browse --> Deposit
     Deposit --> Review
     Review --> Wallet
-    Wallet --> Purchase
+    Wallet --> NotifyDeposit
+    NotifyDeposit --> Purchase
     Purchase --> Process
-    Process --> Done
+    Process --> NotifyOrder
+    NotifyOrder --> Done
 ```
 
-Mỗi bước đều để lại bản ghi. Deposit status, wallet transactions, order status và order history giúp workflow dễ kiểm tra lại hơn về sau.
+Mỗi bước đều để lại bản ghi. Deposit status, wallet transactions, order status, order history và thông báo tạo audit trail để kiểm tra lại khi cần.
 
 ## Nạp tiền vào ví
 
 Khách hàng không thanh toán trực tiếp cho một order. Họ tạo yêu cầu nạp ví trước.
 
-Cách này tách bước duyệt thanh toán khỏi bước mua hàng. Khách hàng có thể chuẩn bị tiền một lần, rồi dùng số dư ví để đặt order sau đó.
+Luồng nạp ví trước tách bước duyệt thanh toán khỏi bước mua hàng. Khách hàng có thể chuẩn bị tiền một lần, rồi dùng số dư ví để đặt order sau đó.
 
 ```mermaid
 sequenceDiagram
@@ -60,12 +64,12 @@ Yêu cầu nạp tiền lưu:
 - amount
 - unique deposit code
 - transfer content
-- current status
+- status
 - thông tin review sau khi quản trị viên xử lý
 
-QR image URL được tạo từ thông tin ngân hàng VietQR trong configuration. Dự án không tự động xác minh chuyển khoản ngân hàng. Người dùng xác nhận rằng họ đã chuyển tiền, sau đó quản trị viên review request.
+QR image URL được tạo từ thông tin ngân hàng VietQR trong configuration. GameTopUp không tự động xác minh chuyển khoản ngân hàng. Người dùng xác nhận rằng họ đã chuyển tiền, sau đó quản trị viên review request.
 
-Trong phạm vi hiện tại, ứng dụng mô phỏng một dịch vụ nhỏ nơi việc xác minh chuyển khoản vẫn là công việc của quản trị viên.
+Trong phạm vi này, ứng dụng mô phỏng một dịch vụ nhỏ nơi việc xác minh chuyển khoản vẫn là công việc của quản trị viên.
 
 ## Duyệt yêu cầu nạp tiền
 
@@ -74,14 +78,17 @@ Một yêu cầu nạp tiền đi qua một state machine nhỏ:
 ```mermaid
 stateDiagram-v2
     [*] --> Pending
+    Pending --> Approved
     Pending --> UserConfirmed
     UserConfirmed --> Approved
     UserConfirmed --> Rejected
 ```
 
-Khách hàng chỉ có thể xác nhận yêu cầu nạp tiền đang pending của chính họ. Admin approval chỉ được phép sau bước customer confirmation.
+Khách hàng xác nhận yêu cầu nạp tiền của chính mình khi yêu cầu đang ở trạng thái `Pending`.
 
-Khi quản trị viên approve deposit, workflow phải làm nhiều hơn là đổi status:
+Quản trị viên có thể phê duyệt yêu cầu ở trạng thái `Pending` hoặc sau khi khách hàng xác nhận. Việc từ chối chỉ được thực hiện sau bước xác nhận của khách hàng.
+
+Khi quản trị viên phê duyệt yêu cầu nạp tiền, workflow phải làm nhiều hơn là đổi trạng thái:
 
 ```mermaid
 sequenceDiagram
@@ -89,6 +96,7 @@ sequenceDiagram
     participant API
     participant UseCase as WalletDepositUseCase
     participant Wallet as WalletService
+    participant Notify as NotificationService
     participant DB as MariaDB
 
     Admin->>API: Approve deposit
@@ -100,18 +108,21 @@ sequenceDiagram
     Wallet->>DB: Update wallet balance
     Wallet->>DB: Create wallet transaction
     UseCase->>DB: Mark deposit approved
+    UseCase->>Notify: Create approval notification
     API-->>Admin: Success
 ```
 
-Việc cộng tiền vào ví và cập nhật trạng thái deposit diễn ra trong cùng một transaction boundary. Điều này quan trọng vì approval không nên tạo trạng thái nửa vời: deposit đã approved nhưng ví chưa được cộng tiền, hoặc ví đã được cộng nhưng review không được ghi lại.
+Việc cộng tiền vào ví và cập nhật trạng thái deposit diễn ra trong cùng một transaction boundary. Approval không nên tạo trạng thái nửa vời: deposit đã approved nhưng ví chưa được cộng tiền, hoặc ví đã được cộng nhưng review không được ghi lại.
 
-Concurrency tests kiểm tra phiên bản rủi ro của workflow này: hai quản trị viên approve cùng một deposit gần như cùng lúc. Kết quả mong muốn là ví chỉ được cộng một lần.
+Quản trị viên có thể ghi chú xử lý nếu cần. Approval cộng tiền vào ví; rejection chỉ ghi lại kết quả review và không đổi số dư. Cả hai kết quả đều tạo thông báo cho khách hàng.
+
+Concurrency tests kiểm tra phiên bản rủi ro của workflow này: hai quản trị viên approve cùng một deposit gần như cùng lúc, hoặc một quản trị viên approve trong khi người khác reject cùng deposit đó. Kết quả mong muốn là chỉ có một quyết định review cuối cùng và tối đa một lần cộng ví.
 
 ## Luồng mua hàng
 
 Purchase flow là nơi số dư ví, package availability và trạng thái đơn hàng gặp nhau.
 
-Từ góc nhìn khách hàng, flow này khá dễ hiểu: chọn gói nạp, nhập thông tin tài khoản game và confirm purchase.
+Từ góc nhìn khách hàng, flow là chọn gói nạp, nhập thông tin tài khoản game và confirm purchase.
 
 Từ góc nhìn backend, nhiều điều phải khớp với nhau:
 
@@ -129,6 +140,7 @@ sequenceDiagram
     participant Package as PackageService
     participant Wallet as WalletService
     participant Order as OrderService
+    participant Notify as NotificationService
     participant DB as MariaDB
 
     Customer->>API: Purchase package
@@ -142,12 +154,13 @@ sequenceDiagram
     Order->>DB: Insert order and history
     UseCase->>Wallet: Debit wallet
     Wallet->>DB: Update balance and create transaction
+    UseCase->>Notify: Create order placed notification
     API-->>Customer: Created order id
 ```
 
 Backend không tạo order ngay từ bước đầu. Use case trước tiên validate package và wallet, giữ capacity, tạo order, rồi mới ghi wallet movement.
 
-Package reservation dùng một câu update chỉ thành công khi vẫn còn đủ slots. Điều đó ngăn ứng dụng nhận nhiều order hơn khả năng xử lý của package.
+Package reservation dùng một câu update chỉ thành công khi vẫn còn đủ slots. Điều kiện update ngăn ứng dụng nhận nhiều order hơn khả năng xử lý của package.
 
 GameTopUp theo dõi `available_slots` cho packages.
 
@@ -155,7 +168,7 @@ Trong bài toán này, một package không nhất thiết là một món hàng 
 
 Khi khách hàng mua package, một slot được giữ lại. Khi order bị huỷ, một slot được trả lại.
 
-Cách mô hình hoá này khớp với cách một dịch vụ nạp game nhỏ vận hành, nơi capacity bị giới hạn bởi số order còn có thể nhận, không phải bởi tồn kho vật lý.
+Mô hình này khớp với cách một dịch vụ nạp game nhỏ vận hành, nơi capacity bị giới hạn bởi số order còn có thể nhận, không phải bởi tồn kho vật lý.
 
 ## Xử lý đơn hàng
 
@@ -172,22 +185,22 @@ stateDiagram-v2
     Processing --> Cancelled: Admin cancels
 ```
 
-Thao tác pick gán order cho một quản trị viên và chuyển nó sang `Processing`. Thao tác complete chuyển order sang `Completed`.
+Thao tác pick gán order cho một quản trị viên và chuyển nó sang `Processing`. Thao tác complete chuyển order sang `Completed`. Các transition khách hàng cần biết sẽ tạo thông báo, nên khách không phải refresh trang đơn hàng để biết order đã bắt đầu xử lý hoặc đã hoàn tất.
 
-Mỗi transition có ý nghĩa đều ghi order history. Điều đó giúp order dễ kiểm tra lại hơn, nhất là khi có nhiều người cùng tham gia vận hành dịch vụ.
+Mỗi transition có ý nghĩa đều ghi order history. Order history ghi ai đã đổi trạng thái đơn và thời điểm thay đổi.
 
-Dự án cũng bảo vệ pick flow khỏi race condition. Nếu hai quản trị viên cùng cố pick một pending order, chỉ một người trở thành assigned admin.
+Pick flow dùng trạng thái `Pending` và assigned admin để xử lý race condition. Nếu hai quản trị viên cùng cố pick một pending order, chỉ một người trở thành assigned admin.
 
 ## Hủy đơn và hoàn tiền
 
-Cancellation là một trong những workflow dễ làm sai nhất.
+Cancellation chạm tới nhiều phần trạng thái cùng lúc.
 
 Nó không thể được xử lý như “set order status to cancelled”, vì một order đã purchase trước đó đã ảnh hưởng tới số dư ví và package availability.
 
 Khi một order bị huỷ, workflow phải:
 
 - lock order
-- đảm bảo transition được phép
+- validate transition được phép
 - ghi order history
 - trả lại một package slot
 - lock wallet của khách hàng
@@ -202,6 +215,7 @@ sequenceDiagram
     participant Order as OrderService
     participant Package as PackageService
     participant Wallet as WalletService
+    participant Notify as NotificationService
     participant DB as MariaDB
 
     Requester->>API: Cancel order
@@ -214,12 +228,13 @@ sequenceDiagram
     UseCase->>DB: Lock customer's wallet
     UseCase->>Wallet: Credit refund
     Wallet->>DB: Update balance and create refund transaction
+    UseCase->>Notify: Create cancellation notification
     API-->>Requester: Success
 ```
 
-Phần xử lý repeated cancellation được viết khá cẩn thận. Nếu order đã cancelled, workflow trả về mà không refund lần nữa. Hành vi này được kiểm tra bằng concurrency tests vì double refund là kiểu bug dễ bị bỏ sót nếu chỉ kiểm tra happy path.
+Phần xử lý repeated cancellation trả về nếu order đã cancelled và không refund lần nữa. Hành vi này được kiểm tra bằng concurrency tests vì happy path không bao phủ double refund.
 
-## Đảm bảo tính nhất quán
+## Rủi ro đồng thời
 
 Những phần rủi ro nhất của GameTopUp là nơi hai người dùng hoặc quản trị viên có thể hành động cùng lúc.
 
@@ -230,15 +245,15 @@ Các workflow nhạy cảm nhất là:
 - hai request cùng cố cancel một order
 - một quản trị viên pick order trong lúc khách hàng cố cancel nó
 
-Đây không phải edge cases trừu tượng. Đây là những nơi số dư, package availability và trạng thái đơn hàng có thể lệch nhau nếu workflow không được thiết kế cẩn thận.
+Các trường hợp này không phải edge cases trừu tượng. Đây là những nơi số dư, package availability và trạng thái đơn hàng có thể lệch nhau nếu thiếu transaction boundaries và row locking.
 
-Dự án dùng transaction boundaries rõ ràng, row locking ở những nơi cần thiết và integration tests với MariaDB thay vì chỉ dựa vào mocked unit tests.
+Các flow nhạy cảm dùng transaction boundaries, row locking ở những nơi cần thiết và integration tests với MariaDB thay vì chỉ dựa vào mocked unit tests.
 
-## Đọc tiếp
+## Kiểm thử và ranh giới
 
-Các workflow trong tài liệu này được triển khai thông qua layered architecture đã giới thiệu trước đó.
+Layered architecture triển khai các workflow này qua controllers, use cases, services, repositories và queries.
 
-Các tài liệu tiếp theo giải thích vì sao những lựa chọn triển khai này phù hợp với dự án, và workflow được kiểm chứng bằng automated tests như thế nào.
+Các workflow rủi ro được kiểm chứng bằng unit tests, API scenario tests và database-backed integration tests.
 
-- [Engineering Decisions](engineering-decisions.md) giải thích trade-offs phía sau cấu trúc.
+- [Engineering Decisions](engineering-decisions.md) mô tả backend structure và test boundaries.
 - [Testing](testing.md) cho thấy các luồng này được bảo vệ như thế nào.

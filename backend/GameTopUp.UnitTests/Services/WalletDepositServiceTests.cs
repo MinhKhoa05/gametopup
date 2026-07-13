@@ -175,11 +175,13 @@ public class WalletDepositServiceTests
             .Where(ex => ex.ErrorCode == ErrorCode.InvalidDepositStatus);
     }
 
-    [Fact]
-    public void Approve_ShouldMarkDepositApproved_WhenConfirmed()
+    [Theory]
+    [InlineData(WalletDepositStatus.Pending)]
+    [InlineData(WalletDepositStatus.UserConfirmed)]
+    public void Approve_ShouldMarkDepositApproved_WhenStatusIsValid(WalletDepositStatus status)
     {
         var deposit = CreateDeposit(userId: 7);
-        deposit.MarkUserConfirmed();
+        deposit.Status = status;
 
         _service.Approve(deposit, AdminContext(1), "verified");
 
@@ -190,9 +192,10 @@ public class WalletDepositServiceTests
     }
 
     [Fact]
-    public void Approve_ShouldThrow_WhenDepositIsNotConfirmed()
+    public void Approve_ShouldThrow_WhenDepositIsInvalidStatus()
     {
         var deposit = CreateDeposit(userId: 7);
+        deposit.Status = WalletDepositStatus.Rejected;
 
         var act = () => _service.Approve(deposit, AdminContext(1), "verified");
 
