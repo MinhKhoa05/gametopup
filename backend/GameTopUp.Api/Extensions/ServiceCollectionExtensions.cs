@@ -8,42 +8,57 @@ using GameTopUp.BLL.Services.Notifications;
 using GameTopUp.BLL.Services.Users;
 using GameTopUp.BLL.Services.Wallets;
 using GameTopUp.BLL.Services.Images;
+using GameTopUp.BLL.Services.Emails;
 using GameTopUp.BLL.UseCases;
 using GameTopUp.DAL.Database;
 using GameTopUp.DAL.Interfaces;
 using GameTopUp.DAL.Repositories;
 using GameTopUp.DAL.Queries;
+using Microsoft.Extensions.Options;
 
 namespace GameTopUp.Api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    internal const string ReactAppCorsPolicy = "AllowReactApp";
+    internal const string CorsPolicyName = "AllowReactApp";
 
-    public static IServiceCollection AddGameTopUpOptions(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApplicationOptions(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddOptions<JwtSettings>()
+        services.AddOptions<AppOptions>()
+            .Bind(configuration.GetSection("App"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<CorsOptions>()
+            .Bind(configuration.GetSection("Cors"))
+            .ValidateOnStart();
+
+        services.AddOptions<JwtOptions>()
             .Bind(configuration.GetSection("Jwt"))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddOptions<VietQrSettings>()
+        services.AddOptions<VietQrOptions>()
             .Bind(configuration.GetSection("VietQr"))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<EmailOptions>()
+            .Bind(configuration.GetSection("Email"))
+            .ValidateDataAnnotations();
+
         return services;
     }
 
-    public static IServiceCollection AddGameTopUpCors(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddCorsPolicy(this IServiceCollection services, IConfiguration configuration)
     {
-        var allowedOrigins = configuration.GetAllowedOrigins();
+        var corsOptions = configuration.GetSection("Cors").Get<CorsOptions>() ?? new CorsOptions();
 
         services.AddCors(options =>
         {
-            options.AddPolicy(ReactAppCorsPolicy, policy =>
+            options.AddPolicy(CorsPolicyName, policy =>
             {
-                policy.WithOrigins(allowedOrigins)
+                policy.WithOrigins(corsOptions.AllowedOrigins)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
@@ -53,7 +68,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddGameTopUpDatabase(this IServiceCollection services)
+    public static IServiceCollection AddDatabase(this IServiceCollection services)
     {
         services.AddScoped<DatabaseContext>(sp =>
         {
@@ -100,6 +115,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WalletReadService>();
         services.AddScoped<WalletDepositService>();
         services.AddScoped<NotificationService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<OrderQuery>();
         services.AddScoped<AdminDashboardQuery>();
         services.AddScoped<WalletQuery>();
@@ -107,8 +123,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IImageStorageService, LocalImageStorageService>();
         services.AddSingleton(sp =>
         {
-            var configuration = sp.GetRequiredService<IConfiguration>();
-            return new PublicImageUrlBuilder(GetRequiredAppBaseUrl(configuration));
+            var appOptions = sp.GetRequiredService<IOptions<AppOptions>>().Value;
+            return new PublicImageUrlBuilder(appOptions.BaseUrl);
         });
 
         return services;
@@ -120,17 +136,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<OrderUseCase>();
         services.AddScoped<WalletDepositUseCase>();
         return services;
-    }
-
-    private static string GetRequiredAppBaseUrl(IConfiguration configuration)
-    {
-        var baseUrl = configuration["ConfigUrl:AppBaseUrl"];
-        if (string.IsNullOrWhiteSpace(baseUrl))
-        {
-            throw new InvalidOperationException("ConfigUrl:AppBaseUrl is required. Set ConfigUrl:AppBaseUrl in configuration or APP_BASE_URL in the environment.");
-        }
-
-        return baseUrl;
     }
 
 }

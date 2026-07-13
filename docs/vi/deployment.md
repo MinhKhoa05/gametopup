@@ -80,26 +80,30 @@ Config route:
 
 Config này cũng cấu hình HTTPS thông qua đường dẫn certificate của Let's Encrypt và redirect HTTP traffic sang HTTPS cho domain đã cấu hình.
 
-## Cấu hình
+## Cấu hình
 
-Compose nhận giá trị từ `.env`, còn API map environment values vào configuration.
+Dự án sử dụng `.env` cho Docker Compose và ASP.NET Core configuration.
 
-Các giá trị cấu hình gồm:
+Docker Compose đọc trực tiếp các giá trị trong `.env`, còn ASP.NET Core tự động bind các hierarchical environment variables vào configuration khi ứng dụng khởi động.
+
+Các biến cấu hình quan trọng:
 
 | Variable | Mục đích |
 | -------- | -------- |
 | `DB_ROOT_PASSWORD` | MariaDB root password |
 | `DB_PASSWORD` | Application database password |
-| `JWT_KEY` | JWT signing key |
-| `APP_BASE_URL` | Public base URL dùng cho backend-generated links |
-| `CORS_ALLOWED_ORIGINS` | Frontend origins được phép |
+| `Jwt__Key` | JWT signing key |
+| `App__BaseUrl` | Public base URL dùng cho backend-generated links |
+| `Cors__AllowedOrigins__0` | Frontend origin đầu tiên được phép |
 | `VITE_API_BASE_URL` | API base URL được compile vào frontend |
-| `VIETQR_BANK_ID` | VietQR bank id |
-| `VIETQR_ACCOUNT_NO` | VietQR account number |
-| `VIETQR_ACCOUNT_NAME` | VietQR account name |
+| `VietQr__BankId` | VietQR bank id |
+| `VietQr__AccountNo` | VietQR account number |
+| `VietQr__AccountName` | VietQR account name |
+| `Email__FromEmail` | Sender email address |
+| `Email__Username` | SMTP username |
+| `Email__Password` | SMTP password hoặc app password |
 
-API map các environment variables này vào configuration khi startup. Cấu hình local và production dùng environment values thay vì hardcoded secrets, và cùng một application build chạy được ở cả hai môi trường.
-
+ASP.NET Core sử dụng hierarchical configuration mặc định, giúp cùng một application build có thể chạy ở cả môi trường local và production chỉ bằng cách thay đổi environment variables, không cần hardcode secrets.
 ## Quy trình triển khai
 
 Deployment gắn với GitHub Actions.

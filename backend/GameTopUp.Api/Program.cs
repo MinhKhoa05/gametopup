@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.ApplyEnvironmentOverrides();
+builder.Configuration.ConfigureDatabaseConnectionString();
 
 builder.Services.AddControllers(options =>
 {
@@ -23,10 +23,10 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new() { Title = "GameTopUp Rebuild API", Version = "v1" });
 });
 
-builder.Services.AddGameTopUpOptions(builder.Configuration);
-builder.Services.AddGameTopUpCors(builder.Configuration);
+builder.Services.AddApplicationOptions(builder.Configuration);
+builder.Services.AddCorsPolicy(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
-builder.Services.AddGameTopUpDatabase();
+builder.Services.AddDatabase();
 builder.Services.AddRepositories();
 builder.Services.AddBusinessServices();
 builder.Services.AddUseCases();
@@ -41,7 +41,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
-app.UseCors(ServiceCollectionExtensions.ReactAppCorsPolicy);
+app.UseCors(ServiceCollectionExtensions.CorsPolicyName);
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -10,7 +10,7 @@ public static class JwtExtensions
 {
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        var jwtSettings = configuration.GetSection("Jwt").Get<JwtSettings>();
+        var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>();
 
         services.AddAuthentication(options =>
             {
@@ -19,14 +19,14 @@ public static class JwtExtensions
             })
             .AddJwtBearer(options =>
             {
-                options.TokenValidationParameters = GetTokenValidationParameters(jwtSettings!);
+                options.TokenValidationParameters = GetTokenValidationParameters(jwtOptions!);
                 options.Events = GetJwtBearerEvents();
             });
 
         return services;
     }
 
-    private static TokenValidationParameters GetTokenValidationParameters(JwtSettings jwtSettings)
+    private static TokenValidationParameters GetTokenValidationParameters(JwtOptions jwtOptions)
     {
         return new TokenValidationParameters
         {
@@ -34,9 +34,9 @@ public static class JwtExtensions
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings.Issuer,
-            ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
             ClockSkew = TimeSpan.Zero
         };
     }

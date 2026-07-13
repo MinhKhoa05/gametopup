@@ -82,23 +82,28 @@ It also configures HTTPS through Let's Encrypt certificate paths and redirects H
 
 ## Configuration
 
-Configuration comes from `.env` values in Compose and environment override logic in the API.
+The project uses `.env` values for Docker Compose and ASP.NET Core configuration.
 
-Important values include:
+Docker Compose reads values directly from `.env`, while ASP.NET Core automatically binds hierarchical environment variables into application configuration at startup.
+
+Important configuration values include:
 
 | Variable | Purpose |
 | -------- | ------- |
 | `DB_ROOT_PASSWORD` | MariaDB root password |
 | `DB_PASSWORD` | Application database password |
-| `JWT_KEY` | JWT signing key |
-| `APP_BASE_URL` | Public base URL used by backend-generated links |
-| `CORS_ALLOWED_ORIGINS` | Allowed frontend origins |
+| `Jwt__Key` | JWT signing key |
+| `App__BaseUrl` | Public base URL used by backend-generated links |
+| `Cors__AllowedOrigins__0` | First allowed frontend origin |
 | `VITE_API_BASE_URL` | API base URL compiled into the frontend |
-| `VIETQR_BANK_ID` | VietQR bank id |
-| `VIETQR_ACCOUNT_NO` | VietQR account number |
-| `VIETQR_ACCOUNT_NAME` | VietQR account name |
+| `VietQr__BankId` | VietQR bank id |
+| `VietQr__AccountNo` | VietQR account number |
+| `VietQr__AccountName` | VietQR account name |
+| `Email__FromEmail` | Sender email address |
+| `Email__Username` | SMTP username |
+| `Email__Password` | SMTP password or app password |
 
-The API maps these environment variables into configuration at startup. Local and production settings come from environment values instead of hardcoded secrets, and the same application build runs in both environments.
+ASP.NET Core's hierarchical configuration allows the same application build to run in both local and production environments by changing environment variables instead of hardcoding secrets.
 
 ## Deployment Pipeline
 

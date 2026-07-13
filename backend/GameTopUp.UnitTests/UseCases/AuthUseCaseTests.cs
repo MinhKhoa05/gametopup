@@ -26,7 +26,7 @@ public class AuthUseCaseTests
 
     public AuthUseCaseTests()
     {
-        _tokenService = new TokenService(Options.Create(new JwtSettings
+        _tokenService = new TokenService(Options.Create(new JwtOptions
         {
             Key = "this-is-a-test-key-that-is-long-enough-12345",
             Issuer = "GameTopUp.UnitTests",

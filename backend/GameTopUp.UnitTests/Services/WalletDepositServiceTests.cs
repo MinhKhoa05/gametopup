@@ -17,7 +17,7 @@ public class WalletDepositServiceTests
 
     public WalletDepositServiceTests()
     {
-        _service = CreateService(new VietQrSettings
+        _service = CreateService(new VietQrOptions
         {
             BankId = "VCB",
             AccountNo = "123456789",
@@ -93,15 +93,15 @@ public class WalletDepositServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_ShouldThrow_WhenVietQrSettingsMissing()
+    public async Task CreateAsync_ShouldThrow_WhenVietQrOptionsMissing()
     {
-        var service = CreateService(new VietQrSettings());
+        var service = CreateService(new VietQrOptions());
 
         var act = () => service.CreateAsync(MemberContext(7), 100_000m);
 
         await act.Should()
             .ThrowAsync<BusinessException>()
-            .Where(ex => ex.ErrorCode == ErrorCode.VietQrSettingsMissing);
+            .Where(ex => ex.ErrorCode == ErrorCode.VietQrOptionsMissing);
     }
 
     [Fact]
@@ -231,7 +231,7 @@ public class WalletDepositServiceTests
             .Where(ex => ex.ErrorCode == ErrorCode.InvalidDepositStatus);
     }
 
-    private WalletDepositService CreateService(VietQrSettings settings)
+    private WalletDepositService CreateService(VietQrOptions settings)
     {
         return new WalletDepositService(_repository.Object, Options.Create(settings));
     }

@@ -31,7 +31,7 @@ public class WalletDepositUseCaseTests
             .ReturnsAsync(1);
         _depositRequestService = new WalletDepositService(
             _depositRequestRepository.Object,
-            Options.Create(new VietQrSettings
+            Options.Create(new VietQrOptions
             {
                 BankId = "VCB",
                 AccountNo = "123456789",
