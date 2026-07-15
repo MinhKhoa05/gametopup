@@ -1,13 +1,23 @@
-# Production Nginx
+# Nginx Configuration
 
-## Copy config
+This directory contains the Nginx configuration used for the production VPS.
 
-sudo cp deployment/nginx/gametopup.conf /etc/nginx/sites-enabled/gametopup
+## Apply Configuration
 
-## Validate
+```sh
+sudo cp deployments/nginx/gametopup.conf /etc/nginx/sites-enabled/gametopup
+```
 
+Validate the configuration:
+
+```sh
 sudo nginx -t
+```
 
-## Reload
+Reload Nginx:
 
+```sh
 sudo systemctl reload nginx
+```
+
+For the complete deployment process, see `docs/deployment.md`.
